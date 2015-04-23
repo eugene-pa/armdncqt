@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1111</width>
+    <height>699</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1111</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Форма</string>
+    </property>
+    <addaction name="actionNewForm"/>
+    <addaction name="actionOpenForm"/>
+    <addaction name="actionSaveForm"/>
+    <addaction name="actionSaveFormAs"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Редактор</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="separator"/>
+    <addaction name="actionSelectAll"/>
+    <addaction name="actionUnselectAll"/>
+    <addaction name="actionInvertSelection"/>
+    <addaction name="actionSelectErrors"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit"/>
+    <addaction name="actionDelete"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Примитив</string>
+    </property>
+    <addaction name="action_17"/>
+    <addaction name="action_18"/>
+    <addaction name="action_19"/>
+    <addaction name="action_20"/>
+    <addaction name="action_21"/>
+    <addaction name="action_22"/>
+    <addaction name="action"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>Преобразования</string>
+    </property>
+    <addaction name="action_23"/>
+    <addaction name="action_24"/>
+    <addaction name="action_25"/>
+    <addaction name="separator"/>
+    <addaction name="action_27"/>
+    <addaction name="action_28"/>
+    <addaction name="action_29"/>
+    <addaction name="action_30"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNewForm"/>
+   <addaction name="actionOpenForm"/>
+   <addaction name="actionSaveForm"/>
+   <addaction name="separator"/>
+   <addaction name="actionSelectAll"/>
+   <addaction name="actionUnselectAll"/>
+   <addaction name="actionInvertSelection"/>
+   <addaction name="actionSelectErrors"/>
+   <addaction name="separator"/>
+   <addaction name="actionEdit"/>
+   <addaction name="actionCopy"/>
+   <addaction name="actionPaste"/>
+   <addaction name="actionDelete"/>
+   <addaction name="separator"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionNewForm">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/new.png</normaloff>:/images/images/new.png</iconset>
+   </property>
+   <property name="text">
+    <string>Новая</string>
+   </property>
+   <property name="toolTip">
+    <string>Новая форма</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionOpenForm">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/open.png</normaloff>:/images/images/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Открыть</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть файл формы</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSaveForm">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/save.png</normaloff>:/images/images/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+   <property name="toolTip">
+    <string>Сохранить форму </string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSaveFormAs">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/saveas.png</normaloff>:/images/images/saveas.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сохранить как...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/quit.png</normaloff>:/images/images/quit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выход</string>
+   </property>
+   <property name="toolTip">
+    <string>Завершение работы</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/undo.png</normaloff>:/images/images/undo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Отменить</string>
+   </property>
+   <property name="toolTip">
+    <string>Отменить последнее действие</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/star_yellow.png</normaloff>:/images/images/star_yellow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выделить все</string>
+   </property>
+   <property name="toolTip">
+    <string>Выделить все примитивы</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionUnselectAll">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/star_grey.png</normaloff>:/images/images/star_grey.png</iconset>
+   </property>
+   <property name="text">
+    <string>Снять выделение</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionInvertSelection">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/star_yellow_new.png</normaloff>:/images/images/star_yellow_new.png</iconset>
+   </property>
+   <property name="text">
+    <string>Инвертировать выделение</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionSelectErrors">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/star_red.png</normaloff>:/images/images/star_red.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выделить примитивы с ошибками</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/Recycle Bin Empty.png</normaloff>:/images/images/Recycle Bin Empty.png</iconset>
+   </property>
+   <property name="text">
+    <string>Удалить выделенные примитивы</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/index_add.png</normaloff>:/images/images/index_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Копировать выделенные примитивы</string>
+   </property>
+   <property name="toolTip">
+    <string>Копировать выделенные примитивы в 'караман'</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/index_down.png</normaloff>:/images/images/index_down.png</iconset>
+   </property>
+   <property name="text">
+    <string>Вставить примитивы из кармана</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="action_17">
+   <property name="text">
+    <string>РЦ</string>
+   </property>
+  </action>
+  <action name="action_18">
+   <property name="text">
+    <string>Стрелка</string>
+   </property>
+  </action>
+  <action name="action_19">
+   <property name="text">
+    <string>Светофор</string>
+   </property>
+  </action>
+  <action name="action_20">
+   <property name="text">
+    <string>Переезд</string>
+   </property>
+  </action>
+  <action name="action_21">
+   <property name="text">
+    <string>Транспарант</string>
+   </property>
+  </action>
+  <action name="action_22">
+   <property name="text">
+    <string>Текст</string>
+   </property>
+  </action>
+  <action name="action_23">
+   <property name="text">
+    <string>Сортировка</string>
+   </property>
+  </action>
+  <action name="action_24">
+   <property name="text">
+    <string>Масштабирование</string>
+   </property>
+  </action>
+  <action name="action_25">
+   <property name="text">
+    <string>Зеркальное отображение</string>
+   </property>
+  </action>
+  <action name="action_27">
+   <property name="text">
+    <string>Выравнивание по левому краю</string>
+   </property>
+  </action>
+  <action name="action_28">
+   <property name="text">
+    <string>Выравнивание по правому краю</string>
+   </property>
+  </action>
+  <action name="action_29">
+   <property name="text">
+    <string>Выравнивание по верхней границе</string>
+   </property>
+  </action>
+  <action name="action_30">
+   <property name="text">
+    <string>Выравнивание по нижней границе</string>
+   </property>
+  </action>
+  <action name="actionEdit">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/icon-283.png</normaloff>:/images/images/icon-283.png</iconset>
+   </property>
+   <property name="text">
+    <string>Свойства выделенного примитива</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>Прямоугольник</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
+ <connections/>
+</ui>

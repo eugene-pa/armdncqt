@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>../images/find.png</file>
+        <file>../images/new.png</file>
+        <file>../images/newfile.png</file>
+        <file>../images/open.png</file>
+        <file>../images/quit.png</file>
+        <file>../images/save.png</file>
+        <file>../images/saveas.png</file>
+        <file>../images/stop!.png</file>
+        <file>../images/stop.png</file>
+        <file>../images/icon-283.png</file>
+        <file>../images/Recycle Bin Empty.png</file>
+        <file>../images/scissors_256.png</file>
+        <file>../images/star_grey.png</file>
+        <file>../images/star_yellow.png</file>
+        <file>../images/undo.png</file>
+        <file>../images/star_yellow_new.png</file>
+        <file>../images/star_red.png</file>
+        <file>../images/index_add.png</file>
+        <file>../images/index_down.png</file>
+    </qresource>
+</RCC>
