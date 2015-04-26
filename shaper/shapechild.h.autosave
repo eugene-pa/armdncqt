@@ -3,6 +3,8 @@
 
 #include "mainwindow.h"
 
+// представление формы в редакторе - класс, производный от QGraphicsView
+// логично иметь членом класса объект класса ShapeSet со списком примитивов
 class ShapeChild : public QGraphicsView
 {
     Q_OBJECT

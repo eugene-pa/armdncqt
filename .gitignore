@@ -44,6 +44,7 @@ doc/
 *.crc
 #--- *.filters
 [Bb]uild-*
+.*
 
 ipch/
 Virtual/

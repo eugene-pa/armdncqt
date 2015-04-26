@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QPaintEvent>
+#include <QGraphicsView>
+#include <QGraphicsScene>
 
 namespace Ui {
 class MainWindow;
