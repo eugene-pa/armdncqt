@@ -8,11 +8,10 @@ class ShapeChild : public QGraphicsView
     Q_OBJECT
 
 public:
-    ShapeChild();
+    ShapeChild(class ShapeSet * set);
     QString currentFile() { return curFile; }
 
 protected:
-    //void paintEvent(QPaintEvent* pe);
     void closeEvent(QCloseEvent *event);
 
 private slots:
@@ -27,6 +26,8 @@ private:
     }
     QString userFriendlyCurrentFile() { return strippedName(curFile); }
 
+    QGraphicsScene * scene;
+    class ShapeSet * shapeSet;
 };
 
 #endif

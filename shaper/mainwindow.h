@@ -21,8 +21,12 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_actionNewForm_triggered();
+
 private:
     Ui::MainWindow *ui;
+    class QMdiArea *mdiArea;                                // виджет MDI
 };
 
 #endif // MAINWINDOW_H
