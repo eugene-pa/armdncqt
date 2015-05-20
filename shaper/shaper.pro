@@ -26,7 +26,12 @@ SOURCES += main.cpp\
     ../shapes/shapetrnsp.cpp \
     ../shapes/colorscheme.cpp \
     ../spr/station.cpp \
+    ../spr/esr.cpp \
+    ../spr/sprbase.cpp \
+    ../spr/ts.cpp \
     ../common/boolexpression.cpp
+    ../common/boolexpression.cpp \
+
 
 HEADERS  += mainwindow.h \
         shapechild.h \
@@ -40,7 +45,12 @@ HEADERS  += mainwindow.h \
     ../shapes/shapetrnsp.h \
     ../shapes/colorscheme.h \
     ../spr/station.h \
+    ../spr/esr.h \
+    ../spr/sprbase.h \
+    ../spr/ts.h \
     ../common/boolexpression.h
+    ../common/boolexpression.h \
+
 
 FORMS    += mainwindow.ui
 

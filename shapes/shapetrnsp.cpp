@@ -17,11 +17,6 @@ ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 //    if (!TrnspDescription::loaded)
 //        TrnspDescription::readBd();
 
-    QString s("1+100");
-
-    BoolExpression expr(s, parent->logger(),true);
-    int n = expr.GetValue();
-
     try
     {
         Parse(src);
@@ -100,6 +95,10 @@ void ShapeTrnsp::Parse(QString& src)
     {
 /*
         StsTsExpr[0] = new LogicalExpression(ar[indx - 1], st.GetVar,null);
+//    QString s("1+100");
+//    BoolExpression expr(s, parent->logger(),true);
+//    int n = expr.GetValue();
+
         if (!StsTsExpr[0].Valid)
             parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[0].Source, StsTsExpr[0].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
 */
@@ -355,7 +354,7 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
                         if (rgbs.length() == 2)
                         {
                             QStringList clr = rgbs[0].split(',', QString::SkipEmptyParts);
-                            QStringList bck = rgbs[1].split(' ', QString::SkipEmptyParts);
+                            QStringList bck = rgbs[1].split(',', QString::SkipEmptyParts);
                             if (clr.length() == 3 && bck.length() == 3)
                             {
                                 d->foreColorExt2 = QColor::fromRgb(clr[0].toInt(), clr[1].toInt(), clr[2].toInt());
@@ -381,11 +380,6 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
                     d->drawOffState = query.value("DrawWhenTsOff").toBool();
                     d->description = query.value("Comment").toString().trimmed();
                     d->geometry = query.value("Geometry").toString().trimmed();
-
-                    if (d->geometry.length() > 0)
-                    {
-                        int a=99;
-                    }
 
 //                    d->bmpRedName = query.value("BitMapRed").toString().trimmed();
 //                    d->bmpGrnName = query.value("BitMapGrn").toString().trimmed();
@@ -435,9 +429,6 @@ bool TrnspDescription::MakePath(QPointF xyBase, QPainterPath& path, Logger* logg
     bool ret = true;
     QPolygonF * poly = new QPolygonF();
     QPointF xy(xyBase);                                         // актуальная точка
-
-    if (geometry.indexOf("e") >= 0)
-        int a=99;
 
     // используем регулярное выражение для проверки корректности и выделения лексем
     // не прошедшие проверку лексему не будут включены в список соответствия

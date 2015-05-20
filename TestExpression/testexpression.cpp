@@ -15,21 +15,45 @@ TestExpression::~TestExpression()
 }
 
 void TestExpression::GetValue()
-{
-    QString s1("100+50");
-    BoolExpression ex1(s1, nullptr, true);
-    QCOMPARE(ex1.GetValue(), 150);
+{  
 
-    QString s2("100-50");
-    BoolExpression ex2(s2, nullptr, true);
-    QCOMPARE(ex2.GetValue(), 50);
+    QCOMPARE(BoolExpression("100+50" , nullptr, true).GetValue(), 150);
+    QCOMPARE(BoolExpression("100-50" , nullptr, true).GetValue(),  50);
+    QCOMPARE(BoolExpression("100*50" , nullptr, true).GetValue(),5000);
+    QCOMPARE(BoolExpression("100/50" , nullptr, true).GetValue(),   2);
+    QCOMPARE(BoolExpression("100>50" , nullptr, true).GetValue(),   1);
+    QCOMPARE(BoolExpression("100>101", nullptr, true).GetValue(),   0);
+    QCOMPARE(BoolExpression("100<50" , nullptr, true).GetValue(),   0);
+    QCOMPARE(BoolExpression("100<101", nullptr, true).GetValue(),   1);
+    QCOMPARE(BoolExpression("100=50" , nullptr, true).GetValue(),   0);
+    QCOMPARE(BoolExpression("50=50"  , nullptr, true).GetValue(),   1);
+    QCOMPARE(BoolExpression("(1+5)*5-6/2" , nullptr, true).GetValue(), 27);
 
-    QString s3("10*50");
-    BoolExpression ex3(s3, nullptr, true);
-    QCOMPARE(ex3.GetValue(), 500);
+    QCOMPARE(BoolExpression(" ( 1 + 5 ) * 5 - 6 / 2 " , nullptr, true).GetValue(), 27);
 
-    QString s4("50/10");
-    BoolExpression ex4(s4, nullptr, true);
-    QCOMPARE(ex4.GetValue(), 5);
 
+    QCOMPARE(BoolExpression("1&1"  , nullptr, false).GetValue(),   1);
+    QCOMPARE(BoolExpression("0&1"  , nullptr, false).GetValue(),   0);
+    QCOMPARE(BoolExpression("1&0"  , nullptr, false).GetValue(),   0);
+    QCOMPARE(BoolExpression("!0&1" , nullptr, false).GetValue(),   1);
+    QCOMPARE(BoolExpression("0|1"  , nullptr, false).GetValue(),    1);
+    QCOMPARE(BoolExpression("1|0"  , nullptr, false).GetValue(),    1);
+    QCOMPARE(BoolExpression("0|0"  , nullptr, false).GetValue(),    0);
+    QCOMPARE(BoolExpression("1^0"  , nullptr, false).GetValue(),    1);
+    QCOMPARE(BoolExpression("0^1"  , nullptr, false).GetValue(),    1);
+    QCOMPARE(BoolExpression("0^0"  , nullptr, false).GetValue(),    0);
+    QCOMPARE(BoolExpression("0^0"  , nullptr, false).GetValue(),    0);
+    QCOMPARE(BoolExpression("(0|1)&1", nullptr, false).GetValue(),  1);
+
+    QCOMPARE(BoolExpression("1&2АП"   , nullptr, false).GetValue(),   0);
+    QCOMPARE(BoolExpression("1|2АП"   , nullptr, false).GetValue(),   1);
 }
+/*
+void TestExpression::GetValue_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("+") << "100+50" << "150";
+}
+*/

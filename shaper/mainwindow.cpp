@@ -6,29 +6,34 @@
 #include "../shapes/shapetrnsp.h"
 #include "../shapes/colorscheme.h"
 #include "../common/logger.h"
+#include "../spr/station.h"
+#include "../spr/ts.h"
 
 Logger logger("Log/shaper.txt");
-QVector<ShapeSet *> sets;                                  // массив форм
+QVector<ShapeSet *> sets;                                           // массив форм
 ColorScheme * colorScheme;
 
 #ifdef Q_OS_WIN
-    QString form ("D:/APO/ArmDnc01/Pictures/Васюринская.shp");      // Табло1
-    QString extDb("C:/armdncqt/bd/armext.db");
+    QString dbname("C:/armdncqt/bd/arm.db");
+    QString extDb ("C:/armdncqt/bd/armext.db");
+    QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
 #endif
 #ifdef Q_OS_MAC
-    QString form ("/Volumes/BOOTCAMP/SKZD/01.Краснодар-Кавказская/Pictures/Варилка.shp");
-    QString extDb("/Users/evgenyshmelev/armdncqt/bd/armext.db");
+    QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
+    QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
+    QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
 #endif
 #ifdef Q_OS_LINUX
-    QString form ("/Volumes/BOOTCAMP/SKZD/01.Краснодар-Кавказская/Pictures/Варилка.shp";)
-    QString extDb("/Users/evgenyshmelev/armdncqt/bd/armext.db");
+    QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
+    QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
+    QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp";)
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    //logger.log ("Запуск приложения");
+    logger.log ("Запуск приложения");
 
     ui->setupUi(this);
 
@@ -38,7 +43,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(mdiArea);
 
     colorScheme = new ColorScheme(extDb, &logger);
+    Station::ReadBd(dbname, logger);
+    Ts::ReadBd(dbname, logger);
     TrnspDescription::readBd(extDb, logger);
+
 }
 
 MainWindow::~MainWindow()

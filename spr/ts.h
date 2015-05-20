@@ -1,0 +1,63 @@
+#ifndef TS_H
+#define TS_H
+
+#include <QHash>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include "../common/logger.h"
+#include "sprbase.h"
+
+class Ts : public SprBase
+{
+public:
+
+// открытве функции статические функции
+static bool ReadBd (QString& dbpath, Logger& logger);       // чтение БД
+
+// открытве функции
+    Ts(QSqlQuery& query, Logger& logger);
+    ~Ts();
+    QString& NameEx();                                      // имя станции и ТС
+    int GetIndex() { return index; }                        // индекс бита в поле ТС (0...n-1)
+    int GetIndexOfName() { return iname; }                  // ключ имени в таблице TsNames
+    Ts * GetNext() { return next; }                         // получить след.в цепочке
+    void SetNext (Ts * ts) { next = ts; }                   // установить ссылку на след.в цепочке
+private:
+                                                            // статические данные из БД
+    int     iname;                                          // ключ имени в таблице TsNames
+    int     index;                                          // индекс бита в поле ТС (0...n-1)
+    int     modul;                                          //
+    int     _i;
+    int     _j;
+    int     norc;
+    int     nostrl;
+    int     nosftf;
+    bool   locked;
+    bool   inverse;
+    bool   busy;
+    bool   pulse;
+    bool   svtfmain;
+    int    stativ;
+    int    place;
+    int    _kolodka;
+    QString kolodka;
+    QString kontact;
+    QString question;                                       // поле question
+    QString svtfdiag;
+    QString svtftype;
+    QString svtferror;
+    QString strlzsname;
+    QString strlmuname;
+
+    QString formula;                                        // выражение, описывающее вирт.сигнал
+    class BoolExpression * expression;                      // указатель на BoolExpression, если есть формула
+
+    Ts *   next;                                            // указатель на следующий ТС в цепочке ТС, находящихся в одной позиции по ключу INDEX
+                                                            // QT содержит класс QMultiHash, однако я хочу явно видеть совмещенные ТС, поэтому использую свой механизм
+    static QString buf;
+
+    // закрытые функции
+    int  getIndex();                                        // сформировать индекс сигнала по координатам
+};
+
+#endif // TS_H

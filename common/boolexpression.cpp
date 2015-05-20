@@ -3,6 +3,7 @@
 #include <QStack>
 #include <QDebug>
 
+#include <../spr/station.h>
 #include "boolexpression.h"
 
 
@@ -12,12 +13,13 @@ QRegularExpression BoolExpression::LexemRgxLogic ("\\^|\\!|\\&|\\(|\\)|\\||([.A-
 QRegularExpression BoolExpression::OperatorRgxMath("^[=\\<\\>\\!\\&\\^\\|\\+\\-\\*\\/]$");
 QRegularExpression BoolExpression::OperatorRgxLogic("^[!\\&\\^\\|]$");
 
-BoolExpression::BoolExpression(QString& expr, class Logger* plog, bool fullMathOps)
+BoolExpression::BoolExpression(QString expr, Station* pst, bool fullMathOps)
 {
-    source = expr;
-    logger = plog;
+    source      = expr;                                     // выражение
+    st          = pst;                                      // станция
+    //logger    = plog;
     logicalType = !fullMathOps;
-    error = OK;
+    error       = OK;
 
     ToRpn();                                                // получить ПОЛИЗ
 }
@@ -253,14 +255,13 @@ int BoolExpression::GetValue()
                 stack.push(s);
             else
             {
-//                if (GetVar == null)
-//                    stack.push(0);                                  // тестовый прогон
-//                else
+                if (st == nullptr)
+                    stack.push(0);                          // тестовый прогон
+                else
                 {
                     try
                     {
-//                        stack.push(GetVar(s));
-                        stack.push("0");
+                        stack.push(QString::number(st->GetVar(s)));
                     }
                     catch (...)
                     {

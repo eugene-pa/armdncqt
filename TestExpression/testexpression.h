@@ -12,7 +12,7 @@ public:
 
 private slots:
     void GetValue();
-
+    //void GetValue_data();
 };
 
 #endif // TESTEXPRESSION_H

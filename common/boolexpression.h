@@ -30,7 +30,7 @@ public:
     static QRegularExpression OperatorRgxMath; //  = new Regex(@"^[=\<\>\!\&\^\|\+\-\*\/]$");
     static QRegularExpression OperatorRgxLogic;// = new Regex(@"^[!\&\^\|]$");
 
-    BoolExpression(QString& expr, class Logger* plog, bool fullMathOps = false);
+    BoolExpression(QString expr, class Station* pst, bool fullMathOps = false);
     ~BoolExpression();
 
     int GetValue();                                         // получить значение
@@ -39,6 +39,7 @@ public:
     bool    ValueBool(){ return GetValue() == 0 ? false : true; } // булево значение
     bool    LogicalType() { return logicalType; }
 private:
+    class Station* st;                                      // указатель на класс станции
     QString source;                                         // исходная строка
     bool    valid;                                          // валидность выражения
     QString rpnStr;                                         // строка в польской обратной записи
