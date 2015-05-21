@@ -1,10 +1,13 @@
 #ifndef BOOLEXPRESSION_H
 #define BOOLEXPRESSION_H
 
+#include <QObject>
 #include <QString>
 
-class BoolExpression
+class BoolExpression : public QObject
 {
+    Q_OBJECT
+
 public:
     enum Error
     {
@@ -30,18 +33,23 @@ public:
     static QRegularExpression OperatorRgxMath; //  = new Regex(@"^[=\<\>\!\&\^\|\+\-\*\/]$");
     static QRegularExpression OperatorRgxLogic;// = new Regex(@"^[!\&\^\|]$");
 
-    BoolExpression(QString expr, class Station* pst, bool fullMathOps = false);
+    //BoolExpression(QString expr, class Station* pst, bool fullMathOps = false);
+    BoolExpression(QString& expr, bool fullMathOps = false);
     ~BoolExpression();
 
     int GetValue();                                         // получить значение
     QString Source()  { return source; }
-    bool    Valid()   { return valid; }
+    bool    Valid()   { return error == OK; }
     bool    ValueBool(){ return GetValue() == 0 ? false : true; } // булево значение
     bool    LogicalType() { return logicalType; }
+    QString ErrorText();                                    // получить текст ошибки
+
+    // вычисление переменной - через обработку сигнала в слоте
+signals:
+    void GetVar(QString& name, int& ret);
+
 private:
-    class Station* st;                                      // указатель на класс станции
     QString source;                                         // исходная строка
-    bool    valid;                                          // валидность выражения
     QString rpnStr;                                         // строка в польской обратной записи
     bool    logicalType;
     class Logger * logger;

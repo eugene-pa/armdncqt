@@ -41,7 +41,17 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
         {
             Ts::getIndex();
             if (formula.length())
-                expression = new BoolExpression(formula, st);
+            {
+                // создаем класс для вычисления выражения и связываем его со слотом GetValue класса Station
+formula = "&1";
+                expression = new BoolExpression(formula);
+                if (expression->Valid())
+                    QObject::connect(expression, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+                else
+                    logger.log(QString("%1. Ошибка синтаксиса в поле ExtData '%2': %3").arg(NameEx()).arg(expression->Source()).arg(expression->ErrorText()));
+
+                //expression->GetValue();
+            }
             st->AddTs(this, logger);
         }
 
@@ -62,13 +72,16 @@ Ts::~Ts()
 // чтение БД
 bool Ts::ReadBd (QString& dbpath, Logger& logger)
 {
-    logger.log(QString("Чтение таблицы ТS БД %1").arg(dbpath));
+    logger.log(QString("Чтение таблицы [ТS] БД %1").arg(dbpath));
     QString sql("SELECT * FROM [TS] INNER JOIN TS_Name ON TS.Cod = TS_Name.Cod ORDER BY NOST,[Module],[I],[J]");
 
     try
     {
-        QSqlDatabase dbSql = QSqlDatabase::addDatabase("QSQLITE", "qsqlite");
-        dbSql.setDatabaseName(dbpath);
+        bool exist = false;
+        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
+                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
+        if (!exist)
+            dbSql.setDatabaseName(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);
@@ -86,6 +99,9 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
         logger.log("Исключение в функции Station::ReadBd");
         return false;
     }
+
+    logger.log("Сортировка списков ТС");
+    Station::sortTs();
 
     return true;
 }
@@ -109,3 +125,12 @@ int Ts::getIndex()
     st->GetTsParams(mmax, imax, jmax, page);
     return index = (modul - 1) * page + (_i - 1) * jmax + _j - 1;
 }
+
+int Ts::CompareByNames(const void* p1,const void* p2)
+{
+    return ((Ts*)p1)->Name() < ((Ts*)p2)->Name();
+}
+bool Ts::Sts      () { return st->TsSts      (index); }     // состояние (0/1), если мигает - 0
+bool Ts::StsPulse () { return st->TsPulse    (index); }     // состояние мигания
+bool Ts::StsDir   () { return st->TsDir      (index); }     // состояние ненормализованное
+bool Ts::Stsmoment() { return st->TsStsMoment(index); }     // состояние мгновенное

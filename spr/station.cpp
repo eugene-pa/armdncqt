@@ -1,4 +1,8 @@
 #include <QVariant>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QDebug>
+
 #include "station.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
@@ -7,6 +11,13 @@ QHash<int, Station*> Station::Stations;                     // хэш-табли
 Station::Station(QSqlQuery& query, Logger& logger)
 {
     bool ret;
+
+    tsStsDir        = QBitArray(TsMaxLengthBits);           // инициируем битовые массивы
+    tsStsPulse      = QBitArray(TsMaxLengthBits);
+    tsStsDirPrv     = QBitArray(TsMaxLengthBits);
+    tsStsPulsePrv   = QBitArray(TsMaxLengthBits);
+    tsSts           = QBitArray(TsMaxLengthBits);
+
     try
     {
         no      = query.value("NoSt").toInt(&ret);          // номер станции
@@ -52,10 +63,79 @@ Station::~Station()
 }
 
 // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
-int Station::GetVar(QString& name)
+void Station::GetValue(QString& name, int& ret)
 {
-    return 0;
+    ret = 0;
+
+    Station * st;
+    QString tsname;
+    parseNames (name, st, tsname);
+
+    QString stname = st == nullptr ? "" : st->name;
+
+    bool pulse = false;
+    if (tsname.indexOf("~")==0)
+    {
+        pulse = true;
+        tsname = tsname.replace("~", "");
+    }
+
+    if (st != nullptr && Ts.contains(tsname))
+    {
+        class Ts * ts = Ts[tsname];
+        ret =  ts->Locked() ? false :                         // Для блокированных ТС возвращаем false в выражениях (Решение не однозначное...)
+               pulse ? ts->StsPulse() : ts->Sts();
+    }
+    else
+    {
+        qDebug() << QString("Ошибка идентификации сигнала %1").arg(name);
+    }
 }
+
+
+// синтаксический разбор индексированных имен ТУ/ТС
+// 1/3+
+// 1/3+[#3]
+// 1/3+[Минводы]
+QRegularExpression RgxNameTsAndNoSt  (".+\\[#\\d+\\]");         // формат с номером станции ИМЯ[#НОМЕР_СТАНЦИИ]
+QRegularExpression RgxNoSt           ("(?<=#)\\d+");            // НОМЕР_СТАНЦИИ в строке формата с номером станции
+QRegularExpression RgxNameTs         ("[^[]+");                 // имя перед квадратными скобками
+QRegularExpression RgxNameTsAndNameSt(".+\\[[^#].+\\]");        // формат с именем станции ИМЯ[СТАНЦИЯ]
+QRegularExpression RgxNameSt         ("(?<=\\[).+?(?=\\])");    // СТАНЦИЯ
+
+bool Station::parseNames (QString& srcname, Station*& st, QString& name)
+{
+    st = this;
+    name = srcname;
+//  KrugInfo krug = st.KrugObject;
+
+    try
+    {
+        // 1. Проверка формата с номером ИМЯ[#НОМЕР_СТАНЦИИ]
+        if (RgxNameTsAndNoSt.match(name).hasMatch())
+        {
+            QString snost = RgxNoSt.match(name).captured();
+            int nost = snost.toInt();
+            name = RgxNameTs.match(name).captured();
+            st = GetByNo(nost);
+        }
+        else
+            // 2. Проверка формата с именем станции
+            if (RgxNameTsAndNameSt.match(name).hasMatch())
+            {
+                QString namest = RgxNameSt.match(name).captured();
+                name = RgxNameTs.match(name).captured();
+                st = GetByName(namest);
+            }
+    }
+    catch (...)
+    {
+        qDebug() << QString("Ошибка парсинга выражения %1").arg(srcname);
+        return false;
+    }
+    return true;
+}
+
 
 // поучить справочник по номеру станции
 Station * Station::GetByNo(int no)
@@ -77,13 +157,16 @@ Station * Station::GetByName(QString stname)
 // чтение БД
 bool Station::ReadBd (QString& dbpath, Logger& logger)
 {
-    logger.log(QString("Чтение станций из БД %1").arg(dbpath));
+    logger.log(QString("Чтение таблицы [Stations] из БД %1").arg(dbpath));
     QString sql("SELECT * FROM [Stations] WHERE NoSt > 0 ORDER BY [NoSt]");
 
     try
     {
-        QSqlDatabase dbSql = QSqlDatabase::addDatabase("QSQLITE", "qsqlite");
-        dbSql.setDatabaseName(dbpath);
+        bool exist = false;
+        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
+                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
+        if (!exist)
+            dbSql.setDatabaseName(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);
@@ -149,6 +232,15 @@ void Station::AddTs (class Ts* ts, Logger& logger)
     TsSorted.append(ts);
 }
 
+// сортировака спимка TsSorted
+void Station::sortTs()
+{
+    foreach (Station * st, Stations.values())
+    {
+        qSort(st->TsSorted.begin(), st->TsSorted.end(),Ts::CompareByNames);
+    }
+}
+
 // Получить параметры позиционирования в матрице
 // Эта функция требует уточнения и детализации
 void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule)
@@ -202,3 +294,10 @@ void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule
         }
     }
 }
+
+// проверка бита в битовом массиве
+bool Station::TestBit (QBitArray& bits, int index)
+{
+    return index >= 0 && index < bits.size() ? bits[index] : 0;
+}
+

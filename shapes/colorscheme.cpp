@@ -21,16 +21,19 @@ ColorScheme::~ColorScheme()
 }
 
 // статическая функция чтения цветовой схемы
-bool ColorScheme::ReadBd(QString& dbPath)
+bool ColorScheme::ReadBd(QString& dbpath)
 {
-    log(QString("Чтение цветовых схем ColorScheme: %1").arg(dbPath));
+    log(QString("Чтение цветовых схем ColorScheme: %1").arg(dbpath));
 
     QString sql("SELECT * FROM [ColorScheme] ORDER BY [ColorName]");
 
     try
     {
-        QSqlDatabase dbSql = QSqlDatabase::addDatabase("QSQLITE", "qsqlite");
-        dbSql.setDatabaseName(dbPath);
+        bool exist = false;
+        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
+                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
+        if (!exist)
+            dbSql.setDatabaseName(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);
@@ -59,7 +62,7 @@ bool ColorScheme::ReadBd(QString& dbPath)
         }
         else
         {
-            log("Ошибка открытия БД " + dbPath);
+            log("Ошибка открытия БД " + dbpath);
         }
     }
     catch(...)

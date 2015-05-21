@@ -302,8 +302,11 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
 
     try
     {
-        QSqlDatabase dbSql = QSqlDatabase::addDatabase("QSQLITE", "qsqlite");
-        dbSql.setDatabaseName(dbpath);
+        bool exist = false;
+        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
+                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
+        if (!exist)
+            dbSql.setDatabaseName(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);

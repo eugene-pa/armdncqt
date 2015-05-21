@@ -9,7 +9,7 @@
 #include "../spr/station.h"
 #include "../spr/ts.h"
 
-Logger logger("Log/shaper.txt");
+Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
 ColorScheme * colorScheme;
 
@@ -42,9 +42,10 @@ MainWindow::MainWindow(QWidget *parent) :
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
 
-    colorScheme = new ColorScheme(extDb, &logger);
     Station::ReadBd(dbname, logger);
     Ts::ReadBd(dbname, logger);
+
+    colorScheme = new ColorScheme(extDb, &logger);
     TrnspDescription::readBd(extDb, logger);
 
 }

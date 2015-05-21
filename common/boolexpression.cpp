@@ -3,32 +3,40 @@
 #include <QStack>
 #include <QDebug>
 
-#include <../spr/station.h>
+//#include <../spr/station.h>
 #include "boolexpression.h"
 
+/*
+ * Класс для вычисления вражений путем предварительного их разбора и приведения к польской инверсной записи
+ * Поддерживаемые операции
+ *    + - * /   - арифметические
+ *    & | ^ !   - логические
+ *    < > =     - сравнения
+ */
 
+// используем регулярные выражения для проверки синтаксиса и разбора выражений (отдельно для логических и арифметических выражений)
 QRegularExpression BoolExpression::LexemRgxMath  ("\\^|\\<|\\>|\\!|\\&|\\(|\\)|\\+|\\-|\\*|\\/|\\||=|([.A-Za-z0-9_~#А-я\\[\\]]*)");
 QRegularExpression BoolExpression::LexemRgxLogic ("\\^|\\!|\\&|\\(|\\)|\\||([.A-Za-z0-9_~#\\-\\+\\/\\*А-я\\[\\]]*)");
 
 QRegularExpression BoolExpression::OperatorRgxMath("^[=\\<\\>\\!\\&\\^\\|\\+\\-\\*\\/]$");
 QRegularExpression BoolExpression::OperatorRgxLogic("^[!\\&\\^\\|]$");
 
-BoolExpression::BoolExpression(QString expr, Station* pst, bool fullMathOps)
+// конструктор выполняет преобразование выражения в польскую инверсную запись
+BoolExpression::BoolExpression(QString& expr, bool fullMathOps)
 {
     source      = expr;                                     // выражение
-    st          = pst;                                      // станция
-    //logger    = plog;
     logicalType = !fullMathOps;
     error       = OK;
 
     ToRpn();                                                // получить ПОЛИЗ
+    GetValue();
 }
 
 BoolExpression::~BoolExpression()
 {
-
 }
 
+// преобразование выражения в польскую инверсную запись
 void BoolExpression::ToRpn()
 {
     QStack<QString> stack;
@@ -255,22 +263,19 @@ int BoolExpression::GetValue()
                 stack.push(s);
             else
             {
-                if (st == nullptr)
-                    stack.push(0);                          // тестовый прогон
-                else
+                try
                 {
-                    try
-                    {
-                        stack.push(QString::number(st->GetVar(s)));
-                    }
-                    catch (...)
-                    {
-                        stack.push("0");
-                        UndefinedVarName = s;
-                        ErrorUndefinedVarNameText = "BoolExpression::GetValue(). Ошибка при вычислении переменной";
-                        error = GetVariableError;
-                        qDebug() << ErrorUndefinedVarNameText;
-                    }
+                    int var = 0;
+                    emit GetVar(s, var);                    // генерируем сигнал вычисления переменной
+                    stack.push(QString::number(var));
+                }
+                catch (...)
+                {
+                    stack.push("0");
+                    UndefinedVarName = s;
+                    ErrorUndefinedVarNameText = "BoolExpression::GetValue(). Ошибка при вычислении переменной";
+                    error = GetVariableError;
+                    qDebug() << ErrorUndefinedVarNameText;
                 }
             }
         }
@@ -285,3 +290,31 @@ int BoolExpression::GetValue()
     return stack.pop().toInt();
 }
 
+// получить текст ошибки
+QString BoolExpression::ErrorText()
+{
+    QString s = "?";
+    switch (error)
+    {
+        case OK:
+            s = "ОК";                               break;
+        case Unknown:
+            s = "Ошибка синтаксиса ";               break;
+        case OpenBracketMissing:
+            s = "Отсутствует открывающая скобка";   break;
+        case CloseBracketMissing:
+            s = "Отсутствует закрывающая скобка";   break;
+        case EmptyExpr:
+            s = "Пустое выражение";                 break;
+        case OperandMissing:
+            s = "Пропущен операнд";                 break;
+        case OperatorMissing:
+            s = "Пропущен оператор";                break;
+        case RealtimeError:
+            s = "Ошибка синтаксиса. Корректное вычисление невозможно"; break;
+        case GetVariableError:
+            s = ErrorUndefinedVarNameText + "'" + UndefinedVarName + "'"; break;
+
+    }
+    return s;
+}

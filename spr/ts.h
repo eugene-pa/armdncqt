@@ -13,15 +13,24 @@ public:
 
 // открытве функции статические функции
 static bool ReadBd (QString& dbpath, Logger& logger);       // чтение БД
+static int CompareByNames(const void*,const void*);
 
 // открытве функции
     Ts(QSqlQuery& query, Logger& logger);
     ~Ts();
+
     QString& NameEx();                                      // имя станции и ТС
     int GetIndex() { return index; }                        // индекс бита в поле ТС (0...n-1)
     int GetIndexOfName() { return iname; }                  // ключ имени в таблице TsNames
     Ts * GetNext() { return next; }                         // получить след.в цепочке
     void SetNext (Ts * ts) { next = ts; }                   // установить ссылку на след.в цепочке
+    bool Locked() { return locked; }
+
+    bool Sts      ();                                       // состояние (0/1), если мигает - 0
+    bool StsPulse ();                                       // состояние мигания
+    bool StsDir   ();                                       // состояние ненормализованное
+    bool Stsmoment();                                       // состояние мгновенное
+
 private:
                                                             // статические данные из БД
     int     iname;                                          // ключ имени в таблице TsNames
