@@ -68,13 +68,28 @@ public:
     bool IsMpcEbilock() { return mpcEbilock; }              // конфигурация с Ebilock950, а также РПЦ/МПЦ МПК + rpcMpcMPK
     bool IsRpcMpcMPK () { return rpcMpcMPK; }               // конфигурация с РПЦ/МПЦ МПК (кроме того mpcEbilock = true)
     bool IsRpcDialog () { return rpcDialog; }               // конфигурация с РПЦ Диалог
+    bool IsApkdk     () { return apkdk;     }               // конфигурация с АПКДК
+    bool IsAdkscb    () { return adkScb;    }               // конфигурация с АДКСЦБ
+    bool IsUpokotu   () { return upokOtu;   }               // конфигурация с УПОК
+    bool Kp2000Lomikont() { return version == VERSIONKp2000Lomikont ; }
+    bool Kp2000        () { return version == VERSION2000           ; }
+    bool Kp2000Tums    () { return version == VERSION2000Rpctums    ; }
+    bool Kp2007        () { return version == VERSION2007           ; }
+    bool Retime        () { return version == VERSIONRetime         ; }
+    bool KpPa          () { return Kp2007() || Kp2000() || Kp2000Lomikont() || Kp2000Tums(); }
 
     // доступ к состоянию ТС по смещению ТС в массиве
     bool TsSts      (int i)
         { return TsStsMoment(i) && !TsPulse(i); }            // состояние ТС (1 - если не мигает и в единице)
     bool TsStsMoment(int i) { return TestBit(tsSts,     i); }// состояние ТС по моменту
-    bool TsDir      (int i) { return TestBit(tsStsDir,  i); }// состояние не нормализованное
+    bool TsRaw      (int i) { return TestBit(tsStsRaw,  i); }// состояние не нормализованное
     bool TsPulse    (int i) { return TestBit(tsStsPulse,i); }// состояние пульсации
+
+    int MtsCount () { return mts.count(); }                 // число модулей ТС
+    int MtuCount () { return mtu.count(); }                 // число модулей ТУ
+
+    bool SetBit (QBitArray& bits, int index, bool a=true);  // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
+    void MarkInverse(int index);
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
@@ -107,14 +122,21 @@ private:
     bool    mpcEbilock;                                     // конфигурация с Ebilock950, а также РПЦ/МПЦ МПК + rpcMpcMPK
     bool    rpcMpcMPK;                                      // конфигурация с РПЦ/МПЦ МПК (кроме того mpcEbilock = true)
     bool    rpcDialog;                                      // конфигурация с РПЦ Диалог
+    bool    apkdk;                                          // конфигурация с АПКДК
+    bool    adkScb;                                         // конфигурация с АДКСЦБ
+    bool    upokOtu;                                        // конфигурация с УПОК
+
+
+    QByteArray     mts;                                     // массив номеров модулей ТС
+    QByteArray     mtu;                                     // массив номеров модулей ТУ
 
     // состояние сигналов ТС
-
-    QBitArray tsStsDir;
-    QBitArray tsStsPulse;
-    QBitArray tsStsDirPrv;
-    QBitArray tsStsPulsePrv;
-    QBitArray tsSts;
+    QBitArray tsIverse;                                     // битовый массив инверсии
+    QBitArray tsStsRaw;                                     // текущий съем с объекта позиционного состояния сигналов в сыром виде
+    QBitArray tsStsPulse;                                   // текущий съем с объекта состояния мигания в сыром виде
+    QBitArray tsStsRawPrv;                                  // позиционное состояние на пред.шаге
+    QBitArray tsStsPulsePrv;                                // мигание на пред.шаге
+    QBitArray tsSts;                                        // обработанный массив ТС
 
 
     // закрытые функции

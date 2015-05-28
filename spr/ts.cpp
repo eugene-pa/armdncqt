@@ -11,9 +11,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
     bool ret;
     try
     {
-        //iname   = query.value("TS.Cod"  ).toInt(&ret);      // код имени
-        iname   = query.value("Cod"  ).toInt(&ret);      // код имени
-
+        iname   = query.value("Cod"     ).toInt(&ret);      // код имени ( в C# было "TS.Cod")
         name    = query.value("NameTs"  ).toString();       // имя ТС
         nost    = query.value("NoSt"    ).toInt(&ret);      // номер станции
         modul   = query.value("Module"  ).toInt(&ret);
@@ -25,7 +23,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
         kontact = query.value("Klem"    ).toString();
         norc    = query.value("NoRc"    ).toInt(&ret);
         nostrl  = query.value("NoStrl"  ).toInt(&ret);
-        nosftf  = query.value("NoSvtf"  ).toInt(&ret);
+        nosvtf  = query.value("NoSvtf"  ).toInt(&ret);
         locked  = query.value("Lock"    ).toBool();
         inverse = query.value("Inverse" ).toBool();
         busy    = query.value("Occupation").toBool();
@@ -34,16 +32,40 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
         question= query.value("Question").toString();
         formula = query.value("ExtData" ).toString();
 
+        svtfdiag  = query.value("SvtfDiag" ).toString();
+        svtftype  = query.value("SvtfClass" ).toString();
+        svtferror = query.value("SvtfError" ).toString();
+        strlzsname= query.value("StrlZsName" ).toString();
+        strlmuname= query.value("StrlMuName" ).toString();
+
+        // Необработанные поля
+        // Path
+        // NoPrg
+        // Distance
+        // First_Last
+        // Branch
+        // LinkBlind
+        // Type
+        // SendToNext
+        // Alias
+        // TimeRemoveNoTr
+        // TypSvtf              Признак обобщенного  ТСдля  контроля состояния светофоров (как правило выходных)
+        // TypLM
+        // TypStrl              Тип стрелки (додумать)
+        // InvPulse
+        // Park
+
+
         next = nullptr;
 
         st = Station::GetByNo(nost);
         if (st != nullptr)
         {
-            Ts::getIndex();
+
+            Ts::getIndex(logger);
             if (formula.length())
             {
                 // создаем класс для вычисления выражения и связываем его со слотом GetValue класса Station
-formula = "&1";
                 expression = new BoolExpression(formula);
                 if (expression->Valid())
                     QObject::connect(expression, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
@@ -52,7 +74,38 @@ formula = "&1";
 
                 //expression->GetValue();
             }
+
+            // добавляем ТС в справочники Ts, TsIndexed, TsByIndxTsName, TsSorted
             st->AddTs(this, logger);
+
+            // РЦ
+            if (norc > 0)
+                ;
+            else
+            if (norc < 0)
+                logger.log(QString("%1. Ошибка в поле NoRc: %2").arg(NameEx()).arg(norc));
+
+            // Светофор
+            if (nosvtf > 0)
+                ;
+            else
+            if (norc < 0)
+                logger.log(QString("%1. Ошибка в поле NoSvtf: %2").arg(NameEx()).arg(nosvtf));
+
+            // Стрелка
+            if (nostrl > 0)
+                ;
+            else
+            if (norc < 0)
+                logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));
+
+            if (inverse)
+                ;
+
+        }
+        else
+        {
+            logger.log(QString("Некорректный номер станции. Игнорируем сигнал %1").arg(NameEx()));
         }
 
 //        QString kolodka;
@@ -113,24 +166,34 @@ QString& Ts::NameEx()
 }
 
 // сформировать индекс сигнала по координатам
-int Ts::getIndex()
+int Ts::getIndex(Logger& logger)
 {
+    // в конфигурациях МПЦ можем иметь свои модули ТС для контроля ОТУ
+    // при этом сигналы Ebilock щписываются традиционно координатой  J (0...n-1)
+    // поэтому смещаем ккординату на размер "наших" ТС
+    if (st->IsMpcEbilock() && st->MtsCount() > 0)
+        _j += st->MtsCount() * 32;
+
     if (st->IsMpcEbilock())
     {
         modul = 1;                                          //
         _i = 1;
     }
 
-    int mmax = 0, imax = 0, jmax = 0, page = 0;
-    st->GetTsParams(mmax, imax, jmax, page);
-    return index = (modul - 1) * page + (_i - 1) * jmax + _j - 1;
+    int mmax = 0, imax = 0, jmax = 0, tsPerModule = 0;
+    st->GetTsParams(mmax, imax, jmax, tsPerModule);
+    if (modul<1 || modul>mmax || _i<1 || _i>imax || _j<1 || _j>jmax)
+        logger.log(QString("Ошибка описания m/i/j сигнала %1: %2/%3/%4").arg(NameEx()).arg(modul).arg(_i).arg(_j));
+    return index = (modul - 1) * tsPerModule + (_i - 1) * jmax + _j - 1;
 }
 
 int Ts::CompareByNames(const void* p1,const void* p2)
 {
     return ((Ts*)p1)->Name() < ((Ts*)p2)->Name();
 }
+
+// проблемы реализации функций в  h-файле из-за перекрестных ссылок ts.h  и station.h
 bool Ts::Sts      () { return st->TsSts      (index); }     // состояние (0/1), если мигает - 0
 bool Ts::StsPulse () { return st->TsPulse    (index); }     // состояние мигания
-bool Ts::StsDir   () { return st->TsDir      (index); }     // состояние ненормализованное
-bool Ts::Stsmoment() { return st->TsStsMoment(index); }     // состояние мгновенное
+bool Ts::StsRaw   () { return st->TsRaw      (index); }     // состояние ненормализованное
+bool Ts::Sts_     () { return st->TsStsMoment(index); }     // состояние мгновенное

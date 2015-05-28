@@ -2,6 +2,7 @@
 #define LOGGER_H
 
 #include <QDir>
+#include <QMutex>
 
 class Logger
 {

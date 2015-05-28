@@ -12,9 +12,9 @@ Station::Station(QSqlQuery& query, Logger& logger)
 {
     bool ret;
 
-    tsStsDir        = QBitArray(TsMaxLengthBits);           // инициируем битовые массивы
+    tsStsRaw        = QBitArray(TsMaxLengthBits);           // инициируем битовые массивы
     tsStsPulse      = QBitArray(TsMaxLengthBits);
-    tsStsDirPrv     = QBitArray(TsMaxLengthBits);
+    tsStsRawPrv     = QBitArray(TsMaxLengthBits);
     tsStsPulsePrv   = QBitArray(TsMaxLengthBits);
     tsSts           = QBitArray(TsMaxLengthBits);
 
@@ -270,6 +270,7 @@ void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule
         {
             case VERSION2007:
                 tsPerModule = 32;
+                maxI = 48;
                 break;
             case VERSIONDcmpk:
                 maxModul = 1;

@@ -9,6 +9,7 @@
 #include "../spr/station.h"
 #include "../spr/ts.h"
 
+
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
 ColorScheme * colorScheme;
@@ -24,9 +25,9 @@ ColorScheme * colorScheme;
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
 #endif
 #ifdef Q_OS_LINUX
-    QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
-    QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
-    QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp";)
+    QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
+    QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
+    QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -52,9 +53,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    qDeleteAll(sets.begin(), sets.end());                   // удаляем примитивы
-    //logger.log ("Завершение приложения");
-
+    logger.log ("Завершение приложения");
+    qDeleteAll(sets.begin(), sets.end());                               // удаляем примитивы
     delete ui;
 }
 

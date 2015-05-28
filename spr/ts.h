@@ -28,8 +28,8 @@ static int CompareByNames(const void*,const void*);
 
     bool Sts      ();                                       // состояние (0/1), если мигает - 0
     bool StsPulse ();                                       // состояние мигания
-    bool StsDir   ();                                       // состояние ненормализованное
-    bool Stsmoment();                                       // состояние мгновенное
+    bool StsRaw   ();                                       // состояние ненормализованное
+    bool Sts_     ();                                       // состояние мгновенное
 
 private:
                                                             // статические данные из БД
@@ -40,7 +40,7 @@ private:
     int     _j;
     int     norc;
     int     nostrl;
-    int     nosftf;
+    int     nosvtf;
     bool   locked;
     bool   inverse;
     bool   busy;
@@ -63,10 +63,13 @@ private:
 
     Ts *   next;                                            // указатель на следующий ТС в цепочке ТС, находящихся в одной позиции по ключу INDEX
                                                             // QT содержит класс QMultiHash, однако я хочу явно видеть совмещенные ТС, поэтому использую свой механизм
-    static QString buf;
+    void * userObj;                                         // пользовательский объект
+
+    static QString buf;                                     // строка для формирования сообщений
+
 
     // закрытые функции
-    int  getIndex();                                        // сформировать индекс сигнала по координатам
+    int  getIndex(Logger& logger);                          // сформировать индекс сигнала по координатам
 };
 
 #endif // TS_H
