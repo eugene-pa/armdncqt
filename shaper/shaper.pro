@@ -25,9 +25,10 @@ SOURCES += main.cpp\
     ../shapes/shapesvtf.cpp \
     ../shapes/shapetrnsp.cpp \
     ../shapes/colorscheme.cpp \
-    ../spr/station.cpp \
     ../spr/esr.cpp \
+    ../spr/rc.cpp \
     ../spr/sprbase.cpp \
+    ../spr/station.cpp \
     ../spr/ts.cpp \
     ../common/boolexpression.cpp
     ../common/boolexpression.cpp \
@@ -44,9 +45,10 @@ HEADERS  += mainwindow.h \
     ../shapes/shapesvtf.h \
     ../shapes/shapetrnsp.h \
     ../shapes/colorscheme.h \
-    ../spr/station.h \
     ../spr/esr.h \
+    ../spr/rc.h \
     ../spr/sprbase.h \
+    ../spr/station.h \
     ../spr/ts.h \
     ../common/boolexpression.h
     ../common/boolexpression.h \

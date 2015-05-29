@@ -11,7 +11,7 @@ class Ts : public SprBase
 {
 public:
 
-// открытве функции статические функции
+// открытве статические функции
 static bool ReadBd (QString& dbpath, Logger& logger);       // чтение БД
 static int CompareByNames(const void*,const void*);
 
