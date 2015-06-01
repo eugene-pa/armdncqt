@@ -4,6 +4,7 @@
 #include <QDebug>
 
 #include "station.h"
+#include "rc.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
 
@@ -302,3 +303,8 @@ bool Station::TestBit (QBitArray& bits, int index)
     return index >= 0 && index < bits.size() ? bits[index] : 0;
 }
 
+// добавить РЦ
+void Station::AddRc(class Rc * rc, Logger& logger)
+{
+    allrc[rc->No()] = rc;
+}

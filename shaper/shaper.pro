@@ -30,7 +30,10 @@ SOURCES += main.cpp\
     ../spr/sprbase.cpp \
     ../spr/station.cpp \
     ../spr/ts.cpp \
-    ../common/boolexpression.cpp
+    ../common/boolexpression.cpp \
+    ../spr/properties.cpp \
+    ../spr/strl.cpp \
+    ../spr/svtf.cpp
     ../common/boolexpression.cpp \
 
 
@@ -50,7 +53,10 @@ HEADERS  += mainwindow.h \
     ../spr/sprbase.h \
     ../spr/station.h \
     ../spr/ts.h \
-    ../common/boolexpression.h
+    ../common/boolexpression.h \
+    ../spr/properties.h \
+    ../spr/strl.h \
+    ../spr/svtf.h
     ../common/boolexpression.h \
 
 

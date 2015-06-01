@@ -50,12 +50,6 @@ public:
     static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
     static void sortTs();                                   // сортировка спимков ТС
 
-    // открытые члены - таблицы ТС по станции
-    QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
-    QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
-    QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
-    QList <class Ts*> TsSorted;                             // отсортированы по имени
-
     // открытые функции
     Station(QSqlQuery& query, Logger& logger);              // конструктор на базе записи в БД
     ~Station();
@@ -91,11 +85,22 @@ public:
     bool SetBit (QBitArray& bits, int index, bool a=true);  // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
     void MarkInverse(int index);
 
+    void AddRc(class Rc *, Logger& logger);                 // добавить РЦ
+
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
 
 private:
+   // закрытые члены - таблицы ТС по станции
+   QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
+   QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
+   QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
+   QList <class Ts*> TsSorted;                             // отсортированы по имени
+
+   QHash <int, class Rc  *> allrc;                         // РЦ станции, индексированные по индексу ТС
+   QHash <int, class Svtf*> allsvtf;                       // РЦ станции, индексированные по индексу ТС
+   QHash <int, class Strl*> allstrl;                       // РЦ станции, индексированные по индексу ТС
 
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]

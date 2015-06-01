@@ -4,6 +4,10 @@
 #include <QString>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QDateTime>
+#include <QHash>
 
 #include "../common/logger.h"
 
@@ -46,43 +50,5 @@ protected:
     static QString buf;                                     // статический буфер для формирования сообщений
 
 };
-
-// класс описания шаблонов свойств
-class IdentityType
-{
-public:
-    IdentityType (QRegularExpression& regex, QString name); // конструктор
-    QString& Name() { return name; }
-    QRegularExpression Regex() { return regex; }
-private:
-    QRegularExpression regex;                               // шаблон
-    QString name;                                           // имя свойства
-};
-
-// класс описания свойств
-class Property
-{
-public:
-    Property (IdentityType& type)
-    {
-        this->type = &type;
-        ts = nullptr;
-    }
-    bool Valid() { return ts != nullptr; }                  // валидность свойства
-    bool Sts();
-    QString& NameTs  ();                                    // имя ТС
-    QString& NameTsEx();                                    // Ст.имя_станции ТС=имя_тс
-    QString& NameProp() { return type->Name(); }
-    bool Parse (class Ts * ts, Logger& logger);             // разбор ТС на принадлежность свойству
-    class Ts * Ts() { return ts; }                          // указатель на класс ТС свойства или NULL
-
-private:
-static QString empty;
-
-    IdentityType * type;                                    //
-    class Ts * ts;                                          // ТС, определяющий свойство
-};
-
-
 
 #endif // SPRBASE_H

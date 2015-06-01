@@ -31,6 +31,10 @@ static int CompareByNames(const void*,const void*);
     bool StsRaw   ();                                       // состояние ненормализованное
     bool Sts_     ();                                       // состояние мгновенное
 
+    int IdRc   () { return norc  ; }
+    int IdSvtf () { return nosvtf; }
+    int IdStrl () { return nostrl; }
+
 private:
                                                             // статические данные из БД
     int     iname;                                          // ключ имени в таблице TsNames

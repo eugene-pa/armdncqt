@@ -3,6 +3,9 @@
 #include "station.h"
 #include "ts.h"
 #include "../common/boolexpression.h"
+#include "rc.h"
+#include "strl.h"
+#include "svtf.h"
 
 QString Ts::buf;
 
@@ -80,7 +83,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
 
             // РЦ
             if (norc > 0)
-                ;
+                Rc::AddTs(this, logger);
             else
             if (norc < 0)
                 logger.log(QString("%1. Ошибка в поле NoRc: %2").arg(NameEx()).arg(norc));
@@ -180,9 +183,13 @@ int Ts::getIndex(Logger& logger)
         _i = 1;
     }
 
+    // проверяем допустимость M/I/J c учетом исключений:
+    // - ОТПР.Н
+    // - ОТПР.Ч
     int mmax = 0, imax = 0, jmax = 0, tsPerModule = 0;
     st->GetTsParams(mmax, imax, jmax, tsPerModule);
-    if (modul<1 || modul>mmax || _i<1 || _i>imax || _j<1 || _j>jmax)
+    if (    (modul<1 || modul>mmax || _i<1 || _i>imax || _j<1 || _j>jmax)
+        &&  name.indexOf("ОТПР.") != 0)
         logger.log(QString("Ошибка описания m/i/j сигнала %1: %2/%3/%4").arg(NameEx()).arg(modul).arg(_i).arg(_j));
     return index = (modul - 1) * tsPerModule + (_i - 1) * jmax + _j - 1;
 }

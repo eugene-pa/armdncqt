@@ -1,7 +1,10 @@
 #ifndef RC_H
 #define RC_H
 
-#include <QDateTime>
+#include "../common/logger.h"
+#include "sprbase.h"
+#include "properties.h"
+
 
 class Rc : public SprBase
 {
@@ -18,14 +21,31 @@ public:
         RcManyToMany  = 8,
     };
 
-// открытве статические функции
-// открытве функции
-    Rc();
+// открытые статические функции
+static bool AddTemplate (class IdentityType *);             // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
+static bool AddTs       (class Ts * ts, Logger& logger);    // добавить ТС
+static QHash <int, Rc *> rchash;                            // РЦ , индексированные по индексу ТС
+// открытые функции
+    Rc(Ts * ts, Logger& logger);
     ~Rc();
 
     bool StsBusy () { return stsBusy; }                     // занятость
 
 private:
+
+    static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
+    static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов РЦ
+
+    Property *locked;                                       // блокировка
+    Property *unlocking;                                    // восприятие разблокировки
+    Property *selected_ir;                                  // выбор для разделки
+    Property *zmk;                                          // замыкание
+    Property *busy;                                         // зканятость
+    Property *ir;                                           // ИР
+    Property *falsebusy;                                    // ложная занятость
+    Property *mu;                                           // МУ
+    Property *uri;                                          // разделка в терминах ЭЦ/ЭЦ МПК
+
     // Динамические состояния. Должны быть вычислены при получении данных
     bool stsBusy     ;                                      // занятость
     bool stsBusyFalse;                                      // ложная занятость

@@ -8,6 +8,7 @@
 #include "../common/logger.h"
 #include "../spr/station.h"
 #include "../spr/ts.h"
+#include "../spr/properties.h"
 
 
 Logger logger("Log/shaper.txt", true, true);
@@ -44,7 +45,9 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(mdiArea);
 
     Station::ReadBd(dbname, logger);
+    IdentityType::ReadBd (extDb, logger);
     Ts::ReadBd(dbname, logger);
+
 
     colorScheme = new ColorScheme(extDb, &logger);
     TrnspDescription::readBd(extDb, logger);
