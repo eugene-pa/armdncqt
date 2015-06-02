@@ -22,9 +22,9 @@ public:
     };
 
 // открытые статические функции
-static bool AddTemplate (class IdentityType *);             // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
-static bool AddTs       (class Ts * ts, Logger& logger);    // добавить ТС
-static QHash <int, Rc *> rchash;                            // РЦ , индексированные по индексу ТС
+    static bool AddTemplate (class IdentityType *);         // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
+    static bool AddTs       (class Ts * ts, Logger& logger);// добавить ТС
+
 // открытые функции
     Rc(Ts * ts, Logger& logger);
     ~Rc();
@@ -32,10 +32,11 @@ static QHash <int, Rc *> rchash;                            // РЦ , индек
     bool StsBusy () { return stsBusy; }                     // занятость
 
 private:
-
+    static QHash <int, Rc *> rchash;                        // РЦ , индексированные по индексу ТС
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
     static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов РЦ
 
+    // свойства
     Property *locked;                                       // блокировка
     Property *unlocking;                                    // восприятие разблокировки
     Property *selected_ir;                                  // выбор для разделки
@@ -45,6 +46,12 @@ private:
     Property *falsebusy;                                    // ложная занятость
     Property *mu;                                           // МУ
     Property *uri;                                          // разделка в терминах ЭЦ/ЭЦ МПК
+
+    // методы
+    Method   * tulock;                                      // заблокировать
+    Method   * tuunlock;                                    // разблокировать
+    Method   * tuir;                                        // разделка
+
 
     // Динамические состояния. Должны быть вычислены при получении данных
     bool stsBusy     ;                                      // занятость

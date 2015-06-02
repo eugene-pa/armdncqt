@@ -34,11 +34,6 @@ class Property
 {
 public:
     Property (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
-//    Property (IdentityType& type)
-//    {
-//        this->type = &type;
-//        ts = nullptr;
-//    }
     bool Valid() { return ts != nullptr; }                  // валидность свойства
     bool Sts();
     QString& NameTs  ();                                    // имя ТС
@@ -46,7 +41,7 @@ public:
     QString& NameProp() { return type->Name(); }
     bool Parse (class Ts * ts, Logger& logger);             // разбор ТС на принадлежность свойству
     class Ts * Ts() { return ts; }                          // указатель на класс ТС свойства или NULL
-
+    void SetTs(class Ts * ptr) { ts = ptr; }                // назначить ТС
 private:
 static QString empty;                                       // пустая строка
 
@@ -54,6 +49,27 @@ static QString empty;                                       // пустая ст
     class Ts * ts;                                          // ТС, определяющий свойство
 };
 
+
+// класс описания методов
+class Method
+{
+public:
+    Method (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
+
+    bool Valid() { return tu != nullptr; }                  // валидность свойства
+    bool Sts();
+    QString& NameTu  ();                                    // имя ТС
+    QString& NameTuEx();                                    // Ст.имя_станции ТС=имя_тс
+    QString& NameProp() { return type->Name(); }
+    bool Parse (class Tu * tu, Logger& logger);             // разбор ТС на принадлежность свойству
+    class Tu * Tu() { return tu; }                          // указатель на класс ТС свойства или NULL
+
+private:
+    static QString empty;                                       // пустая строка
+
+        IdentityType * type;                                    //
+        class Tu * tu;                                          // ТС, определяющий свойство
+};
 
 
 #endif // PROPERTIES_H

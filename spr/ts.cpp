@@ -2,6 +2,7 @@
 #include "sprbase.h"
 #include "station.h"
 #include "ts.h"
+#include "tu.h"
 #include "../common/boolexpression.h"
 #include "rc.h"
 #include "strl.h"
@@ -14,6 +15,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
     bool ret;
     try
     {
+        parsed = false;
         iname   = query.value("Cod"     ).toInt(&ret);      // код имени ( в C# было "TS.Cod")
         name    = query.value("NameTs"  ).toString();       // имя ТС
         nost    = query.value("NoSt"    ).toInt(&ret);      // номер станции
@@ -78,33 +80,35 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
                 //expression->GetValue();
             }
 
-            // добавляем ТС в справочники Ts, TsIndexed, TsByIndxTsName, TsSorted
-            st->AddTs(this, logger);
+            if (validIJ)
+            {
+                // добавляем ТС в справочники Ts, TsIndexed, TsByIndxTsName, TsSorted
+                st->AddTs(this, logger);
 
-            // РЦ
-            if (norc > 0)
-                Rc::AddTs(this, logger);
-            else
-            if (norc < 0)
-                logger.log(QString("%1. Ошибка в поле NoRc: %2").arg(NameEx()).arg(norc));
+                // РЦ
+                if (norc > 0)
+                    Rc::AddTs(this, logger);
+                else
+                if (norc < 0)
+                    logger.log(QString("%1. Ошибка в поле NoRc: %2").arg(NameEx()).arg(norc));
 
-            // Светофор
-            if (nosvtf > 0)
-                ;
-            else
-            if (norc < 0)
-                logger.log(QString("%1. Ошибка в поле NoSvtf: %2").arg(NameEx()).arg(nosvtf));
+                // Светофор
+                if (nosvtf > 0)
+                    Svtf::AddTs(this, logger);
+                else
+                if (norc < 0)
+                    logger.log(QString("%1. Ошибка в поле NoSvtf: %2").arg(NameEx()).arg(nosvtf));
 
-            // Стрелка
-            if (nostrl > 0)
-                ;
-            else
-            if (norc < 0)
-                logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));
+                // Стрелка
+                if (nostrl > 0)
+                    ;
+                else
+                if (norc < 0)
+                    logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));
 
-            if (inverse)
-                ;
-
+                if (inverse)
+                    ;
+            }
         }
         else
         {
@@ -152,7 +156,7 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
     }
     catch(...)
     {
-        logger.log("Исключение в функции Station::ReadBd");
+        logger.log("Исключение в функции Ts::ReadBd");
         return false;
     }
 
@@ -184,11 +188,12 @@ int Ts::getIndex(Logger& logger)
     }
 
     // проверяем допустимость M/I/J c учетом исключений:
-    // - ОТПР.Н
-    // - ОТПР.Ч
+    // - ОТПР.Н - исключение (вирт.сигнал для родного ГИД, устарел)
+    // - ОТПР.Ч - исключение (вирт.сигнал для родного ГИД, устарел)
     int mmax = 0, imax = 0, jmax = 0, tsPerModule = 0;
     st->GetTsParams(mmax, imax, jmax, tsPerModule);
-    if (    (modul<1 || modul>mmax || _i<1 || _i>imax || _j<1 || _j>jmax)
+    validIJ = modul>0 && modul<=mmax && _i>0 && _i<=imax && _j>0 && _j<=jmax;
+    if (    !validIJ
         &&  name.indexOf("ОТПР.") != 0)
         logger.log(QString("Ошибка описания m/i/j сигнала %1: %2/%3/%4").arg(NameEx()).arg(modul).arg(_i).arg(_j));
     return index = (modul - 1) * tsPerModule + (_i - 1) * jmax + _j - 1;

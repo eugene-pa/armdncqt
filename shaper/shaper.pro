@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     ../common/boolexpression.cpp \
     ../spr/properties.cpp \
     ../spr/strl.cpp \
-    ../spr/svtf.cpp
+    ../spr/svtf.cpp \
+    ../spr/tu.cpp
     ../common/boolexpression.cpp \
 
 
@@ -56,7 +57,8 @@ HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
     ../spr/properties.h \
     ../spr/strl.h \
-    ../spr/svtf.h
+    ../spr/svtf.h \
+    ../spr/tu.h
     ../common/boolexpression.h \
 
 

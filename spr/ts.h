@@ -35,6 +35,13 @@ static int CompareByNames(const void*,const void*);
     int IdSvtf () { return nosvtf; }
     int IdStrl () { return nostrl; }
 
+    bool    IsBusy() { return busy;   }                     // поле Occupation
+    bool    IsSvtfmain() { return svtfmain; }               // поле SvtfMain
+
+    void SetParsed() { parsed = true; }
+    bool IsParsed () { return parsed; }
+    QString& SvtfDiag() { return svtfdiag; }                // тип диагностики
+
 private:
                                                             // статические данные из БД
     int     iname;                                          // ключ имени в таблице TsNames
@@ -47,7 +54,7 @@ private:
     int     nosvtf;
     bool   locked;
     bool   inverse;
-    bool   busy;
+    bool   busy;                                            // поле Occupation
     bool   pulse;
     bool   svtfmain;
     int    stativ;
@@ -56,9 +63,9 @@ private:
     QString kolodka;
     QString kontact;
     QString question;                                       // поле question
-    QString svtfdiag;
-    QString svtftype;
-    QString svtferror;
+    QString svtfdiag;                                       // тип диагностики
+    QString svtftype;                                       // тип: ВХ/ВЫХ/МРШ/ПРХ/МНВ/ПРС
+    QString svtferror;                                      // логич.выражение - контроль аварии светофора
     QString strlzsname;
     QString strlmuname;
 
@@ -68,6 +75,8 @@ private:
     Ts *   next;                                            // указатель на следующий ТС в цепочке ТС, находящихся в одной позиции по ключу INDEX
                                                             // QT содержит класс QMultiHash, однако я хочу явно видеть совмещенные ТС, поэтому использую свой механизм
     void * userObj;                                         // пользовательский объект
+    bool parsed;
+    bool validIJ;                                           // валидность координат
 
     static QString buf;                                     // строка для формирования сообщений
 

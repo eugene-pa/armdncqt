@@ -8,6 +8,7 @@
 #include "../common/logger.h"
 #include "../spr/station.h"
 #include "../spr/ts.h"
+#include "../spr/tu.h"
 #include "../spr/properties.h"
 
 
@@ -46,7 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     Station::ReadBd(dbname, logger);
     IdentityType::ReadBd (extDb, logger);
-    Ts::ReadBd(dbname, logger);
+    Ts::ReadBd (dbname, logger);
+    Tu::ReadBd (dbname, logger);
 
 
     colorScheme = new ColorScheme(extDb, &logger);
