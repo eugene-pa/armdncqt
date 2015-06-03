@@ -8,6 +8,7 @@
 #include "shapetrnsp.h"
 #include "shapeset.h"
 #include "../common/boolexpression.h"
+#include "../spr/sprbase.h"
 
 QVector<TrnspDescription *> TrnspDescription::descriptions;            // массив описателей
 bool TrnspDescription::loaded = false;
@@ -302,11 +303,7 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
 
     try
     {
-        bool exist = false;
-        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
-                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
-        if (!exist)
-            dbSql.setDatabaseName(dbpath);
+        QSqlDatabase dbSql = GetSqliteBd(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);

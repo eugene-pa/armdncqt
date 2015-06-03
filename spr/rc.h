@@ -23,12 +23,14 @@ public:
 
 // открытые статические функции
     static bool AddTemplate (class IdentityType *);         // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
-    static bool AddTs       (class Ts * ts, Logger& logger);// добавить ТС
+    static bool AddTs       (class Ts * ts, Logger& logger);// обработать ТС, помеченный как РЦ
+    static bool AddTu       (class Tu * tu, Logger& logger);// обработать ТУ, помеченный как РЦ
 
 // открытые функции
-    Rc(Ts * ts, Logger& logger);
+    Rc(Ts * ts, Logger& logger);                            // конструктор по ТС
+    Rc(Tu * tu, Logger& logger);                            // конструктор по ТУ
     ~Rc();
-
+    void InitProperties(Logger& logger);                    // инициализация свойств
     bool StsBusy () { return stsBusy; }                     // занятость
 
 private:

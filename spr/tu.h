@@ -25,13 +25,21 @@ public:
     int IdSvtf () { return nosvtf; }
     int IdStrl () { return nostrl; }
 
+    void SetParsed() { parsed = true; }
+    bool IsParsed () { return parsed; }
+    Tu * Next() { return next; }                            // следующий в цепочке
+    void SetNext(Tu * tu) { next = tu; }
+    void SetPrev(Tu * tu) { prev = tu; }                    // предыдущий в цепочке
+    ushort IJ() { return ij; }                              // получить сформированный IJ
 private:
                                                             // статические данные из БД
+// закрытые члены
     int     iname;                                          // ключ имени в таблице TsNames
 
     int     modul;                                          //
     int     _i;
     int     _j;
+    ushort  ij;                                             // упакованные координаты IJ
     int     idtu;                                           // номер команды в системах типа EBILOCK
 
     int     norc;
@@ -48,19 +56,24 @@ private:
     Tu *    tuPolus;                                        // Справочник ТУ полюса или null
 
     bool   otu;                                             // ОТУ
-    bool   Locked ;                                         // блокировка сигнала (выключен)
+    bool   locked ;                                         // блокировка сигнала (выключен)
 
     int  _kolodka;                                          // колодка
-    QString Kolodka;                                        // колодка
+    QString kolodka;                                        // колодка
 
-    QString Kontact;                                        // контакт
+    QString kontact;                                        // контакт
     int    KontactInt;                                      // контакт целочисленный
     void * userobj;                                         // пользовательский объект
 
     Tu * next;                                              // следующий справочник в списке объединенных по одним координатам ТУ
     Tu * prev;                                              // предыдущий справочник в списке объединенных по одним координатам ТУ
 
-//    bool Parsed;                                            // сигнал идентифицирован по типу
+    void * userObj;                                         // пользовательский объект
+    bool parsed;
+    bool validIJ;                                           // валидность координат
+
+// закрытые функции
+    ushort GetIJ();                                         // вычислить IJ по координатам
 };
 
 #endif // TU_H

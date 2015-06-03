@@ -82,9 +82,17 @@ bool Svtf::AddTs (Ts * ts, Logger& logger)
         if (!ts->IsParsed())
         {
             if (ts->SvtfDiag().length()==0)
+            {
                 logger.log(QString("%1: не идентифицирован контроль СВТФ").arg(ts->NameEx()));
+                return false;
+            }
         }
     }
 
+    return true;
+}
+
+bool Svtf::AddTu (Tu * tu, Logger& logger)
+{
     return true;
 }

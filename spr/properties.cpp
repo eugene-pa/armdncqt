@@ -42,11 +42,7 @@ bool IdentityType::ReadBd (QString& dbpath, Logger& logger)
 
     try
     {
-        bool exist = false;
-        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
-                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
-        if (!exist)
-            dbSql.setDatabaseName(dbpath);
+        QSqlDatabase dbSql = GetSqliteBd(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);

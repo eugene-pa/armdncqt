@@ -11,6 +11,7 @@ public:
     // открытые статические функции
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
     static bool AddTs       (class Ts * ts, Logger& logger);// добавить ТС
+    static bool AddTu       (class Tu * tu, Logger& logger);// добавить ТС
 
 // открытые функции
     Svtf(Ts * ts, Logger& logger);

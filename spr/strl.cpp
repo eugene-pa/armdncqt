@@ -28,3 +28,12 @@ bool Strl::AddTemplate(IdentityType * ident)
     return false;
 }
 
+bool Strl::AddTs (Ts * ts, Logger& logger)
+{
+    return true;
+}
+
+bool Strl::AddTu (Tu * tu, Logger& logger)
+{
+    return true;
+}

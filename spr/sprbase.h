@@ -11,6 +11,8 @@
 
 #include "../common/logger.h"
 
+QSqlDatabase GetSqliteBd(QString& dbpath);                  // глобальная функция получения объекта БД по имени БД
+
 class SprBase                                               // базовый класс справочника
 {
 public:

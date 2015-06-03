@@ -1,5 +1,6 @@
 #include "station.h"
 #include "ts.h"
+#include "tu.h"
 #include "rc.h"
 #include "properties.h"
 
@@ -10,7 +11,34 @@ QHash <int, Rc *> Rc::rchash;                               // РЦ , индек
 Rc::Rc(Ts * ts, Logger& logger)
 {
     no = ts->IdRc();                                        // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    Rc::InitProperties(logger);
+    rchash[no] = this;
+    ts->St()->AddRc(this, logger);
+}
 
+Rc::Rc(Tu * tu, Logger& logger)
+{
+    no = tu->IdRc();                                        // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    Rc::InitProperties(logger);
+    rchash[no] = this;
+    tu->St()->AddRc(this, logger);
+}
+
+Rc::~Rc()
+{
+    delete locked;
+    delete unlocking;
+    delete selected_ir;
+    delete zmk;
+    delete busy;
+    delete ir;
+    delete falsebusy;
+    delete mu;
+    delete uri;
+}
+
+void Rc::InitProperties(Logger& logger)
+{
     // формируем свойства РЦ
     locked      = new Property("блокировка"                 , propertyIds, logger);
     unlocking   = new Property("восприятие разблокировки"   , propertyIds, logger);
@@ -26,22 +54,6 @@ Rc::Rc(Ts * ts, Logger& logger)
     tulock      = new Method  ("блокировка"                 , methodIds , logger);
     tuunlock    = new Method  ("разблокировка"              , methodIds , logger);
     tuir        = new Method  ("искусственная разделка"     , methodIds , logger);
-
-    rchash[no] = this;
-    ts->St()->AddRc(this, logger);
-}
-
-Rc::~Rc()
-{
-    delete locked;
-    delete unlocking;
-    delete selected_ir;
-    delete zmk;
-    delete busy;
-    delete ir;
-    delete falsebusy;
-    delete mu;
-    delete uri;
 }
 
 // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
@@ -58,8 +70,10 @@ bool Rc::AddTemplate(IdentityType * ident)
     return false;
 }
 
+// обработать ТС, помеченный как РЦ
 bool Rc::AddTs (Ts * ts, Logger& logger)
 {
+    // ищем существующую РЦ или добавляем новую
     int no = ts->IdRc();
     Rc * rc = rchash.contains(no) ? rchash[no] : new Rc(ts, logger);
 
@@ -83,5 +97,23 @@ bool Rc::AddTs (Ts * ts, Logger& logger)
         }
     }
 
-    return true;
+    return ts->IsParsed();
+}
+
+// обработать ТУ, помеченный как РЦ
+bool Rc::AddTu (Tu * tu, Logger& logger)
+{
+    // ищем существующую РЦ или добавляем новую
+    int no = tu->IdRc();
+    Rc * rc = rchash.contains(no) ? rchash[no] : new Rc(tu, logger);
+
+    rc->tulock      ->Parse(tu, logger);
+    rc->tuunlock    ->Parse(tu, logger);
+    rc->tuir        ->Parse(tu, logger);
+
+    if (!tu->IsParsed())
+    {
+        logger.log(QString("%1: не идентифицирована ТУ для РЦ").arg(tu->NameEx()));
+    }
+    return tu->IsParsed();
 }

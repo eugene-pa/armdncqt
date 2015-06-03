@@ -101,7 +101,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
 
                 // Стрелка
                 if (nostrl > 0)
-                    ;
+                    Strl::AddTs(this, logger);
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));
@@ -137,11 +137,7 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
 
     try
     {
-        bool exist = false;
-        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
-                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
-        if (!exist)
-            dbSql.setDatabaseName(dbpath);
+        QSqlDatabase dbSql = GetSqliteBd(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);

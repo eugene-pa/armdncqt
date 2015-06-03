@@ -3,6 +3,7 @@
 #include <QVariant>
 
 #include "colorscheme.h"
+#include "../spr/sprbase.h"
 
 ColorScheme::ColorScheme(QString dbPath, Logger * plogger)
 {
@@ -29,11 +30,7 @@ bool ColorScheme::ReadBd(QString& dbpath)
 
     try
     {
-        bool exist = false;
-        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
-                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
-        if (!exist)
-            dbSql.setDatabaseName(dbpath);
+        QSqlDatabase dbSql = GetSqliteBd(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);

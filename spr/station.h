@@ -11,6 +11,7 @@
 
 #include "../common/logger.h"
 #include "ts.h"
+#include "tu.h"
 
 class Station : public QObject
 {
@@ -57,6 +58,7 @@ public:
 
     QString& Name() { return  name; }
     void AddTs (class Ts*, Logger& logger);                 // добавить ТС
+    void AddTu (class Tu*, Logger& logger);                 // добавить ТУ
     void GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule);
 
     bool IsMpcEbilock() { return mpcEbilock; }              // конфигурация с Ebilock950, а также РПЦ/МПЦ МПК + rpcMpcMPK
@@ -97,6 +99,11 @@ private:
    QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
    QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
    QList <class Ts*> TsSorted;                             // отсортированы по имени
+
+   // закрытые члены - таблицы ТУ по станции
+   QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
+   QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
+   QList <class Tu*> TuSorted;                             // отсортированы по имени
 
    QHash <int, class Rc  *> allrc;                         // РЦ станции, индексированные по индексу ТС
    QHash <int, class Svtf*> allsvtf;                       // РЦ станции, индексированные по индексу ТС
@@ -143,6 +150,7 @@ private:
     QBitArray tsStsPulsePrv;                                // мигание на пред.шаге
     QBitArray tsSts;                                        // обработанный массив ТС
 
+    QString   buf;                                          // строка сообщений
 
     // закрытые функции
     bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС

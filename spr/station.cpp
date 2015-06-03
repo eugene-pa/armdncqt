@@ -5,6 +5,7 @@
 
 #include "station.h"
 #include "rc.h"
+#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
 
@@ -163,11 +164,7 @@ bool Station::ReadBd (QString& dbpath, Logger& logger)
 
     try
     {
-        bool exist = false;
-        QSqlDatabase dbSql = (exist = QSqlDatabase::contains(dbpath)) ? QSqlDatabase::database(dbpath) :
-                                                                        QSqlDatabase::addDatabase("QSQLITE", dbpath);
-        if (!exist)
-            dbSql.setDatabaseName(dbpath);
+        QSqlDatabase dbSql = GetSqliteBd(dbpath);
         if (dbSql.open())
         {
             QSqlQuery query(dbSql);
@@ -297,6 +294,40 @@ void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule
     }
 }
 
+// добавить ТУ
+void Station::AddTu (class Tu* tu, Logger& logger)
+{
+    // таблица, индексированная по текстовому имени ТС
+    if (!Tu.contains(tu->Name()))
+        Tu[tu->Name()] = tu;
+    else
+        logger.log(QString("Дублирование имен ТУ: %1").arg(tu->NameEx()));
+
+    TuSorted.append(tu);
+
+    ushort ij = tu->IJ();
+    class Tu * prev;
+    if (TuByIJ.contains(ij))
+    {
+        prev = TuByIJ[ij];
+        buf = QString("ТУ %1 добавлена в цепочку за ТУ %2").arg(tu->NameEx()).arg(prev->Name());
+
+        while (prev->Next())
+        {
+            prev = prev->Next();
+            buf += QString(", %1").arg(prev->Name());
+        }
+        logger.log(buf);
+
+        prev->SetNext(tu);
+        tu->SetPrev(prev);
+    }
+    else
+    {
+        TuByIJ[ij] = tu;
+    }
+}
+
 // проверка бита в битовом массиве
 bool Station::TestBit (QBitArray& bits, int index)
 {
@@ -308,3 +339,4 @@ void Station::AddRc(class Rc * rc, Logger& logger)
 {
     allrc[rc->No()] = rc;
 }
+

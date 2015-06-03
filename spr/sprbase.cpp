@@ -32,3 +32,16 @@ QString& SprBase::StationName()
     return buf = (QString("#%1").arg(nost));
 }
 
+//--------------------------------------------------------------------------------------------------------------
+// глобальная функция получения объекта БД по имени БД
+// если БД уже зарегистрирована в пуле БД, возвращаем ее из пула
+// иначе - добавляем новую именованную БД в пул
+QSqlDatabase GetSqliteBd(QString& dbpath)
+{
+    if (QSqlDatabase::contains(dbpath))
+        return QSqlDatabase::database(dbpath);
+    QSqlDatabase dbSql = QSqlDatabase::addDatabase("QSQLITE", dbpath);
+    dbSql.setDatabaseName(dbpath);
+    return dbSql;
+}
+
