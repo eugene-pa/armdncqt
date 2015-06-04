@@ -8,37 +8,18 @@ QHash<QString, class IdentityType *> Rc::propertyIds;       // множеств�
 QHash<QString, class IdentityType *> Rc::methodIds;         // множество шаблонов возможных методов РЦ
 QHash <int, Rc *> Rc::rchash;                               // РЦ , индексированные по индексу ТС
 
-Rc::Rc(Ts * ts, Logger& logger)
+Rc::Rc(SprBase * tuts, Logger& logger)
 {
-    no = ts->IdRc();                                        // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
-    Rc::InitProperties(logger);
-    rchash[no] = this;
-    ts->St()->AddRc(this, logger);
-}
+    SetBaseType(BaseRc);
 
-Rc::Rc(Tu * tu, Logger& logger)
-{
-    no = tu->IdRc();                                        // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
-    Rc::InitProperties(logger);
-    rchash[no] = this;
-    tu->St()->AddRc(this, logger);
-}
+    no   = tuts->IdRc();                                    // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    nost = tuts->IdSt();                                    // номер станции
+    st   = tuts->St();                                      // справочник
 
-Rc::~Rc()
-{
-    delete locked;
-    delete unlocking;
-    delete selected_ir;
-    delete zmk;
-    delete busy;
-    delete ir;
-    delete falsebusy;
-    delete mu;
-    delete uri;
-}
+    actualRoute = nullptr;
+    actualtrain = nullptr;
 
-void Rc::InitProperties(Logger& logger)
-{
+
     // формируем свойства РЦ
     locked      = new Property("блокировка"                 , propertyIds, logger);
     unlocking   = new Property("восприятие разблокировки"   , propertyIds, logger);
@@ -54,7 +35,33 @@ void Rc::InitProperties(Logger& logger)
     tulock      = new Method  ("блокировка"                 , methodIds , logger);
     tuunlock    = new Method  ("разблокировка"              , methodIds , logger);
     tuir        = new Method  ("искусственная разделка"     , methodIds , logger);
+
+    rchash[no] = this;                                      // добавляем в общую таблицу РЦ
+    tuts->St()->AddRc(this, logger);                        // добавляем в таблицу РЦ станции
+
+    // если объект конструируем по ТУ, значит не было ТС - ущербное описание объекта
+    if (tuts->GetBaseType()==BaseTu)
+        logger.log(QString("Описание РЦ %1 не содержит сигналов ТС").arg(NameEx()));
 }
+
+
+Rc::~Rc()
+{
+    delete locked;
+    delete unlocking;
+    delete selected_ir;
+    delete zmk;
+    delete busy;
+    delete ir;
+    delete falsebusy;
+    delete mu;
+    delete uri;
+
+    delete tulock;
+    delete tuunlock;
+    delete tuir;
+}
+
 
 // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
 bool Rc::AddTemplate(IdentityType * ident)
@@ -69,6 +76,7 @@ bool Rc::AddTemplate(IdentityType * ident)
     }
     return false;
 }
+
 
 // обработать ТС, помеченный как РЦ
 bool Rc::AddTs (Ts * ts, Logger& logger)

@@ -134,14 +134,18 @@ Method::Method (QString name, QHash<QString, class IdentityType *> hash, Logger&
 bool Method::Parse (class Tu * tu, Logger& logger)
 {
     bool ret= false;
-    if (this->tu == nullptr)
+    if (type->Regex().match(tu->Name()).hasMatch())
     {
-        if (type->Regex().match(tu->Name()).hasMatch())
+        if (this->tu == nullptr)
+        {
+            tu->SetParsed();
             this->tu = tu;
-    }
-    else
-    {
-        logger.log(QString("Переопределение метода %1: %2, %3").arg(NameProp()).arg(NameTuEx()).arg(tu->NameEx()));
+//          logger.log(QString("Привязка метода '%1': %2").arg(NameProp()).arg(NameTuEx()));
+        }
+        else
+        {
+            logger.log(QString("Переопределение метода '%1': %2, %3").arg(NameProp()).arg(NameTuEx()).arg(tu->Name()));
+        }
     }
     return ret;
 }

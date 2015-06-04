@@ -12,6 +12,7 @@ QString Ts::buf;
 
 Ts::Ts(QSqlQuery& query, Logger& logger)
 {
+    SetBaseType(BaseTs);
     bool ret;
     try
     {
@@ -163,10 +164,10 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
 }
 
 // Имя станции и ТС
-QString& Ts::NameEx()
-{
-    return buf = QString("%1 ТС='%2'").arg(StMessage()).arg(name);
-}
+//QString& Ts::NameEx()
+//{
+//    return buf = QString("%1 ТС='%2'").arg(StMessage()).arg(name);
+//}
 
 // сформировать индекс сигнала по координатам
 int Ts::getIndex(Logger& logger)

@@ -5,7 +5,9 @@
 
 #include "station.h"
 #include "rc.h"
-#include "tu.h"
+#include "svtf.h"
+#include "strl.h"
+//#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
 
@@ -335,8 +337,29 @@ bool Station::TestBit (QBitArray& bits, int index)
 }
 
 // добавить РЦ
-void Station::AddRc(class Rc * rc, Logger& logger)
+void Station::AddRc(class Rc * obj, Logger& logger)
 {
-    allrc[rc->No()] = rc;
+    if (allrc.contains(obj->No()))
+        logger.log(QString("Создание дублирующего объекта РЦ: %1").arg(obj->ToString()));
+    else
+        allrc[obj->No()] = obj;
+}
+
+// добавить СВТФ
+void Station::AddSvtf(class Svtf * obj, Logger& logger)
+{
+    if (allsvtf.contains(obj->No()))
+        logger.log(QString("Создание дублирующего объекта СВТФ: %1").arg(obj->ToString()));
+    else
+        allsvtf[obj->No()] = obj;
+}
+
+// добавить СТРД
+void Station::AddStrl(class Strl * obj, Logger& logger)
+{
+    if (allstrl.contains(obj->No()))
+        logger.log(QString("Создание дублирующего объекта СТРЛ: %1").arg(obj->ToString()));
+    else
+        allstrl[obj->No()] = obj;
 }
 

@@ -87,7 +87,9 @@ public:
     bool SetBit (QBitArray& bits, int index, bool a=true);  // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
     void MarkInverse(int index);
 
-    void AddRc(class Rc *, Logger& logger);                 // добавить РЦ
+    void AddRc  (class Rc   *, Logger& logger);             // добавить РЦ
+    void AddSvtf(class Svtf *, Logger& logger);             // добавить СВТФ
+    void AddStrl(class Strl *, Logger& logger);             // добавить СТРЛ
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

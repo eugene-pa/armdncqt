@@ -19,7 +19,7 @@ static int CompareByNames(const void*,const void*);
     Ts(QSqlQuery& query, Logger& logger);
     ~Ts();
 
-    QString& NameEx();                                      // имя станции и ТС
+    //QString& NameEx();                                      // имя станции и ТС
     int GetIndex() { return index; }                        // индекс бита в поле ТС (0...n-1)
     int GetIndexOfName() { return iname; }                  // ключ имени в таблице TsNames
     Ts * GetNext() { return next; }                         // получить след.в цепочке
@@ -30,10 +30,6 @@ static int CompareByNames(const void*,const void*);
     bool StsPulse ();                                       // состояние мигания
     bool StsRaw   ();                                       // состояние ненормализованное
     bool Sts_     ();                                       // состояние мгновенное
-
-    int IdRc   () { return norc  ; }
-    int IdSvtf () { return nosvtf; }
-    int IdStrl () { return nostrl; }
 
     bool    IsBusy() { return busy;   }                     // поле Occupation
     bool    IsSvtfmain() { return svtfmain; }               // поле SvtfMain
@@ -49,9 +45,6 @@ private:
     int     modul;                                          //
     int     _i;
     int     _j;
-    int     norc;
-    int     nostrl;
-    int     nosvtf;
     bool   locked;
     bool   inverse;
     bool   busy;                                            // поле Occupation

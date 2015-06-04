@@ -1,16 +1,19 @@
 #include "station.h"
 #include "ts.h"
-#include "rc.h"
 #include "svtf.h"
 #include "properties.h"
 
-QHash<QString, class IdentityType *> Svtf::propertyIds;     //  множество шаблонов возможных свойств РЦ
-QHash<QString, class IdentityType *> Svtf::methodIds;       //  множество шаблонов возможных методов РЦ
+QHash<QString, class IdentityType *> Svtf::propertyIds;     //  множество шаблонов возможных свойств СВТФ
+QHash<QString, class IdentityType *> Svtf::methodIds;       //  множество шаблонов возможных методов СВТФ
 QHash <int, Svtf *> Svtf::svtfhash;                         // СВТФ , индексированные по индексу ТС
 
-Svtf::Svtf(Ts * ts, Logger& logger)
+Svtf::Svtf(SprBase * tuts, Logger& logger)
 {
-    no = ts->IdRc();                                        // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    SetBaseType(BaseSvtf);
+
+    no = tuts->IdSvtf();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    nost = tuts->IdSt();                                    // номер станции
+    st   = tuts->St();                                      // справочник
 
     // формируем свойства
     opened      = new Property("открыт"                     , propertyIds, logger);
@@ -36,7 +39,14 @@ Svtf::Svtf(Ts * ts, Logger& logger)
     mm      = new Method  ("маршрутная кнопка"              , methodIds , logger);
     cancel  = new Method  ("отмена маршрута"                , methodIds , logger);
 
+    svtfhash[no] = this;                                    // добавляем в общую таблицу СВТФ
+    tuts->St()->AddSvtf(this, logger);                      // добавляем в таблицу СВТФ станции
+
+    // если объект конструируем по ТУ, значит не было ТС - ущербное описание объекта
+    if (tuts->GetBaseType()==BaseTu)
+        logger.log(QString("Описание светофора %1 не содержит сигналов ТС").arg(NameEx()));
 }
+
 
 Svtf::~Svtf()
 {
@@ -59,7 +69,7 @@ bool Svtf::AddTemplate(IdentityType * ident)
 
 bool Svtf::AddTs (Ts * ts, Logger& logger)
 {
-    int no = ts->IdRc();
+    int no = ts->IdSvtf();
     Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(ts, logger);
 
     // теперь нужно выполнить привязку свойства
@@ -94,5 +104,17 @@ bool Svtf::AddTs (Ts * ts, Logger& logger)
 
 bool Svtf::AddTu (Tu * tu, Logger& logger)
 {
+    int no = tu->IdSvtf();
+    Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(tu, logger);
+
+    // выполняем привязку метода
+    svtf->open     ->Parse(tu, logger);
+    svtf->close    ->Parse(tu, logger);
+    svtf->lock     ->Parse(tu, logger);
+    svtf->unlock   ->Parse(tu, logger);
+    svtf->adon     ->Parse(tu, logger);
+    svtf->adoff    ->Parse(tu, logger);
+    svtf->mm       ->Parse(tu, logger);
+    svtf->cancel   ->Parse(tu, logger);
     return true;
 }

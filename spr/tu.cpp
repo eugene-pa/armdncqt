@@ -11,6 +11,7 @@
 
 Tu::Tu(QSqlQuery& query, Logger& logger)
 {
+    SetBaseType(BaseTu);
     bool ret;
     try
     {
@@ -183,10 +184,10 @@ bool Tu::ReadBd (QString& dbpath, Logger& logger)
 }
 
 // Имя станции и ТС
-QString& Tu::NameEx()
-{
-    return buf = QString("%1 ТУ='%2'").arg(StMessage()).arg(name);
-}
+//QString& Tu::NameEx()
+//{
+//    return buf = QString("%1 ТУ='%2'").arg(StMessage()).arg(name);
+//}
 
 int Tu::CompareByNames(const void* p1,const void* p2)
 {

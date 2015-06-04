@@ -19,11 +19,7 @@ public:
     Tu(QSqlQuery& query, Logger& logger);
     ~Tu();
 
-    QString& NameEx();                                      // имя станции и ТУ
-
-    int IdRc   () { return norc  ; }
-    int IdSvtf () { return nosvtf; }
-    int IdStrl () { return nostrl; }
+    //QString& NameEx();                                      // имя станции и ТУ
 
     void SetParsed() { parsed = true; }
     bool IsParsed () { return parsed; }
@@ -41,10 +37,6 @@ private:
     int     _j;
     ushort  ij;                                             // упакованные координаты IJ
     int     idtu;                                           // номер команды в системах типа EBILOCK
-
-    int     norc;
-    int     nostrl;
-    int     nosvtf;
 
     float   delay;                                          // время запитки, сек
 
