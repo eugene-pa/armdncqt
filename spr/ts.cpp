@@ -158,16 +158,11 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
     }
 
     logger.log("Сортировка списков ТС");
-    Station::sortTs();
+    Station::SortTs();
 
     return true;
 }
 
-// Имя станции и ТС
-//QString& Ts::NameEx()
-//{
-//    return buf = QString("%1 ТС='%2'").arg(StMessage()).arg(name);
-//}
 
 // сформировать индекс сигнала по координатам
 int Ts::getIndex(Logger& logger)

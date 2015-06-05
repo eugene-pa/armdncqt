@@ -49,8 +49,9 @@ public:
     static Station * GetByNo(int no);                       // поучить справочник по номеру станции
     static Station * GetByName(QString stname);             // поучить справочник по номеру станции
     static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
-    static void sortTs();                                   // сортировка спимков ТС
-
+    static void SortTs();                                   // сортировка списка ТС
+    static void SortTu();                                   // сортировка списка ТУ
+    static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
     // открытые функции
     Station(QSqlQuery& query, Logger& logger);              // конструктор на базе записи в БД
     ~Station();

@@ -81,6 +81,7 @@ Property::Property (QString name, QHash<QString, class IdentityType *> hash, Log
     }
     else
     {
+        type = nullptr;
         logger.log(QString("Не определен шаблон для свойства РЦ '%1'").arg(name));
     }
 }
@@ -95,7 +96,7 @@ bool Property::Parse (class Ts * ts, Logger& logger)
 {
     bool ret= false;
 
-    if (type->Regex().match(ts->Name()).hasMatch())
+    if (type != nullptr && type->Regex().match(ts->Name()).hasMatch())
     {
         if (this->ts == nullptr)
         {
@@ -126,6 +127,7 @@ Method::Method (QString name, QHash<QString, class IdentityType *> hash, Logger&
     }
     else
     {
+        type = nullptr;
         logger.log(QString("Не определен шаблон для метода РЦ '%1'").arg(name));
     }
 }
@@ -134,7 +136,7 @@ Method::Method (QString name, QHash<QString, class IdentityType *> hash, Logger&
 bool Method::Parse (class Tu * tu, Logger& logger)
 {
     bool ret= false;
-    if (type->Regex().match(tu->Name()).hasMatch())
+    if (type != nullptr && type->Regex().match(tu->Name()).hasMatch())
     {
         if (this->tu == nullptr)
         {

@@ -232,12 +232,21 @@ void Station::AddTs (class Ts* ts, Logger& logger)
     TsSorted.append(ts);
 }
 
-// сортировака спимка TsSorted
-void Station::sortTs()
+// сортировака списка TsSorted
+void Station::SortTs()
 {
     foreach (Station * st, Stations.values())
     {
         qSort(st->TsSorted.begin(), st->TsSorted.end(),Ts::CompareByNames);
+    }
+}
+
+// сортировка спимка ТУ
+void Station::SortTu()
+{
+    foreach (Station * st, Stations.values())
+    {
+        qSort(st->TuSorted.begin(), st->TuSorted.end(),Tu::CompareByNames);
     }
 }
 
@@ -361,5 +370,44 @@ void Station::AddStrl(class Strl * obj, Logger& logger)
         logger.log(QString("Создание дублирующего объекта СТРЛ: %1").arg(obj->ToString()));
     else
         allstrl[obj->No()] = obj;
+}
+
+// "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
+// учитывая особенности реализации НСИ, можно утверждать, что синтаксис ТУ ПРОЛОГ/ЭПИЛОГ/ПОЛЮС - односложный без индексации
+// поэтому поиск ТУ выполняется по имени в хэш-таблицах Tu класса Station
+void Station::ParsePrologEpilog(Logger& logger)
+{
+    foreach (Station * st, Stations.values())
+    {
+        foreach (class Tu * tu, st->Tu.values())
+        {
+            QString name = tu->Prolog();
+            if (name.length() > 0)
+            {
+                if (st->Tu.contains(name))
+                    tu->SetProlog(st->Tu[name]);
+                else
+                    logger.log(QString("Не найдена ТУ пролога %1 для ТУ %2").arg(name).arg(tu->NameEx()));
+            }
+
+            name = tu->Epilog();
+            if (name.length() > 0)
+            {
+                if (st->Tu.contains(name))
+                    tu->SetEpilog(st->Tu[name]);
+                else
+                    logger.log(QString("Не найдена ТУ эпилога %1 для ТУ %2").arg(name).arg(tu->NameEx()));
+            }
+
+            name = tu->Polus();
+            if (name.length() > 0)
+            {
+                if (st->Tu.contains(name))
+                    tu->SetPolus(st->Tu[name]);
+                else
+                    logger.log(QString("Не найдена ТУ полюса %1 для ТУ %2").arg(name).arg(tu->NameEx()));
+            }
+        }
+    }
 }
 

@@ -27,6 +27,15 @@ public:
     void SetNext(Tu * tu) { next = tu; }
     void SetPrev(Tu * tu) { prev = tu; }                    // предыдущий в цепочке
     ushort IJ() { return ij; }                              // получить сформированный IJ
+
+    QString& Prolog() { return prolog; }                    // имя ТУ пролога
+    QString& Epilog() { return epilog; }                    // имя ТУ эпилога
+    QString& Polus () { return polus ; }                    // имя ТУ полюса
+
+    void SetProlog(Tu * tu) { tuProlog = tu; }              // проставить пролог
+    void SetEpilog(Tu * tu) { tuEpilog = tu; }              // проставить эпилог
+    void SetPolus (Tu * tu) { tuPolus = tu; }               // проставить полюс
+
 private:
                                                             // статические данные из БД
 // закрытые члены

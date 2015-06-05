@@ -11,7 +11,7 @@ Strl::Strl(SprBase * tuts, Logger& logger)
 {
     SetBaseType(BaseStrl);
 
-    no = tuts->IdSvtf();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    no = tuts->IdStrl();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
     nost = tuts->IdSt();                                    // номер станции
     st   = tuts->St();                                      // справочник
 
@@ -33,7 +33,7 @@ Strl::Strl(SprBase * tuts, Logger& logger)
     selectvsa_m = new Method  ("выбор для СА+"               , methodIds , logger);
     lock        = new Method  ("запирание"                   , methodIds , logger);
     unlock      = new Method  ("отпирание"                   , methodIds , logger);
-    setplus     = new Method  ("перевод в минус "            , methodIds , logger);
+    setplus     = new Method  ("перевод в минус"             , methodIds , logger);
     setminus    = new Method  ("перевод в плюс"              , methodIds , logger);
 
     strlhash[no] = this;                                    // добавляем в общую таблицу СТРЛ
@@ -57,7 +57,7 @@ bool Strl::AddTemplate(IdentityType * ident)
 {
     if (ident->ObjType() == "СТРЛ")
     {
-        if (ident->PropType() == "TC")
+        if (ident->PropType() == "ТС")
             propertyIds[ident->Name()] = ident;
         else
             methodIds[ident->Name()] = ident;
@@ -68,6 +68,24 @@ bool Strl::AddTemplate(IdentityType * ident)
 
 bool Strl::AddTs (Ts * ts, Logger& logger)
 {
+    int no = ts->IdStrl();
+    Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(ts, logger);
+
+    strl->vzrez          ->Parse(ts, logger);
+    strl->selectedunlock ->Parse(ts, logger);
+    strl->selectedvsa    ->Parse(ts, logger);
+    strl->selectedvsa_p  ->Parse(ts, logger);
+    strl->selectedvsa_m  ->Parse(ts, logger);
+    strl->locked         ->Parse(ts, logger);
+    strl->minus          ->Parse(ts, logger);
+    strl->plus           ->Parse(ts, logger);
+    strl->mu             ->Parse(ts, logger);
+
+    if (!ts->IsParsed())
+    {
+        logger.log(QString("%1: не идентифицирован контроль СТРЛ").arg(ts->NameEx()));
+    }
+
     return true;
 }
 

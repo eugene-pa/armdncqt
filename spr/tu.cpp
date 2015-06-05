@@ -176,18 +176,16 @@ bool Tu::ReadBd (QString& dbpath, Logger& logger)
         return false;
     }
 
-//  logger.log("Сортировка списков ТУ");
-//  Station::sortTu();
+    // после чтения всех ТУ можно "разрешить" все ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
+    logger.log("Обработка ссылок ПРОЛОГ/ЭПИЛОГ/ПОЛЮС");
+    Station::ParsePrologEpilog(logger);
+
+    logger.log("Сортировка списков ТУ");
+    Station::SortTu();
 
     return true;
 
 }
-
-// Имя станции и ТС
-//QString& Tu::NameEx()
-//{
-//    return buf = QString("%1 ТУ='%2'").arg(StMessage()).arg(name);
-//}
 
 int Tu::CompareByNames(const void* p1,const void* p2)
 {
