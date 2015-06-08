@@ -7,11 +7,12 @@
 #include "rc.h"
 #include "svtf.h"
 #include "strl.h"
+#include "esr.h"
 //#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
 
-// чтение станций
+// конструктор принимает на входе запись из таблицы Stations
 Station::Station(QSqlQuery& query, Logger& logger)
 {
     bool ret;
@@ -45,13 +46,17 @@ Station::Station(QSqlQuery& query, Logger& logger)
         T[2] = query.value("T3").toInt(&ret);               //
         T[3] = query.value("T4").toInt(&ret);               //
         forms = query.value("NumOfView").toInt(&ret);       // число форм
-        extForms = query.value("ExtFormList").toString();   // доп.формы
+
         orient = query.value("Orient").toString();          // ориентация
 
-//      esr     = // код ЕСР
+        esr       = Esr::EsrByDcName(name);
         gidUralId = kpIdBase ? kpIdBase : esr * 10 + 1;     // идентификация в ГИД УРАЛ
 
         mpcEbilock = rpcMpcMPK = rpcDialog = false;
+
+        extForms = query.value("ExtFormList").toString();   // доп.формы, формат: 'имя_без_расширения' RADIOID ['имя_без_расширения' RADIOID]...
+        ParseExtForms();                                    // разбор строки
+
 
         Stations[no] = this;
     }
@@ -411,3 +416,31 @@ void Station::ParsePrologEpilog(Logger& logger)
     }
 }
 
+// обработка доп форм
+// формат: 'имя_без_расширения' RADIOID ['имя_без_расширения' RADIOID]...
+// 'Кавказская-Б' 2102
+// 'Армавир-IБ' 2109 'Армавир-IВ' 2110
+// Для разбора используем регулярные выражения "с просмотром вперед"
+void Station::ParseExtForms()
+{
+    if (forms > 0)
+    {
+        formList.append(new ShapeId(this, name, radioIdMnt));
+
+        if (forms > 1)
+        {
+            QRegularExpression rgxPare("\\'[^\\']+'\\s+\\d+");
+            QRegularExpressionMatchIterator m = rgxPare.globalMatch(extForms);
+            while (m.hasNext())
+            {
+                QString pare = m.next().captured();
+                QRegularExpression rgxNames("(?<=\\').+?(?=\\')");
+                QRegularExpression rgxRadio("\\d+\\Z");
+
+                QString form = rgxNames.match(pare).captured();
+                int radioid  = rgxRadio.match(pare).captured().toInt();
+                formList.append(new ShapeId(this, form, radioid));
+            }
+        }
+    }
+}

@@ -112,6 +112,8 @@ private:
    QHash <int, class Svtf*> allsvtf;                       // РЦ станции, индексированные по индексу ТС
    QHash <int, class Strl*> allstrl;                       // РЦ станции, индексированные по индексу ТС
 
+   QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
+
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]
     QString name;
@@ -158,6 +160,27 @@ private:
     // закрытые функции
     bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
     bool TestBit (QBitArray& bits, int index);              // проверка бита в битовом массиве
+    void ParseExtForms();                                   // разбор доп.форм
+};
+
+// класс идентификации формы станции (имя формы, ID кнопки)
+// в общем случае станция может иметь несколько форм для представления схемы
+// чаще всего - одну форму, иногда - ни одной
+class ShapeId
+{
+public:
+    ShapeId(Station * st, QString& name, int radioid)
+    {
+        this->st = st;
+        this->radioid = radioid;
+        this->name = name;
+        fileName = name + ".shp";
+    }
+private:
+    Station * st;
+    int radioid;
+    QString name;
+    QString fileName;
 };
 
 #endif // STATION_H

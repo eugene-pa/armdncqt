@@ -177,10 +177,10 @@ bool Tu::ReadBd (QString& dbpath, Logger& logger)
     }
 
     // после чтения всех ТУ можно "разрешить" все ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
-    logger.log("Обработка ссылок ПРОЛОГ/ЭПИЛОГ/ПОЛЮС");
+    logger.log("Обработка ссылок ПРОЛОГ/ЭПИЛОГ/ПОЛЮС команд ТУ");
     Station::ParsePrologEpilog(logger);
 
-    logger.log("Сортировка списков ТУ");
+    logger.log("Сортировка списка ТУ TuSorted");
     Station::SortTu();
 
     return true;

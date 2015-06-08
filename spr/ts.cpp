@@ -10,6 +10,8 @@
 
 QString Ts::buf;
 
+
+// конструктор принимает на входе запись из таблицы TS
 Ts::Ts(QSqlQuery& query, Logger& logger)
 {
     SetBaseType(BaseTs);

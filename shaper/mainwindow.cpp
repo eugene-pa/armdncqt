@@ -10,6 +10,7 @@
 #include "../spr/ts.h"
 #include "../spr/tu.h"
 #include "../spr/properties.h"
+#include "../spr/esr.h"
 
 
 Logger logger("Log/shaper.txt", true, true);
@@ -45,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
 
+    Esr::ReadBd(dbname, logger);
     Station::ReadBd(dbname, logger);
     IdentityType::ReadBd (extDb, logger);
     Ts::ReadBd (dbname, logger);
