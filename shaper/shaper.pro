@@ -49,6 +49,7 @@ HEADERS  += mainwindow.h \
     ../shapes/shapesvtf.h \
     ../shapes/shapetrnsp.h \
     ../shapes/colorscheme.h \
+    ../spr/enums.h \
     ../spr/esr.h \
     ../spr/rc.h \
     ../spr/sprbase.h \
@@ -58,7 +59,8 @@ HEADERS  += mainwindow.h \
     ../spr/properties.h \
     ../spr/strl.h \
     ../spr/svtf.h \
-    ../spr/tu.h
+    ../spr/tu.h \
+    ../spr/streamts.h
     ../common/boolexpression.h \
 
 

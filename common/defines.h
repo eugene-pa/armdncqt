@@ -6,6 +6,13 @@
 //#include <QWidget>
 //#include <QGraphicsView>
 
+#define BYTE unsigned char
+#define WORD unsigned short
+#define UINT unsigned int
+#define SIGNATURE 0xAA55
+#define DUBL 2
+#define MAX_TRAINS_ON_PER 5
+
 #define LPCTSTR const char *
 #define COLORREF QColor
 #define BOOL bool

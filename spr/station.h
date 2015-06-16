@@ -12,36 +12,14 @@
 #include "../common/logger.h"
 #include "ts.h"
 #include "tu.h"
+#include "enums.h"
+#include "streamts.h"
 
 class Station : public QObject
 {
     Q_OBJECT
 
 public:
-
-    enum KpVersion
-    {
-        VERSION32X32            = 1,                        // Ломиконт
-        VERSION_8X8             = 2,                        // КП-1999 - промежуточная, некорректный CRC
-        VERSIONKp1999           = 3,                        // КП-1999
-        VERSION2000             = 4,                        // КП-2000
-        VERSION2000Rpctums      = 5,                        // КП-2000 + РПЦ
-        VERSIONRetime           = 6,                        // Ретайм (PZUVER=1, bRssSetun=true, bRssSetun2=true)
-        VERSION2007             = 7,                        // КП2004-2007
-        VERSIONKp2000Lomikont   = 8,                        // Гибрид с матрицей ЛОМИКОНТА (PZUVER=1, bLomikontKP2000 = true;)
-//      VERSION_EBILOCK950      = 9,                        // МПЦ EBILOCK950   - не используется, специфицируем в Confif
-//      VERSION_RPCDIALOG       = 10,                       // РПЦ Диалог       - не используется, специфицируем в Confif
-        VERSIONDcmpk            = 11,                       // ДЦ МПК
-    };
-
-    enum Common
-    {
-        MaxQueueLength          = 32,                       // макс.длина очередей
-        MaxModule               = 48,                       // макс.номер модуля
-        TsMaxLengthBits         = 1024 * 3,                 // макс.размер сигналов в битах 3072
-        TsMaxLengthBytes        = (1024 * 3)/8,             // макс.размер сигналов в байтах 384
-    };
-
     // открытые статические члены
     static QHash<int, Station*> Stations;                   // хэш-таблица указателей на справочники станций
 
@@ -154,6 +132,19 @@ private:
     QBitArray tsStsRawPrv;                                  // позиционное состояние на пред.шаге
     QBitArray tsStsPulsePrv;                                // мигание на пред.шаге
     QBitArray tsSts;                                        // обработанный массив ТС
+
+    // динамические переменные состояния объекта
+    bool    stsAu;
+    bool    stsSu;
+    bool    stsRu;
+    bool    stsOn;
+    bool    stsRsrv;
+    bool    stsCom3On;
+    bool    stsCom4On;
+
+    // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока
+    // это можно было бы сделать, чтобы избежать полного разбора потока при приеме, просто скопировав данные (наложив шаблон класса)
+    // не факт, что игра стоит свеч, так как усложняется определение состояний
 
     QString   buf;                                          // строка сообщений
 

@@ -17,11 +17,18 @@ Station::Station(QSqlQuery& query, Logger& logger)
 {
     bool ret;
 
-    tsStsRaw        = QBitArray(TsMaxLengthBits);           // инициируем битовые массивы
-    tsStsPulse      = QBitArray(TsMaxLengthBits);
-    tsStsRawPrv     = QBitArray(TsMaxLengthBits);
-    tsStsPulsePrv   = QBitArray(TsMaxLengthBits);
-    tsSts           = QBitArray(TsMaxLengthBits);
+    tsStsRaw        .resize(TsMaxLengthBits);               // инициируем битовые массивы  нужным размером
+    tsStsPulse      .resize(TsMaxLengthBits);
+    tsStsRawPrv     .resize(TsMaxLengthBits);
+    tsStsPulsePrv   .resize(TsMaxLengthBits);
+    tsSts           .resize(TsMaxLengthBits);
+
+    mpcEbilock      = false;
+    rpcMpcMPK       = false;
+    rpcDialog       = false;
+    apkdk           = false;
+    adkScb          = false;
+    upokOtu         = false;
 
     try
     {
@@ -49,7 +56,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
 
         orient = query.value("Orient").toString();          // ориентация
 
-        esr       = Esr::EsrByDcName(name);
+        esr       = Esr::EsrByDcName(name);                 // код ЕСР из БД по имени станции
         gidUralId = kpIdBase ? kpIdBase : esr * 10 + 1;     // идентификация в ГИД УРАЛ
 
         mpcEbilock = rpcMpcMPK = rpcDialog = false;
