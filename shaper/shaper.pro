@@ -34,7 +34,9 @@ SOURCES += main.cpp\
     ../spr/properties.cpp \
     ../spr/strl.cpp \
     ../spr/svtf.cpp \
-    ../spr/tu.cpp
+    ../spr/tu.cpp \
+    ../spr/streamts.cpp \
+    ../spr/dstdatafromfonitor.cpp
     ../common/boolexpression.cpp \
 
 
@@ -60,7 +62,8 @@ HEADERS  += mainwindow.h \
     ../spr/strl.h \
     ../spr/svtf.h \
     ../spr/tu.h \
-    ../spr/streamts.h
+    ../spr/streamts.h \
+    ../spr/dstdatafromfonitor.h
     ../common/boolexpression.h \
 
 

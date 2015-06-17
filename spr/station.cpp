@@ -11,17 +11,18 @@
 //#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
+bool Station::LockLogicEnable;                              // включен логический контроль
 
 // конструктор принимает на входе запись из таблицы Stations
 Station::Station(QSqlQuery& query, Logger& logger)
 {
     bool ret;
 
-    tsStsRaw        .resize(TsMaxLengthBits);               // инициируем битовые массивы  нужным размером
-    tsStsPulse      .resize(TsMaxLengthBits);
-    tsStsRawPrv     .resize(TsMaxLengthBits);
-    tsStsPulsePrv   .resize(TsMaxLengthBits);
-    tsSts           .resize(TsMaxLengthBits);
+    tsStsRaw        .fill(0,TsMaxLengthBits);               // инициируем битовые массивы  нужным размером
+    tsStsPulse      .fill(0,TsMaxLengthBits);
+    tsStsRawPrv     .fill(0,TsMaxLengthBits);
+    tsStsPulsePrv   .fill(0,TsMaxLengthBits);
+    tsSts           .fill(0,TsMaxLengthBits);
 
     mpcEbilock      = false;
     rpcMpcMPK       = false;
@@ -29,6 +30,19 @@ Station::Station(QSqlQuery& query, Logger& logger)
     apkdk           = false;
     adkScb          = false;
     upokOtu         = false;
+
+    stsActual       = false;
+    stsAu           = false;
+    stsSu           = false;
+    stsRu           = false;
+    stsMu           = false;
+    stsOn           = false;
+    stsRsrv         = false;
+    stsCom3On       = false;
+    stsCom4On       = false;
+    stsBackChannel  = false;
+
+    errorLockLogicCount = 0;
 
     try
     {
@@ -55,7 +69,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
         forms = query.value("NumOfView").toInt(&ret);       // число форм
 
         orient = query.value("Orient").toString();          // ориентация
-
+        bybylogic = query.value("ByByLogic").toBool();      // логика удалений (У1,У2)
         esr       = Esr::EsrByDcName(name);                 // код ЕСР из БД по имени станции
         gidUralId = kpIdBase ? kpIdBase : esr * 10 + 1;     // идентификация в ГИД УРАЛ
 
@@ -450,4 +464,21 @@ void Station::ParseExtForms()
             }
         }
     }
+}
+
+// TODO:
+// --------------------------------------------------------------------------------------------------------
+
+// есть ли неквитированные сообщения подсистемы логич.контроля
+bool Station::IsNewErrorLockMsgPresent()
+{
+    // TODO: реализовать функцию
+    return false;
+}
+
+// устарели ли ТС
+bool Station::IsTsExpire()
+{
+    // TODO: реализовать функцию
+    return false;
 }

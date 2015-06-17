@@ -17,11 +17,14 @@
 
 class Station : public QObject
 {
+    friend class DStDataFromMonitor;
+
     Q_OBJECT
 
 public:
     // открытые статические члены
     static QHash<int, Station*> Stations;                   // хэш-таблица указателей на справочники станций
+    static bool LockLogicEnable;                            // включен логический контроль
 
     // открытые статические функции
     static Station * GetByNo(int no);                       // поучить справочник по номеру станции
@@ -52,6 +55,24 @@ public:
     bool Kp2007        () { return version == VERSION2007           ; }
     bool Retime        () { return version == VERSIONRetime         ; }
     bool KpPa          () { return Kp2007() || Kp2000() || Kp2000Lomikont() || Kp2000Tums(); }
+
+    int  Version    () { return version;    }
+    bool Enable     () { return enable;     }
+    bool Actual     () { return stsActual;  }               // станция выбрана ДНЦ для работы
+    bool ByByLogic  () { return bybylogic;  }               // логика удалений (У1,У2)
+    bool IsAu       () { return stsAu;      }
+    bool IsSu       () { return stsSu;      }
+    bool IsRu       () { return stsRu;      }
+    bool IsMu       () { return stsMu;      }
+    bool IsOn       () { return stsOn;      }
+    bool IsRsrv     () { return stsRsrv;    }               // КП на резерве
+    bool IsCom3On   () { return stsCom3On;  }
+    bool IsCom4On   () { return stsCom4On;  }
+    bool IsBackChannel() { return stsBackChannel; }         // последний опрос станции по обратному каналу
+
+    bool IsActualErrorLockMsgPresent() { return errorLockLogicCount; }  // число актуальных ошибок логического контроля
+    bool IsNewErrorLockMsgPresent   ();                                 // есть ли неквитированные сообщения подсистемы логич.контроля
+    bool IsTsExpire();                                       // устарели ли ТС
 
     // доступ к состоянию ТС по смещению ТС в массиве
     bool TsSts      (int i)
@@ -120,13 +141,14 @@ private:
     bool    apkdk;                                          // конфигурация с АПКДК
     bool    adkScb;                                         // конфигурация с АДКСЦБ
     bool    upokOtu;                                        // конфигурация с УПОК
+    bool    bybylogic;                                      // логика удалений (У1,У2)
 
 
     QByteArray     mts;                                     // массив номеров модулей ТС
     QByteArray     mtu;                                     // массив номеров модулей ТУ
 
     // состояние сигналов ТС
-    QBitArray tsIverse;                                     // битовый массив инверсии
+    QBitArray tsInverse;                                    // битовый массив инверсии
     QBitArray tsStsRaw;                                     // текущий съем с объекта позиционного состояния сигналов в сыром виде
     QBitArray tsStsPulse;                                   // текущий съем с объекта состояния мигания в сыром виде
     QBitArray tsStsRawPrv;                                  // позиционное состояние на пред.шаге
@@ -134,13 +156,18 @@ private:
     QBitArray tsSts;                                        // обработанный массив ТС
 
     // динамические переменные состояния объекта
+    bool    stsActual;                                      // станция выбрана ДНЦ для работы
     bool    stsAu;
     bool    stsSu;
     bool    stsRu;
+    bool    stsMu;
     bool    stsOn;
-    bool    stsRsrv;
+    bool    stsRsrv;                                        // КП на резерве
     bool    stsCom3On;
     bool    stsCom4On;
+    bool    stsBackChannel;                                 // последний опрос станции по обратному каналу
+
+    int     errorLockLogicCount;                            // число актуальных ошибок логического контроля
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока
     // это можно было бы сделать, чтобы избежать полного разбора потока при приеме, просто скопировав данные (наложив шаблон класса)
