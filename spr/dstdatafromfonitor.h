@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "../common/defines.h"
 #include "streamts.h"
+#include "sysinfo.h"
 
 // ==============================================================================================================================================================
 //								class DStDataFromMonitor
@@ -129,6 +130,8 @@ public:
 	void ChangeNoSt(BYTE No) { NoSt = No; }
 	
 	WORD GetNoSt() { return NoSt; }						// 2010.03.29
+
+    void PrepareSysInfo (int i, SysInfo& info);
 
 // 11.02.2004. Пытаюсь обеспечить вытаскивание информации по нужным станциям
 

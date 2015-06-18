@@ -6,7 +6,7 @@
 #include "strl.h"
 
 // сформировать данные
-int DStDataFromMonitor::Prepare(class Station * pSt)
+int DStDataFromMonitor::Prepare(Station * pSt)
 {
     // т.к.класс Station имееем friend class DStDataFromMonitor, имеем доступ к закрытым членам
     Signature	= SIGNATURE;                                // обрамление
@@ -32,56 +32,17 @@ int DStDataFromMonitor::Prepare(class Station * pSt)
     IgnoreError	= 1;                                        // игнорировать некооректные ТС. УСТАРЕЛО, всегда игнор! pSt->IgnoreError ? 1 : 0;
     IgnoreError |= pSt->gidUralId << 1;                     // объединяем с кодом КП станции
     Rsrv		= pSt->stsRsrv ? 1 : 0;						// резерв 31 бит
+    Rsrv_EX1    = QDate::currentDate().day() & 0x1f;        // ЗНАЧЕНИЕ АСТРОНОМИЧЕСКОГО ЧАСА ДЛЯ КОРРЕКТНОЙ ОБРАБОТКИ СМЕНЫ ЧАОВЫХ ПОЯСОВ при возможной их смене
+                                                            // Используем биты d0-d4 поля Rsrv_EX1
+
+    // строго говоря, следующие статические данные для круга нет смысла передавать для каждой станции, их нужно было бы передать в блоке общей информации
+    MainLineCPU = pSt->MainLineCPU;                         // -1/0/1/2 (отказ/откл/WAITING/OK)
+    RsrvLineCPU = pSt->RsrvLineCPU;                         // -1/0/1/2 (отказ/откл/WAITING/OK)
+
+    PrepareSysInfo (0, pSt->mainSysInfo);
+    PrepareSysInfo (0, pSt->rsrvSysInfo);
 
 /*
-    // 2015.03.04. вер.2.0.0.297. Используем биты d0-d4 поля Rsrv_EX1
-    // 2015.06.05  вер.2.0.0.303. Опционирую передачу опцией TIMEMARKER, которая читается в bTimeMarker
-    if (bTimeMarker)
-        Rsrv_EX1 = CTime::GetCurrentTime().GetHour() & 0x1f; // ЗНАЧЕНИЕ АСТРОНОМИЧЕСКОГО ЧАСА ДЛЯ КОРРЕКТНОЙ ОБРАБОТКИ СМЕНЫ ЧАОВЫХ ПОЯСОВ при возможной их смене
-
-
-    MainLineCPU = pSt->MainLineCPU;					// -1/0/1/2 (отказ/откл/WAITING/OK)
-    RsrvLineCPU = pSt->RsrvLineCPU;					// -1/0/1/2 (отказ/откл/WAITING/OK)
-
-    for (int i=0; i<DUBL; i++)
-    {
-        LinkError[i]=pSt->LinkError[i];				// Тип ошибки: 0-OK,1-молчит,2-CRC
-        CntLinkEr[i]=pSt->CntLinkEr[i];				// Общий счетчик ошибок связи
-        LastTime [i]=pSt->LastTime [i];				// Астр.время окончания последнего цикла ТС
-
-        SysStatus[i]=pSt->SysStatus[i];
-        SpeedCom3[i]=pSt->SpeedCom3[i];
-        RcnctCom3[i]=pSt->RcnctCom3[i];
-        SpeedCom4[i]=pSt->SpeedCom4[i];
-        RcnctCom4[i]=pSt->RcnctCom4[i];
-
-        // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
-        if (pSt->IsKp2007())
-        {
-            SpeedCom3[i] /= 1200;
-            SpeedCom4[i] /= 1200;
-            memmove (((BYTE*)&SpeedCom3[i])+1,pSt->GetPtrDiag2007MT(i)    ,3);
-            memmove (((BYTE*)&SpeedCom4[i])+1,pSt->GetPtrDiag2007MT(i) + 3,3);
-//			* (((BYTE *)&tSpokSnd) + 3) = pSt->GetDiag2007MVV(i);
-        }
-
-        tSpokSnd = pSt->tSpokSnd;
-        tSpokRcv = pSt->tSpokRcv;
-        if (pSt->IsKp2007())
-        {
-//			WORD * pMem = (WORD *)&tSpokRcv;
-//			pMem[0] = pSt->GetStatusExWord(0);	//	GetFreeMem(0);
-//			pMem[1] = pSt->GetStatusExWord(1);	//	GetFreeMem(1);
-
-            BYTE * p = (BYTE *)&tSpokRcv;
-            p[0] = pSt->VersionNo	[0];
-            p[1] = pSt->StatusEx	[0];
-            p[2] = pSt->VersionNo	[1];
-            p[3] = pSt->StatusEx	[1];
-
-        }
-    }
-
     // В КП-2007 использую tSpokSnd для передачи MkuStatus и состояния модулей МВВ
     if (pSt->IsKp2007())
     {
@@ -94,4 +55,49 @@ int DStDataFromMonitor::Prepare(class Station * pSt)
 
 */
     return sizeof (DStDataFromMonitor);
+}
+
+void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo& info)
+{
+    LinkError[i] = info.linestatus;                         // Тип ошибки: 0-OK,1-молчит,2-CRC
+    CntLinkEr[i] = info.errors;                             // Общий счетчик ошибок связи
+    LastTime [i] = info.tmdt.toTime_t();                    // Астр.время окончания последнего цикла ТС
+
+    SysStatus[i] = info.SysStatus();                        // Байт 0 - состояние SysStatus
+    SpeedCom3[i] = info.SpeedCom3();                        // Байт 1 - скорость Com3
+    RcnctCom3[i] = info.BreaksCom3();                       // Байт 2 - число реконнектов Com3
+    SpeedCom4[i] = info.SpeedCom4();                        // Байт 3 - скорость Com4
+    RcnctCom4[i] = info.BreaksCom4();                       // Байт 4 - число реконнектов Com4
+
+    // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
+    if (info.st != nullptr)
+    {
+        if (info.st->Kp2007())
+        {
+            SpeedCom3[i] /= 1200;
+            SpeedCom4[i] /= 1200;
+/*
+            memmove (((BYTE*)&SpeedCom3[i])+1,pSt->GetPtrDiag2007MT(i)    ,3);
+            memmove (((BYTE*)&SpeedCom4[i])+1,pSt->GetPtrDiag2007MT(i) + 3,3);
+*/
+//			* (((BYTE *)&tSpokSnd) + 3) = pSt->GetDiag2007MVV(i);
+        }
+/*
+        tSpokSnd = pSt->tSpokSnd;
+        tSpokRcv = pSt->tSpokRcv;
+        if (pSt->IsKp2007())
+        {
+        //			WORD * pMem = (WORD *)&tSpokRcv;
+        //			pMem[0] = pSt->GetStatusExWord(0);	//	GetFreeMem(0);
+        //			pMem[1] = pSt->GetStatusExWord(1);	//	GetFreeMem(1);
+
+            BYTE * p = (BYTE *)&tSpokRcv;
+            p[0] = pSt->VersionNo	[0];
+            p[1] = pSt->StatusEx	[0];
+            p[2] = pSt->VersionNo	[1];
+            p[3] = pSt->StatusEx	[1];
+
+        }
+*/
+    }
 }

@@ -11,7 +11,9 @@
 //#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
-bool Station::LockLogicEnable;                              // включен логический контроль
+bool    Station::LockLogicEnable;                           // включен логический контроль
+short	Station::MainLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
+short	Station::RsrvLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
 // конструктор принимает на входе запись из таблицы Stations
 Station::Station(QSqlQuery& query, Logger& logger)
@@ -43,6 +45,9 @@ Station::Station(QSqlQuery& query, Logger& logger)
     stsBackChannel  = false;
 
     errorLockLogicCount = 0;
+
+    mainSysInfo.st = this;
+    rsrvSysInfo.st = this;
 
     try
     {

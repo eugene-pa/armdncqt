@@ -213,35 +213,48 @@ enum SysTuType
 // кодирование возможных состояний станций связи при передаче в потоке ТС
 enum RasStatus
  {
-     RasNoconnect   = 3,			    // ошибка
-     RasOff         = 0,			    // отключено
-     RasWaiting     = 1,			    // ожидание коннекта
-     RasOk          = 2,			    // коннект
+     RasNoconnect   = 3,                                    // ошибка
+     RasOff         = 0,                                    // отключено
+     RasWaiting     = 1,                                    // ожидание коннекта
+     RasOk          = 2,                                    // коннект
  };
 
 // кодирование версий КП в НСИ
 enum KpVersion
 {
-    VERSION32X32            = 1,                        // Ломиконт
-    VERSION_8X8             = 2,                        // КП-1999 - промежуточная, некорректный CRC
-    VERSIONKp1999           = 3,                        // КП-1999
-    VERSION2000             = 4,                        // КП-2000
-    VERSION2000Rpctums      = 5,                        // КП-2000 + РПЦ
-    VERSIONRetime           = 6,                        // Ретайм (PZUVER=1, bRssSetun=true, bRssSetun2=true)
-    VERSION2007             = 7,                        // КП2004-2007
-    VERSIONKp2000Lomikont   = 8,                        // Гибрид с матрицей ЛОМИКОНТА (PZUVER=1, bLomikontKP2000 = true;)
+    VERSION32X32            = 1,                            // Ломиконт
+    VERSION_8X8             = 2,                            // КП-1999 - промежуточная, некорректный CRC
+    VERSIONKp1999           = 3,                            // КП-1999
+    VERSION2000             = 4,                            // КП-2000
+    VERSION2000Rpctums      = 5,                            // КП-2000 + РПЦ
+    VERSIONRetime           = 6,                            // Ретайм (PZUVER=1, bRssSetun=true, bRssSetun2=true)
+    VERSION2007             = 7,                            // КП2004-2007
+    VERSIONKp2000Lomikont   = 8,                            // Гибрид с матрицей ЛОМИКОНТА (PZUVER=1, bLomikontKP2000 = true;)
 //      VERSION_EBILOCK950      = 9,                        // МПЦ EBILOCK950   - не используется, специфицируем в Confif
 //      VERSION_RPCDIALOG       = 10,                       // РПЦ Диалог       - не используется, специфицируем в Confif
-    VERSIONDcmpk            = 11,                       // ДЦ МПК
+    VERSIONDcmpk            = 11,                           // ДЦ МПК
 };
 
 // константы
 enum Common
 {
-    NumPages                = 3,                        // число страниц по 1024
-    MaxQueueLength          = 32,                       // макс.длина очередей
-    MaxModule               = 48,                       // макс.номер модуля
-    TsMaxLengthBits         = 1024 * NumPages,          // макс.размер сигналов в битах 3072
-    TsMaxLengthBytes        = (1024 * NumPages)/8,      // макс.размер сигналов в байтах 384
+    NumPages                = 3,                            // число страниц по 1024
+    MaxQueueLength          = 32,                           // макс.длина очередей
+    MaxModule               = 48,                           // макс.номер модуля
+    TsMaxLengthBits         = 1024 * NumPages,              // макс.размер сигналов в битах 3072
+    TsMaxLengthBytes        = (1024 * NumPages)/8,          // макс.размер сигналов в байтах 384
+
+    SysInfoLength           = 15,                           // длина блока SysInfo (максимальная КП2007)
+    SysInfoLengthShort      = 9,                            // длина блока SysInfo укороченного (КП2000)
 };
+
+// состояние приема из линии
+enum LineStatus
+{
+    LineOK                  = 0,                            // OK
+    LineTimeOut             = 1,                            // ош.тайм-аута
+    LineError               = 2,                            // ош.формата
+};
+
+
 #endif // ENUMS_H

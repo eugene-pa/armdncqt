@@ -34,6 +34,7 @@ SOURCES += main.cpp\
     ../spr/properties.cpp \
     ../spr/strl.cpp \
     ../spr/svtf.cpp \
+    ../spr/sysinfo.cpp \
     ../spr/tu.cpp \
     ../spr/streamts.cpp \
     ../spr/dstdatafromfonitor.cpp
@@ -61,6 +62,7 @@ HEADERS  += mainwindow.h \
     ../spr/properties.h \
     ../spr/strl.h \
     ../spr/svtf.h \
+    ../spr/sysinfo.h \
     ../spr/tu.h \
     ../spr/streamts.h \
     ../spr/dstdatafromfonitor.h

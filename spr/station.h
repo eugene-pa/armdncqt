@@ -14,6 +14,7 @@
 #include "tu.h"
 #include "enums.h"
 #include "streamts.h"
+#include "sysinfo.h"
 
 class Station : public QObject
 {
@@ -25,6 +26,8 @@ public:
     // открытые статические члены
     static QHash<int, Station*> Stations;                   // хэш-таблица указателей на справочники станций
     static bool LockLogicEnable;                            // включен логический контроль
+    static short	MainLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
+    static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
     // открытые статические функции
     static Station * GetByNo(int no);                       // поучить справочник по номеру станции
@@ -168,6 +171,9 @@ private:
     bool    stsBackChannel;                                 // последний опрос станции по обратному каналу
 
     int     errorLockLogicCount;                            // число актуальных ошибок логического контроля
+
+    SysInfo mainSysInfo;                                    // блок сист.информации основного  БМ
+    SysInfo rsrvSysInfo;                                    // блок сист.информации резервного БМ
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока
     // это можно было бы сделать, чтобы избежать полного разбора потока при приеме, просто скопировав данные (наложив шаблон класса)
