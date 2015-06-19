@@ -15,6 +15,7 @@
 #include "enums.h"
 #include "streamts.h"
 #include "sysinfo.h"
+#include "dras.h"
 
 class Station : public QObject
 {
@@ -174,6 +175,8 @@ private:
 
     SysInfo mainSysInfo;                                    // блок сист.информации основного  БМ
     SysInfo rsrvSysInfo;                                    // блок сист.информации резервного БМ
+    time_t  tSpokSnd;                                       // время передачи данных в СПОК
+    time_t  tSpokRcv;                                       // время приема данных от СПОК
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока
     // это можно было бы сделать, чтобы избежать полного разбора потока при приеме, просто скопировав данные (наложив шаблон класса)

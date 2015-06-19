@@ -8,6 +8,7 @@
 #include "svtf.h"
 #include "strl.h"
 #include "esr.h"
+#include "dstdatafromfonitor.h"
 //#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
@@ -48,6 +49,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
 
     mainSysInfo.st = this;
     rsrvSysInfo.st = this;
+    tSpokSnd = tSpokRcv = 0;                                // время приема/передачи данных в СПОК
 
     try
     {

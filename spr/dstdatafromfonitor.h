@@ -5,6 +5,7 @@
 #include "../common/defines.h"
 #include "streamts.h"
 #include "sysinfo.h"
+#include "dras.h"
 
 // ==============================================================================================================================================================
 //								class DStDataFromMonitor
@@ -65,7 +66,7 @@ protected:
 	WORD	reserv3;							// 2009.12.10. резерв								406/790
 // -------------------------------------------------------------------------------------------------
 	long	CntLinkEr	[DUBL];					// Общий счетчик ошибок связи						408/792
-	time_t	LastTime	[DUBL];					// Астр.время окончания последнего цикла ТС			416 / 800
+    UINT	LastTime	[DUBL];					// Астр.время окончания последнего цикла ТС			416 / 800
 	
 	WORD	SysStatus	[DUBL];					// статус связи (см. LPU.C, сис.инфо)				424 / 808
 												// 0 - «1» - наличие соединения на COM3 (активный модем)
@@ -78,16 +79,26 @@ protected:
 												// 7 - «1» - ОМУЛ = ОК, «0» – ошибка либо отсутствие ОМУЛ
 												// ? имею 8 бит запаса			
 
-	long	SpeedCom3	[DUBL];					// 0 байт - скорость обмена/1200					428 / 812
-												// 1-3 байты - отказы модулей МТС/МТУ МВВ1
+    union
+    {
+        long    speedCom3l;                     // 4 байта полной скорости для КП2000
+        BYTE    speedCom3,                      // 0 байт - скорость обмена/1200					428 / 812
+                bt1,bt2,bt3;                    // 1-3 байты - отказы модулей МТС/МТУ МВВ1
+    } mvv1[2];
+
 	WORD	RcnctCom3	[DUBL];					// число перезапусков								436 / 820
 												// ? саршие 8 бит - резерв
-	long	SpeedCom4	[DUBL];					// 0 байт - скорость обмена/1200					440 / 824
-												// 1-3 байты - отказы модулей МТС/МТУ МВВ2
+    union
+    {
+        long    speedCom4l;                     // 4 байта полной скорости для КП2000
+        BYTE    speedCom4,                      // 0 байт - скорость обмена/1200					440 / 824
+                bt1,bt2,bt3;                    // 1-3 байты - отказы модулей МТС/МТУ МВВ2
+    } mvv2[2];
+
 	WORD	RcnctCom4	[DUBL];					// число перезапусков								448 / 832
 												// ? саршие 8 бит - резерв
 
-	time_t	tSpokSnd;							// В версиях КП до    2007 г - Время передачи данных в  ОМУЛ
+    UINT	tSpokSnd;							// В версиях КП до    2007 г - Время передачи данных в  ОМУЛ
 												// В версиях КП после 2007 г:						452 / 836
 												// байт 0 - GetDiag2007MVV - отказы МВВ основ
 												// байт 1 - GetDiag2007MVV - отказы МВВ резерв
@@ -114,16 +125,15 @@ protected:
 												//	7	"1" - идет тестирование модулей
 												// --------------------------------------------------	
 												//													456 / 840
-	time_t	tSpokRcv;							// В версиях КП до    2007 г - Время приема   данных из ОМУЛ
+    UINT	tSpokRcv;							// В версиях КП до    2007 г - Время приема   данных из ОМУЛ
 												// В версиях КП после 2007 г - объем свободной памяти + сторона опроса + активный тракт УПОК
 
-	// void Extract(DStation *pSt=NULL,bool bDoShortData = false, DRas *pRas=NULL);	// извлечь данные (pSt - принудительно указывает станцию)
-    void Extract(DStation *pSt=NULL,int realTsLength = TsMaxLengthBytes, class DRas *pRas=NULL);	// извлечь данные (pSt - принудительно указывает станцию)
+
 public:
 //inline WORD GetLength() { return sizeof (DStDataFromMonitor); }
     int	 Prepare(class Station *pSt);					// сформировать данные
-	
-    void Extract(class Station *pSt, DDataFromMonitor * pDtFrmMnt, class DRas *pRas);
+    bool Extract(class Station *st, DDataFromMonitor * pDtFrmMnt, DRas *pRas);
+    bool Extract(class Station *st=NULL, int realTsLength = TsMaxLengthBytes, DRas *pRas = NULL);	// извлечь данные (pSt - принудительно указывает станцию)
 
 //	void ExtractEx(DStation *pSt,int len_st, DRas *pRas=NULL);	// извлечь данные (pSt - принудительно указывает станцию)
 	void ExtractDebugTS();								// отладочная

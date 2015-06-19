@@ -8,6 +8,8 @@
 // сформировать данные
 int DStDataFromMonitor::Prepare(Station * pSt)
 {
+    memset(this, 0, sizeof(DStDataFromMonitor));
+
     // т.к.класс Station имееем friend class DStDataFromMonitor, имеем доступ к закрытым членам
     Signature	= SIGNATURE;                                // обрамление
     NoSt		= pSt->no;                                  // номер станции
@@ -42,62 +44,109 @@ int DStDataFromMonitor::Prepare(Station * pSt)
     PrepareSysInfo (0, pSt->mainSysInfo);
     PrepareSysInfo (0, pSt->rsrvSysInfo);
 
-/*
-    // В КП-2007 использую tSpokSnd для передачи MkuStatus и состояния модулей МВВ
-    if (pSt->IsKp2007())
+    if (pSt->Kp2007())
     {
-        * (((BYTE *)&tSpokSnd) + 0) = pSt->GetDiag2007MVV(0);
-        * (((BYTE *)&tSpokSnd) + 1) = pSt->GetDiag2007MVV(1);
-        * (((BYTE *)&tSpokSnd) + 2) = pSt->MkuStatus[0];
-        * (((BYTE *)&tSpokSnd) + 3) = pSt->MkuStatus[1];
+        //BYTE * p = (BYTE *)&(info.st->tSpokRcv);
+        * (((BYTE *)&tSpokRcv) + 0) = pSt->mainSysInfo.LoVersionNo();   // версия основного БМ
+        * (((BYTE *)&tSpokRcv) + 1) = pSt->mainSysInfo.SysStatusEx();   // расширенный статус основного БМ
+        * (((BYTE *)&tSpokRcv) + 2) = pSt->rsrvSysInfo.LoVersionNo();   // версия резевного БМ
+        * (((BYTE *)&tSpokRcv) + 3) = pSt->rsrvSysInfo.SysStatusEx();   // расширенный статус резевного БМ
 
+        // В КП-2007 использую tSpokSnd для передачи MkuStatus и состояния модулей МВВ
+        * (((BYTE *)&tSpokSnd) + 0) = pSt->mainSysInfo.MVVStatus();     // статус МВВ основного БМ
+        * (((BYTE *)&tSpokSnd) + 1) = pSt->rsrvSysInfo.MVVStatus();     // статус МВВ резевного БМ
+        * (((BYTE *)&tSpokSnd) + 2) = pSt->mainSysInfo.MKUStatus();     // статус МКУ основного БМ
+        * (((BYTE *)&tSpokSnd) + 3) = pSt->rsrvSysInfo.MKUStatus();     // статус МКУ резевного БМ
     }
 
-*/
     return sizeof (DStDataFromMonitor);
 }
 
+// сформировать блок
 void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo& info)
 {
     LinkError[i] = info.linestatus;                         // Тип ошибки: 0-OK,1-молчит,2-CRC
     CntLinkEr[i] = info.errors;                             // Общий счетчик ошибок связи
     LastTime [i] = info.tmdt.toTime_t();                    // Астр.время окончания последнего цикла ТС
 
-    SysStatus[i] = info.SysStatus();                        // Байт 0 - состояние SysStatus
-    SpeedCom3[i] = info.SpeedCom3();                        // Байт 1 - скорость Com3
-    RcnctCom3[i] = info.BreaksCom3();                       // Байт 2 - число реконнектов Com3
-    SpeedCom4[i] = info.SpeedCom4();                        // Байт 3 - скорость Com4
-    RcnctCom4[i] = info.BreaksCom4();                       // Байт 4 - число реконнектов Com4
+    SysStatus[i] = info.SysStatus();                        // состояние SysStatus
+
+    mvv1[i].speedCom3l = info.SpeedCom3();                  // скорость Com3
+    RcnctCom3[i] = info.BreaksCom3();                       // число реконнектов Com3
+
+    mvv2[i].speedCom4l = info.SpeedCom4();                  // скорость Com4
+    RcnctCom4[i] = info.BreaksCom4();                       // число реконнектов Com4
 
     // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
     if (info.st != nullptr)
     {
         if (info.st->Kp2007())
         {
-            SpeedCom3[i] /= 1200;
-            SpeedCom4[i] /= 1200;
-/*
-            memmove (((BYTE*)&SpeedCom3[i])+1,pSt->GetPtrDiag2007MT(i)    ,3);
-            memmove (((BYTE*)&SpeedCom4[i])+1,pSt->GetPtrDiag2007MT(i) + 3,3);
-*/
-//			* (((BYTE *)&tSpokSnd) + 3) = pSt->GetDiag2007MVV(i);
-        }
-/*
-        tSpokSnd = pSt->tSpokSnd;
-        tSpokRcv = pSt->tSpokRcv;
-        if (pSt->IsKp2007())
-        {
-        //			WORD * pMem = (WORD *)&tSpokRcv;
-        //			pMem[0] = pSt->GetStatusExWord(0);	//	GetFreeMem(0);
-        //			pMem[1] = pSt->GetStatusExWord(1);	//	GetFreeMem(1);
+            mvv1[i].speedCom3 = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
+            mvv2[i].speedCom4 = mvv2[i].speedCom4l/1200;
 
-            BYTE * p = (BYTE *)&tSpokRcv;
-            p[0] = pSt->VersionNo	[0];
-            p[1] = pSt->StatusEx	[0];
-            p[2] = pSt->VersionNo	[1];
-            p[3] = pSt->StatusEx	[1];
-
+            mvv1[i].bt1 = info.GetMtuMtsStatus(0);          // отказы модулей
+            mvv1[i].bt2 = info.GetMtuMtsStatus(1);
+            mvv1[i].bt3 = info.GetMtuMtsStatus(2);
+            mvv2[i].bt1 = info.GetMtuMtsStatus(0);
+            mvv2[i].bt2 = info.GetMtuMtsStatus(1);
+            mvv2[i].bt3 = info.GetMtuMtsStatus(2);
         }
-*/
+
+        tSpokSnd = info.st->tSpokSnd;
+        tSpokRcv = info.st->tSpokRcv;
     }
+}
+
+// извлечь данные. pSt - принудительно указывает станцию
+bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
+{
+    // 2012.12.28. Адаптация формата класса с короткими данными (PAGE=1) к формату класса с длинными данными (PAGE=3) за счет сдвига
+    bool bDoShortData = realTsLength < TsMaxLengthBytes;
+    if (bDoShortData)
+    {
+        BYTE * p1 = TS,										// начало блока ТС в коротком и длинном пакетах
+             * p2 = PulseTS,								// начало блока пульсации в целевом длинном пакете
+             * p3 = &reserv2_1;								// указатель на данные за блоками ТС в целевом длинном пакете
+
+        int epilog_length = sizeof (DStDataFromMonitor) - ((BYTE*)&reserv2_1 - (BYTE *) this); // можно и так: (BYTE*)&tSpokRcv - (BYTE*)&reserv2_1 + sizeof(tSpokRcv);
+        memmove (p3, p1 + realTsLength * 2, epilog_length);	// сдвигаем данные подвала (остатка за блоком ТС)
+        memmove (p2, p1 + realTsLength, realTsLength);      // сдвигаем данные пульсации
+    }
+
+    if (Signature != SIGNATURE)
+    {
+        QString msg("Нет сигнатуры в пакете от MONITOR");
+//		LogOutMsg(m_DbDir,s,LOG_NET,LOG_SYS);               // РЕАЛИЗОВАТЬ МЕХАНИЗМ ПРОТОКОЛИРОВАНИЯ И ЛОГОВ В ВИДЕ УНИВЕРСАЛЬНОЙ ФУНКЦИИ
+//		Log (s);                                            // параметры: сообщение, признак протоколирования, источник, тип, станция
+        return false;
+    }
+
+    // если класс Station не задан явно, ищем по номеру
+    if (st == nullptr)
+    {
+        if ((st = Station::GetByNo(NoSt))==nullptr)
+            return false;
+    }
+/*
+#ifdef _ARM_TOOLS
+        DRailChain::ClearRcInfoForStation  (St.NoSt);
+        DRoute::ClearRouteStatusForStation (St.NoSt);
+#endif // #ifdef _ARM_TOOLS
+*/
+
+//	Присвоение номера станции из канала некорректно при подстановках в случае многоканального подключения
+//  Боюсь, что могу вылезти уши, надо потестировать. Пока обрамляю #ifdef
+#ifndef _ARM_TOOLS
+        st->no          = NoSt;									// номер станции
+#endif // #ifndef _ARM_TOOLS
+
+        st->stsOn       = TurnOn > 0;						// Вкл / Откл
+        st->stsActual   = Active > 0;						// актуальная станция (управляемая)
+        st->stsRu       = StsRu > 0;
+        st->stsSu       = StsSu > 0;
+        st->stsMu       = StsMu > 0;
+        st->bybylogic   = ByByLock > 0;
+
+// ........................................................
 }
