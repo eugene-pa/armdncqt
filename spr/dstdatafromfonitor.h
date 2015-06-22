@@ -136,13 +136,13 @@ public:
     bool Extract(class Station *st=NULL, int realTsLength = TsMaxLengthBytes, DRas *pRas = NULL);	// извлечь данные (pSt - принудительно указывает станцию)
 
 //	void ExtractEx(DStation *pSt,int len_st, DRas *pRas=NULL);	// извлечь данные (pSt - принудительно указывает станцию)
-	void ExtractDebugTS();								// отладочная
+    void ExtractDebugTS();                                  // отладочная
 	void ChangeNoSt(BYTE No) { NoSt = No; }
 	
-	WORD GetNoSt() { return NoSt; }						// 2010.03.29
+    WORD GetNoSt() { return NoSt; }                         //
 
-    void PrepareSysInfo (int i, SysInfo& info);
-
+    void PrepareSysInfo (int i, SysInfo& info);             // упаковать   сист.информацию
+    void ExtractSysInfo (int i, SysInfo& info);             // распаковать сист.информацию
 // 11.02.2004. Пытаюсь обеспечить вытаскивание информации по нужным станциям
 
 };

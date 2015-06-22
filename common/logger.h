@@ -6,15 +6,6 @@
 
 class Logger
 {
-private:
-    QDir    dir;                                                // каталог
-    QString sFileNameWithoutExt;
-    QString sExt;
-    QString sFilePath;                                          // полный путь к файлу лога
-    bool	bLogTime;                               			// признак архивирования времени
-    bool	bDayly;                                             // признак ведения лога в отд.файлы для кадого дня nsme-ДД.ext
-    QMutex* locker;                                             // защита
-
 public:
     Logger(QString filename,                                    // имя файла
            bool tmdt        = true,                             // пишем дату/время каждого сообщения
@@ -24,6 +15,20 @@ public:
 
     void log (QString str);                                     // вывод в лог строки  с блокировкой
     QString GetActualFile();                                    // получить актуальный файл
+
+    // статические открытые функции
+    static void SetLoger(Logger * p) { logger = p; }            // установить активный статический логгер
+    static void LogStr (QString str);                           // вывод строки в актуальный лог (если задан) или в отладочное окно
+
+private:
+    static  Logger * logger;                                    // статический экземпляр логгера
+    QDir    dir;                                                // каталог
+    QString sFileNameWithoutExt;
+    QString sExt;
+    QString sFilePath;                                          // полный путь к файлу лога
+    bool	bLogTime;                               			// признак архивирования времени
+    bool	bDayly;                                             // признак ведения лога в отд.файлы для кадого дня nsme-ДД.ext
+    QMutex* locker;                                             // защита
 };
 
 #endif // LOGGER_H

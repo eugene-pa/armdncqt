@@ -7,6 +7,8 @@
 
 #include "logger.h"
 
+Logger * Logger::logger;                                            // статический экземпляр логгера
+
 Logger::Logger(QString filename,                                    // имя файла
                bool tmdt       /*= true */,                         // пишем дату/время каждого сообщения
                bool dayly      /*= false*/,                         // отдельный файл на каждый день в формате ИМЯ-ДД.*
@@ -16,6 +18,7 @@ Logger::Logger(QString filename,                                    // имя ф
     bLogTime  = tmdt;
     bDayly    = dayly;
     locker    = new QMutex();
+    logger    = nullptr;
 
     QFileInfo fi(sFilePath);
     if (!fi.isAbsolute())
@@ -74,4 +77,11 @@ void Logger::log (QString str)
     locker->unlock();
 }
 
-
+// статическая функция вывода строки в актуальный лог (если задан) или в отладочное окно
+void Logger::LogStr (QString str)
+{
+    if (logger != nullptr)
+        logger->log(str);
+    else
+        qDebug() << str;
+}

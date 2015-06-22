@@ -5,7 +5,10 @@
 #include "QDateTime"
 
 #include "enums.h"
-#include "..\common\defines.h"
+#include "../common/defines.h"
+
+
+// класс SysInfo, инкапсулирующий данные блока системной информации
 
 class SysInfo
 {
@@ -17,6 +20,7 @@ public:
     ~SysInfo();
 
     BYTE SysStatus     () { return  src[0]; }               // Байт 0 - состояние SysStatus
+    void SysStatus     (BYTE value) { src[0] = value; }     //
     BYTE MKUStatus     () { return  src[12]; }              // Байт 8 - статус МКУ
     BYTE MVVStatus     () { return  src[12]; }              // Байт 12 - статус МВВ
     BYTE SysStatusEx   () { return  src[14]; }              // Байт 14 - расширенный статус
@@ -29,10 +33,18 @@ public:
     bool Compressed    () { return (src[0] & 0x40) > 0; }   // передача сжатого пакета обновлений ТС
     bool OtuLineOk     () { return (src[0] & 0x80) > 0; }   // ОМУЛ в норме
 
-    int SpeedCom3      () { return (src[1]&0x3f) * 1200; }  // Байт 1 - скорость Com3
-    int BreaksCom3     () { return src[2]; }                // Байт 2 - число реконнектов Com3
-    int SpeedCom4      () { return (src[3]&0x3f) * 1200; }  // Байт 3 - скорость Com4
-    int BreaksCom4     () { return src[4]; }                // Байт 4 - число реконнектов Com4
+    int  SpeedCom3     () { return (src[1]&0x3f) * 1200; }  // Байт 1 - скорость Com3
+    void SpeedCom3     (BYTE value) { src[1] = value; }     //
+
+    int  BreaksCom3    () { return src[2]; }                // Байт 2 - число реконнектов Com3
+    void BreaksCom3    (BYTE value) { src[2] = value; }     //
+
+    int  SpeedCom4     () { return (src[3]&0x3f) * 1200; }  // Байт 3 - скорость Com4
+    void SpeedCom4     (BYTE value) { src[3] = value; }     //
+
+    int  BreaksCom4    () { return src[4]; }                // Байт 4 - число реконнектов Com4
+    void BreaksCom4    (BYTE value) { src[4] = value; }     //
+
                                                             // Байт 8 - MkuStatus
     bool IsRsrv          () { return (src[8 ] & 0x01) > 0; }// Резервный БМ
     bool IsLineOnOne     () { return (src[8 ] & 0x02) > 0; }// Подключен к линии

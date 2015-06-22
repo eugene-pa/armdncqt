@@ -37,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    logger.log ("Запуск приложения");
+    Logger::SetLoger(&logger);
+    Logger::LogStr ("Запуск приложения");
 
     ui->setupUi(this);
 

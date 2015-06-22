@@ -41,8 +41,8 @@ int DStDataFromMonitor::Prepare(Station * pSt)
     MainLineCPU = pSt->MainLineCPU;                         // -1/0/1/2 (отказ/откл/WAITING/OK)
     RsrvLineCPU = pSt->RsrvLineCPU;                         // -1/0/1/2 (отказ/откл/WAITING/OK)
 
-    PrepareSysInfo (0, pSt->mainSysInfo);
-    PrepareSysInfo (0, pSt->rsrvSysInfo);
+    PrepareSysInfo (0, pSt->mainSysInfo);                   // основной  - [0]
+    PrepareSysInfo (1, pSt->rsrvSysInfo);                   // резервный - [1]
 
     if (pSt->Kp2007())
     {
@@ -62,7 +62,7 @@ int DStDataFromMonitor::Prepare(Station * pSt)
     return sizeof (DStDataFromMonitor);
 }
 
-// сформировать блок
+// сформировать блок данных системной информации
 void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo& info)
 {
     LinkError[i] = info.linestatus;                         // Тип ошибки: 0-OK,1-молчит,2-CRC
@@ -118,7 +118,7 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     {
         QString msg("Нет сигнатуры в пакете от MONITOR");
 //		LogOutMsg(m_DbDir,s,LOG_NET,LOG_SYS);               // РЕАЛИЗОВАТЬ МЕХАНИЗМ ПРОТОКОЛИРОВАНИЯ И ЛОГОВ В ВИДЕ УНИВЕРСАЛЬНОЙ ФУНКЦИИ
-//		Log (s);                                            // параметры: сообщение, признак протоколирования, источник, тип, станция
+        Logger::LogStr (msg);                               // параметры: сообщение, признак протоколирования, источник, тип, станция
         return false;
     }
 
@@ -138,15 +138,76 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 //	Присвоение номера станции из канала некорректно при подстановках в случае многоканального подключения
 //  Боюсь, что могу вылезти уши, надо потестировать. Пока обрамляю #ifdef
 #ifndef _ARM_TOOLS
-        st->no          = NoSt;									// номер станции
+    st->no          = NoSt;                                 // номер станции
 #endif // #ifndef _ARM_TOOLS
 
-        st->stsOn       = TurnOn > 0;						// Вкл / Откл
-        st->stsActual   = Active > 0;						// актуальная станция (управляемая)
-        st->stsRu       = StsRu > 0;
-        st->stsSu       = StsSu > 0;
-        st->stsMu       = StsMu > 0;
-        st->bybylogic   = ByByLock > 0;
+    st->stsOn       = TurnOn > 0;                           // Вкл / Откл
+    st->stsActual   = Active > 0;                           // актуальная станция (управляемая)
+    st->stsRu       = StsRu > 0;
+    st->stsSu       = StsSu > 0;
+    st->stsMu       = StsMu > 0;
+    st->bybylogic   = ByByLock > 0;
 
-// ........................................................
+    st->stsFrmMntrErrorLockMsgPresent = stsErrorLogic>0;    // наличие ЗЦ.ОШБ в базовом удаленном АРМ
+    st->stsFrmMntrTsExpired = srsTsExpired;                 // ТС устарели в базовом удаленном АРМ
+
+    // сохраняем массивы tsStsRaw, tsStsPulse (мне кажется эти массивы не используются)
+    memmove (st->tsStsRawPrv  .data_ptr()->data()+1, st->tsStsRaw  .data_ptr()->data()+1, st->tsStsRawPrv  .size()/8+1);
+    memmove (st->tsStsPulsePrv.data_ptr()->data()+1, st->tsStsPulse.data_ptr()->data()+1, st->tsStsPulsePrv.size()/8+1);
+
+    //
+    memmove (st->tsSts     .data_ptr()->data()+1, TS     , st->tsSts     .size()/8+1);
+    memmove (st->tsStsPulse.data_ptr()->data()+1, PulseTS, st->tsStsPulse.size()/8+1);
+
+    st->tsStsRaw = st->tsSts ^ st->tsInverse;               // восстанавливаем исходное состояние по конечному с накладной инверсии
+
+    // IgnoreError - устарело
+
+    // получаем идентификацию в ГИД УРАЛ из удаленного АРМ и сверяем с НСИ
+    st->gidUralIdRemote = IgnoreError >> 1;                 // идентификация в ГИД УРАЛ, полученная из удаленного АРМ
+    int nEsr = st->gidUralIdRemote / 10;
+    if (	nEsr
+        &&	st->gidUralIdRemote && st->gidUralId
+        &&	st->gidUralIdRemote != st->gidUralId )
+    {
+        Logger::LogStr(QString("Несоответствие ЕСР-кодов. Ст.%1 %2 != %3 (удал)").arg(st->name, st->gidUralId, st->gidUralIdRemote));
+    }
+
+    st->stsRsrv = Rsrv & 0x0001 ? TRUE : FALSE;             // проверяем младший бит
+    SysInfo info = st->stsRsrv ? st->rsrvSysInfo : st->mainSysInfo; // состояние актуального БМ
+
+}
+
+void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo& info)
+{
+    info.linestatus = (LineStatus)LinkError[i];             // Тип ошибки: 0-OK,1-молчит,2-CRC
+    info.errors = CntLinkEr[i];                             // Общий счетчик ошибок связи
+    info.tmdt = QDateTime::fromTime_t(LastTime [i]);        // Астр.время окончания последнего цикла ТС
+    info.SysStatus(SysStatus[i]);                           // состояние SysStatus
+    info.SpeedCom3(mvv1[i].speedCom3l);                     // скорость Com3
+    info.BreaksCom3(RcnctCom3[i]);                          // число реконнектов Com3
+    info.SpeedCom4(mvv2[i].speedCom4l);                     // скорость Com4
+    info.BreaksCom4(RcnctCom4[i]);                          // число реконнектов Com4
+
+/*
+    // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
+    if (info.st != nullptr)
+    {
+        if (info.st->Kp2007())
+        {
+            mvv1[i].speedCom3 = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
+            mvv2[i].speedCom4 = mvv2[i].speedCom4l/1200;
+
+            mvv1[i].bt1 = info.GetMtuMtsStatus(0);          // отказы модулей
+            mvv1[i].bt2 = info.GetMtuMtsStatus(1);
+            mvv1[i].bt3 = info.GetMtuMtsStatus(2);
+            mvv2[i].bt1 = info.GetMtuMtsStatus(0);
+            mvv2[i].bt2 = info.GetMtuMtsStatus(1);
+            mvv2[i].bt3 = info.GetMtuMtsStatus(2);
+        }
+
+        tSpokSnd = info.st->tSpokSnd;
+        tSpokRcv = info.st->tSpokRcv;
+    }
+*/
 }

@@ -128,7 +128,8 @@ private:
     QString config;                                         // строка конфигурации
     int     kpIdBase;                                       // ID КП, явно заданный в БД или 0
     int     esr;                                            // код ЕСР
-    int     gidUralId;                                      // идентификация в ГИД УРАЛ
+    int     gidUralId;                                      // идентификация в ГИД УРАЛ в локальной НСИ
+    int     gidUralIdRemote;                                // идентификация в ГИД УРАЛ, полученная из удаленного АРМ
     bool    enable;                                         // OnOff
     bool    du;                                             // станция ДУ
     int     bitmapIdRss;                                    //
@@ -166,12 +167,14 @@ private:
     bool    stsRu;
     bool    stsMu;
     bool    stsOn;
-    bool    stsRsrv;                                        // КП на резерве
+    bool    stsRsrv;                                        // КП на резерве (по состоянию активного блока)
     bool    stsCom3On;
     bool    stsCom4On;
     bool    stsBackChannel;                                 // последний опрос станции по обратному каналу
 
     int     errorLockLogicCount;                            // число актуальных ошибок логического контроля
+    bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
+    bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
 
     SysInfo mainSysInfo;                                    // блок сист.информации основного  БМ
     SysInfo rsrvSysInfo;                                    // блок сист.информации резервного БМ
