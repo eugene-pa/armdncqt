@@ -6,6 +6,7 @@
 //#include <QWidget>
 //#include <QGraphicsView>
 
+// определения, облегчающие перенос кода с MSVC&MFC в QT
 #define BYTE unsigned char
 #define WORD unsigned short
 #define UINT unsigned int
@@ -29,6 +30,56 @@
 #define strlen(str) str.length()
 class DStation;
 
-//QGraphicsView
+enum ProgrammType
+{
+    APP_MONITOR		= 1,
+    APP_MDMAGENT	= 2,        // 2
+    APP_TABLO		= 3,        // 3
+    APP_ARMUTILS	= 4,        // 4
+    APP_PROTOCOL	= 5,        // 5
+    APP_ARM32		= 6,        // 6
+    APP_ARMENERGY	= 7,        // 7
+    APP_BRIDGEASOUP	= 8         // 8
+};
+
+enum LogSourcer
+{
+    LOG_MDM_AGENT = 1,          // 1 - Станция связи
+    LOG_NET_AGENT,              // 2 - Сетевой агент
+    LOG_ARM,                    // 3 - АРМ
+    LOG_MONITOR,                // 4 - Управляющая подсистема
+    LOG_TS,                     // 5 - Подсистема контроля
+    LOG_ASOUP,                  // 6 - Подсистема связи с АСОУП
+    LOG_TEST,                   // 7 - Подсистема диагностики
+    LOG_NET,                    // 8 - Сетевой протокол
+    LOG_SPOK,                   // 9 - СПОК
+    LOG_BD,                     // 10- БД
+    LOG_SETUN,                  // 11- Связь со станцией связи СЕТУНЬ
+    LOG_BRIDGETCP,              // 12- Шлюз с СПД
+    LOG_LOGIC,                  // 13- Контроль несоответствия логических зависимостей
+    LOG_BLANK                   // 14 -Пусто
+};
+
+enum LogTypes
+{
+    LOG_ALARM = 1,              // 1 - Аварийное
+    LOG_TECH,                   // 2 - Технологическое
+    LOG_SYS,                    // 3 - Системное
+    LOG_DIAG,                   // 4 - Диагностическое
+    LOG_PROGRAMM,               // 5 - Программное
+    LOG_FATAL_ERROR,            // 6 - Фатальная ошибка
+    LOG_NOTIFY,                 // 7 - Уведомление
+    LOG_TU,                     // 8 - Команда телеуправления
+//------------------------------------------------------------------------------------------------------------------------
+    LOG_SUPERALARM,             // 9 - Критическая ошибка. ВАЖНО: этого типа нет в SQL, поэтому вместо него пишется LOG_ALARM
+//------------------------------------------------------------------------------------------------------------------------
+};
+
+extern ProgrammType modulType;     // тип приложения
+
+extern bool IsMonitor  ();
+extern bool IsArmTools ();
+extern bool IsRss      ();
+extern bool IsTablo    ();
 
 #endif // DEFINES_H

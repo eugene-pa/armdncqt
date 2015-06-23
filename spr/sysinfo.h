@@ -75,6 +75,7 @@ public:
     bool BackPolling     () { return (src[14] & 0x80) > 0; }// опрос станции с обводного канала
 
     BYTE GetMtuMtsStatus(int i);                            // получить статус модулей БТ индексу 0-5
+    void SetMtuMtsStatus(int i, BYTE bte);                  // установить статус модулей БТ индексу 0-5
 
     QByteArray& Src() { return src; }
 

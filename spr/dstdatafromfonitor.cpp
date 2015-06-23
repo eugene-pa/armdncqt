@@ -128,18 +128,16 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
         if ((st = Station::GetByNo(NoSt))==nullptr)
             return false;
     }
-/*
-#ifdef _ARM_TOOLS
-        DRailChain::ClearRcInfoForStation  (St.NoSt);
-        DRoute::ClearRouteStatusForStation (St.NoSt);
-#endif // #ifdef _ARM_TOOLS
-*/
+    if (!IsArmTools ())
+    {
+        //DRailChain::ClearRcInfoForStation  (St.NoSt);     // TODO
+        //DRoute    ::ClearRouteStatusForStation (St.NoSt); // TODO
+    }
 
 //	Присвоение номера станции из канала некорректно при подстановках в случае многоканального подключения
 //  Боюсь, что могу вылезти уши, надо потестировать. Пока обрамляю #ifdef
-#ifndef _ARM_TOOLS
-    st->no          = NoSt;                                 // номер станции
-#endif // #ifndef _ARM_TOOLS
+    if (IsArmTools ())
+        st->no          = NoSt;                             // номер станции из потока - сомнительная целесообразность
 
     st->stsOn       = TurnOn > 0;                           // Вкл / Откл
     st->stsActual   = Active > 0;                           // актуальная станция (управляемая)
@@ -150,6 +148,9 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
     st->stsFrmMntrErrorLockMsgPresent = stsErrorLogic>0;    // наличие ЗЦ.ОШБ в базовом удаленном АРМ
     st->stsFrmMntrTsExpired = srsTsExpired;                 // ТС устарели в базовом удаленном АРМ
+
+    // в коде исходного проекта здесь реализовани механизм, позволяющий собирать модуль УПРАВЛЕНИЕ с входным потоком от другого модуля УПРАВЛЕНИЕ
+    // с учетом особенностей "смешанных" станций Сетунь; не вдавался в подробности, пока здесь не реализовал; при необходимости - разобраться
 
     // сохраняем массивы tsStsRaw, tsStsPulse (мне кажется эти массивы не используются)
     memmove (st->tsStsRawPrv  .data_ptr()->data()+1, st->tsStsRaw  .data_ptr()->data()+1, st->tsStsRawPrv  .size()/8+1);
@@ -173,7 +174,8 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
         Logger::LogStr(QString("Несоответствие ЕСР-кодов. Ст.%1 %2 != %3 (удал)").arg(st->name, st->gidUralId, st->gidUralIdRemote));
     }
 
-    st->stsRsrv = Rsrv & 0x0001 ? TRUE : FALSE;             // проверяем младший бит
+    st->stsRsrv = Rsrv & 0x0001 ? TRUE : FALSE;             // КП на резервном БМ: проверяем младший бит
+
     SysInfo info = st->stsRsrv ? st->rsrvSysInfo : st->mainSysInfo; // состояние актуального БМ
 
 }
@@ -189,25 +191,23 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo& info)
     info.SpeedCom4(mvv2[i].speedCom4l);                     // скорость Com4
     info.BreaksCom4(RcnctCom4[i]);                          // число реконнектов Com4
 
-/*
+
     // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
     if (info.st != nullptr)
     {
         if (info.st->Kp2007())
         {
-            mvv1[i].speedCom3 = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
-            mvv2[i].speedCom4 = mvv2[i].speedCom4l/1200;
-
-            mvv1[i].bt1 = info.GetMtuMtsStatus(0);          // отказы модулей
-            mvv1[i].bt2 = info.GetMtuMtsStatus(1);
-            mvv1[i].bt3 = info.GetMtuMtsStatus(2);
-            mvv2[i].bt1 = info.GetMtuMtsStatus(0);
-            mvv2[i].bt2 = info.GetMtuMtsStatus(1);
-            mvv2[i].bt3 = info.GetMtuMtsStatus(2);
+            info.SpeedCom3(info.SpeedCom3() * 1200);        // скорость - в одном байте коэффициентом отеосительно 1200
+            info.SpeedCom4(info.SpeedCom3() * 1200);
+            info.SetMtuMtsStatus(0, mvv1[i].bt1);
+            info.SetMtuMtsStatus(1, mvv1[i].bt2);
+            info.SetMtuMtsStatus(2, mvv1[i].bt3);
+            info.SetMtuMtsStatus(3, mvv2[i].bt1);
+            info.SetMtuMtsStatus(4, mvv2[i].bt2);
+            info.SetMtuMtsStatus(5, mvv2[i].bt3);
         }
 
         tSpokSnd = info.st->tSpokSnd;
         tSpokRcv = info.st->tSpokRcv;
     }
-*/
 }

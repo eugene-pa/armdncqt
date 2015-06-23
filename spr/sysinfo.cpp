@@ -31,3 +31,17 @@ BYTE SysInfo::GetMtuMtsStatus(int i)
     }
     return 0;
 }
+
+// установить статус модулей БТ индексу 0-5
+void SysInfo::SetMtuMtsStatus(int i, BYTE bte)
+{
+    switch (i)
+    {
+        case 0: src[ 5] = bte; break;
+        case 1: src[ 6] = bte; break;
+        case 2: src[ 7] = bte; break;
+        case 3: src[ 9] = bte; break;
+        case 4: src[10] = bte; break;
+        case 5: src[11] = bte; break;
+    }
+}

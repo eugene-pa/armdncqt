@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     ../spr/tu.cpp \
     ../spr/streamts.cpp \
     ../spr/dstdatafromfonitor.cpp \
-    ../spr/dras.cpp
+    ../spr/dras.cpp \
+    ../common/defines.cpp
     ../common/boolexpression.cpp \
 
 
