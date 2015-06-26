@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     ../spr/streamts.cpp \
     ../spr/dstdatafromfonitor.cpp \
     ../spr/dras.cpp \
-    ../common/defines.cpp
+    ../common/defines.cpp \
+    ../common/archiver.cpp
     ../common/boolexpression.cpp \
 
 
@@ -68,7 +69,8 @@ HEADERS  += mainwindow.h \
     ../spr/tu.h \
     ../spr/streamts.h \
     ../spr/dstdatafromfonitor.h \
-    ../spr/dras.h
+    ../spr/dras.h \
+    ../common/archiver.h
     ../common/boolexpression.h \
 
 

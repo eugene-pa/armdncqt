@@ -46,17 +46,17 @@ int DStDataFromMonitor::Prepare(Station * pSt)
 
     if (pSt->Kp2007())
     {
-        //BYTE * p = (BYTE *)&(info.st->tSpokRcv);
-        * (((BYTE *)&tSpokRcv) + 0) = pSt->mainSysInfo.LoVersionNo();   // версия основного БМ
-        * (((BYTE *)&tSpokRcv) + 1) = pSt->mainSysInfo.SysStatusEx();   // расширенный статус основного БМ
-        * (((BYTE *)&tSpokRcv) + 2) = pSt->rsrvSysInfo.LoVersionNo();   // версия резевного БМ
-        * (((BYTE *)&tSpokRcv) + 3) = pSt->rsrvSysInfo.SysStatusEx();   // расширенный статус резевного БМ
+        // В КП-2007 использую tSpokSnd для передачи версии и расширенного статцса БМ основного и резервного блоков
+        byteof(tSpokRcv,0) = pSt->mainSysInfo.LoVersionNo();// версия основного БМ
+        byteof(tSpokRcv,1) = pSt->mainSysInfo.SysStatusEx();// расширенный статус основного БМ
+        byteof(tSpokRcv,2) = pSt->rsrvSysInfo.LoVersionNo();// версия резевного БМ
+        byteof(tSpokRcv,3) = pSt->rsrvSysInfo.SysStatusEx();// расширенный статус резевного БМ
 
         // В КП-2007 использую tSpokSnd для передачи MkuStatus и состояния модулей МВВ
-        * (((BYTE *)&tSpokSnd) + 0) = pSt->mainSysInfo.MVVStatus();     // статус МВВ основного БМ
-        * (((BYTE *)&tSpokSnd) + 1) = pSt->rsrvSysInfo.MVVStatus();     // статус МВВ резевного БМ
-        * (((BYTE *)&tSpokSnd) + 2) = pSt->mainSysInfo.MKUStatus();     // статус МКУ основного БМ
-        * (((BYTE *)&tSpokSnd) + 3) = pSt->rsrvSysInfo.MKUStatus();     // статус МКУ резевного БМ
+        byteof(tSpokSnd,0) = pSt->mainSysInfo.MVVStatus();// статус МВВ основного БМ
+        byteof(tSpokSnd,0) = pSt->rsrvSysInfo.MVVStatus();// статус МВВ резевного БМ
+        byteof(tSpokSnd,0) = pSt->mainSysInfo.MKUStatus();// статус МКУ основного БМ
+        byteof(tSpokSnd,0) = pSt->rsrvSysInfo.MKUStatus();// статус МКУ резевного БМ
     }
 
     return sizeof (DStDataFromMonitor);
@@ -177,7 +177,36 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     st->stsRsrv = Rsrv & 0x0001 ? TRUE : FALSE;             // КП на резервном БМ: проверяем младший бит
 
     SysInfo info = st->stsRsrv ? st->rsrvSysInfo : st->mainSysInfo; // состояние актуального БМ
+    ExtractSysInfo (0, st->mainSysInfo);                    // извлечь SysInfo по основному БМ
+    ExtractSysInfo (1, st->rsrvSysInfo);                    // извлечь SysInfo по резервному БМ
 
+    st->tSpokSnd = tSpokSnd;
+    st->tSpokRcv = tSpokRcv;
+
+    if (st->Kp2007())
+    {
+
+        st->mainSysInfo.LoVersionNo (byteof(tSpokRcv,0));   // версия основного БМ
+        st->mainSysInfo.SysStatusEx (byteof(tSpokRcv,1));   // расширенный статус основного БМ
+        st->mainSysInfo.LoVersionNo (byteof(tSpokRcv,2));   // версия резевного БМ
+        st->mainSysInfo.SysStatusEx (byteof(tSpokRcv,3));   // расширенный статус резевного БМ
+
+        st->mainSysInfo.MVVStatus(byteof(tSpokSnd,0));      // статус МВВ основного БМ
+        st->rsrvSysInfo.MVVStatus(byteof(tSpokSnd,1));      // статус МВВ резевного БМ
+        st->mainSysInfo.MKUStatus(byteof(tSpokSnd,2));      // статус МКУ основного БМ
+        st->rsrvSysInfo.MKUStatus(byteof(tSpokSnd,3));      // статус МКУ резевного БМ
+    }
+    else
+    {
+        // оценка работоспособности ОМУЛа путем сравнения времен передачи/приема
+        if (    tSpokSnd                                    // время отправки не нулевое
+            &&  tSpokRcv                                    // время приема не нулевое
+            &&	tSpokRcv > tSpokSnd                         // время приема больше времени отправки
+            &&  qMax(LastTime [0],LastTime [1]) - tSpokSnd < 0 * 5  // а время отправки не более 5 минут
+            )
+            info.src[0] = info.src[0] | 0x80 ;              // омул в порядке!
+    }
+    return true;
 }
 
 void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo& info)

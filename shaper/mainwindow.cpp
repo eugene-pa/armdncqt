@@ -11,7 +11,7 @@
 #include "../spr/tu.h"
 #include "../spr/properties.h"
 #include "../spr/esr.h"
-
+#include "../common/archiver.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -39,6 +39,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
+
+ ArhReader a(QString("D:/APO/ArmDnc11/2013.08.22. RAS/@ras1_15.arh"));
+ a.Read();
 
     ui->setupUi(this);
 

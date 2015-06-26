@@ -1,6 +1,10 @@
 ﻿#ifndef DEFINES_H
 #define DEFINES_H
 
+#include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QDir>
 #include <QGraphicsItem>
 #include <QColor>
 //#include <QWidget>
@@ -28,6 +32,9 @@
 #define strstr(str,text) (str.indexOf(text)>=0)
 #define strcmp(str1,str2) (str1==str2)
 #define strlen(str) str.length()
+
+#define byteof(p,i) *(((BYTE *)&p)+i)                       // получить i-й байт области по произвольному указателю
+
 class DStation;
 
 enum ProgrammType
