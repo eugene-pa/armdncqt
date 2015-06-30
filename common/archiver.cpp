@@ -14,7 +14,7 @@ int ArchiveHeader::Read(QFile * file)
     if (file != nullptr)
     {
         offset = file->pos();
-        return file->read((char*)this, sizeof(ArchiveHeader)-sizeof(offset));
+        return file->read((char*)this, headersize);
     }
     else
     {
@@ -43,8 +43,38 @@ ArhReader::ArhReader(QString& filename)
 }
 
 // чтение записи от текущего положения указателя
-int ArhReader::Read()
+int ArhReader::Next()
 {
-    return Header.Read(&file);
+    int length = 0;
+    if (header.Read(&file) == ArchiveHeader::headersize)
+    {
+        length = file.read(data, Length() + 4);             // считываем вместе с оконечным укзателем на запись
+        if (header.offset != *((int *)(data+length-4)))     // проверяем соответствие смещения записи указателю на начало записи за данными
+            qDebug() << "Нарушение формата архива";
+    }
+    return length == Length() ? length : -1;
 }
 
+// чтение записи от текущего положения указателя
+int ArhReader::First()
+{
+    file.seek(0);
+    return Next();
+}
+
+// чтение записи от текущего положения указателя
+int ArhReader::Last()
+{
+    file.seek(file.size());
+    return Prev();
+}
+
+// чтение записи от текущего положения указателя
+int ArhReader::Prev()
+{
+    file.seek(file.pos() - 4);
+    int pos;
+    file.read((char *)&pos, 4);
+    file.seek(pos);
+    return Next();
+}

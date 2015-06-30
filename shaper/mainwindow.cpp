@@ -40,8 +40,11 @@ MainWindow::MainWindow(QWidget *parent) :
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
- ArhReader a(QString("D:/APO/ArmDnc11/2013.08.22. RAS/@ras1_15.arh"));
- a.Read();
+QString s ("D:/APO/ArmDnc11/2013.08.22. RAS/@ras1_15.arh");
+ArhReader a(s);
+a.Next();
+a.Next();
+a.Next();
 
     ui->setupUi(this);
 
