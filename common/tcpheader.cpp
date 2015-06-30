@@ -26,3 +26,7 @@ QString TcpHeader::ErrorInfo (QAbstractSocket::SocketError error)
     }
 }
 
+bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, QString& port)
+{
+    //QRegularExpression
+}

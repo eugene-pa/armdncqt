@@ -3,6 +3,8 @@
 
 #include "tcpheader.h"
 
+
+// класс для работы с форматированными пакетами межсетевого протокола ДЦ "ЮГ"
 class ClientTcp
 {
     Q_OBJECT
@@ -22,18 +24,22 @@ signals:
     void dataready   (ClientTcp *);
 
 public:
-    ClientTcp(QString ipport);
-    ClientTcp(QString ip, int port);
-    ~ClientTcp(QString ip);
+    ClientTcp(QString& ipport);
+    ClientTcp(QString& ip, int port);
+    ~ClientTcp();
 
-    void bind (QString ip);
+    void bind (QString& ip);
     void compressMode(bool s);
 
 private:
-    QTcpSocket * sock;
-    QString     bindIP;
-    bool        compress;
-    char        data[65536+8];
+    QString     ip;
+    int         port;
+    QTcpSocket * sock;                                      // сокет
+    QString     bindIP;                                     // IP привязки или пустая строка
+    bool        compress;                                   // сжатие на лету
+    char        * data;                                     // указатель на данные
+
+    void        init();
 };
 
 #endif // CLIENTTCP_H
