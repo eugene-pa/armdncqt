@@ -85,3 +85,15 @@ void Logger::LogStr (QString str)
     else
         qDebug() << str;
 }
+
+// получить 16-ричную строку
+QString Logger::GetHex(char * data, int length)
+{
+    QString tmp;
+    for (int i=0; i<length; i++)
+    {
+        tmp += QString("%1 ").arg((BYTE)data[i],2,16,QChar('0')).toUpper();
+    }
+    return tmp;
+}
+

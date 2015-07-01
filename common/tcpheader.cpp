@@ -1,32 +1,50 @@
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include "tcpheader.h"
-
-
 
 
 QString TcpHeader::ErrorInfo (QAbstractSocket::SocketError error)
 {
     switch (error)
     {
-        case QAbstractSocket::ConnectionRefusedError:
-            return "Соединение было разорвано другим узлом (или по тайм-ауту)";
-
-        case QAbstractSocket::RemoteHostClosedError             : return "Удалённый хост закрыл соединение. Помните, что сокет клиента (например, текущий сокет) будет закрыт после отправления удалённого уведомления";
+        case QAbstractSocket::ConnectionRefusedError            : return "Нет соединения с удаленным хостом";
+        case QAbstractSocket::RemoteHostClosedError             : return "Удаленный хост разорвал соединение";
         case QAbstractSocket::HostNotFoundError                 : return "Адрес узла не найден";
-        case QAbstractSocket::SocketAccessError                 : return "Операция с сокетом была прервана, так как приложение не получило необходимых прав";
-        case QAbstractSocket::SocketResourceError               : return "У текущей системы не хватило ресурсов (например, слишком много сокетов)";
-        case QAbstractSocket::SocketTimeoutError                : return "Время для операции с сокетом истекло";
-        case QAbstractSocket::DatagramTooLargeError             : return "Дейтаграмма больше, чем установленное ограничение в операционной системе (которое может быть меньше, чем 8192 байт)";
-        case QAbstractSocket::NetworkError                      : return "Произошла ошибка в сети (например, сетевой кабель был неожиданно отключён)";
-        case QAbstractSocket::AddressInUseError                 : return "Адрес, определённый в QUdpSocket::bind(), уже используется и установлен в состояние эксклюзивного использования";
-        case QAbstractSocket::SocketAddressNotAvailableError	: return "Адрес, определённый в QUdpSocket::bind(), не найден на узле";
-        case QAbstractSocket::UnsupportedSocketOperationError	: return "Запрашиваемая операция с сокетом не поддерживается текущей операционной системой (например, отсутствует поддержка IPv6)";
+        case QAbstractSocket::SocketAccessError                 : return "Не достаточно прав для операции на сокете";
+        case QAbstractSocket::SocketResourceError               : return "Не достаточно системных ресурсов";
+        case QAbstractSocket::SocketTimeoutError                : return "Истекло время для операции с сокетом";
+        case QAbstractSocket::DatagramTooLargeError             : return "Размер дейтаграммы превышаеи максимальный";
+        case QAbstractSocket::NetworkError                      : return "Ошибка сетевого оборудованияв";
+        case QAbstractSocket::AddressInUseError                 : return "Адрес привязки уже используется в эксклюзивном режиме";
+        case QAbstractSocket::SocketAddressNotAvailableError	: return "Адрес привязки не найден на узле";
+        case QAbstractSocket::UnsupportedSocketOperationError	: return "Запрашиваемая операция не поддерживается ОС";
         case QAbstractSocket::ProxyAuthenticationRequiredError	: return "Сокет использует прокси, который запрашивает аутентификацию";
         case QAbstractSocket::UnknownSocketError                :
-        default                                                 : return "Произошла неопределённая ошибка";
+        default                                                 : return "Неопределённая ошибка сокета";
     }
 }
 
-bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, QString& port)
+bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, int& port)
 {
-    //QRegularExpression
+    bool ret = true;
+    ip.clear();
+    port = 0;
+    QRegularExpressionMatch match = QRegularExpression("\\b([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}):[0-9]{1,5}\\b").match(ipport);
+    if (match.hasMatch())
+    {
+        QRegularExpressionMatch matchip   = QRegularExpression(".+(?=:)").match(ipport);
+        QRegularExpressionMatch matchport = QRegularExpression("(?<=:).+").match(ipport);
+        // QRegularExpressionMatch matchport2 = QRegularExpression("\\d+$").match(ipport);
+        if (matchip.hasMatch())
+            ip = matchip.captured();
+        else
+            ret = false;
+        if (matchport.hasMatch())
+            port = matchport.captured().toInt();
+        else
+            ret = false;
+    }
+    else
+        ret = false;
+    return ret;
 }

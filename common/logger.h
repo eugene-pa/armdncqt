@@ -3,6 +3,7 @@
 
 #include <QDir>
 #include <QMutex>
+#include "defines.h"
 
 class Logger
 {
@@ -19,6 +20,8 @@ public:
     // статические открытые функции
     static void SetLoger(Logger * p) { logger = p; }            // установить активный статический логгер
     static void LogStr (QString str);                           // вывод строки в актуальный лог (если задан) или в отладочное окно
+    static QString GetHex(char * data, int maxlength=16);
+    static QString GetHex(QByteArray array, int maxlength=16);
 
 private:
     static  Logger * logger;                                    // статический экземпляр логгера

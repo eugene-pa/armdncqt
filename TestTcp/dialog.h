@@ -17,12 +17,13 @@ public:
     ~Dialog();
 
 private slots:
-    void on_pushStart();
 
     void slotReadyRead      ();
     void slotConnected      ();
     void slotDisconnected   ();
     void slotError (QAbstractSocket::SocketError);
+
+    void on_pushButtonStart_clicked();
 
 private:
     Ui::Dialog *ui;

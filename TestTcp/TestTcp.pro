@@ -17,11 +17,13 @@ SOURCES += main.cpp\
         dialog.cpp \
     ../common/tcpheader.cpp \
     ../common/defines.cpp \
-    ../common/clienttcp.cpp
+    ../common/clienttcp.cpp \
+    ../common/logger.cpp
 
 HEADERS  += dialog.h \
     ../common/tcpheader.h \
     ../common/defines.h \
-    ../common/clienttcp.h
+    ../common/clienttcp.h \
+    ../common/logger.h
 
 FORMS    += dialog.ui
