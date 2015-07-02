@@ -1,17 +1,15 @@
 #include <QRegExpValidator>
 #include <QTextCodec>
 #include <QTime>
-#include "../common/tcpheader.h"
+#include "../common/clienttcp.h"
 #include "../common/logger.h"
 #include "dialog.h"
 #include "ui_dialog.h"
 
 
-QTcpSocket * client;
-QString msg;
-QString ip;
-int port;
 Logger logger("Log/shaper.txt", true, true);
+
+
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -29,87 +27,76 @@ Dialog::~Dialog()
     delete ui;
 }
 
-
-char _data[65535];
-int _length = 0;
-int _toRead = 4;
-
-void Dialog::slotReadyRead()
-{
-    ui->label_msg->setText(msg = "Готов к чтению");
-    logger.log(msg);
-
-    while (true)
-    {
-        _length += client->read(_data+_length, _toRead - _length);
-        if (_length < _toRead)
-            return;
-        if (_length==4)
-        {
-            if (((TcpHeader *)_data)->Signatured())
-            {
-                qDebug() << "Сигнатура";
-                _toRead += ((TcpHeader *)_data)->Length();
-            }
-            else
-            {
-                qDebug() << "Неформатные данные";
-                return;
-            }
-        }
-        else
-            break;
-
-    }
-
-    ui->label_msg->setText(msg = QString("%1. Получены данные: %2 байт").arg(QTime::currentTime().toString()).arg(_length));
-    ui->labelRcv->setText(Logger::GetHex(_data, qMin(_length,16)));
-    logger.log(msg);
-}
-
-void Dialog::slotConnected()
-{
-    ui->label_msg->setText(msg = "Соединение");
-    logger.log(msg);
-
-    //QByteArray("АРМ ШН");
-    QByteArray id = QTextCodec::codecForName("Windows-1251")->fromUnicode(QByteArray("АРМ ШН"));
-    id[id.length()] = 0;
-
-    client->write(id);
-}
-
-void Dialog::slotError (QAbstractSocket::SocketError er)
-{
-    ui->label_msg->setText(msg = QString("%1. Ошибка: %2").arg(QTime::currentTime().toString()).arg(TcpHeader::ErrorInfo(er)));
-    logger.log(msg);
-    if (client->state() != QAbstractSocket::ConnectedState)
-        client->connectToHost(ip,port);
-}
-
-void Dialog::slotDisconnected()
-{
-    ui->label_msg->setText(msg = QString("%1. Разрыв соединения").arg(QTime::currentTime().toString()));
-    logger.log(msg);
-    client->connectToHost(ip,port);
-}
-
-
 // привязка слота выполняется в контекстном меню контрола GOTO SLOT (перейти к слоту)
 // судф по всему, явный вызов coonect вфполняется в функции setupUi - >QMetaObject::connectSlotsByName(Dialog), вызываемой в метафайле UI_Dialog.h
 void Dialog::on_pushButtonStart_clicked()
 {
     QString ipport = ui->lineEdit_IP->text();
-    TcpHeader::ParseIpPort(ipport, ip, port);
-
     ui->label_msg->setText(ipport);
 
-    client = new QTcpSocket(this);
-    QObject::connect(client, SIGNAL(connected()), this, SLOT(slotConnected()));
-    QObject::connect(client, SIGNAL(readyRead()), this, SLOT(slotReadyRead()));
-    QObject::connect(client, SIGNAL(disconnected()),this, SLOT(slotDisconnected()));
-    QObject::connect(client, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(slotError(QAbstractSocket::SocketError)));
+    client = new ClientTcp(ipport, &logger);
+    client->setid("АРМ ШН");
+    QObject::connect(client, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
+    QObject::connect(client, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
+    QObject::connect(client, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
+    QObject::connect(client, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
+    QObject::connect(client, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
+    client->start();
 
-    client->connectToHost(ip,port);
+    ui->pushButtonStart->setEnabled(false);
+    ui->pushButtonStop->setEnabled(true);
 }
 
+void Dialog::on_pushButtonStop_clicked()
+{
+    client->stop();
+    ui->pushButtonStart->setEnabled(true);
+    ui->pushButtonStop->setEnabled(false);
+}
+
+
+// установлено соединение
+void Dialog::connected   (ClientTcp *client)
+{
+    ui->label_msg->setText(msg = QString("Соединение c хостом %1").arg(client->Name()));
+    logger.log(msg);
+}
+
+// разорвано соединение
+void Dialog::disconnected(ClientTcp *client)
+{
+    ui->label_msg->setText(msg = QString("%1. Разрыв соединения c клиентом %2").arg(QTime::currentTime().toString()).arg(client->Name()));
+    logger.log(msg);
+}
+
+// ошибка сокета
+void Dialog::error (ClientTcp *client)
+{
+
+}
+
+// готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
+void Dialog::dataready   (ClientTcp * client)
+{
+    ui->label_msg->setText(msg = QString("%1. Получены форматные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()));
+    ui->labelRcv->setText(Logger::GetHex(client->RawData(), qMin(client->RawLength(),16)));
+    logger.log(msg);
+    client->SendAck();
+}
+
+// получены необрамленные данные - отдельный сигнал
+void Dialog::rawdataready(ClientTcp *client)
+{
+    ui->label_msg->setText(msg = QString("%1. Получены неформатные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()));
+    ui->labelRcv->setText(Logger::GetHex(client->RawData(), qMin(client->RawLength(),16)));
+    logger.log(msg);
+
+}
+
+
+
+// передача данных
+void Dialog::on_pushButton_clicked()
+{
+
+}

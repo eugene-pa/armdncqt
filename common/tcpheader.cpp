@@ -2,6 +2,11 @@
 #include <QRegularExpressionMatch>
 #include "tcpheader.h"
 
+TcpHeader::TcpHeader()
+{
+    signature = SIGNATURE;
+    length = 4;
+}
 
 QString TcpHeader::ErrorInfo (QAbstractSocket::SocketError error)
 {
@@ -48,3 +53,4 @@ bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, int& port)
         ret = false;
     return ret;
 }
+

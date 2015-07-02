@@ -1,3 +1,4 @@
+#include <QTextCodec>
 #include "clienttcp.h"
 
 
@@ -25,6 +26,13 @@ void ClientTcp::init()
     data = new char[65536 + 8];
     toRead = sizeof(TcpHeader);                             // 4 байта - чтение заголовка
     length = 0;
+
+    // привязка своих слотов к сигналам QTcpSocket
+    QObject::connect(sock, SIGNAL(connected   ()), this, SLOT(slotConnected()));
+    QObject::connect(sock, SIGNAL(readyRead   ()), this, SLOT(slotReadyRead()));
+    QObject::connect(sock, SIGNAL(disconnected()), this, SLOT(slotDisconnected()));
+    QObject::connect(sock, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(slotError(QAbstractSocket::SocketError)));
+
     log(msg = QString("Конструктор ClientTcp %1:%2").arg(ip).arg(port));
 }
 
@@ -57,37 +65,57 @@ void ClientTcp::slotReadyRead      ()
 {
     while (true)
     {
-        length += sock->read(data+length, toRead);
+        length += sock->read(data+length, toRead-length);
         if (length < toRead)
+        {
+            qDebug() << "Недобор до" << toRead << ". Прочитано: " << length;
             return;
-        if (length==4)
+        }
+        if (length==sizeof(TcpHeader))
         {
             if (((TcpHeader *)data)->Signatured())
-                toRead += ((TcpHeader *)data)->Length();
+            {
+                qDebug() << "Сигнатура";
+                toRead = ((TcpHeader *)data)->Length();    // общая длина пакета (загловок + данные)
+            }
             else
             {
-                // неформатные данные
+                qDebug() << "Неформатные данные";
+                // читаем все, что есть
+                length += sock->read(data+length, 65536-length);
+                rawdataready(this);
                 return;
             }
         }
+        else
+        {
+            dataready (this);                               // обращение к подключенным слотам; они должны гарантированно забрать данные
 
+            length = 0;
+            toRead = sizeof(TcpHeader);
+        }
     }
-    dataready (this);
-    length = 0;
-    toRead = sizeof(TcpHeader);
 }
 
 // установлено соединение
 void ClientTcp::slotConnected ()
 {
     log (msg=QString("Установлено соединения c хостом %1:%2").arg(ip).arg(port));
+
+    // если определен тип, отправляет тип удаленному серверу, преобразовав в кодировку Windows-1251
+    if (idtype.length())
+    {
+        QByteArray id = QTextCodec::codecForName("Windows-1251")->fromUnicode(idtype);
+        id[id.length()] = 0;
+        Send(id);
+    }
     connected (this);
 }
 
 // разорвано соединение
 void ClientTcp::slotDisconnected ()
 {
-    log (msg=QString("Разрыв соединения c хостом %1:%2").arg(ip).arg(port));
+    log (msg=QString("Разрыв соединения c хостом %1").arg(Name()));
     disconnected (this);
     if (run)
         sock->connectToHost(ip,port);
@@ -96,7 +124,7 @@ void ClientTcp::slotDisconnected ()
 // ошибка
 void ClientTcp::slotError (QAbstractSocket::SocketError er)
 {
-    log (msg=QString("Клиент %1:%2. Ошибка: %3").arg(ip).arg(port).arg(TcpHeader::ErrorInfo(er)));
+    log (msg=QString("Клиент %1. Ошибка: %2").arg(Name()).arg(TcpHeader::ErrorInfo(er)));
     error (this);
     if (run && !connected())
         sock->connectToHost(ip,port);
@@ -108,4 +136,28 @@ void ClientTcp::log (QString& msg)
         logger->log(msg);
     else
         qDebug() << msg;
+}
+
+// передача блока данных
+void ClientTcp::Send(void * p, int length)
+{
+    if (connected())
+        sock->write((char*)p,length);
+    else
+        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
+}
+
+// передача массива
+void ClientTcp::Send(QByteArray& array)
+{
+    if (connected())
+        sock->write(array);
+    else
+        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
+}
+
+void ClientTcp::SendAck()
+{
+    TcpHeader ack;
+    Send (&ack, sizeof(ack));
 }
