@@ -2,20 +2,22 @@
 #include "clienttcp.h"
 
 
-ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress)
+ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress, QString idtype)
 {
     this->ip = ip;
     this->port = port;
     logger = p;
     this->compress = compress;
+    this->idtype = idtype;
     init();
 }
 
-ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress)
+ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
 {
     TcpHeader::ParseIpPort(ipport, ip, port);
     logger = p;
     this->compress = compress;
+    this->idtype = idtype;
     init();
 }
 

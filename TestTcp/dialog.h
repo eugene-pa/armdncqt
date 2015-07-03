@@ -32,7 +32,7 @@ private slots:
 
     void on_pushButtonStop_clicked();
 
-    void on_pushButton_clicked();
+    void on_pushButtonSend_clicked();
 
 private:
     Ui::Dialog *ui;

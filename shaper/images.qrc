@@ -20,4 +20,27 @@
         <file>../images/index_add.png</file>
         <file>../images/index_down.png</file>
     </qresource>
+    <qresource prefix="/status">
+        <file>../images/box_blue.ico</file>
+        <file>../images/box_grn.ico</file>
+        <file>../images/box_grn_dark.ico</file>
+        <file>../images/box_grn_tu.ico</file>
+        <file>../images/box_gry.ico</file>
+        <file>../images/box_red.ico</file>
+        <file>../images/box_red_dark.ico</file>
+        <file>../images/box_wht.ico</file>
+        <file>../images/box_yel.ico</file>
+        <file>../images/box_yel_dark.ico</file>
+        <file>../images/box_yel_tu.ico</file>
+        <file>../images/icon_cyn.ico</file>
+        <file>../images/icon_grn.ico</file>
+        <file>../images/icon_grn_dark.ico</file>
+        <file>../images/icon_gry.ico</file>
+        <file>../images/icon_non.ico</file>
+        <file>../images/icon_red.ico</file>
+        <file>../images/icon_red_dark.ico</file>
+        <file>../images/icon_wht.ico</file>
+        <file>../images/icon_yel.ico</file>
+        <file>../images/icon_yel_dark.ico</file>
+    </qresource>
 </RCC>

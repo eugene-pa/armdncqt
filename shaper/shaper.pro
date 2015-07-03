@@ -6,6 +6,7 @@
 
 QT       += core gui widgets sql
 CONFIG   += console c++11
+QT       += network
 
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -40,7 +41,9 @@ SOURCES += main.cpp\
     ../spr/dstdatafromfonitor.cpp \
     ../spr/dras.cpp \
     ../common/defines.cpp \
-    ../common/archiver.cpp
+    ../common/archiver.cpp \
+    ../common/clienttcp.cpp \
+    ../common/tcpheader.cpp
     ../common/boolexpression.cpp \
 
 
@@ -70,7 +73,9 @@ HEADERS  += mainwindow.h \
     ../spr/streamts.h \
     ../spr/dstdatafromfonitor.h \
     ../spr/dras.h \
-    ../common/archiver.h
+    ../common/archiver.h \
+    ../common/clienttcp.h \
+    ../common/tcpheader.h
     ../common/boolexpression.h \
 
 

@@ -18,8 +18,9 @@ Dialog::Dialog(QWidget *parent) :
     ui->setupUi(this);
 
     // Валидатор с помощью регулярного выражения
-    QRegExp reg("\\b([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}):[0-9]{1,5}\\b");
-    ui->lineEdit_IP->setValidator(new QRegExpValidator(reg,this));
+    ;
+    ui->lineEdit_IP->setValidator(new QRegExpValidator(QRegExp("\\b([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}):[0-9]{1,5}\\b"),this));
+    //ui->lineEditToSend->setValidator(new QRegExpValidator(QRegExp("[0-9a-f A-F ]+"),this));
 }
 
 Dialog::~Dialog()
@@ -45,6 +46,7 @@ void Dialog::on_pushButtonStart_clicked()
 
     ui->pushButtonStart->setEnabled(false);
     ui->pushButtonStop->setEnabled(true);
+    ui->lineEditToSend->setEnabled(true);
 }
 
 void Dialog::on_pushButtonStop_clicked()
@@ -52,6 +54,7 @@ void Dialog::on_pushButtonStop_clicked()
     client->stop();
     ui->pushButtonStart->setEnabled(true);
     ui->pushButtonStop->setEnabled(false);
+    ui->lineEditToSend->setEnabled(false);
 }
 
 
@@ -95,8 +98,7 @@ void Dialog::rawdataready(ClientTcp *client)
 
 
 
-// передача данных
-void Dialog::on_pushButton_clicked()
+void Dialog::on_pushButtonSend_clicked()
 {
-
+    client->Send(QTextCodec::codecForName("Windows-1251")->fromUnicode(ui->lineEditToSend->text()));
 }

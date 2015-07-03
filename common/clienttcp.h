@@ -26,8 +26,8 @@ signals:
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
 
 public:
-    ClientTcp(QString& ipport, Logger * = nullptr, bool compress=false);
-    ClientTcp(QString& ip, int port, Logger * = nullptr, bool compress=false);
+    ClientTcp(QString& ipport, Logger * = nullptr, bool compress=false, QString idtype = "");
+    ClientTcp(QString& ip, int port, Logger * = nullptr, bool compress=false, QString idtype = "");
     ~ClientTcp();
 
     void start ();                                          // старт работы сокета
