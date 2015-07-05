@@ -12,16 +12,19 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
+    QString images("../images/");                                   // путь к образам
 #endif
 #ifdef Q_OS_MAC
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
     QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
+    QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
 #endif
 #ifdef Q_OS_LINUX
     QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
     QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
     QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
+    QString images("../images/");                                   // путь к образам
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -39,9 +42,9 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(mdiArea);
 
     // загрузка графики
-    green   = new QPixmap("../images/icon_grn.ico");
-    red     = new QPixmap("../images/icon_red.ico");
-    yellow  = new QPixmap("../images/icon_yel.ico");
+    green   = new QPixmap(images + "icon_grn.ico");
+    red     = new QPixmap(images + "icon_red.ico");
+    yellow  = new QPixmap(images + "icon_yel.ico");
 
     // добавляем в статус бар поля "IP_ПОРТ" и индикатор соединения
     ui->statusBar->addPermanentWidget(new QLabel(server_ipport));   //
@@ -99,6 +102,9 @@ void MainWindow::on_actionNewForm_triggered()
     //sets.append(new ShapeSet("/Volumes/BOOTCAMP/SKZD/01.Краснодар-Кавказская/Pictures/Гетмановская.shp"));
 }
 
+
+
+// обработка уведомлений ClientTcp
 // установлено соединение
 void MainWindow::connected   (ClientTcp *client)
 {
@@ -116,7 +122,7 @@ void MainWindow::disconnected(ClientTcp *client)
 // ошибка сокета
 void MainWindow::error (ClientTcp *client)
 {
-
+    hostStatus.setPixmap(*red);
 }
 
 // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены

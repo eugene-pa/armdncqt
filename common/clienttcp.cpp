@@ -28,6 +28,7 @@ void ClientTcp::init()
     data = new char[65536 + 8];
     toRead = sizeof(TcpHeader);                             // 4 байта - чтение заголовка
     length = 0;
+    rcvd[0] = rcvd[1] = sent[0] = sent[1] = 0;
 
     // привязка своих слотов к сигналам QTcpSocket
     QObject::connect(sock, SIGNAL(connected   ()), this, SLOT(slotConnected()));
@@ -78,19 +79,22 @@ void ClientTcp::slotReadyRead      ()
             if (((TcpHeader *)data)->Signatured())
             {
                 qDebug() << "Сигнатура";
-                toRead = ((TcpHeader *)data)->Length();    // общая длина пакета (загловок + данные)
+                toRead = ((TcpHeader *)data)->Length();     // общая длина пакета (загловок + данные)
             }
             else
             {
                 qDebug() << "Неформатные данные";
                 // читаем все, что есть
                 length += sock->read(data+length, 65536-length);
+                rcvd[1] += length;                          // инкремент
+
                 rawdataready(this);
                 return;
             }
         }
         else
         {
+            rcvd[0]++; rcvd[1] += length;                   // инкремент
             dataready (this);                               // обращение к подключенным слотам; они должны гарантированно забрать данные
 
             length = 0;
@@ -126,10 +130,11 @@ void ClientTcp::slotDisconnected ()
 // ошибка
 void ClientTcp::slotError (QAbstractSocket::SocketError er)
 {
+    _lasterror = er;
     log (msg=QString("Клиент %1. Ошибка: %2").arg(Name()).arg(TcpHeader::ErrorInfo(er)));
     error (this);
-    if (run && !connected())
-        sock->connectToHost(ip,port);
+//  if (run && !connected())
+//      sock->connectToHost(ip,port);
 }
 
 void ClientTcp::log (QString& msg)
@@ -144,7 +149,10 @@ void ClientTcp::log (QString& msg)
 void ClientTcp::Send(void * p, int length)
 {
     if (connected())
+    {
         sock->write((char*)p,length);
+        sent[0]++; sent[1] += length;
+    }
     else
         log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
 }
@@ -153,7 +161,10 @@ void ClientTcp::Send(void * p, int length)
 void ClientTcp::Send(QByteArray& array)
 {
     if (connected())
+    {
         sock->write(array);
+        sent[0]++; sent[1] += array.length();
+    }
     else
         log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
 }

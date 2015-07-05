@@ -37,6 +37,7 @@ public:
     void setlogger(Logger * p) { logger = p; }
     void setid(QString id) { idtype = id; }
     bool connected() { return sock->state() == QAbstractSocket::ConnectedState; }
+    QAbstractSocket::SocketError lasterror() { return _lasterror; }
 
     QString Name()                                          // имя в формате IP:порт
         { return QString("%1:%2").arg(ip).arg(port); }
@@ -47,6 +48,8 @@ public:
     void   Send(void *data, int length);                    // передача
     void   Send(QByteArray&);                               // передача
     void   SendAck();                                       // квитанция
+    UINT   Rcvd(int i) { return rcvd[i?1:0]; }              // счетчик: 0-пакетов, 1-байтов
+    UINT   Sent(int i) { return sent[i?1:0]; }              // счетчик: 0-пакетов, 1-байтов
 
 private:
     QString     ip;
@@ -59,10 +62,13 @@ private:
     QString     msg;                                        // строка для формирования сообщений
     Logger      * logger;                                   // логгер для протоколирования
     bool        compress;                                   // сжатие на лету
+    QAbstractSocket::SocketError _lasterror;                // ошибка
 
     // состояние приема пакета
     int         toRead;                                     // требуемый объем данных
     int         length;                                     // прочитанный объем данных
+    UINT        rcvd[2];                                    // получено   (пакеты, байты)
+    UINT        sent[2];                                    // отправлено (пакеты, байты)
 
     void init ();
     void log (QString&);

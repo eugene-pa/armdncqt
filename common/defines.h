@@ -21,8 +21,8 @@
 #define LPCTSTR const char *
 #define COLORREF QColor
 #define BOOL bool
-//#define FALSE false
-//#define TRUE  true
+#define FALSE false
+#define TRUE  true
 #define CString QString
 #define CPen QPen
 #define CBrush QBrush
