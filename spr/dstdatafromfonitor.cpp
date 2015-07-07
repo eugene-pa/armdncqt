@@ -5,6 +5,10 @@
 #include "svtf.h"
 #include "strl.h"
 
+// глобальная переменная "реальная длина однобитного блока данных ТС"; с учетом двухбитной передачи длина удваивается
+//int RealStreamTsLength;
+static DStDataFromMonitor ActualStData;                     // статический экземляр, использующейся для распаковки актуального станционного блока
+
 // сформировать данные
 int DStDataFromMonitor::Prepare(Station * pSt)
 {
@@ -207,6 +211,20 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
             info.src[0] = info.src[0] | 0x80 ;              // омул в порядке!
     }
     return true;
+}
+
+bool DStDataFromMonitor::Extract(Station *st, DDataFromMonitor * pDtFrmMnt, DRas *pRas)
+{
+    // 2012.12.28. Адаптация формата класса с короткими данными (PAGE=1) к формату класса с длинными данными (PAGE=1) за счет сдвига
+    int LenOneSt = pDtFrmMnt->GetLenOneSt();				// размер класса из потока
+    int ExtraLength = sizeof(DStDataFromMonitor) - TsMaxLengthBytes * 2;// длина класса без ТС
+    g_RealStreamTsLength = (LenOneSt - ExtraLength) / 2;							// размер блока ТС из потока
+    if (st)
+        st->realStreamTsLength = g_RealStreamTsLength;
+
+    memset (&ActualStData, 0, sizeof(ActualStData));							// обнулить класс на случай коротких данных
+    memmove(&ActualStData, this, LenOneSt);										// скопировать данные
+    return ActualStData.Extract (st, g_RealStreamTsLength, pRas);
 }
 
 void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo& info)

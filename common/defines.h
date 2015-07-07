@@ -7,6 +7,8 @@
 #include <QDir>
 #include <QGraphicsItem>
 #include <QColor>
+#include <time.h>
+
 //#include <QWidget>
 //#include <QGraphicsView>
 
@@ -21,8 +23,12 @@
 #define LPCTSTR const char *
 #define COLORREF QColor
 #define BOOL bool
+#ifndef FALSE                                               // для WINDOWS определения FALSE,TRUE даются в minwindef.h
 #define FALSE false
+#endif
+#ifndef TRUE
 #define TRUE  true
+#endif
 #define CString QString
 #define CPen QPen
 #define CBrush QBrush
@@ -88,5 +94,16 @@ extern bool IsMonitor  ();
 extern bool IsArmTools ();
 extern bool IsRss      ();
 extern bool IsTablo    ();
+
+// глобальные переменные
+extern bool g_ShowStrlText  ;                               // отображение надписей на стрелках
+extern bool g_ShowSvtfText  ;                               // отображение надписей на светофорах
+extern bool g_ShowClosedSvtf;                               // отображение закрытых светофоров
+extern bool g_ArchiveView;                                  // просмотр архива
+extern bool g_bIgnoreServerTime;                            // глобальная переменная - флаг, запрещает синхронизацию часов и отрубает контроль
+extern bool g_bNoSetServerTime ;                            // флаг ТОЛЬКО запрещает синхронизацию часов
+extern time_t g_TmDtServer;                                 // серверное время
+extern time_t g_DeltaTZ;                                    // разница времени удаленного сервера и настоящего АРМ ШН
+extern int  g_RealStreamTsLength;                           // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
 
 #endif // DEFINES_H

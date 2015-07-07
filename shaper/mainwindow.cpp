@@ -104,7 +104,9 @@ void MainWindow::on_actionNewForm_triggered()
 
 
 
-// обработка уведомлений ClientTcp
+// обработка уведомлений ClientTcp потока ТС
+// ВАЖНО: механизм слотов/сигналов позволяет изначально привязать разные экземпляры ClientTcp к разным слотам,
+//        т.о.слоты должны быть типизированными под разные потоки и в теле слота не надо идентифицировать тип
 // установлено соединение
 void MainWindow::connected   (ClientTcp *client)
 {
@@ -129,7 +131,11 @@ void MainWindow::error (ClientTcp *client)
 void MainWindow::dataready   (ClientTcp * client)
 {
     ui->statusBar->showMessage(QString("%1. Получены форматные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()), 10000);
-    client->SendAck();
+    client->SendAck();                                      // квитирование
+
+    // обработка данных
+    DDataFromMonitor * pDtMntr = (DDataFromMonitor *)client->RawData();
+    pDtMntr->Extract(client->RawLength());
 }
 
 // получены необрамленные данные - отдельный сигнал

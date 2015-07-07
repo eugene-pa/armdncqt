@@ -14,6 +14,7 @@ const int MAX_DATA_LEN_FROM_MONITOR = 65535;
 
 class DDataFromMonitor
 {
+#pragma pack(1)
 protected:
 static BYTE DataBuf[MAX_DATA_LEN_FROM_MONITOR];
     WORD	Signature;                                      // сигнатура (55aa)
@@ -71,12 +72,13 @@ void ExtractTrainsInfo	(int BridgeNo = 0);			// 2012.04.04. Передаю в ф
 //	DDataFromMonitor() { Signature = SIGNATURE; Len = sizeof (DDataFromMonitor); }
 static inline DDataFromMonitor * GetObject() { return (DDataFromMonitor *)DataBuf; }
 	void Prepare();
-	void Extract(UINT RcvdLen, int BridgeNo = 0);	// 2012.04.04. Передаю в функцию номер ПОТОКА (записан в номере круга)
+    void Extract(UINT length, int bridgeno = 0);	// 2012.04.04. Передаю в функцию номер ПОТОКА (записан в номере круга)
 inline WORD	IsSignatured		() { return Signature==SIGNATURE					; }
 inline WORD GetLen				() { return Len										; }
 	void ExtractDebugTS(/*void * pBuf,int Len*/);	// отладочная
 
 class DStDataFromMonitor * FindStInfo(BYTE No);			// 11.02.2004. Пытаюсь обеспечить вытаскивание информации по нужным станциям
+#pragma pack()
 };
 
 
@@ -109,30 +111,31 @@ public:
 
 class DOptionsDataFromMonitor
 {
+#pragma pack(1)
 protected:
-	WORD	m_ShowStrlText	 :1;				// показать надписи стрелок
-	WORD	m_ShowSvtfText	 :1;				// показать надписи светофоров
-	WORD	m_ShowStBox_obsolete :1;			// РЕЗЕРВ с 2015.03.18 - по факту реально не используется - показать границы станций								
-	WORD	m_ShowClosedSvtf :1;				// показать закрытые светофоры
-	WORD	m_ShowLockedStrl_obsolete :1;		// РЕЗЕРВ с 2015.03.18 - думаю, их надо выделять всегда, потенциальный резерв - выделить окружностью законсервированные стрелки
-	WORD	m_mntrOtuOk      :1;				// норма БПДК/УПОК
-	WORD    m_mntr3pages     :1;				// монитор с 3-мя страницами ТС
-	WORD    m_reserved1		 :1;				// РЕЗЕРВ
-	WORD    m_reserved2		 :8;				// mntrIP3	- до 2015.03.18 Использовал неявно D15-D8 mntrIP3 - оставшиеся 8 бит
-	BYTE    b3;									// mntrIP4
-	BYTE    b4;									// mntrVer4
-// -------------------------------------------------------------------------------------------
-	time_t	m_TmDt;								/// 06.09.2000. Добавил актуальное время
+    WORD	ShowStrlText	 :1;				// показать надписи стрелок
+    WORD	ShowSvtfText	 :1;				// показать надписи светофоров
+    WORD	ShowStBox_obsolete :1;              // РЕЗЕРВ с 2015.03.18 - по факту реально не используется - показать границы станций
+    WORD	ShowClosedSvtf :1;                  // показать закрытые светофоры
+    WORD	ShowLockedStrl_obsolete :1;         // РЕЗЕРВ с 2015.03.18 - думаю, их надо выделять всегда, потенциальный резерв - выделить окружностью законсервированные стрелки
+    WORD	OtuOk          :1;                  // норма БПДК/УПОК
+    WORD    large          :1;                  // монитор с 3-мя страницами ТС
+    WORD    reserved1	   :1;                  // РЕЗЕРВ
+    WORD    ip3            :8;                  // mntrIP3	- до 2015.03.18 Использовал неявно D15-D8 mntrIP3 - оставшиеся 8 бит
+    BYTE    ip4;								// mntrIP4
+    BYTE    version;							// mntrVer4
+    UINT    tmdt;								// актуальное время на АРМ ДНЦ - time_t
 public:
 	DOptionsDataFromMonitor () { memset (this,0, sizeof(DOptionsDataFromMonitor)); }
 	int  Prepare();								//  сформировать данные
-	bool Extract(UINT RcvdLen);					//  извлечь данные
+    bool Extract(UINT length);					//  извлечь данные
 
 // -------------------------------------------------------------------------------------------
 static BYTE mntrIP3, mntrIP4, mntrVer4;
 static bool mntr3pages;
 static bool mntrOtuOk;
 // -------------------------------------------------------------------------------------------
+#pragma pack()
 };
 
 
@@ -142,6 +145,7 @@ static bool mntrOtuOk;
 // Вспомогат.класс запись на 1 РЦ
 class COneRc
 {
+    #pragma pack(1)
 public:
 	WORD NoRc;
 	WORD SNo;
@@ -160,12 +164,16 @@ public:
 	WORD stsLock		:1;			// Блокирована
 	WORD stsMu			:1;			// Местное управление	IsTsMu
 //-------------------------------------------------------------------
+    #pragma pack()
 };
+
 class DRcDataFromMonitor
 {
+    #pragma pack(1)
 public:
 	WORD	m_nRc;
 // Далее следует массив  COneRc[m_nRc]
+    #pragma pack()
 };
 
 // ==============================================================================================================================================================
@@ -173,17 +181,21 @@ public:
 // ==============================================================================================================================================================
 class COneTrain
 {
+    #pragma pack(1)
 public:
 	short	No;
 	short	SNo;
-	time_t	LastTime;									// Время последней операции
+    UINT	LastTime;									// Время последней операции - time_t
+    #pragma pack()
 };
 
 class DTrainsDataFromMonitor
 {
+    #pragma pack(1)
 public:
 	WORD	m_nTrains;
 // Далее следует массив  COneTrain[m_nTrains]
+    #pragma pack()
 };
 #endif // STREAMTS_H
 

@@ -12,6 +12,7 @@
 // ==============================================================================================================================================================
 class DStDataFromMonitor
 {
+    #pragma pack(1)
 	friend class DDataFromMonitor;
 protected:	
 	WORD	Signature;							// сигнатура (55aa)									00
@@ -144,6 +145,6 @@ public:
     void PrepareSysInfo (int i, SysInfo& info);             // упаковать   сист.информацию
     void ExtractSysInfo (int i, SysInfo& info);             // распаковать сист.информацию
 // 11.02.2004. Пытаюсь обеспечить вытаскивание информации по нужным станциям
-
+    #pragma pack()
 };
 #endif // DStDataFromMonitor_H
