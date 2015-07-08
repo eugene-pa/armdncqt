@@ -180,6 +180,12 @@ Station * Station::GetByNo(int no)
     return Stations.contains(no) ? Stations[no] : nullptr;
 }
 
+// TODO: реализовать
+Station * Station::GetSprByNoOrgAndKrug(int no, int bridgeno)
+{
+    return GetByNo(no);
+}
+
 // поучить справочник по номеру станции
 Station * Station::GetByName(QString stname)
 {

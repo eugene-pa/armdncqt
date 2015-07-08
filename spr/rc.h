@@ -8,6 +8,8 @@
 
 class Rc : public SprBase
 {
+    friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
+
 public:
     enum RcTypes
     {
@@ -21,6 +23,9 @@ public:
         RcManyToMany  = 8,
     };
 
+    // открытые статические функции
+    static Rc * GetByNo(int no);                            // получить справочник по номеру РЦ
+    static Rc * GetSprByOrgNoAndKrug(int no, int bridgeno);
 
     // открытые функции
     Rc(SprBase * tuts, Logger& logger);                     // конструктор по ТС/ТУ

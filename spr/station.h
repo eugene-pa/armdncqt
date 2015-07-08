@@ -14,6 +14,7 @@
 #include "tu.h"
 #include "enums.h"
 #include "streamts.h"
+#include "datafrommonitor.h"
 #include "sysinfo.h"
 #include "dras.h"
 
@@ -31,8 +32,9 @@ public:
     static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
     // открытые статические функции
-    static Station * GetByNo(int no);                       // поучить справочник по номеру станции
-    static Station * GetByName(QString stname);             // поучить справочник по номеру станции
+    static Station * GetByNo(int no);                       // получить справочник по номеру станции
+    static Station * GetSprByNoOrgAndKrug(int no, int bridgeno);
+    static Station * GetByName(QString stname);             // получить справочник по номеру станции
     static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ

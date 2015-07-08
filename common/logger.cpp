@@ -77,9 +77,14 @@ void Logger::log (QString str)
     locker->unlock();
 }
 
-// статическая функция вывода строки в актуальный лог (если задан) или в отладочное окно
-void Logger::LogStr (QString str)
+
+// статическая функция протоколирования строки в SQL и логе; если сохраняем в SQL, отображаем в строке сообщений
+void Logger::LogStr (QString str, LogSourcer source, LogTypes type)
 {
+    if (source!=SRC_UNDEFINED && type!=TYP_UNDEFINED)
+    {
+
+    }
     if (logger != nullptr)
         logger->log(str);
     else

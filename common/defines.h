@@ -19,6 +19,7 @@
 #define SIGNATURE 0xAA55
 #define DUBL 2
 #define MAX_TRAINS_ON_PER 5
+#define TRACE(param) qDebug() << param
 
 #define LPCTSTR const char *
 #define COLORREF QColor
@@ -57,6 +58,7 @@ enum ProgrammType
 
 enum LogSourcer
 {
+    SRC_UNDEFINED = 0,
     LOG_MDM_AGENT = 1,          // 1 - Станция связи
     LOG_NET_AGENT,              // 2 - Сетевой агент
     LOG_ARM,                    // 3 - АРМ
@@ -75,6 +77,7 @@ enum LogSourcer
 
 enum LogTypes
 {
+    TYP_UNDEFINED = 0,
     LOG_ALARM = 1,              // 1 - Аварийное
     LOG_TECH,                   // 2 - Технологическое
     LOG_SYS,                    // 3 - Системное
@@ -105,5 +108,8 @@ extern bool g_bNoSetServerTime ;                            // флаг ТОЛЬ
 extern time_t g_TmDtServer;                                 // серверное время
 extern time_t g_DeltaTZ;                                    // разница времени удаленного сервера и настоящего АРМ ШН
 extern int  g_RealStreamTsLength;                           // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
+extern bool g_QuickSearching;                               // флаг ускорееного сканирования входного потока
+
+const int MAX_DATA_LEN_FROM_MONITOR = 65535;
 
 #endif // DEFINES_H

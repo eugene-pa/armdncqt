@@ -43,7 +43,9 @@ SOURCES += main.cpp\
     ../common/defines.cpp \
     ../common/archiver.cpp \
     ../common/clienttcp.cpp \
-    ../common/tcpheader.cpp
+    ../common/tcpheader.cpp \
+    ../spr/datafrommonitor.cpp \
+    ../spr/peregon.cpp
     ../common/boolexpression.cpp \
 
 
@@ -75,7 +77,9 @@ HEADERS  += mainwindow.h \
     ../spr/dras.h \
     ../common/archiver.h \
     ../common/clienttcp.h \
-    ../common/tcpheader.h
+    ../common/tcpheader.h \
+    ../spr/datafrommonitor.h \
+    ../spr/peregon.h
     ../common/boolexpression.h \
 
 

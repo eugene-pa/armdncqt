@@ -62,6 +62,18 @@ Rc::~Rc()
     delete tuir;
 }
 
+// получить справочник по номеру РЦ
+Rc * Rc::GetByNo(int no)
+{
+    return rchash.contains(no) ? rchash[no] : nullptr;
+}
+
+// TODO:
+// получить справочник по номеру РЦ и номеру потока
+Rc * Rc::GetSprByOrgNoAndKrug(int no, int bridgeno)
+{
+    return GetByNo(no);
+}
 
 // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
 bool Rc::AddTemplate(IdentityType * ident)
