@@ -124,15 +124,16 @@ void DDataFromMonitor::ExtractRcInfo(int bridgeno)
                 if (rc==NULL)
                     continue;
             }
+            // TRACE (rc->NameEx());
+
+            rc->stsRouteRq	= datarc->stsMRSHR_RQ;
+            rc->stsPassed   = datarc->stsPASS;
+            rc->stsRouteOk	= datarc->stsMRSHR_OK;
+            rc->stsBusyFalse= datarc->stsFalseZ;
+            //rc->actualtrain = datarc->SNo  ? Train::GetByNo(datarc->SNo ) : nullptr;
+            //rc->actualRoute = datarc->Rout ? Route::GetByNo(datarc->Rout) : nullptr;
+            //НЕПОНЯТНО: pRc->Rout = BridgeNo == 0 && DRoute::IsValidNo(p->Rout) ? p->Rout : 0;	// 2012.
 /*
-            pRc->SetSNoTr(p->SNo);
-            pRc->stsMRSHR_RQ	= p->stsMRSHR_RQ;
-            pRc->stsPASS		= p->stsPASS;
-            pRc->stsMRSHR_OK	= p->stsMRSHR_OK;
-            pRc->FalseZ		= p->stsFalseZ;
-
-            pRc->Rout = BridgeNo == 0 && DRoute::IsValidNo(p->Rout) ? p->Rout : 0;	// 2012.
-
             // 2009.08.03. Хочу обратным ходом установить состояние маршрута
 #ifdef _ARM_TOOLS
             extern bool IgnoreRouresInfo;				// 2012.04,05. Можно игнорировать информацию о маршрутах для отображения в АРМ ШН, Табло

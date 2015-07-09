@@ -99,7 +99,10 @@ bool Rc::AddTs (Ts * ts, Logger& logger)
 
     // теперь нужно выполнить привязку свойства
     if (ts->IsBusy())
+    {
         rc->busy->SetTs(ts);
+        rc->name = ts->Name();
+    }
     else
     {
         rc->locked      ->Parse(ts, logger);

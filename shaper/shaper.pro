@@ -45,7 +45,9 @@ SOURCES += main.cpp\
     ../common/clienttcp.cpp \
     ../common/tcpheader.cpp \
     ../spr/datafrommonitor.cpp \
-    ../spr/peregon.cpp
+    ../spr/peregon.cpp \
+    ../spr/train.cpp \
+    ../spr/route.cpp
     ../common/boolexpression.cpp \
 
 
@@ -79,7 +81,9 @@ HEADERS  += mainwindow.h \
     ../common/clienttcp.h \
     ../common/tcpheader.h \
     ../spr/datafrommonitor.h \
-    ../spr/peregon.h
+    ../spr/peregon.h \
+    ../spr/train.h \
+    ../spr/route.h
     ../common/boolexpression.h \
 
 

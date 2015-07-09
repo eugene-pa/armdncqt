@@ -13,15 +13,19 @@
 //#include <QGraphicsView>
 
 // определения, облегчающие перенос кода с MSVC&MFC в QT
-#define BYTE unsigned char
-#define WORD unsigned short
-#define UINT unsigned int
+typedef unsigned char   BYTE;
+typedef unsigned short  WORD;
+typedef unsigned long   DWORD;
+typedef unsigned int    UINT;
+#ifndef Q_OS_WIN
+typedef const char *    LPCTSTR;
+#endif
+
 #define SIGNATURE 0xAA55
 #define DUBL 2
 #define MAX_TRAINS_ON_PER 5
 #define TRACE(param) qDebug() << param
 
-#define LPCTSTR const char *
 #define COLORREF QColor
 #define BOOL bool
 #ifndef FALSE                                               // для WINDOWS определения FALSE,TRUE даются в minwindef.h

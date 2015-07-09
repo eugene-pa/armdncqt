@@ -9,6 +9,7 @@
 #include <QDateTime>
 #include <QHash>
 #include <QVector>
+#include <QStack>
 
 #include "../common/logger.h"
 

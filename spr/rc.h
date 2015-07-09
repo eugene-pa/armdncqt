@@ -9,6 +9,7 @@
 class Rc : public SprBase
 {
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
+    friend class DDataFromMonitor;
 
 public:
     enum RcTypes
@@ -37,6 +38,8 @@ public:
     static bool AddTemplate (class IdentityType *);         // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
     static bool AddTs       (class Ts * ts, Logger& logger);// обработать ТС, помеченный как РЦ
     static bool AddTu       (class Tu * tu, Logger& logger);// обработать ТУ, помеченный как РЦ
+
+    QString& Name() { return name; }                        // имя РЦ
 
 private:
     static QHash <int, Rc *> rchash;                        // РЦ , индексированные по индексу ТС

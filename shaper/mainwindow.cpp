@@ -31,6 +31,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    int n = sizeof(QDateTime);
+    QDateTime t = QDateTime::currentDateTime();
+    n = sizeof(t);
+
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
