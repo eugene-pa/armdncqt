@@ -92,7 +92,7 @@ void DPrgDataFromMonitor::Extract(int bridgeno)
         prg = Peregon::GetSprByOrgNoAndKrug (NoPrg, bridgeno);
     }
     else
-        prg = Peregon::GetByNo(NoPrg);          // основной поток
+        prg = Peregon::GetById(NoPrg);          // основной поток
 
     if (prg)
     {

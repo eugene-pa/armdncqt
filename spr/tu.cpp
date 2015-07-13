@@ -43,7 +43,7 @@ Tu::Tu(QSqlQuery& query, Logger& logger)
         if (epilog.indexOf("-")==0 && epilog.length()==1) epilog.clear();
         if (polus .indexOf("-")==0 && polus .length()==1) polus .clear();
 
-        st = Station::GetByNo(nost);
+        st = Station::GetById(nost);
         // поле ОТУ импользуется только для ДЦ МПК и Ретайм
         otu     = st->IsRpcMpcMPK() || st->Retime() ? query.value("OTU").toFloat() : false;
 

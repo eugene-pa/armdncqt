@@ -115,9 +115,8 @@ void DDataFromMonitor::ExtractRcInfo(int bridgeno)
     {
         for (int i=0; i<rcinfo->m_nRc; i++, datarc++)
         {
-
-            // Вот тут должна делаться подстановка номера РЦ. Вопрос: как определить от какой РЦ. Надо уметь искать РЦ по старому номеру РЦ и номеру круга станции
-            Rc * rc = Rc::GetByNo(datarc->NoRc);
+            Rc * rc = Rc::GetById(datarc->NoRc);
+            // Если многопоточное подключение - делатеся поиск РЦ с учетом круга
             if (bridgeno > 0)
             {
                 rc = Rc::GetSprByOrgNoAndKrug (datarc->NoRc, bridgeno);
@@ -130,8 +129,8 @@ void DDataFromMonitor::ExtractRcInfo(int bridgeno)
             rc->stsPassed   = datarc->stsPASS;
             rc->stsRouteOk	= datarc->stsMRSHR_OK;
             rc->stsBusyFalse= datarc->stsFalseZ;
-            //rc->actualtrain = datarc->SNo  ? Train::GetByNo(datarc->SNo ) : nullptr;
-            //rc->actualRoute = datarc->Rout ? Route::GetByNo(datarc->Rout) : nullptr;
+            //rc->actualtrain = datarc->SNo  ? Train::GetById(datarc->SNo ) : nullptr;
+            //rc->actualRoute = datarc->Rout ? Route::GetById(datarc->Rout) : nullptr;
             //НЕПОНЯТНО: pRc->Rout = BridgeNo == 0 && DRoute::IsValidNo(p->Rout) ? p->Rout : 0;	// 2012.
 /*
             // 2009.08.03. Хочу обратным ходом установить состояние маршрута

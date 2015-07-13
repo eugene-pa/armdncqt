@@ -12,6 +12,7 @@
 #include "../common/logger.h"
 #include "ts.h"
 #include "tu.h"
+#include "route.h"
 #include "enums.h"
 #include "streamts.h"
 #include "datafrommonitor.h"
@@ -32,7 +33,7 @@ public:
     static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
     // открытые статические функции
-    static Station * GetByNo(int no);                       // получить справочник по номеру станции
+    static Station * GetById(int no);                       // получить справочник по номеру станции
     static Station * GetSprByNoOrgAndKrug(int no, int bridgeno);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
     static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
@@ -96,6 +97,9 @@ public:
     void AddRc  (class Rc   *, Logger& logger);             // добавить РЦ
     void AddSvtf(class Svtf *, Logger& logger);             // добавить СВТФ
     void AddStrl(class Strl *, Logger& logger);             // добавить СТРЛ
+    void AddRoute(Route* route);                            // добавить маршрут
+
+    Route * GetRouteByNo(int no);                           // получить маршрут по номеру маршрута на станции
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
@@ -103,21 +107,23 @@ public slots:
 
 private:
    // закрытые члены - таблицы ТС по станции
-   QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
-   QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
-   QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
-   QList <class Ts*> TsSorted;                             // отсортированы по имени
+    QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
+    QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
+    QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
+    QList <class Ts*> TsSorted;                             // отсортированы по имени
 
-   // закрытые члены - таблицы ТУ по станции
-   QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
-   QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
-   QList <class Tu*> TuSorted;                             // отсортированы по имени
+    // закрытые члены - таблицы ТУ по станции
+    QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
+    QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
+    QList <class Tu*> TuSorted;                             // отсортированы по имени
 
-   QHash <int, class Rc  *> allrc;                         // РЦ станции, индексированные по индексу ТС
-   QHash <int, class Svtf*> allsvtf;                       // РЦ станции, индексированные по индексу ТС
-   QHash <int, class Strl*> allstrl;                       // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Rc  *> allrc;                         // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Svtf*> allsvtf;                       // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Strl*> allstrl;                       // РЦ станции, индексированные по индексу ТС
 
-   QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
+    QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
+
+    QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
 
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]

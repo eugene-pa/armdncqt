@@ -66,7 +66,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
 
         next = nullptr;
 
-        st = Station::GetByNo(nost);
+        st = Station::GetById(nost);
         if (st != nullptr)
         {
 

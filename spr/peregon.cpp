@@ -14,7 +14,7 @@ Peregon::~Peregon()
 
 
 // получить справочник по номеру перегона
-Peregon * Peregon::GetByNo(int no)
+Peregon * Peregon::GetById(int no)
 {
     return Peregons.contains(no) ? Peregons[no] : nullptr;
 }
@@ -22,5 +22,5 @@ Peregon * Peregon::GetByNo(int no)
 // TODO: реализовать
 Peregon * Peregon::GetSprByOrgNoAndKrug (int no, int bridgeno)
 {
-    return Peregon::GetByNo(no);
+    return Peregon::GetById(no);
 }

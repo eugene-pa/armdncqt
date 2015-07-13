@@ -31,21 +31,23 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+/*
     int n = sizeof(QDateTime);
     QDateTime t = QDateTime::currentDateTime();
     n = sizeof(t);
-
+*/
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
     ui->setupUi(this);
 
+    // подготовка контейнера MDI
     mdiArea = new QMdiArea;                                             // создаем виджет MDI
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);       // скролбары
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
 
-    // загрузка графики
+    // загрузка пользовательской графики (можно вынести в глоб.функцию)
     green   = new QPixmap(images + "icon_grn.ico");
     red     = new QPixmap(images + "icon_red.ico");
     yellow  = new QPixmap(images + "icon_yel.ico");
@@ -65,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     colorScheme = new ColorScheme(extDb, &logger);
     TrnspDescription::readBd(extDb, logger);
 
-    // инициализация сетевых клиентов
+    // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
     QObject::connect(clientTcp, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
     QObject::connect(clientTcp, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
@@ -73,12 +75,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
     QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
     clientTcp->start();
-
-    //QString s ("D:/APO/ArmDnc11/2013.08.22. RAS/@ras1_15.arh");
-    //ArhReader a(s);
-    //a.Next();
-    //a.Next();
-    //a.Next();
 }
 
 MainWindow::~MainWindow()

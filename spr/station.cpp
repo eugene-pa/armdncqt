@@ -154,7 +154,7 @@ bool Station::parseNames (QString& srcname, Station*& st, QString& name)
             QString snost = RgxNoSt.match(name).captured();
             int nost = snost.toInt();
             name = RgxNameTs.match(name).captured();
-            st = GetByNo(nost);
+            st = GetById(nost);
         }
         else
             // 2. Проверка формата с именем станции
@@ -175,7 +175,7 @@ bool Station::parseNames (QString& srcname, Station*& st, QString& name)
 
 
 // поучить справочник по номеру станции
-Station * Station::GetByNo(int no)
+Station * Station::GetById(int no)
 {
     return Stations.contains(no) ? Stations[no] : nullptr;
 }
@@ -183,7 +183,7 @@ Station * Station::GetByNo(int no)
 // TODO: реализовать
 Station * Station::GetSprByNoOrgAndKrug(int no, int bridgeno)
 {
-    return GetByNo(no);
+    return GetById(no);
 }
 
 // поучить справочник по номеру станции
@@ -409,6 +409,18 @@ void Station::AddStrl(class Strl * obj, Logger& logger)
         logger.log(QString("Создание дублирующего объекта СТРЛ: %1").arg(obj->ToString()));
     else
         allstrl[obj->No()] = obj;
+}
+
+// добавить маршрут
+void Station::AddRoute(Route* route)
+{
+    routes[route->No()] = route;
+}
+
+// получить маршрут по номеру маршрута на станции
+Route * Station::GetRouteByNo(int no)
+{
+    return routes.contains(no) ? routes[no] : nullptr;
 }
 
 // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС

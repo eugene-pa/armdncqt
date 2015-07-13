@@ -25,7 +25,7 @@ public:
     };
 
     // открытые статические функции
-    static Rc * GetByNo(int no);                            // получить справочник по номеру РЦ
+    static Rc * GetById(int no);                            // получить справочник по номеру РЦ
     static Rc * GetSprByOrgNoAndKrug(int no, int bridgeno);
 
     // открытые функции

@@ -124,7 +124,7 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     // если класс Station не задан явно, ищем по номеру
     if (st == nullptr)
     {
-        if ((st = Station::GetByNo(NoSt))==nullptr)
+        if ((st = Station::GetById(NoSt))==nullptr)
             return false;
     }
 
