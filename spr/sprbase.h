@@ -62,9 +62,13 @@ public:
     int IdSvtf () { return nosvtf; }                        // номер светофора
     int IdStrl () { return nostrl; }                        // номер стрелки
 
+    bool Locked() { return locked; }
+
     BaseType GetBaseType() { return basetype; }             // тип объекта
     void SetBaseType(BaseType t) { basetype = t; }
     QString& GetBaseName();
+
+    void * Tag() { return tag; }                            // объект пользователя
 
 protected:
     BaseType basetype;                                      // тип объекта
@@ -78,8 +82,14 @@ protected:
     int     nostrl;                                         // номер СВТФ или 0
     int     nosvtf;                                         // номер СТРЛ или 0
 
+    bool   locked;                                          // объект заблокирован
+
+    QVector <class Ts*> tsList;                             // список всех ТС объекта
+    QVector <class Tu*> tuList;                             // список всех ТУ объекта
+
     class KrugSpr * krug;                                   // указатель на класс круга
     bool    enabled;                                        // включен (не отключен)
+    void * tag;                                             // пользовательский объект по анлогии C#
     static QString buf;                                     // статический буфер для формирования сообщений
 };
 

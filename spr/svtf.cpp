@@ -77,6 +77,7 @@ bool Svtf::AddTs (Ts * ts, Logger& logger)
         svtf->opened->SetTs(ts);
     else
     {
+        svtf->tsList.append(ts);
         svtf->manevr      ->Parse(ts, logger);
         svtf->calling     ->Parse(ts, logger);
         svtf->pzdM        ->Parse(ts, logger);
@@ -106,6 +107,7 @@ bool Svtf::AddTu (Tu * tu, Logger& logger)
 {
     int no = tu->IdSvtf();
     Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(tu, logger);
+    svtf->tuList.append(tu);
 
     // выполняем привязку метода
     svtf->open     ->Parse(tu, logger);

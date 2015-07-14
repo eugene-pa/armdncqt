@@ -1,12 +1,7 @@
 #ifndef TU_H
 #define TU_H
 
-#include <QHash>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include "../common/logger.h"
-#include "sprbase.h"
-
+#include "station.h"
 
 class Tu : public SprBase
 {
@@ -64,12 +59,10 @@ private:
 
     QString kontact;                                        // контакт
     int    KontactInt;                                      // контакт целочисленный
-    void * userobj;                                         // пользовательский объект
 
     Tu * next;                                              // следующий справочник в списке объединенных по одним координатам ТУ
     Tu * prev;                                              // предыдущий справочник в списке объединенных по одним координатам ТУ
 
-    void * userObj;                                         // пользовательский объект
     bool parsed;
     bool validIJ;                                           // валидность координат
 

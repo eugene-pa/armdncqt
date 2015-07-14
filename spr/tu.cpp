@@ -17,7 +17,6 @@ Tu::Tu(QSqlQuery& query, Logger& logger)
     {
         parsed = false;
         tuProlog = tuEpilog = tuPolus = next = prev =nullptr;
-        userObj = nullptr;
 
         iname   = query.value("Cod"     ).toInt(&ret);      // код имени ( в C# было "TU.Cod")
         name    = query.value("NameTu"  ).toString();       // имя ТY

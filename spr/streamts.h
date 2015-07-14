@@ -1,16 +1,7 @@
 ﻿#ifndef STREAMTS_H
 #define STREAMTS_H
 
-#include "../common/defines.h"
 #include "station.h"
-#include "peregon.h"
-#include "rc.h"
-#include "svtf.h"
-#include "strl.h"
-#include "datafrommonitor.h"
-#include "dstdatafromfonitor.h"
-
-
 
 // ==============================================================================================================================================================
 //							class DOptionsDataFromMonitor

@@ -1,14 +1,12 @@
 #ifndef TS_H
 #define TS_H
 
-#include <QHash>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include "../common/logger.h"
-#include "sprbase.h"
+#include "station.h"
 
 class Ts : public SprBase
 {
+    friend class Rc;
+
 public:
 
 // открытве статические функции
@@ -24,7 +22,6 @@ static int CompareByNames(const void*,const void*);
     int GetIndexOfName() { return iname; }                  // ключ имени в таблице TsNames
     Ts * GetNext() { return next; }                         // получить след.в цепочке
     void SetNext (Ts * ts) { next = ts; }                   // установить ссылку на след.в цепочке
-    bool Locked() { return locked; }
 
     bool Sts      ();                                       // состояние (0/1), если мигает - 0
     bool StsPulse ();                                       // состояние мигания
@@ -45,7 +42,6 @@ private:
     int     modul;                                          //
     int     _i;
     int     _j;
-    bool   locked;
     bool   inverse;
     bool   busy;                                            // поле Occupation
     bool   pulse;

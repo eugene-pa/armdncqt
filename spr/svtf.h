@@ -1,9 +1,7 @@
 #ifndef SVTF_H
 #define SVTF_H
 
-#include "../common/logger.h"
-#include "sprbase.h"
-#include "properties.h"
+#include "station.h"
 
 class Svtf : public SprBase
 {

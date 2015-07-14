@@ -8,6 +8,11 @@
 #include <QGraphicsItem>
 #include <QColor>
 #include <time.h>
+#include <QHash>
+#include <QList>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QBitArray>
 
 //#include <QWidget>
 //#include <QGraphicsView>

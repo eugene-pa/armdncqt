@@ -71,6 +71,7 @@ bool Strl::AddTs (Ts * ts, Logger& logger)
     int no = ts->IdStrl();
     Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(ts, logger);
 
+    strl->tsList.append(ts);
     strl->vzrez          ->Parse(ts, logger);
     strl->selectedunlock ->Parse(ts, logger);
     strl->selectedvsa    ->Parse(ts, logger);
@@ -91,5 +92,22 @@ bool Strl::AddTs (Ts * ts, Logger& logger)
 
 bool Strl::AddTu (Tu * tu, Logger& logger)
 {
+    // ищем существующую стрелку или добавляем новую
+    int no = tu->IdStrl();
+    Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(tu, logger);
+
+    strl->tuList.append(tu);
+    strl->selectvsa   ->Parse(tu, logger);
+    strl->selectvsa_p ->Parse(tu, logger);
+    strl->selectvsa_m ->Parse(tu, logger);
+    strl->lock        ->Parse(tu, logger);
+    strl->unlock      ->Parse(tu, logger);
+    strl->setplus     ->Parse(tu, logger);
+    strl->setminus    ->Parse(tu, logger);
+    if (!tu->IsParsed())
+    {
+        logger.log(QString("%1: не идентифицирована ТУ для СТРЛ").arg(tu->NameEx()));
+    }
+
     return true;
 }

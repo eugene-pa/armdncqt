@@ -1,9 +1,26 @@
 #ifndef STRL_H
 #define STRL_H
 
-#include "../common/logger.h"
-#include "sprbase.h"
-#include "properties.h"
+#include "station.h"
+
+// описание стрелки в заданном положении
+// Идея: для формализации описания стрелок в маршруте типа "2/4+ 6- 8+" преобразуем их в список LinkedStrl
+class LinkedStrl
+{
+    friend class Rc;
+    friend class Station;
+    friend class NxtPrv;
+public:
+    bool IsOk()                                             // проверка нахождения в заданном положении
+    {
+        return true;
+    }
+
+private:
+    int no;                                                 // номер со знаком
+    class Strl * strl;
+};
+
 
 class Strl : public SprBase
 {

@@ -1,10 +1,7 @@
 #ifndef PEREGON_H
 #define PEREGON_H
 
-#include <QHash>
-#include "../common/logger.h"
-#include "enums.h"
-#include "streamts.h"
+#include "station.h"
 
 class Peregon : public SprBase
 {

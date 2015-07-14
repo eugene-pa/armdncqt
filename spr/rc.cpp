@@ -1,8 +1,4 @@
 #include "station.h"
-#include "ts.h"
-#include "tu.h"
-#include "rc.h"
-#include "properties.h"
 
 QHash<QString, class IdentityType *> Rc::propertyIds;       // множество шаблонов возможных свойств РЦ
 QHash<QString, class IdentityType *> Rc::methodIds;         // множество шаблонов возможных методов РЦ
@@ -91,7 +87,7 @@ bool Rc::AddTemplate(IdentityType * ident)
 
 
 // обработать ТС, помеченный как РЦ
-bool Rc::AddTs (Ts * ts, Logger& logger)
+Rc * Rc::AddTs (Ts * ts, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
     int no = ts->IdRc();
@@ -101,10 +97,28 @@ bool Rc::AddTs (Ts * ts, Logger& logger)
     if (ts->IsBusy())
     {
         rc->busy->SetTs(ts);
-        rc->name = ts->Name();
+        rc->name = ts->Name();                              // имя РЦ определяем по имени сигнала занятости
+
+        // Path
+        // NoPrg
+        // Distance
+        // First_Last
+        // Branch
+        // LinkBlind
+        // Type
+        // SendToNext
+        // Alias
+        // TimeRemoveNoTr
+        // TypSvtf              Признак обобщенного  ТСдля  контроля состояния светофоров (как правило выходных)
+        // TypLM
+        // TypStrl              Тип стрелки (додумать)
+        // InvPulse
+        // Park
+
     }
     else
     {
+        rc->tsList.append(ts);
         rc->locked      ->Parse(ts, logger);
         rc->unlocking   ->Parse(ts, logger);
         rc->selected_ir ->Parse(ts, logger);
@@ -120,15 +134,16 @@ bool Rc::AddTs (Ts * ts, Logger& logger)
         }
     }
 
-    return ts->IsParsed();
+    return rc;
 }
 
 // обработать ТУ, помеченный как РЦ
-bool Rc::AddTu (Tu * tu, Logger& logger)
+Rc * Rc::AddTu (Tu * tu, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
     int no = tu->IdRc();
     Rc * rc = rchash.contains(no) ? rchash[no] : new Rc(tu, logger);
+    rc->tuList.append(tu);
 
     rc->tulock      ->Parse(tu, logger);
     rc->tuunlock    ->Parse(tu, logger);
@@ -138,5 +153,5 @@ bool Rc::AddTu (Tu * tu, Logger& logger)
     {
         logger.log(QString("%1: не идентифицирована ТУ для РЦ").arg(tu->NameEx()));
     }
-    return tu->IsParsed();
+    return rc;
 }

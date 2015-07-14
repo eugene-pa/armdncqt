@@ -47,8 +47,11 @@ Station::Station(QSqlQuery& query, Logger& logger)
 
     errorLockLogicCount = 0;
 
-    mainSysInfo.st = this;
-    rsrvSysInfo.st = this;
+    mainSysInfo = new SysInfo();
+    mainSysInfo->st = this;
+    rsrvSysInfo = new SysInfo();
+    rsrvSysInfo->st = this;
+
     tSpokSnd = tSpokRcv = 0;                                // время приема/передачи данных в СПОК
 
     try

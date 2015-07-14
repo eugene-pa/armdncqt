@@ -16,9 +16,10 @@ SprBase::SprBase()
     norc = 0;
     nosvtf = 0;
     nostrl = 0;
-    st   = nullptr;                                         // указатель на класс станции
-    krug = nullptr;                                         // указатель на класс круга
+    st      = nullptr;                                      // указатель на класс станции
+    krug    = nullptr;                                      // указатель на класс круга
     enabled = true;                                         // включен
+    tag     = nullptr;
     basetype = BaseUnknown;
 }
 

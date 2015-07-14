@@ -90,7 +90,29 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
 
                 // РЦ
                 if (norc > 0)
-                    Rc::AddTs(this, logger);
+                {
+                    Rc * rc = Rc::AddTs(this, logger);
+
+
+                    if (busy)
+                    {
+                        rc->pathno      = query.value("Path"        ).toInt (&ret);
+                        rc->pregonno    = query.value("NoPrg"       ).toInt (&ret);
+                        rc->distance    = query.value("Distance"    ).toFloat(&ret);
+                        rc->breaked     = query.value("LinkBlind"   ).toBool();
+                        QString dir     = query.value("Type").toString();
+                        rc->dir         = dir.indexOf("O") == 0 ? -1 : dir.indexOf("E") == 0 ? 1 : 0;
+                        rc->rcTopoType  = (Rc::RcTypes)(query.value("TypLM").toInt (&ret));
+                        // Необработанные поля
+                        // First_Last
+                        // Branch
+                        // SendToNext
+                        // Alias
+                        // TimeRemoveNoTr
+                        // InvPulse
+                        // Park
+                    }
+                }
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoRc: %2").arg(NameEx()).arg(norc));

@@ -40,60 +40,60 @@ int DStDataFromMonitor::Prepare(Station * pSt)
     MainLineCPU = pSt->MainLineCPU;                         // -1/0/1/2 (отказ/откл/WAITING/OK)
     RsrvLineCPU = pSt->RsrvLineCPU;                         // -1/0/1/2 (отказ/откл/WAITING/OK)
 
-    PrepareSysInfo (0, pSt->mainSysInfo);                   // основной  - [0]
-    PrepareSysInfo (1, pSt->rsrvSysInfo);                   // резервный - [1]
+    PrepareSysInfo (0, pSt->mainSysInfo);                  // основной  - [0]
+    PrepareSysInfo (1, pSt->rsrvSysInfo);                  // резервный - [1]
+
 
     if (pSt->Kp2007())
     {
         // В КП-2007 использую tSpokSnd для передачи версии и расширенного статцса БМ основного и резервного блоков
-        byteof(tSpokRcv,0) = pSt->mainSysInfo.LoVersionNo();// версия основного БМ
-        byteof(tSpokRcv,1) = pSt->mainSysInfo.SysStatusEx();// расширенный статус основного БМ
-        byteof(tSpokRcv,2) = pSt->rsrvSysInfo.LoVersionNo();// версия резевного БМ
-        byteof(tSpokRcv,3) = pSt->rsrvSysInfo.SysStatusEx();// расширенный статус резевного БМ
+        byteof(tSpokRcv,0) = pSt->mainSysInfo->LoVersionNo();// версия основного БМ
+        byteof(tSpokRcv,1) = pSt->mainSysInfo->SysStatusEx();// расширенный статус основного БМ
+        byteof(tSpokRcv,2) = pSt->rsrvSysInfo->LoVersionNo();// версия резевного БМ
+        byteof(tSpokRcv,3) = pSt->rsrvSysInfo->SysStatusEx();// расширенный статус резевного БМ
 
         // В КП-2007 использую tSpokSnd для передачи MkuStatus и состояния модулей МВВ
-        byteof(tSpokSnd,0) = pSt->mainSysInfo.MVVStatus();// статус МВВ основного БМ
-        byteof(tSpokSnd,0) = pSt->rsrvSysInfo.MVVStatus();// статус МВВ резевного БМ
-        byteof(tSpokSnd,0) = pSt->mainSysInfo.MKUStatus();// статус МКУ основного БМ
-        byteof(tSpokSnd,0) = pSt->rsrvSysInfo.MKUStatus();// статус МКУ резевного БМ
+        byteof(tSpokSnd,0) = pSt->mainSysInfo->MVVStatus();// статус МВВ основного БМ
+        byteof(tSpokSnd,0) = pSt->rsrvSysInfo->MVVStatus();// статус МВВ резевного БМ
+        byteof(tSpokSnd,0) = pSt->mainSysInfo->MKUStatus();// статус МКУ основного БМ
+        byteof(tSpokSnd,0) = pSt->rsrvSysInfo->MKUStatus();// статус МКУ резевного БМ
     }
 
     return sizeof (DStDataFromMonitor);
 }
 
 // сформировать блок данных системной информации
-void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo& info)
+void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo* info)
 {
-    LinkError[i] = info.linestatus;                         // Тип ошибки: 0-OK,1-молчит,2-CRC
-    CntLinkEr[i] = info.errors;                             // Общий счетчик ошибок связи
-    LastTime [i] = info.tmdt.toTime_t();                    // Астр.время окончания последнего цикла ТС
+    LinkError[i] = info->linestatus;                         // Тип ошибки: 0-OK,1-молчит,2-CRC
+    CntLinkEr[i] = info->errors;                             // Общий счетчик ошибок связи
+    LastTime [i] = info->tmdt.toTime_t();                    // Астр.время окончания последнего цикла ТС
+    SysStatus[i] = info->SysStatus();                        // состояние SysStatus
 
-    SysStatus[i] = info.SysStatus();                        // состояние SysStatus
+    mvv1[i].speedCom3l = info->SpeedCom3();                  // скорость Com3
+    RcnctCom3[i] = info->BreaksCom3();                       // число реконнектов Com3
 
-    mvv1[i].speedCom3l = info.SpeedCom3();                  // скорость Com3
-    RcnctCom3[i] = info.BreaksCom3();                       // число реконнектов Com3
-
-    mvv2[i].speedCom4l = info.SpeedCom4();                  // скорость Com4
-    RcnctCom4[i] = info.BreaksCom4();                       // число реконнектов Com4
+    mvv2[i].speedCom4l = info->SpeedCom4();                  // скорость Com4
+    RcnctCom4[i] = info->BreaksCom4();                       // число реконнектов Com4
 
     // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
-    if (info.st != nullptr)
+    if (info->st != nullptr)
     {
-        if (info.st->Kp2007())
+        if (info->st->Kp2007())
         {
             mvv1[i].speedCom3 = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
             mvv2[i].speedCom4 = mvv2[i].speedCom4l/1200;
 
-            mvv1[i].bt1 = info.GetMtuMtsStatus(0);          // отказы модулей
-            mvv1[i].bt2 = info.GetMtuMtsStatus(1);
-            mvv1[i].bt3 = info.GetMtuMtsStatus(2);
-            mvv2[i].bt1 = info.GetMtuMtsStatus(0);
-            mvv2[i].bt2 = info.GetMtuMtsStatus(1);
-            mvv2[i].bt3 = info.GetMtuMtsStatus(2);
+            mvv1[i].bt1 = info->GetMtuMtsStatus(0);          // отказы модулей
+            mvv1[i].bt2 = info->GetMtuMtsStatus(1);
+            mvv1[i].bt3 = info->GetMtuMtsStatus(2);
+            mvv2[i].bt1 = info->GetMtuMtsStatus(0);
+            mvv2[i].bt2 = info->GetMtuMtsStatus(1);
+            mvv2[i].bt3 = info->GetMtuMtsStatus(2);
         }
 
-        tSpokSnd = info.st->tSpokSnd;
-        tSpokRcv = info.st->tSpokRcv;
+        tSpokSnd = info->st->tSpokSnd;
+        tSpokRcv = info->st->tSpokRcv;
     }
 }
 
@@ -128,7 +128,7 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
             return false;
     }
 
-    // TRACE (st->name);
+    TRACE (st->name);
 
     if (!IsArmTools ())
     {
@@ -178,7 +178,7 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
     st->stsRsrv = Rsrv & 0x0001 ? TRUE : FALSE;             // КП на резервном БМ: проверяем младший бит
 
-    SysInfo info = st->stsRsrv ? st->rsrvSysInfo : st->mainSysInfo; // состояние актуального БМ
+    SysInfo * info = st->stsRsrv ? st->rsrvSysInfo : st->mainSysInfo; // состояние актуального БМ
     ExtractSysInfo (0, st->mainSysInfo);                    // извлечь SysInfo по основному БМ
     ExtractSysInfo (1, st->rsrvSysInfo);                    // извлечь SysInfo по резервному БМ
 
@@ -188,15 +188,15 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     if (st->Kp2007())
     {
 
-        st->mainSysInfo.LoVersionNo (byteof(tSpokRcv,0));   // версия основного БМ
-        st->mainSysInfo.SysStatusEx (byteof(tSpokRcv,1));   // расширенный статус основного БМ
-        st->mainSysInfo.LoVersionNo (byteof(tSpokRcv,2));   // версия резевного БМ
-        st->mainSysInfo.SysStatusEx (byteof(tSpokRcv,3));   // расширенный статус резевного БМ
+        st->mainSysInfo->LoVersionNo (byteof(tSpokRcv,0));   // версия основного БМ
+        st->mainSysInfo->SysStatusEx (byteof(tSpokRcv,1));   // расширенный статус основного БМ
+        st->mainSysInfo->LoVersionNo (byteof(tSpokRcv,2));   // версия резевного БМ
+        st->mainSysInfo->SysStatusEx (byteof(tSpokRcv,3));   // расширенный статус резевного БМ
 
-        st->mainSysInfo.MVVStatus(byteof(tSpokSnd,0));      // статус МВВ основного БМ
-        st->rsrvSysInfo.MVVStatus(byteof(tSpokSnd,1));      // статус МВВ резевного БМ
-        st->mainSysInfo.MKUStatus(byteof(tSpokSnd,2));      // статус МКУ основного БМ
-        st->rsrvSysInfo.MKUStatus(byteof(tSpokSnd,3));      // статус МКУ резевного БМ
+        st->mainSysInfo->MVVStatus(byteof(tSpokSnd,0));      // статус МВВ основного БМ
+        st->rsrvSysInfo->MVVStatus(byteof(tSpokSnd,1));      // статус МВВ резевного БМ
+        st->mainSysInfo->MKUStatus(byteof(tSpokSnd,2));      // статус МКУ основного БМ
+        st->rsrvSysInfo->MKUStatus(byteof(tSpokSnd,3));      // статус МКУ резевного БМ
     }
     else
     {
@@ -206,7 +206,7 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
             &&	tSpokRcv > tSpokSnd                         // время приема больше времени отправки
             &&  qMax(LastTime [0],LastTime [1]) - tSpokSnd < 0 * 5  // а время отправки не более 5 минут
             )
-            info.src[0] = info.src[0] | 0x80 ;              // омул в порядке!
+            info->src[0] = info->src[0] | 0x80 ;              // омул в порядке!
     }
     return true;
 }
@@ -225,34 +225,34 @@ bool DStDataFromMonitor::Extract(Station *st, DDataFromMonitor * pDtFrmMnt, DRas
     return ActualStData.Extract (st, g_RealStreamTsLength, pRas);
 }
 
-void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo& info)
+void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
 {
-    info.linestatus = (LineStatus)LinkError[i];             // Тип ошибки: 0-OK,1-молчит,2-CRC
-    info.errors = CntLinkEr[i];                             // Общий счетчик ошибок связи
-    info.tmdt = QDateTime::fromTime_t(LastTime [i]);        // Астр.время окончания последнего цикла ТС
-    info.SysStatus(SysStatus[i]);                           // состояние SysStatus
-    info.SpeedCom3(mvv1[i].speedCom3l);                     // скорость Com3
-    info.BreaksCom3(RcnctCom3[i]);                          // число реконнектов Com3
-    info.SpeedCom4(mvv2[i].speedCom4l);                     // скорость Com4
-    info.BreaksCom4(RcnctCom4[i]);                          // число реконнектов Com4
+    info->linestatus = (LineStatus)LinkError[i];             // Тип ошибки: 0-OK,1-молчит,2-CRC
+    info->errors = CntLinkEr[i];                             // Общий счетчик ошибок связи
+    info->tmdt = QDateTime::fromTime_t(LastTime [i]);        // Астр.время окончания последнего цикла ТС
+    info->SysStatus(SysStatus[i]);                           // состояние SysStatus
+    info->SpeedCom3(mvv1[i].speedCom3l);                     // скорость Com3
+    info->BreaksCom3(RcnctCom3[i]);                          // число реконнектов Com3
+    info->SpeedCom4(mvv2[i].speedCom4l);                     // скорость Com4
+    info->BreaksCom4(RcnctCom4[i]);                          // число реконнектов Com4
 
 
     // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
-    if (info.st != nullptr)
+    if (info->st != nullptr)
     {
-        if (info.st->Kp2007())
+        if (info->st->Kp2007())
         {
-            info.SpeedCom3(info.SpeedCom3() * 1200);        // скорость - в одном байте коэффициентом отеосительно 1200
-            info.SpeedCom4(info.SpeedCom3() * 1200);
-            info.SetMtuMtsStatus(0, mvv1[i].bt1);
-            info.SetMtuMtsStatus(1, mvv1[i].bt2);
-            info.SetMtuMtsStatus(2, mvv1[i].bt3);
-            info.SetMtuMtsStatus(3, mvv2[i].bt1);
-            info.SetMtuMtsStatus(4, mvv2[i].bt2);
-            info.SetMtuMtsStatus(5, mvv2[i].bt3);
+            info->SpeedCom3(info->SpeedCom3() * 1200);        // скорость - в одном байте коэффициентом отеосительно 1200
+            info->SpeedCom4(info->SpeedCom3() * 1200);
+            info->SetMtuMtsStatus(0, mvv1[i].bt1);
+            info->SetMtuMtsStatus(1, mvv1[i].bt2);
+            info->SetMtuMtsStatus(2, mvv1[i].bt3);
+            info->SetMtuMtsStatus(3, mvv2[i].bt1);
+            info->SetMtuMtsStatus(4, mvv2[i].bt2);
+            info->SetMtuMtsStatus(5, mvv2[i].bt3);
         }
 
-        tSpokSnd = info.st->tSpokSnd;
-        tSpokRcv = info.st->tSpokRcv;
+        tSpokSnd = info->st->tSpokSnd;
+        tSpokRcv = info->st->tSpokRcv;
     }
 }

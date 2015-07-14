@@ -3,21 +3,23 @@
 
 #include <QObject>
 
-#include <QHash>
-#include <QList>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QBitArray>
-
+#include "properties.h"
 #include "../common/logger.h"
 #include "ts.h"
 #include "tu.h"
+#include "rc.h"
+#include "strl.h"
+#include "svtf.h"
 #include "route.h"
+#include "peregon.h"
 #include "enums.h"
 #include "streamts.h"
 #include "datafrommonitor.h"
 #include "sysinfo.h"
 #include "dras.h"
+#include "datafrommonitor.h"
+#include "dstdatafromfonitor.h"
+
 
 class Station : public QObject
 {
@@ -184,8 +186,8 @@ private:
     bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
     bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
 
-    SysInfo mainSysInfo;                                    // блок сист.информации основного  БМ
-    SysInfo rsrvSysInfo;                                    // блок сист.информации резервного БМ
+    class SysInfo * mainSysInfo;                            // блок сист.информации основного  БМ
+    class SysInfo * rsrvSysInfo;                            // блок сист.информации резервного БМ
     time_t  tSpokSnd;                                       // время передачи данных в СПОК
     time_t  tSpokRcv;                                       // время приема данных от СПОК
 

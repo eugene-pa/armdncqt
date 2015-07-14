@@ -4,9 +4,7 @@
 #include "QByteArray"
 #include "QDateTime"
 
-#include "enums.h"
-#include "../common/defines.h"
-
+#include "station.h"
 
 // класс SysInfo, инкапсулирующий данные блока системной информации
 

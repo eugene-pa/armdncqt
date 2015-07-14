@@ -142,8 +142,8 @@ public:
 	
     WORD GetNoSt() { return NoSt; }                         //
 
-    void PrepareSysInfo (int i, SysInfo& info);             // упаковать   сист.информацию
-    void ExtractSysInfo (int i, SysInfo& info);             // распаковать сист.информацию
+    void PrepareSysInfo (int i, class SysInfo* info);       // упаковать   сист.информацию
+    void ExtractSysInfo (int i, class SysInfo* info);       // распаковать сист.информацию
 // 11.02.2004. Пытаюсь обеспечить вытаскивание информации по нужным станциям
     #pragma pack()
 };
