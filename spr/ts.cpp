@@ -1,12 +1,5 @@
-#include <QVariant>
-#include "sprbase.h"
+
 #include "station.h"
-#include "ts.h"
-#include "tu.h"
-#include "../common/boolexpression.h"
-#include "rc.h"
-#include "strl.h"
-#include "svtf.h"
 
 QString Ts::buf;
 
@@ -34,17 +27,10 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
         nosvtf  = query.value("NoSvtf"  ).toInt(&ret);
         locked  = query.value("Lock"    ).toBool();
         inverse = query.value("Inverse" ).toBool();
-        busy    = query.value("Occupation").toBool();
+
         pulse   = query.value("Pulse"   ).toBool();
-        svtfmain= query.value("SvtfMain").toBool();
         question= query.value("Question").toString();
         formula = query.value("ExtData" ).toString();
-
-        svtfdiag  = query.value("SvtfDiag" ).toString();
-        svtftype  = query.value("SvtfClass" ).toString();
-        svtferror = query.value("SvtfError" ).toString();
-        strlzsname= query.value("StrlZsName" ).toString();
-        strlmuname= query.value("StrlMuName" ).toString();
 
         // Необработанные поля
         // Path
@@ -91,27 +77,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
                 // РЦ
                 if (norc > 0)
                 {
-                    Rc * rc = Rc::AddTs(this, logger);
-
-
-                    if (busy)
-                    {
-                        rc->pathno      = query.value("Path"        ).toInt (&ret);
-                        rc->pregonno    = query.value("NoPrg"       ).toInt (&ret);
-                        rc->distance    = query.value("Distance"    ).toFloat(&ret);
-                        rc->breaked     = query.value("LinkBlind"   ).toBool();
-                        QString dir     = query.value("Type").toString();
-                        rc->dir         = dir.indexOf("O") == 0 ? -1 : dir.indexOf("E") == 0 ? 1 : 0;
-                        rc->rcTopoType  = (Rc::RcTypes)(query.value("TypLM").toInt (&ret));
-                        // Необработанные поля
-                        // First_Last
-                        // Branch
-                        // SendToNext
-                        // Alias
-                        // TimeRemoveNoTr
-                        // InvPulse
-                        // Park
-                    }
+                    Rc::AddTs(query, this, logger);
                 }
                 else
                 if (norc < 0)
@@ -119,14 +85,14 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
 
                 // Светофор
                 if (nosvtf > 0)
-                    Svtf::AddTs(this, logger);
+                    Svtf::AddTs(query, this, logger);
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoSvtf: %2").arg(NameEx()).arg(nosvtf));
 
                 // Стрелка
                 if (nostrl > 0)
-                    Strl::AddTs(this, logger);
+                    Strl::AddTs(query, this, logger);
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));

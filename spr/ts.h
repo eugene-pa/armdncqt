@@ -28,12 +28,12 @@ static int CompareByNames(const void*,const void*);
     bool StsRaw   ();                                       // состояние ненормализованное
     bool Sts_     ();                                       // состояние мгновенное
 
-    bool    IsBusy() { return busy;   }                     // поле Occupation
-    bool    IsSvtfmain() { return svtfmain; }               // поле SvtfMain
+    //bool    IsBusy() { return busy;   }                     // поле Occupation
+    //bool    IsSvtfmain() { return svtfmain; }               // поле SvtfMain
 
     void SetParsed() { parsed = true; }
     bool IsParsed () { return parsed; }
-    QString& SvtfDiag() { return svtfdiag; }                // тип диагностики
+
 
 private:
                                                             // статические данные из БД
@@ -43,20 +43,22 @@ private:
     int     _i;
     int     _j;
     bool   inverse;
-    bool   busy;                                            // поле Occupation
     bool   pulse;
-    bool   svtfmain;
     int    stativ;
     int    place;
     int    _kolodka;
     QString kolodka;
     QString kontact;
     QString question;                                       // поле question
-    QString svtfdiag;                                       // тип диагностики
-    QString svtftype;                                       // тип: ВХ/ВЫХ/МРШ/ПРХ/МНВ/ПРС
-    QString svtferror;                                      // логич.выражение - контроль аварии светофора
-    QString strlzsname;
-    QString strlmuname;
+
+// выношу специфические свойства в классы объектов
+//    bool   busy;
+//    bool   svtfmain;
+//    QString svtfdiag;                                       // тип диагностики
+//    QString svtftype;                                       // тип: ВХ/ВЫХ/МРШ/ПРХ/МНВ/ПРС
+//    QString svtferror;                                      // логич.выражение - контроль аварии светофора
+//    QString strlzsname;
+//    QString strlmuname;
 
     QString formula;                                        // выражение, описывающее вирт.сигнал
     class BoolExpression * expression;                      // указатель на BoolExpression, если есть формула

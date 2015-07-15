@@ -67,14 +67,29 @@ bool Svtf::AddTemplate(IdentityType * ident)
     return false;
 }
 
-bool Svtf::AddTs (Ts * ts, Logger& logger)
+bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
     int no = ts->IdSvtf();
     Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(ts, logger);
 
+    // добираем нужные поля
+    svtf->svtfdiag      = query.value("SvtfDiag"  ).toString();     // тип диагностического контроля
+
+    bool   svtfmain = query.value("SvtfMain").toBool();
     // теперь нужно выполнить привязку свойства
-    if (ts->IsSvtfmain())
+    if (svtfmain)
+    {
         svtf->opened->SetTs(ts);
+        svtf->svtferror     = query.value("SvtfError" ).toString(); // выражение ошибки светофора
+        svtf->svtftypename  = query.value("SvtfClass" ).toString().toUpper();   // имя типа
+        svtf->svtftype= svtf->svtftypename == "ВХ"  ? SVTF_X   :// входной
+                        svtf->svtftypename == "ВЫХ" ? SVTF_IN  :// выходной
+                        svtf->svtftypename == "МРШ" ? SVTF_OUT :// маршрутный
+                        svtf->svtftypename == "ПРХ" ? SVTF_PRH :// проходной
+                        svtf->svtftypename == "МНВ" ? SVTF_MNV :// маневровый
+                        svtf->svtftypename == "ПРС" ? SVTF_PRLS:// пригласительный
+                                                      SVTF_X;
+    }
     else
     {
         svtf->tsList.append(ts);
@@ -92,7 +107,7 @@ bool Svtf::AddTs (Ts * ts, Logger& logger)
 
         if (!ts->IsParsed())
         {
-            if (ts->SvtfDiag().length()==0)
+            if (svtf->svtfdiag.length()==0)
             {
                 logger.log(QString("%1: не идентифицирован контроль СВТФ").arg(ts->NameEx()));
                 return false;
@@ -103,7 +118,7 @@ bool Svtf::AddTs (Ts * ts, Logger& logger)
     return true;
 }
 
-bool Svtf::AddTu (Tu * tu, Logger& logger)
+bool Svtf::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
     int no = tu->IdSvtf();
     Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(tu, logger);

@@ -86,35 +86,44 @@ bool Rc::AddTemplate(IdentityType * ident)
 }
 
 
-// обработать ТС, помеченный как РЦ
-Rc * Rc::AddTs (Ts * ts, Logger& logger)
+// Обработать ТС, помеченный как РЦ
+// Принято компромиссное решение: ТС хранит бОльшую часть полей из таблицы TS, специфические же для объекта поля читаются самими объектами
+// Для этого приходится передавать в функции ссылку на запись в БД: QSqlQuery&
+Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
     int no = ts->IdRc();
+    bool ret;
     Rc * rc = rchash.contains(no) ? rchash[no] : new Rc(ts, logger);
 
+    bool busy = query.value("Occupation").toBool();
+
     // теперь нужно выполнить привязку свойства
-    if (ts->IsBusy())
+    if (busy)
     {
         rc->busy->SetTs(ts);
         rc->name = ts->Name();                              // имя РЦ определяем по имени сигнала занятости
+        rc->tpoint = rc->name.indexOf("Т")==0;              // признак того, что это перегонная точка (имя сигнала начинается с "Т")
+        if (rc->tpoint)
+            int a=99;
 
-        // Path
-        // NoPrg
-        // Distance
+        // читаем специфические для РЦ данные из таблицы ТС (только для сигналов занятости)
+        rc->pathno      = query.value("Path"        ).toInt (&ret);
+        rc->pregonno    = query.value("NoPrg"       ).toInt (&ret);
+        rc->distance    = query.value("Distance"    ).toFloat(&ret);
+        rc->breaked     = query.value("LinkBlind"   ).toBool();
+        QString dir     = query.value("Type").toString();
+        rc->dir         = dir.indexOf("O") == 0 ? -1 : dir.indexOf("E") == 0 ? 1 : 0;
+        rc->rcTopoType  = (Rc::RcTypes)(query.value("TypLM").toInt (&ret)); // вычисляется автоматически, поэтому не имеет особого сиысла
+
+        // Необработанные поля:
         // First_Last
         // Branch
-        // LinkBlind
-        // Type
         // SendToNext
         // Alias
         // TimeRemoveNoTr
-        // TypSvtf              Признак обобщенного  ТСдля  контроля состояния светофоров (как правило выходных)
-        // TypLM
-        // TypStrl              Тип стрелки (додумать)
         // InvPulse
         // Park
-
     }
     else
     {
@@ -138,7 +147,7 @@ Rc * Rc::AddTs (Ts * ts, Logger& logger)
 }
 
 // обработать ТУ, помеченный как РЦ
-Rc * Rc::AddTu (Tu * tu, Logger& logger)
+Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
     int no = tu->IdRc();

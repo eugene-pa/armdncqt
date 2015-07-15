@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "properties.h"
+#include "../common/boolexpression.h"
 #include "../common/logger.h"
 #include "ts.h"
 #include "tu.h"

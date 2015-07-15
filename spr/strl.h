@@ -32,8 +32,8 @@ public:
 
     // открытые статические функции
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
-    static bool AddTs       (class Ts * ts, Logger& logger);// добавить ТС
-    static bool AddTu       (class Tu * tu, Logger& logger);// добавить ТС
+    static bool AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// добавить ТС
+    static bool AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// добавить ТС
 
 private:
     static QHash <int, Strl *> strlhash;                    // СТРЛ , индексированные по индексу ТС
@@ -61,6 +61,10 @@ private:
     Method   * setplus;                                     // перевод в минус
     Method   * setminus;                                    // перевод в плюс
 
+//    QString strlzsname;                                     // выражение
+//    QString strlmuname;
+    class BoolExpression * formula_zs;                      // указатель на BoolExpression, если есть формула для оценки замыкания стрелки
+    class BoolExpression * formula_mu;                      // указатель на BoolExpression, если есть формула для оценки замыкания стрелки
     // закрытые функции
 
 };

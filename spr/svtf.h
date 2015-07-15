@@ -6,14 +6,34 @@
 class Svtf : public SprBase
 {
 public:
+
+    enum SVTF_CLASS
+    {
+        SVTF_X      = 0,
+        SVTF_IN,                                            // "ВХ"
+        SVTF_OUT,                                           // "ВЫХ"
+        SVTF_MRSH,                                          // "МРШ"
+        SVTF_PRH,                                           // "ПРХ"
+        SVTF_MNV,                                           // "МНВ"
+        SVTF_PRLS,                                          // "ПРС"
+    };
+
     // открытые функции
     Svtf(SprBase * tuts, Logger& logger);                   // конструктор по ТС/ТУ
     ~Svtf();
 
     // открытые статические функции
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
-    static bool AddTs       (class Ts * ts, Logger& logger);// добавить ТС
-    static bool AddTu       (class Tu * tu, Logger& logger);// добавить ТС
+    static bool AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// добавить ТС
+    static bool AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// добавить ТС
+
+    //QString& SvtfDiag() { return svtfdiag; }                // тип диагностики
+    bool IsTypeIn   () { return svtftype == SVTF_IN;  }
+    bool IsTypeOut  () { return svtftype == SVTF_OUT; }
+    bool IsTypeMrsh () { return svtftype == SVTF_MRSH;}
+    bool IsTypePrh  () { return svtftype == SVTF_PRH; }
+    bool IsTypeMnv  () { return svtftype == SVTF_MNV; }
+    bool IsTypePrgl () { return svtftype == SVTF_PRLS;}
 
 private:
     static QHash <int, Svtf *> svtfhash;                     // СВТФ , индексированные по индексу ТС
@@ -43,6 +63,12 @@ private:
     Method   * adoff;                                       // отключить автодействие
     Method   * mm;                                          // маршрутная кнопка
     Method   * cancel;                                      // отмена маршрута
+
+    QString svtfdiag;                                       // тип диагностики
+    QString svtftypename;                                   // тип: ВХ/ВЫХ/МРШ/ПРХ/МНВ/ПРС
+    QString svtferror;                                      // логич.выражение - контроль аварии светофора
+
+    SVTF_CLASS  svtftype;                                   // тип:    "ВХ","ВЫХ","МРШ","ПРХ","МНВ","ПРС"
 
     // закрытые функции
 

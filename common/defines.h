@@ -13,6 +13,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QBitArray>
+#include <QVariant>
 
 //#include <QWidget>
 //#include <QGraphicsView>

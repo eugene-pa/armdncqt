@@ -51,8 +51,8 @@ public:
 
     // открытые статические функции
     static bool AddTemplate (class IdentityType *);         // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
-    static Rc * AddTs       (class Ts * ts, Logger& logger);// обработать ТС, помеченный как РЦ
-    static Rc * AddTu       (class Tu * tu, Logger& logger);// обработать ТУ, помеченный как РЦ
+    static Rc * AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// обработать ТС, помеченный как РЦ
+    static Rc * AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// обработать ТУ, помеченный как РЦ
 
     QString& Name() { return name; }                        // имя РЦ
 
@@ -90,6 +90,7 @@ private:
     float distance;                                         // километраж
     bool  breaked;                                          // стык слепого перегона
     int   dir;                                              // -1/0/1 ODD:-1  EVN:1  ANY 0
+    bool  tpoint;                                           // признак того, что это перегонная точка (имя сигнала начинается с "Т")
 
     // Динамические состояния. Должны быть вычислены при получении данных
     bool stsBusy     ;                                      // занятость

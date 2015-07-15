@@ -75,6 +75,7 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(ts, logger);
 
     // выражение для замыкания стрелок
+    // анализируем вычислитель formula_zs, если он "пустой" - конструируем, 
     QString s = query.value("StrlZsName" ).toString();
     if (strl->formula_zs==nullptr)
     {

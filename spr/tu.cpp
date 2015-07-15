@@ -57,21 +57,21 @@ Tu::Tu(QSqlQuery& query, Logger& logger)
 
                 // РЦ
                 if (norc > 0)
-                    Rc::AddTu(this, logger);
+                    Rc::AddTu(query, this, logger);
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoRc: %2").arg(NameEx()).arg(norc));
 
                 // Светофор
                 if (nosvtf > 0)
-                    Svtf::AddTu(this, logger);
+                    Svtf::AddTu(query, this, logger);
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoSvtf: %2").arg(NameEx()).arg(nosvtf));
 
                 // Стрелка
                 if (nostrl > 0)
-                    Strl::AddTu(this, logger);
+                    Strl::AddTu(query, this, logger);
                 else
                 if (norc < 0)
                     logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));
