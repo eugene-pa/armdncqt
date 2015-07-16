@@ -54,6 +54,7 @@ private:
 
     // методы
     Method   * selectvsa;                                   // выбор для СА
+
     Method   * selectvsa_p;                                 // выбор для СА-
     Method   * selectvsa_m;                                 // выбор для СА+
     Method   * lock;                                        // запирание
@@ -61,10 +62,12 @@ private:
     Method   * setplus;                                     // перевод в минус
     Method   * setminus;                                    // перевод в плюс
 
-//    QString strlzsname;                                     // выражение
-//    QString strlmuname;
-    class BoolExpression * formula_zs;                      // указатель на BoolExpression, если есть формула для оценки замыкания стрелки
-    class BoolExpression * formula_mu;                      // указатель на BoolExpression, если есть формула для оценки замыкания стрелки
+    class BoolExpression * formula_zs;                      // указатель на вычислитель замыкания стрелки (BoolExpression)
+    class BoolExpression * formula_mu;                      // указатель на вычислитель формулы местного управления стрелкрой (BoolExpression)ккк
+
+                                                            // свойство name содержит имя стрелки с ознаком ±, например: 1/3±
+    QString basename;                                       // свойство basename содержит только имя, например: 1/3
+
     // закрытые функции
 
 };

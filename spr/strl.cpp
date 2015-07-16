@@ -74,33 +74,7 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     int no = ts->IdStrl();
     Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(ts, logger);
 
-    // выражение для замыкания стрелок
-    QString s = query.value("StrlZsName" ).toString();
-    if (strl->formula_zs==nullptr)
-    {
-        strl->formula_zs = new BoolExpression(s);
-        if (strl->formula_zs->Valid())
-            QObject::connect(strl->formula_zs, SIGNAL(GetVar(QString&,int&)), strl->st, SLOT(GetValue(QString&,int&)));
-        else
-            logger.log(QString("%1. Ошибка синтаксиса в поле ExtData '%2': %3").arg(strl->NameEx()).arg(strl->formula_zs->Source()).arg(strl->formula_zs->ErrorText()));
-
-    }
-    else
-    if (s != strl->formula_zs->Source())
-    {
-        logger.log(QString("%1. Переопределение выражения для замыкания стрелки '%2': %3").arg(strl->NameEx()).arg(strl->formula_zs->Source()).arg(strl->formula_zs->ErrorText()));
-    }
-/*
-    // выражение для контроля местного управления стрелкой
-    s = query.value("StrlMuName" ).toString();
-    if (strl->strlmuname.length()==0)
-        strl->strlmuname = s;
-    else
-    if (s != strl->strlmuname)
-    {
-
-    }
-*/
+    bool pls = strl->plus           ->Parse(ts, logger);
     strl->tsList.append(ts);
     strl->vzrez          ->Parse(ts, logger);
     strl->selectedunlock ->Parse(ts, logger);
@@ -109,12 +83,65 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     strl->selectedvsa_m  ->Parse(ts, logger);
     strl->locked         ->Parse(ts, logger);
     strl->minus          ->Parse(ts, logger);
-    strl->plus           ->Parse(ts, logger);
     strl->mu             ->Parse(ts, logger);
 
     if (!ts->IsParsed())
     {
         logger.log(QString("%1: не идентифицирован контроль СТРЛ").arg(ts->NameEx()));
+    }
+
+    if (pls)
+    {
+        strl->name = ts->name.replace("+", "±");            // "конечное" имя - плюс
+        strl->basename = ts->name.replace("+", "");
+    }
+    else
+    if (strl->name.length()==0)
+        strl->name = ts->name;                              // промежуточное имя для лога
+
+    // принимаем описание формул для замыкания стрелок и местного управления, создаем вычислители и сразу проверяем валидность
+    // выражение для замыкания стрелок
+    // анализируем вычислитель formula_zs, если он "пустой" - конструируем,
+    QString s = query.value("StrlZsName" ).toString();
+    if (s.length())
+    {
+        BoolExpression*& f = strl->formula_zs;              // ССЫЛКА НА УКАЗАТЕЛЬ
+        if (f==nullptr)
+        {
+            f = new BoolExpression(s);
+            if (f->Valid())
+                QObject::connect(f, SIGNAL(GetVar(QString&,int&)), strl->st, SLOT(GetValue(QString&,int&)));
+            else
+                logger.log(QString("%1. Ошибка синтаксиса в поле StrlZsName '%2': %3").arg(strl->NameEx()).arg(f->Source()).arg(f->ErrorText()));
+
+        }
+        else
+        if (s != f->Source())
+        {
+            logger.log(QString("%1. Переопределение выражения для замыкания стрелки '%2' <> %3").arg(strl->NameEx()).arg(f->Source()).arg(s));
+        }
+    }
+
+    // выражение для замыкания стрелок
+    // анализируем вычислитель formula_zs, если он "пустой" - конструируем,
+    s = query.value("StrlMuName" ).toString();
+    BoolExpression*& f = strl->formula_mu;
+    if (s.length())
+    {
+        if (f==nullptr)
+        {
+            f = new BoolExpression(s);
+            if (f->Valid())
+                QObject::connect(f, SIGNAL(GetVar(QString&,int&)), strl->st, SLOT(GetValue(QString&,int&)));
+            else
+                logger.log(QString("%1. Ошибка синтаксиса в поле StrlMuName '%2': %3").arg(strl->NameEx()).arg(f->Source()).arg(f->ErrorText()));
+
+        }
+        else
+        if (s != f->Source())
+        {
+            logger.log(QString("%1. Переопределение выражения для МУ стрелки: '%2' <> %3").arg(strl->NameEx()).arg(f->Source()).arg(s));
+        }
     }
 
     return true;

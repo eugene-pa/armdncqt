@@ -102,6 +102,7 @@ bool Property::Parse (class Ts * ts, Logger& logger)
         {
             ts->SetParsed();
             this->ts = ts;
+            ret= true;
 //          logger.log(QString("Определение свойства %1: %2, %3").arg(NameProp()).arg(NameTsEx()).arg(ts->NameEx()));
         }
         else
@@ -142,6 +143,7 @@ bool Method::Parse (class Tu * tu, Logger& logger)
         {
             tu->SetParsed();
             this->tu = tu;
+            ret= true;
 //          logger.log(QString("Привязка метода '%1': %2").arg(NameProp()).arg(NameTuEx()));
         }
         else
