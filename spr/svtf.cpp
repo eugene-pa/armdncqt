@@ -11,6 +11,7 @@ Svtf::Svtf(SprBase * tuts, Logger& logger)
 {
     SetBaseType(BaseSvtf);
 
+    formula_er = nullptr;
     no = tuts->IdSvtf();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
     nost = tuts->IdSt();                                    // номер станции
     st   = tuts->St();                                      // справочник
@@ -89,6 +90,16 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
                         svtf->svtftypename == "МНВ" ? SVTF_MNV :// маневровый
                         svtf->svtftypename == "ПРС" ? SVTF_PRLS:// пригласительный
                                                       SVTF_X;
+        // обрабатываем выражеение аварии светофора
+        QString s = query.value("SvtfError" ).toString();
+        if (s.length())
+        {
+            svtf->formula_er = new BoolExpression(s);
+            if (svtf->formula_er->Valid())
+                QObject::connect(svtf->formula_er, SIGNAL(GetVar(QString&,int&)), svtf->st, SLOT(GetValue(QString&,int&)));
+            else
+                logger.log(QString("%1. Ошибка синтаксиса в поле StrlZsName '%2': %3").arg(svtf->NameEx()).arg(svtf->formula_er->Source()).arg(svtf->formula_er->ErrorText()));
+        }
     }
     else
     {

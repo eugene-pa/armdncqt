@@ -70,7 +70,7 @@ private:
 
     SVTF_CLASS  svtftype;                                   // тип:    "ВХ","ВЫХ","МРШ","ПРХ","МНВ","ПРС"
 
-    class BoolExpression * formula_zs;                      // указатель на вычислитель формулы аварии светофора (BoolExpression)
+    class BoolExpression * formula_er;                      // указатель на вычислитель формулы аварии светофора (BoolExpression)
 
     // закрытые функции
 

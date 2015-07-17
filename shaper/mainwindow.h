@@ -9,6 +9,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QLabel>
+#include <QComboBox>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -43,9 +44,14 @@ private slots:
     void dataready   (ClientTcp *);                         // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
 
+    void on_action_RcInfo_triggered();
+    void stationSelected(int index);                        // выбор станции в списке
+
 private:
     Ui::MainWindow *ui;
     class QMdiArea *mdiArea;                                // виджет MDI
+
+    QComboBox* StationsCmb;                                 // станции
 
     QLabel hostStatus;
     QPixmap * green, * red, * yellow;                       // индикаьторы статуса

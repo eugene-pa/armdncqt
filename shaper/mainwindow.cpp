@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "shapechild.h"
+#include "../forms/dlgrcinfo.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -61,11 +62,19 @@ MainWindow::MainWindow(QWidget *parent) :
     Esr::ReadBd(dbname, logger);
     Station::ReadBd(dbname, logger);
     IdentityType::ReadBd (extDb, logger);
-    Ts::ReadBd (dbname, logger);
-    Tu::ReadBd (dbname, logger);
+//    Ts::ReadBd (dbname, logger);
+//    Tu::ReadBd (dbname, logger);
 
     colorScheme = new ColorScheme(extDb, &logger);
     TrnspDescription::readBd(extDb, logger);
+
+    // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
+    ui->mainToolBar->insertWidget(ui->actionNewForm, StationsCmb = new QComboBox);
+    foreach (Station * st, Station::Stations.values())
+    {
+        StationsCmb->addItem(st->Name(), qVariantFromValue((void *) st));
+    }
+    QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
@@ -142,4 +151,18 @@ void MainWindow::dataready   (ClientTcp * client)
 void MainWindow::rawdataready(ClientTcp *client)
 {
     ui->statusBar->showMessage(QString("%1. Получены неформатные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()), 10000);
+}
+
+// -------------------------------------------------------------------------------
+// вызов формы: информация по РЦ
+void MainWindow::on_action_RcInfo_triggered()
+{
+    DlgRcInfo * dlg = new DlgRcInfo(this);
+    dlg->showNormal();
+}
+
+// выбор станции в списке
+void MainWindow::stationSelected(int index)
+{
+    Station * st = (Station *)StationsCmb->currentData().value<void *>();
 }

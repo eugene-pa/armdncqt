@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     ../spr/datafrommonitor.cpp \
     ../spr/peregon.cpp \
     ../spr/train.cpp \
-    ../spr/route.cpp
+    ../spr/route.cpp \
+    ../forms/dlgrcinfo.cpp
     ../common/boolexpression.cpp \
 
 
@@ -83,11 +84,13 @@ HEADERS  += mainwindow.h \
     ../spr/datafrommonitor.h \
     ../spr/peregon.h \
     ../spr/train.h \
-    ../spr/route.h
+    ../spr/route.h \
+    ../forms/dlgrcinfo.h
     ../common/boolexpression.h \
 
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    ../forms/dlgrcinfo.ui
 
 RESOURCES += \
     images.qrc

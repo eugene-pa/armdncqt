@@ -75,10 +75,20 @@
     <addaction name="action_29"/>
     <addaction name="action_30"/>
    </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>Объекты</string>
+    </property>
+    <addaction name="action_RcInfo"/>
+    <addaction name="action_StrlInfo"/>
+    <addaction name="action_SvtfInfo"/>
+    <addaction name="action_RouteInfo"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
    <addaction name="menu_4"/>
+   <addaction name="menu_5"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -354,6 +364,26 @@
   <action name="action">
    <property name="text">
     <string>Прямоугольник</string>
+   </property>
+  </action>
+  <action name="action_RcInfo">
+   <property name="text">
+    <string>РЦ</string>
+   </property>
+  </action>
+  <action name="action_StrlInfo">
+   <property name="text">
+    <string>Стрелки</string>
+   </property>
+  </action>
+  <action name="action_SvtfInfo">
+   <property name="text">
+    <string>Светофоры</string>
+   </property>
+  </action>
+  <action name="action_RouteInfo">
+   <property name="text">
+    <string>Маршруты</string>
    </property>
   </action>
  </widget>
