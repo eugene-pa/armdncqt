@@ -12,11 +12,17 @@ class DlgRcInfo : public QDialog
     Q_OBJECT
 
 public:
-    explicit DlgRcInfo(QWidget *parent = 0);
+    explicit DlgRcInfo(class Station * st, QWidget *parent = 0);
     ~DlgRcInfo();
+
+private slots:
+
 
 private:
     Ui::DlgRcInfo *ui;
+    class Station * st;
+    void FillData();
+
 };
 
 #endif // DLGRCINFO_H

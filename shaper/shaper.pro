@@ -48,7 +48,8 @@ SOURCES += main.cpp\
     ../spr/peregon.cpp \
     ../spr/train.cpp \
     ../spr/route.cpp \
-    ../forms/dlgrcinfo.cpp
+    ../forms/dlgrcinfo.cpp \
+    ../forms/dlgstrlinfo.cpp
     ../common/boolexpression.cpp \
 
 
@@ -85,12 +86,14 @@ HEADERS  += mainwindow.h \
     ../spr/peregon.h \
     ../spr/train.h \
     ../spr/route.h \
-    ../forms/dlgrcinfo.h
+    ../forms/dlgrcinfo.h \
+    ../forms/dlgstrlinfo.h
     ../common/boolexpression.h \
 
 
 FORMS    += mainwindow.ui \
-    ../forms/dlgrcinfo.ui
+    ../forms/dlgrcinfo.ui \
+    ../forms/dlgstrlinfo.ui
 
 RESOURCES += \
     images.qrc

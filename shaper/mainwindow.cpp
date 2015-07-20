@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "shapechild.h"
 #include "../forms/dlgrcinfo.h"
+#include "../forms/dlgstrlinfo.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -75,6 +76,7 @@ MainWindow::MainWindow(QWidget *parent) :
         StationsCmb->addItem(st->Name(), qVariantFromValue((void *) st));
     }
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
+    g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
@@ -157,12 +159,20 @@ void MainWindow::rawdataready(ClientTcp *client)
 // вызов формы: информация по РЦ
 void MainWindow::on_action_RcInfo_triggered()
 {
-    DlgRcInfo * dlg = new DlgRcInfo(this);
+    DlgRcInfo * dlg = new DlgRcInfo(g_actualStation, this);
     dlg->showNormal();
 }
+
+void MainWindow::on_action_StrlInfo_triggered()
+{
+    DlgStrlInfo * dlg = new DlgStrlInfo(g_actualStation, this);
+    dlg->showNormal();
+}
+
 
 // выбор станции в списке
 void MainWindow::stationSelected(int index)
 {
-    Station * st = (Station *)StationsCmb->currentData().value<void *>();
+    g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
 }
+

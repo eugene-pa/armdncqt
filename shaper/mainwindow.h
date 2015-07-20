@@ -47,6 +47,8 @@ private slots:
     void on_action_RcInfo_triggered();
     void stationSelected(int index);                        // выбор станции в списке
 
+    void on_action_StrlInfo_triggered();
+
 private:
     Ui::MainWindow *ui;
     class QMdiArea *mdiArea;                                // виджет MDI

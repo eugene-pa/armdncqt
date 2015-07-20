@@ -42,6 +42,7 @@ public:
     // открытые статические функции
     static Rc * GetById(int no);                            // получить справочник по номеру РЦ
     static Rc * GetSprByOrgNoAndKrug(int no, int bridgeno);
+    static QHash<int, Rc *>& AllRc() { return rchash; }     // получить таблицу всех РЦ
 
     // открытые функции
     Rc(SprBase * tuts, Logger& logger);                     // конструктор по ТС/ТУ
