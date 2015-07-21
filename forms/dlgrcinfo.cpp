@@ -11,17 +11,25 @@ DlgRcInfo::DlgRcInfo(Station * st, QWidget *parent ) :
 
     ui->tableRc->setColumnCount(8);
     ui->tableRc->setRowCount(5);
-    //QTableWidgetItem * h = ui->tableRc->horizontalHeaderItem(0);
-    //h ->setText("Имя РЦ");
-    int a = 99;
+    ui->tableRc->verticalHeader()->setDefaultSectionSize(20);
+    ui->tableRc->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    //ui->tableRc->resizeColumnsToContents();
+
     ui->tableRc->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" );
-    QTableWidgetItem * item = new QTableWidgetItem ("0,0");
-    ui->tableRc->setItem(1,1, item);
+    QPixmap * green   = new QPixmap("../images/icon_grn.ico");
+    ui->tableRc->setItem(0,0, new QTableWidgetItem (*green, "OK"));
+    ui->tableRc->setItem(4,0, new QTableWidgetItem (*green, "OK"));
+
+    QTableWidgetItem * item = new QTableWidgetItem ("ERROR");
+    item->setBackground(Qt::red);
+    ui->tableRc->setItem(3,0, item);
 
 }
 
 DlgRcInfo::~DlgRcInfo()
 {
+    ui->tableRc->clear();
     delete ui;
 }
 

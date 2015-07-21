@@ -11,40 +11,25 @@ DlgStrlInfo::DlgStrlInfo(Station * st, QWidget *parent) :
     this->st = st;
     ui->setupUi(this);
 
+    ui->treeStrl->setColumnCount(3);
+    ui->treeStrl->setHeaderLabel("Состояние стрелок по станции " + st->Name());
+    ui->treeStrl->setHeaderLabels(QStringList() << "Имя стрелки" << "Состояние");
 
-    QStandardItemModel * model  = new QStandardItemModel(5, 10, this);
-
-    //QString h("Столбец 1");
-    //QStandardItem * item = new QStandardItem ("Столбец 1");
-    model->setHorizontalHeaderItem(0, new QStandardItem ("Столбец 1"));
-
-    for (int nTopRow = 0; nTopRow < 5; ++nTopRow)
+    for (int i = 0; i < 5; ++i)
     {
-        QModelIndex index = model->index(nTopRow, 0);
-        model->setData(index, "item" + QString::number(nTopRow + 1));
-
-        index = model->index(nTopRow, 1);
-        model->setData(index, "subitem" + QString::number(nTopRow + 1));
-
-/*
-        model->insertRows(0, 4, index);
-
-        model->insertColumns(0, 3, index);
-
-        for (int nRow = 0; nRow < 4; ++nRow)
-        {
-            for (int nCol = 0; nCol < 3; ++nCol)
-            {
-                QString strPos = QString("%1,%2").arg(nRow).arg(nCol);
-                model->setData(model->index(nRow, nCol, index), strPos);
-            }
-        }
-*/
+        QTreeWidgetItem * item = new QTreeWidgetItem(QStringList() << "Стрелка " + QString::number(i) << "Столбец");
+        ui->treeStrl->addTopLevelItem(item);
+        QTreeWidgetItem * itemplus  = new QTreeWidgetItem(QStringList() << "ТС");
+        QTreeWidgetItem * itemminus = new QTreeWidgetItem(QStringList() << "ТУ");
+        item->addChild(itemplus);
+        item->addChild(itemminus);
+        itemplus ->addChild(new QTreeWidgetItem(QStringList() << "+" << "плюс"));
+        itemplus ->addChild(new QTreeWidgetItem(QStringList() << "-" << "минус"));
+        itemminus->addChild(new QTreeWidgetItem(QStringList() << "+" << "плюс"));
+        itemminus->addChild(new QTreeWidgetItem(QStringList() << "-" << "минус"));
+        itemplus->setBackground(1,Qt::green);
+        itemminus->setBackground(1,Qt::yellow);
     }
-
-    ui->tableStrl->setModel(model);
-    ui->tableStrl->show();
-    //show();
 }
 
 DlgStrlInfo::~DlgStrlInfo()
