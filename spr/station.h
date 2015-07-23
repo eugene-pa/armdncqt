@@ -48,7 +48,14 @@ public:
     ~Station();
 
 
-    QString& Name() { return  name; }
+    int  No     () { return no; }                           // #
+    QString& Name(){ return name; }                         // имя
+    int  Ras    () { return ras; }                          // #RAS
+    int  Addr   () { return addr;}                          // линейный адрес
+//  int  Version() { return version;}                       // линейный адрес
+    int  GidUralId() { return gidUralId; }                  // идентификация в ГИД УРАЛ в локальной НСИ
+    QString& Config() { return config; }                    // конфигурация КП
+
     void AddTs (class Ts*, Logger& logger);                 // добавить ТС
     void AddTu (class Tu*, Logger& logger);                 // добавить ТУ
     void GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule);

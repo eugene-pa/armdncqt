@@ -49,7 +49,8 @@ SOURCES += main.cpp\
     ../spr/train.cpp \
     ../spr/route.cpp \
     ../forms/dlgrcinfo.cpp \
-    ../forms/dlgstrlinfo.cpp
+    ../forms/dlgstrlinfo.cpp \
+    ../forms/dlgstationsinfo.cpp
     ../common/boolexpression.cpp \
 
 
@@ -87,13 +88,15 @@ HEADERS  += mainwindow.h \
     ../spr/train.h \
     ../spr/route.h \
     ../forms/dlgrcinfo.h \
-    ../forms/dlgstrlinfo.h
+    ../forms/dlgstrlinfo.h \
+    ../forms/dlgstationsinfo.h
     ../common/boolexpression.h \
 
 
 FORMS    += mainwindow.ui \
     ../forms/dlgrcinfo.ui \
-    ../forms/dlgstrlinfo.ui
+    ../forms/dlgstrlinfo.ui \
+    ../forms/dlgstationsinfo.ui
 
 RESOURCES += \
     images.qrc

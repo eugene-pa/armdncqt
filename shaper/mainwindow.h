@@ -49,6 +49,16 @@ private slots:
 
     void on_action_StrlInfo_triggered();
 
+    void on_action_SvtfInfo_triggered();
+
+    void on_action_RouteInfo_triggered();
+
+    void on_action_prgInfo_triggered();
+
+    void on_action_trainsInfo_triggered();
+
+    void on_action_stationsInfo_triggered();
+
 private:
     Ui::MainWindow *ui;
     class QMdiArea *mdiArea;                                // виджет MDI

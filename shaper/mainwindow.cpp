@@ -3,6 +3,7 @@
 #include "shapechild.h"
 #include "../forms/dlgrcinfo.h"
 #include "../forms/dlgstrlinfo.h"
+#include "../forms/dlgstationsinfo.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -155,20 +156,6 @@ void MainWindow::rawdataready(ClientTcp *client)
     ui->statusBar->showMessage(QString("%1. Получены неформатные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()), 10000);
 }
 
-// -------------------------------------------------------------------------------
-// вызов формы: информация по РЦ
-void MainWindow::on_action_RcInfo_triggered()
-{
-    DlgRcInfo * dlg = new DlgRcInfo(g_actualStation, this);
-    dlg->showNormal();
-}
-
-void MainWindow::on_action_StrlInfo_triggered()
-{
-    DlgStrlInfo * dlg = new DlgStrlInfo(g_actualStation, this);
-    dlg->showNormal();
-}
-
 
 // выбор станции в списке
 void MainWindow::stationSelected(int index)
@@ -176,3 +163,50 @@ void MainWindow::stationSelected(int index)
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
 }
 
+
+// ----------------------------------------------------------------------------------------
+// вызов диалогов табличной информации об объектах: информация по РЦ, стрелкам, сигналам
+// ----------------------------------------------------------------------------------------
+// обработчик меню информация по РЦ
+void MainWindow::on_action_RcInfo_triggered()
+{
+    DlgRcInfo * dlg = new DlgRcInfo(g_actualStation, this);
+    dlg->showNormal();
+}
+
+// обработчик меню информация по стрелкам
+void MainWindow::on_action_StrlInfo_triggered()
+{
+    DlgStrlInfo * dlg = new DlgStrlInfo(g_actualStation, this);
+    dlg->showNormal();
+}
+
+// обработчик меню информация по светофорам
+void MainWindow::on_action_SvtfInfo_triggered()
+{
+
+}
+
+// обработчик меню информация по маршрутам
+void MainWindow::on_action_RouteInfo_triggered()
+{
+
+}
+
+// обработчик меню информация по перегонам
+void MainWindow::on_action_prgInfo_triggered()
+{
+
+}
+
+// обработчик меню информация по поездам
+void MainWindow::on_action_trainsInfo_triggered()
+{
+
+}
+// обработчик меню информация по станциям
+void MainWindow::on_action_stationsInfo_triggered()
+{
+    DlgStationsInfo * dlg = new DlgStationsInfo(this);
+    dlg->show();
+}

@@ -25,6 +25,10 @@ DlgRcInfo::DlgRcInfo(Station * st, QWidget *parent ) :
     item->setBackground(Qt::red);
     ui->tableRc->setItem(3,0, item);
 
+    ui->tableRc->setSortingEnabled(true);                   // разрешаем сортировку
+    ui->tableRc->sortByColumn(0, Qt::SortOrder::AscendingOrder);    // сортировка по умолчанию
+
+
 }
 
 DlgRcInfo::~DlgRcInfo()

@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DlgStrlInfo</class>
- <widget class="QDialog" name="DlgStrlInfo">
+ <class>DlgStationsInfo</class>
+ <widget class="QDialog" name="DlgStationsInfo">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>703</width>
-    <height>462</height>
+    <width>946</width>
+    <height>354</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Информация о станциях диспетчерского участка</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="tableStations"/>
+   </item>
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -24,23 +27,6 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QTreeWidget" name="treeStrl">
-     <property name="columnCount">
-      <number>2</number>
-     </property>
-     <column>
-      <property name="text">
-       <string notr="true">1</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string notr="true">2</string>
-      </property>
-     </column>
-    </widget>
-   </item>
   </layout>
  </widget>
  <resources/>
@@ -48,7 +34,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DlgStrlInfo</receiver>
+   <receiver>DlgStationsInfo</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -64,7 +50,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DlgStrlInfo</receiver>
+   <receiver>DlgStationsInfo</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
