@@ -79,6 +79,10 @@
     <property name="title">
      <string>Объекты</string>
     </property>
+    <addaction name="action_TsInfo"/>
+    <addaction name="action_TuInfo"/>
+    <addaction name="action_OtuInfo"/>
+    <addaction name="separator"/>
     <addaction name="action_RcInfo"/>
     <addaction name="action_StrlInfo"/>
     <addaction name="action_SvtfInfo"/>
@@ -375,6 +379,9 @@
    <property name="text">
     <string>РЦ</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+F9</string>
+   </property>
   </action>
   <action name="action_StrlInfo">
    <property name="text">
@@ -400,10 +407,34 @@
    <property name="text">
     <string>Поезда</string>
    </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
   </action>
   <action name="action_stationsInfo">
    <property name="text">
     <string>Станции</string>
+   </property>
+  </action>
+  <action name="action_TuInfo">
+   <property name="text">
+    <string>ТУ</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F8</string>
+   </property>
+  </action>
+  <action name="action_TsInfo">
+   <property name="text">
+    <string>ТС</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+7</string>
+   </property>
+  </action>
+  <action name="action_OtuInfo">
+   <property name="text">
+    <string>ОТУ</string>
    </property>
   </action>
  </widget>

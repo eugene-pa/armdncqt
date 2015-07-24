@@ -9,6 +9,19 @@ DlgRcInfo::DlgRcInfo(Station * st, QWidget *parent ) :
     this->st = st;
     ui->setupUi(this);
 
+    FillData();
+}
+
+DlgRcInfo::~DlgRcInfo()
+{
+    ui->tableRc->clear();
+    delete ui;
+}
+
+
+void DlgRcInfo::FillData()
+{
+    setWindowTitle("Состояние РЦ по ст." + st->Name());
     ui->tableRc->setColumnCount(8);
     ui->tableRc->setRowCount(5);
     ui->tableRc->verticalHeader()->setDefaultSectionSize(20);
@@ -27,17 +40,4 @@ DlgRcInfo::DlgRcInfo(Station * st, QWidget *parent ) :
 
     ui->tableRc->setSortingEnabled(true);                   // разрешаем сортировку
     ui->tableRc->sortByColumn(0, Qt::SortOrder::AscendingOrder);    // сортировка по умолчанию
-
-
-}
-
-DlgRcInfo::~DlgRcInfo()
-{
-    ui->tableRc->clear();
-    delete ui;
-}
-
-void DlgRcInfo::FillData()
-{
-    //foreach (Rc * rc, )
 }

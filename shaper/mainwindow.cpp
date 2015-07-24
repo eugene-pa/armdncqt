@@ -51,13 +51,15 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(mdiArea);
 
     // загрузка пользовательской графики (можно вынести в глоб.функцию)
-    green   = new QPixmap(images + "icon_grn.ico");
-    red     = new QPixmap(images + "icon_red.ico");
-    yellow  = new QPixmap(images + "icon_yel.ico");
+    g_green   = new QPixmap(images + "icon_grn.ico");
+    g_red     = new QPixmap(images + "icon_red.ico");
+    g_yellow  = new QPixmap(images + "icon_yel.ico");
+    g_gray    = new QPixmap(images + "icon_gry.ico");
+    g_white   = new QPixmap(images + "icon_wht.ico");
 
     // добавляем в статус бар поля "IP_ПОРТ" и индикатор соединения
     ui->statusBar->addPermanentWidget(new QLabel(server_ipport));   //
-    hostStatus.setPixmap(*yellow);
+    hostStatus.setPixmap(*g_yellow);
     ui->statusBar->addPermanentWidget(&hostStatus);
 
     // загрузка НСИ
@@ -122,21 +124,21 @@ void MainWindow::on_actionNewForm_triggered()
 // установлено соединение
 void MainWindow::connected   (ClientTcp *client)
 {
-    hostStatus.setPixmap(*green);
+    hostStatus.setPixmap(*g_green);
     ui->statusBar->showMessage(QString("Соединение c хостом %1").arg(client->Name()), 60000);
 }
 
 // разорвано соединение
 void MainWindow::disconnected(ClientTcp *client)
 {
-    hostStatus.setPixmap(*yellow);
+    hostStatus.setPixmap(*g_yellow);
     ui->statusBar->showMessage(QString("%1. Разрыв соединения c клиентом %2").arg(QTime::currentTime().toString()).arg(client->Name()), 60000);
 }
 
 // ошибка сокета
 void MainWindow::error (ClientTcp *client)
 {
-    hostStatus.setPixmap(*red);
+    hostStatus.setPixmap(*g_red);
 }
 
 // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
@@ -181,6 +183,13 @@ void MainWindow::on_action_StrlInfo_triggered()
     dlg->showNormal();
 }
 
+// обработчик меню информация по станциям
+void MainWindow::on_action_stationsInfo_triggered()
+{
+    DlgStationsInfo * dlg = new DlgStationsInfo(this);
+    dlg->show();
+}
+
 // обработчик меню информация по светофорам
 void MainWindow::on_action_SvtfInfo_triggered()
 {
@@ -204,9 +213,21 @@ void MainWindow::on_action_trainsInfo_triggered()
 {
 
 }
-// обработчик меню информация по станциям
-void MainWindow::on_action_stationsInfo_triggered()
+
+// обработчик меню информация по синалам ТУ
+void MainWindow::on_action_TuInfo_triggered()
 {
-    DlgStationsInfo * dlg = new DlgStationsInfo(this);
-    dlg->show();
+
+}
+
+// обработчик меню информация по синалам ОТУ
+void MainWindow::on_action_OtuInfo_triggered()
+{
+
+}
+
+// обработчик меню информация по синалам ТС
+void MainWindow::on_action_TsInfo_triggered()
+{
+
 }

@@ -123,4 +123,11 @@ extern class Station * g_actualStation;                     // актуальн�
 
 const int MAX_DATA_LEN_FROM_MONITOR = 65535;
 
+// глобальные загруженные ресурсы (значки и т.д.)
+extern QPixmap  * g_green,
+                * g_red,
+                * g_yellow,
+                * g_gray,
+                * g_white;                                  // индикаторы статуса
+
 #endif // DEFINES_H

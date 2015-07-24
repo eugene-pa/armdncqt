@@ -59,6 +59,12 @@ private slots:
 
     void on_action_stationsInfo_triggered();
 
+    void on_action_TuInfo_triggered();
+
+    void on_action_OtuInfo_triggered();
+
+    void on_action_TsInfo_triggered();
+
 private:
     Ui::MainWindow *ui;
     class QMdiArea *mdiArea;                                // виджет MDI
@@ -66,7 +72,6 @@ private:
     QComboBox* StationsCmb;                                 // станции
 
     QLabel hostStatus;
-    QPixmap * green, * red, * yellow;                       // индикаьторы статуса
 
     ClientTcp * clientTcp;                                  // подключение к потоку ТС
 };
