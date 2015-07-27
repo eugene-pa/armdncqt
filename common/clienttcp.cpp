@@ -88,14 +88,14 @@ void ClientTcp::slotReadyRead      ()
                 length += sock->read(data+length, 65536-length);
                 rcvd[1] += length;                          // инкремент
 
-                rawdataready(this);
+                emit rawdataready(this);
                 return;
             }
         }
         else
         {
             rcvd[0]++; rcvd[1] += length;                   // инкремент
-            dataready (this);                               // обращение к подключенным слотам; они должны гарантированно забрать данные
+            emit dataready (this);                          // обращение к подключенным слотам; они должны гарантированно забрать данные
 
             length = 0;
             toRead = sizeof(TcpHeader);
@@ -115,14 +115,14 @@ void ClientTcp::slotConnected ()
         id[id.length()] = 0;
         Send(id);
     }
-    connected (this);
+    emit connected (this);
 }
 
 // разорвано соединение
 void ClientTcp::slotDisconnected ()
 {
     log (msg=QString("Разрыв соединения c хостом %1").arg(Name()));
-    disconnected (this);
+    emit disconnected (this);
     if (run)
         sock->connectToHost(ip,port);
 }
@@ -132,7 +132,7 @@ void ClientTcp::slotError (QAbstractSocket::SocketError er)
 {
     _lasterror = er;
     log (msg=QString("Клиент %1. Ошибка: %2").arg(Name()).arg(TcpHeader::ErrorInfo(er)));
-    error (this);
+    emit error (this);
 //  if (run && !connected())
 //      sock->connectToHost(ip,port);
 }

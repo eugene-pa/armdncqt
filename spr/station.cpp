@@ -99,7 +99,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
 
 Station::~Station()
 {
-
+    qDebug() << "~Station()";
 }
 
 // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]

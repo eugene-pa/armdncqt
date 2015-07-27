@@ -120,9 +120,10 @@ void DDataFromMonitor::ExtractRcInfo(int bridgeno)
             if (bridgeno > 0)
             {
                 rc = Rc::GetSprByOrgNoAndKrug (datarc->NoRc, bridgeno);
-                if (rc==NULL)
-                    continue;
             }
+            if (rc==NULL)
+                continue;
+
             // TRACE (rc->NameEx());
 
             rc->stsRouteRq	= datarc->stsMRSHR_RQ;
