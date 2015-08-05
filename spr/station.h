@@ -12,6 +12,7 @@
 #include "strl.h"
 #include "svtf.h"
 #include "route.h"
+#include "train.h"
 #include "peregon.h"
 #include "enums.h"
 #include "streamts.h"
@@ -110,6 +111,10 @@ public:
     void AddRoute(Route* route);                            // добавить маршрут
 
     Route * GetRouteByNo(int no);                           // получить маршрут по номеру маршрута на станции
+
+    QHash <int, class Rc  *> Allrc  () { return allrc;  }   // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Svtf*> Allsvtf() { return allsvtf;}   // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Strl*> Allstrl() { return allstrl;}   // РЦ станции, индексированные по индексу ТС
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

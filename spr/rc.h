@@ -57,12 +57,20 @@ public:
 
     QString& Name() { return name; }                        // имя РЦ
 
+    class Route * ActualRoute() { return actualRoute; }     // актуаьный маршрут
+    class Train * Actualtrain() { return actualtrain; }     // актуаьный поезд
+
+    QVector <Ts *> Allts() { return allts; }          // список действительных ТС объекта
+    QVector <Tu *> Alltu() { return alltu; }          // список действительных ТУ объекта
+
 private:
     static QHash <int, Rc *> rchash;                        // РЦ , индексированные по индексу ТС
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
     static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов РЦ
 
-    // свойства
+    // каждая РЦ имеет указатели на все возможные свойства РЦ; если свойство не задействовано, указатель содержит nullptr
+    // хочу иметь коллекцию определенных для данной РЦ свойств и методов
+    QVector <Ts *> allts;                                   // список действительных ТС объекта
     Property *locked;                                       // блокировка
     Property *unlocking;                                    // восприятие разблокировки
     Property *selected_ir;                                  // выбор для разделки
@@ -74,6 +82,7 @@ private:
     Property *uri;                                          // разделка в терминах ЭЦ/ЭЦ МПК
 
     // методы
+    QVector <Tu *> alltu;                                   // список действительных ТУ объекта
     Method   * tulock;                                      // заблокировать
     Method   * tuunlock;                                    // разблокировать
     Method   * tuir;                                        // разделка

@@ -66,8 +66,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Esr::ReadBd(dbname, logger);
     Station::ReadBd(dbname, logger);
     IdentityType::ReadBd (extDb, logger);
-//    Ts::ReadBd (dbname, logger);
-//    Tu::ReadBd (dbname, logger);
+    Ts::ReadBd (dbname, logger);
+    Tu::ReadBd (dbname, logger);
 
     colorScheme = new ColorScheme(extDb, &logger);
     TrnspDescription::readBd(extDb, logger);

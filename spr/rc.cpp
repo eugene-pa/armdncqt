@@ -101,6 +101,7 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     // теперь нужно выполнить привязку свойства
     if (busy)
     {
+        rc->allts.append(ts);
         rc->busy->SetTs(ts);
         rc->name = ts->Name();                              // имя РЦ определяем по имени сигнала занятости
         rc->tpoint = rc->name.indexOf("Т")==0;              // признак того, что это перегонная точка (имя сигнала начинается с "Т")
@@ -141,6 +142,8 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
         {
             logger.log(QString("%1: не идентифицирован контроль РЦ").arg(ts->NameEx()));
         }
+        else
+            rc->allts.append(ts);
     }
 
     return rc;
@@ -162,5 +165,7 @@ Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
     {
         logger.log(QString("%1: не идентифицирована ТУ для РЦ").arg(tu->NameEx()));
     }
+    else
+        rc->alltu.append(tu);
     return rc;
 }

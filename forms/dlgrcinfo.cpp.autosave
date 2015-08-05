@@ -80,6 +80,10 @@ void DlgRcInfo::FillData()
             s += tu->Name() + "   ";
         }
         t->setItem(row,5, new QTableWidgetItem (s));
+        
+        // Слева
+        
+        // Справа
 
         row++;
     }

@@ -32,9 +32,9 @@ DlgStationsInfo::DlgStationsInfo(QWidget *parent) :
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)st));    // запомним станцию
         // так можно извлечь:
         //Station * stfrom = (Station*)(t->item(i,0)->data(Qt::UserRole).value<void*>());
-        t->setItem(row,1, new QTableWidgetItem (QString("%01").arg(st->No(),2,10,QChar('0')))); // форматирование с ведущими нулями для сортировки
+        t->setItem(row,1, new QTableWidgetItem (QString("%1").arg(st->No(),2,10,QChar(' ')))); // форматирование с ведущими пробелами для сортировки
         t->setItem(row,2, new QTableWidgetItem (QString::number(st->Ras())));
-        t->setItem(row,3, new QTableWidgetItem (QString::number(st->Addr())));
+        t->setItem(row,3, new QTableWidgetItem (QString("%1").arg(st->Addr(),2,10,QChar(' ')))); // форматирование с ведущими пробелами для сортировки
         t->setItem(row,4, new QTableWidgetItem (QString::number(st->Version())));
         // t->setItem(row,5, new QTableWidgetItem (QString::number(st->Version()));   // ОТУ
         t->setItem(row,6, new QTableWidgetItem (QString::number(st->GidUralId())));
