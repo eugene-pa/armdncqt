@@ -14,6 +14,8 @@ Rc::Rc(SprBase * tuts, Logger& logger)
 
     actualRoute = nullptr;
     actualtrain = nullptr;
+    prvActual = nullptr;                                    // активная связь влево  по стрелкам
+    nxtActual = nullptr;                                    // активная связь вправо по стрелкам
 
 
     // формируем свойства РЦ
@@ -168,4 +170,118 @@ Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
     else
         rc->alltu.append(tu);
     return rc;
+}
+
+
+// чтение таблицы связей РЦ (RC_Relations) и формирование дерева связей
+// Чтение выполняется ПОСЛЕ чтения ТУ/ТС но ДО чтения маршрутов
+// Функция учитывает доп.поля с информацией о разделяющих РЦ светофорах:
+// LR_svtf	- поездной   при движении слева направо
+// LR_svtfM	- маневровый при движении слева направо
+// RL_svtf	- поездной   при движении справа налево
+// RL_svtfM	- маневровый при движении справа налево
+//
+// Если есть разделюящие светофоры, в их справочники прописываются РЦ перед/за светофором (RcBefore, RcAfter)
+// Каждая связь прописывается:
+//	- в левую РЦ, записывая в нее светофоры при движении слева направо
+//  - в правую РЦ, записывая в нее светофоры при движении справо налево
+// Таким образом при вычислении соседей будут вычислены соседние РЦ и их связи, причем связи сразу будут содержать разделяющие светофоры в нужном направлении
+
+bool Rc::ReadRelations(QString& dbpath, Logger& logger)
+{
+    bool ret = true;
+    logger.log(QString("Чтение таблицы [RC_Relations] БД %1").arg(dbpath));
+    QString sql("SELECT * FROM [RC_Relations] ORDER BY RC_Left, RC_Right");
+
+    try
+    {
+        QSqlDatabase dbSql = GetSqliteBd(dbpath);
+        if (dbSql.open())
+        {
+            QSqlQuery query(dbSql);
+            if (query.exec (sql))
+            {
+                while (query.next())
+                {
+                    // читаем поля левой и правой РЦ
+                    int lft = query.value("RC_Left"    ).toInt(&ret);
+                    int rht = query.value("RC_Right"   ).toInt(&ret);
+
+                    // читаем новые поля разделяющих светофоров
+                    int nsvtf_LR     = query.value("LR_svtf"  ).toInt(&ret);// поездной   при движении слева направо
+                    int nsvtf_LR_M   = query.value("LR_svtfM" ).toInt(&ret);// маневровый при движении слева направо
+                    int nsvtf_RL     = query.value("RL_svtf"  ).toInt(&ret);// поездной   при движении справа налево
+                    int nsvtf_RL_M   = query.value("RL_svtfM" ).toInt(&ret);// маневровый при движении справа налево
+
+                    QString header = QString("Таблица 'RC_Relations'. Связь РЦ %1/%2; Свтф: %3,%4,%5,%6").arg(lft).arg(rht).arg(nsvtf_LR).arg(nsvtf_LR_M).arg(nsvtf_RL).arg(nsvtf_RL_M);		// заголовок сообщения
+                    Svtf * svtf_LR  = Svtf::GetById(nsvtf_LR  );
+                    Svtf * svtf_LRM = Svtf::GetById(nsvtf_LR_M);
+                    Svtf * svtf_RL  = Svtf::GetById(nsvtf_RL  );
+                    Svtf * svtf_RLM = Svtf::GetById(nsvtf_RL_M);
+
+                    if (	(svtf_LR == nullptr &&nsvtf_LR  )
+                        ||  (svtf_LRM== nullptr &&nsvtf_LR_M)
+                        ||  (svtf_RL == nullptr &&nsvtf_RL  )
+                        ||  (svtf_RLM== nullptr &&nsvtf_RL_M)
+                        )
+                    {
+                        logger.log(QString("%1. Хотя бы один из светофоров связи не найден в справочниках. Проверьте светофоры в полях LR[RL]_svtf").arg(header));
+                    }
+
+                    Rc * l = Rc::GetById(lft);              // Левая РЦ в связи
+                    Rc * r = Rc::GetById(rht);              // Правая РЦ в связи
+                    if (   l == nullptr || r == nullptr || l == r)
+                    {
+                        logger.log(QString("%1. Некорректная пара РЦ").arg(header));
+                        continue;
+                    }
+
+                    // Если есть разделюящие светофоры, прописываю в их справочники РЦ перед/за светофором (RcBefore, RcAfter)
+                    if (svtf_LR)                            // поездной   при движении слева направо
+                    {
+                        svtf_LR->SetRcBefore(l);
+                        svtf_LR->SetRcAfter (r);
+                    }
+                    if (svtf_LRM)                           // маневровый при движении слева направо
+                    {
+                        svtf_LRM->SetRcBefore(l);
+                        svtf_LRM->SetRcAfter (r);
+                    }
+                    if (svtf_RL)                            // поездной   при движении справа налево
+                    {
+                        svtf_RL->SetRcBefore(r);
+                        svtf_RL->SetRcAfter (l);
+                    }
+                    if (svtf_RLM)                           // маневровый при движении справа налево
+                    {
+                        svtf_RLM->SetRcBefore(r);
+                        svtf_RLM->SetRcAfter (l);
+                    }
+
+                    NxtPrv * lnk = new NxtPrv(l, r, svtf_LR, svtf_LRM, svtf_RL, svtf_RLM);
+                    const int maxstrl = 4;
+                    for (int i=1; i<=maxstrl; i++)
+                    {
+                        int no = 0;
+                        QString id  = "Strl" + QString::number(i);
+                        QString sts = "Sts"  + QString::number(i);
+                        no = query.value(id).toInt(&ret);
+                        bool sign = query.value(sts).toBool();
+                        if (no)
+                            lnk->strl.append(new LinkedStrl(sign ? -no : no));
+                    }
+
+                    l->nxt.append(lnk);
+                    r->prv.append(lnk);
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        logger.log("Исключение в функции Ts::ReadBd");
+        ret = false;
+    }
+
+    return ret;
 }

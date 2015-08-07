@@ -10,20 +10,25 @@ class LinkedStrl
     friend class Rc;
     friend class Station;
     friend class NxtPrv;
+    friend class DlgRcInfo;
 public:
+    LinkedStrl(int no);
+
     bool IsOk()                                             // проверка нахождения в заданном положении
     {
         return true;
     }
-
+    QString& Name() { return name; }
 private:
     int no;                                                 // номер со знаком
     class Strl * strl;
+    QString name;
 };
 
 
 class Strl : public SprBase
 {
+    friend class LinkedStrl;
 public:
 
     // открытые функции
@@ -34,6 +39,8 @@ public:
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
     static bool AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// добавить ТС
     static bool AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// добавить ТС
+
+    static Strl * GetById(int no);                            // получить справочник по номеру стрелки
 
 private:
     static QHash <int, Strl *> strlhash;                    // СТРЛ , индексированные по индексу ТС

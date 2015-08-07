@@ -27,6 +27,8 @@ public:
     static bool AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// добавить ТС
     static bool AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// добавить ТС
 
+    static Svtf * GetById(int no);                            // получить справочник по номеру светофора
+
     //QString& SvtfDiag() { return svtfdiag; }                // тип диагностики
     bool IsTypeIn   () { return svtftype == SVTF_IN;  }
     bool IsTypeOut  () { return svtftype == SVTF_OUT; }
@@ -34,6 +36,9 @@ public:
     bool IsTypePrh  () { return svtftype == SVTF_PRH; }
     bool IsTypeMnv  () { return svtftype == SVTF_MNV; }
     bool IsTypePrgl () { return svtftype == SVTF_PRLS;}
+
+    void SetRcBefore (class Rc * rc) { rcBefore = rc; }     // РЦ перед светофором
+    void SetRcAfter  (class Rc * rc) { rcAfter  = rc; }     // РЦ после светофора
 
 private:
     static QHash <int, Svtf *> svtfhash;                     // СВТФ , индексированные по индексу ТС
@@ -71,6 +76,9 @@ private:
     SVTF_CLASS  svtftype;                                   // тип:    "ВХ","ВЫХ","МРШ","ПРХ","МНВ","ПРС"
 
     class BoolExpression * formula_er;                      // указатель на вычислитель формулы аварии светофора (BoolExpression)
+
+    class Rc * rcBefore;                                    // РЦ перед светофором
+    class Rc * rcAfter;                                     // РЦ после светофора
 
     // закрытые функции
 

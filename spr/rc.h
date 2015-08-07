@@ -9,15 +9,22 @@ class NxtPrv
     friend class Rc;
 public:
     // нужно додумать конструктор
-    NxtPrv ()
+    NxtPrv (Rc * l, Rc * r, class Svtf *s1, class Svtf *s2, class Svtf *s3, class Svtf *s4)
     {
-        memset (this, 0, sizeof(NxtPrv));
+        lft = l;
+        rht = r;
+        svtf_LR     = s1;
+        Svtf_LR_M   = s2;
+        svtf_RL     = s3;
+        Svtf_RL_M   = s4;
     }
-    Rc *    rc;                                             // РЦ
-    int     nS;							                    // Число опред.стрелок
+    Rc *    lft;                                            // РЦ слева
+    Rc *    rht;                                            // РЦ справа
     QVector	<class LinkedStrl*>strl;                        // Опред.стрелки со знаком
-    class Svtf * svtf;                                      // разделяющий поездной светофор
-    class Svtf * svtf_M;                                    // разделяющий маневровый светофор
+    class Svtf * svtf_LR;                                   // разделяющий поездной светофор   слева - направо
+    class Svtf * Svtf_LR_M;                                 // разделяющий маневровый светофор слева - направо
+    class Svtf * svtf_RL;                                   // разделяющий поездной светофор   справа - налево
+    class Svtf * Svtf_RL_M;                                 // разделяющий маневровый светофор справа - налево
 };
 
 class Rc : public SprBase
@@ -25,6 +32,7 @@ class Rc : public SprBase
     friend class Ts;
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
     friend class DDataFromMonitor;
+    friend class DlgRcInfo;
 
 public:
     enum RcTypes
@@ -43,6 +51,8 @@ public:
     static Rc * GetById(int no);                            // получить справочник по номеру РЦ
     static Rc * GetSprByOrgNoAndKrug(int no, int bridgeno);
     static QHash<int, Rc *>& AllRc() { return rchash; }     // получить таблицу всех РЦ
+
+    static bool ReadRelations(QString& dbpath, Logger& );   // чтение таблицы связей РЦ и формирование дерева связей
 
     // открытые функции
     Rc(SprBase * tuts, Logger& logger);                     // конструктор по ТС/ТУ
@@ -89,9 +99,13 @@ private:
 
     bool	bRcHasStrl;                                     // Признак стрелочного блок-участка
 
-    NxtPrv prv;                                             // список предыдующих РЦ со связями
-    NxtPrv nxt;                                             // список следующих РЦ со связями
+    QVector<NxtPrv*> prv;                                   // список всех предыдующих РЦ с определяющими стрелками
+    QVector<NxtPrv*> nxt;                                   // список всех следующих РЦ с определяющими стрелками
+    NxtPrv *prvActual;                                      // активная связь влево  по стрелкам
+    NxtPrv *nxtActual;                                      // активная связь вправо по стрелкам
+
     QVector <class DShape*> shapes;                         // динамически создаваемый список примитивов, отображающих эту РЦ; нужен для обработки стыков
+
                                                             // список создается для актальной видеоформы при ее открытии
     RcTypes rcTopoType;                                     // тип по топологии
     int pathno;                                             // № пути

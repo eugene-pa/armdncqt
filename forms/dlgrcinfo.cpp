@@ -31,18 +31,17 @@ void DlgRcInfo::FillData()
     setWindowTitle("Состояние РЦ по ст." + st->Name());
 
     QTableWidget * t = ui->tableRc;
-    t->setColumnCount(8);
+    t->setColumnCount(10);
     t->setRowCount(st->Allrc().count());
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
 
-    t->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" );
+    t->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" << "Свтф >>" << "Свтф <<");
 //    QPixmap * green   = new QPixmap("../images/icon_grn.ico");
 //    ui->tableRc->setItem(0,0, new QTableWidgetItem (*green, "OK"));
 //    ui->tableRc->setItem(4,0, new QTableWidgetItem (*green, "OK"));
-
 //    QTableWidgetItem * item = new QTableWidgetItem ("ERROR");
 //    item->setBackground(Qt::red);
 //    ui->tableRc->setItem(3,0, item);
@@ -81,8 +80,53 @@ void DlgRcInfo::FillData()
         }
         t->setItem(row,5, new QTableWidgetItem (s));
 
+        // Слева
+        s.clear();
+        foreach (NxtPrv * lnk, rc->prv)
+        {
+            s += lnk->lft->Name();
+            if (lnk->strl.count())
+            {
+                s += "[";
+                foreach (LinkedStrl * lstrl, lnk->strl)
+                {
+                    s += lstrl->Name();
+                    s += " ";
+                }
+
+                s += "]";
+            }
+            s += "  ";
+        }
+        t->setItem(row,6, new QTableWidgetItem (s));
+
+
+        // Справа
+        s.clear();
+        foreach (NxtPrv * lnk, rc->nxt)
+        {
+            s += lnk->rht->Name();
+            if (lnk->strl.count())
+            {
+                s += "[";
+                foreach (LinkedStrl * lstrl, lnk->strl)
+                {
+                    s += lstrl->Name();
+                    s += " ";
+                }
+
+                s += "]";
+            }
+            s += "  ";
+        }
+        t->setItem(row,7, new QTableWidgetItem (s));
+
         row++;
     }
+
+    // "Свтф >>"
+
+    // "Свтф <<"
 
     t->setSortingEnabled(true);                             // разрешаем сортировку
     t->sortByColumn(0, Qt::SortOrder::AscendingOrder);      // сортировка по умолчанию

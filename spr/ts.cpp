@@ -8,7 +8,7 @@ QString Ts::buf;
 Ts::Ts(QSqlQuery& query, Logger& logger)
 {
     SetBaseType(BaseTs);
-    bool ret;
+    bool ret = true;
     try
     {
         parsed = false;
@@ -110,9 +110,9 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
     }
     catch(...)
     {
+        ret = false;
         logger.log("Исключение в конструкторе Ts");
     }
-
 }
 
 Ts::~Ts()
@@ -123,6 +123,7 @@ Ts::~Ts()
 // чтение БД
 bool Ts::ReadBd (QString& dbpath, Logger& logger)
 {
+    bool ret = true;
     logger.log(QString("Чтение таблицы [ТS] БД %1").arg(dbpath));
     QString sql("SELECT * FROM [TS] INNER JOIN TS_Name ON TS.Cod = TS_Name.Cod ORDER BY NOST,[Module],[I],[J]");
 
@@ -144,13 +145,13 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
     catch(...)
     {
         logger.log("Исключение в функции Ts::ReadBd");
-        return false;
+        ret = false;
     }
 
     logger.log("Сортировка списков ТС");
     Station::SortTs();
 
-    return true;
+    return ret;
 }
 
 

@@ -146,3 +146,9 @@ bool Svtf::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
     svtf->cancel   ->Parse(tu, logger);
     return true;
 }
+
+// получить справочник по номеру светофора
+Svtf * Svtf::GetById(int no)
+{
+    return svtfhash.contains(no) ? svtfhash[no] : nullptr;
+}

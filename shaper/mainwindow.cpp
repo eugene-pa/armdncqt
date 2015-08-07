@@ -68,16 +68,19 @@ MainWindow::MainWindow(QWidget *parent) :
     IdentityType::ReadBd (extDb, logger);
     Ts::ReadBd (dbname, logger);
     Tu::ReadBd (dbname, logger);
+    Rc::ReadRelations(dbname, logger);
 
     colorScheme = new ColorScheme(extDb, &logger);
     TrnspDescription::readBd(extDb, logger);
 
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionNewForm, StationsCmb = new QComboBox);
+
     foreach (Station * st, Station::Stations.values())
     {
         StationsCmb->addItem(st->Name(), qVariantFromValue((void *) st));
     }
+    StationsCmb->model()->sort(0);
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
 

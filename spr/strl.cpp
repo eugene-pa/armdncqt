@@ -92,12 +92,17 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 
     if (pls)
     {
-        strl->name = ts->name.replace("+", "±");            // "конечное" имя - плюс
-        strl->basename = ts->name.replace("+", "");
+
+        strl->basename = strl->name = ts->name;            // "конечное" имя - плюс
+        strl->name.replace("+", "±");
+        strl->basename.replace("+", "");
     }
     else
     if (strl->name.length()==0)
+    {
         strl->name = ts->name;                              // промежуточное имя для лога
+    }
+
 
     // принимаем описание формул для замыкания стрелок и местного управления, создаем вычислители и сразу проверяем валидность
     // выражение для замыкания стрелок
@@ -167,4 +172,18 @@ bool Strl::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
     }
 
     return true;
+}
+
+// получить справочник по номеру светофора
+Strl * Strl::GetById(int no)
+{
+    return strlhash.contains(no) ? strlhash[no] : nullptr;
+}
+
+// конструктор стрелки с указанием заданного положения
+LinkedStrl::LinkedStrl(int no)
+{
+    this->no = no;
+    strl = Strl::GetById(abs(no));
+    name = strl->basename + (no > 0 ? "+" : "-");
 }
