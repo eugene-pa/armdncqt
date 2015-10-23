@@ -74,7 +74,7 @@ public:
     QVector <Tu *> Alltu() { return alltu; }          // список действительных ТУ объекта
 
 private:
-    static QHash <int, Rc *> rchash;                        // РЦ , индексированные по индексу ТС
+    static QHash <int, Rc *> rchash;                        // РЦ полигона, индексированные по ID
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
     static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов РЦ
 

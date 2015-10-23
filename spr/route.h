@@ -42,7 +42,7 @@ public:
     static void DoRoutes(Station* st);                      // обработка всех маршрутов
     static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
 
-    Route();
+    Route(QSqlQuery& query, Logger& logger);
     ~Route();
 
 private:

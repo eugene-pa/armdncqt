@@ -39,11 +39,25 @@ public:
     };
     static QVector<QString> BaseNames;                      // имена типов
 
-    int     No  ()  { return no; }                          // номер объекта
+    // нужно более четко определиться с No и Id. Можно так: No - номер из БД, Id - ключ с учетом круга,
+    // однако, в коде уже используется No как ключ, например, в конструкторе Rc: no = tuts->IdRc();
+    int key (int no) { return (krugno << 16) | no; }        // получить идентификатор объекта по номеру с учетом круга
+
+    // отдельные функции для номера объекта и уникального идентификатора
+    int No     () { return no;     }                        // номер объекта из БД
+    int NoSt   () { return nost;   }                        // номер станции
+    int NoRc   () { return norc;   }                        // no РЦ
+    int NoSvtf () { return nosvtf; }                        // no светофора
+    int NoStrl () { return nostrl; }                        // no стрелки
+
+    int Id     () { return key (no);     }                  // уникальный идентификатор с учетом круга
+    int IdSt   () { return key (nost);   }                  // ID станции
+    int IdRc   () { return key (norc  ); }                  // ID РЦ
+    int IdSvtf () { return key (nosvtf); }                  // ID светофора
+    int IdStrl () { return key (nostrl); }                  // ID стрелки
+
     QString& Name()  { return name; }                       // имя объекта (м.б.сложным)
     QString& NameEx();                                      // имя станции, имя объекта
-    int Id  ();                                             // уникальный идентификатор с учетом круга
-    int IdSt() { return nost; }                             // номер станции
     class Station * St() { return  st; }
 //  class Krug * Krug() { return krug; }
     QString& StationName();                                 // имя станции
@@ -58,10 +72,6 @@ public:
     bool Enabled() { return enabled; }                      // включен (не отключен)
     void Enable(bool s = true) { enabled = s; }             // включить
 
-    int IdRc   () { return norc  ; }                        // номер РЦ
-    int IdSvtf () { return nosvtf; }                        // номер светофора
-    int IdStrl () { return nostrl; }                        // номер стрелки
-
     bool Locked() { return locked; }
 
     BaseType GetBaseType() { return basetype; }             // тип объекта
@@ -72,15 +82,16 @@ public:
 
 protected:
     BaseType basetype;                                      // тип объекта
+    int     krugno;                                         // номер круга
     int     no;                                             // числовой номер/идентификаторр/ключ объекта
     QString name;                                           // имя объекта
 
     int     nost;                                           // номер станции
     class Station * st;                                     // указатель на класс станции
 
-    int     norc;                                           // номер РЦ или 0
-    int     nostrl;                                         // номер СВТФ или 0
-    int     nosvtf;                                         // номер СТРЛ или 0
+    int     norc;                                           // номер РЦ   из БД или 0
+    int     nostrl;                                         // номер СВТФ из БД или 0
+    int     nosvtf;                                         // номер СТРЛ из БД или 0
 
     bool   locked;                                          // объект заблокирован
 

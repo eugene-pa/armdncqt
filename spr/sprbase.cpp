@@ -11,6 +11,7 @@ QVector <QString> SprBase::BaseNames =
 
 SprBase::SprBase()
 {
+    krugno = 0;                                             // номер круга
     no   = 0;                                               // числовой номер/идентификаторр/ключ объекта
     nost = 0;                                               // номер станции
     norc = 0;
@@ -28,11 +29,6 @@ SprBase::~SprBase()
 
 }
 
-// если определен круг, выдать ключ = (krugno<<16 | no )
-int SprBase::Id  ()
-{
-    return no;
-}
 
 // получить имя станции если есть справочник, или строку "#номер_станции"
 QString& SprBase::StationName()

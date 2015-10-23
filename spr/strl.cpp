@@ -14,8 +14,8 @@ Strl::Strl(SprBase * tuts, Logger& logger)
 
     SetBaseType(BaseStrl);
 
-    no = tuts->IdStrl();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
-    nost = tuts->IdSt();                                    // номер станции
+    no   = tuts->NoStrl();                                  // номер стрелки из БД
+    nost = tuts->NoSt();                                    // номер станции из БД
     st   = tuts->St();                                      // справочник
 
     // формируем свойства
@@ -39,7 +39,7 @@ Strl::Strl(SprBase * tuts, Logger& logger)
     setplus     = new Method  ("перевод в минус"             , methodIds , logger);
     setminus    = new Method  ("перевод в плюс"              , methodIds , logger);
 
-    strlhash[no] = this;                                    // добавляем в общую таблицу СТРЛ
+    strlhash[Id()] = this;                                  // добавляем в общую таблицу СТРЛ
     tuts->St()->AddStrl(this, logger);                      // добавляем в таблицу СТРЛ станции
 
     // если объект конструируем по ТУ, значит не было ТС - ущербное описание объекта
@@ -71,8 +71,8 @@ bool Strl::AddTemplate(IdentityType * ident)
 
 bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
-    int no = ts->IdStrl();
-    Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(ts, logger);
+    int id = ts->IdStrl();
+    Strl * strl = strlhash.contains(id) ? strlhash[id] : new Strl(ts, logger);
 
     bool pls = strl->plus           ->Parse(ts, logger);
     strl->tsList.append(ts);
@@ -155,8 +155,8 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 bool Strl::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
     // ищем существующую стрелку или добавляем новую
-    int no = tu->IdStrl();
-    Strl * strl = strlhash.contains(no) ? strlhash[no] : new Strl(tu, logger);
+    int id = tu->IdStrl();
+    Strl * strl = strlhash.contains(id) ? strlhash[id] : new Strl(tu, logger);
 
     strl->tuList.append(tu);
     strl->selectvsa   ->Parse(tu, logger);

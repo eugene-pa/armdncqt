@@ -8,8 +8,8 @@ Rc::Rc(SprBase * tuts, Logger& logger)
 {
     SetBaseType(BaseRc);
 
-    no   = tuts->IdRc();                                    // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
-    nost = tuts->IdSt();                                    // номер станции
+    no   = tuts->NoRc();                                    // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    nost = tuts->NoSt();                                    // номер станции
     st   = tuts->St();                                      // справочник
 
     actualRoute = nullptr;
@@ -34,7 +34,7 @@ Rc::Rc(SprBase * tuts, Logger& logger)
     tuunlock    = new Method  ("разблокировка"              , methodIds , logger);
     tuir        = new Method  ("искусственная разделка"     , methodIds , logger);
 
-    rchash[no] = this;                                      // добавляем в общую таблицу РЦ
+    rchash[Id()] = this;                                    // добавляем в общую таблицу РЦ
     tuts->St()->AddRc(this, logger);                        // добавляем в таблицу РЦ станции
 
     // если объект конструируем по ТУ, значит не было ТС - ущербное описание объекта
@@ -94,9 +94,8 @@ bool Rc::AddTemplate(IdentityType * ident)
 Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
-    int no = ts->IdRc();
-    bool ret;
-    Rc * rc = rchash.contains(no) ? rchash[no] : new Rc(ts, logger);
+    int id = ts->IdRc();
+    Rc * rc = rchash.contains(id) ? rchash[id] : new Rc(ts, logger);
 
     bool busy = query.value("Occupation").toBool();
 
@@ -111,6 +110,7 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
             int a=99;
 
         // читаем специфические для РЦ данные из таблицы ТС (только для сигналов занятости)
+        bool ret = true;
         rc->pathno      = query.value("Path"        ).toInt (&ret);
         rc->pregonno    = query.value("NoPrg"       ).toInt (&ret);
         rc->distance    = query.value("Distance"    ).toFloat(&ret);
@@ -155,8 +155,8 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
-    int no = tu->IdRc();
-    Rc * rc = rchash.contains(no) ? rchash[no] : new Rc(tu, logger);
+    int id = tu->IdRc();
+    Rc * rc = rchash.contains(id) ? rchash[id] : new Rc(tu, logger);
     rc->tuList.append(tu);
 
     rc->tulock      ->Parse(tu, logger);

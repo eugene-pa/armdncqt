@@ -12,8 +12,8 @@ Svtf::Svtf(SprBase * tuts, Logger& logger)
     SetBaseType(BaseSvtf);
 
     formula_er = nullptr;
-    no = tuts->IdSvtf();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
-    nost = tuts->IdSt();                                    // номер станции
+    no = tuts->NoSvtf();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
+    nost = tuts->NoSt();                                    // номер станции
     st   = tuts->St();                                      // справочник
 
     // формируем свойства
@@ -70,8 +70,8 @@ bool Svtf::AddTemplate(IdentityType * ident)
 
 bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
-    int no = ts->IdSvtf();
-    Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(ts, logger);
+    int id = ts->IdSvtf();
+    Svtf * svtf = svtfhash.contains(id) ? svtfhash[id] : new Svtf(ts, logger);
 
     // добираем нужные поля
     svtf->svtfdiag      = query.value("SvtfDiag"  ).toString();     // тип диагностического контроля
@@ -131,8 +131,8 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 
 bool Svtf::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
-    int no = tu->IdSvtf();
-    Svtf * svtf = svtfhash.contains(no) ? svtfhash[no] : new Svtf(tu, logger);
+    int id = tu->IdSvtf();
+    Svtf * svtf = svtfhash.contains(id) ? svtfhash[id] : new Svtf(tu, logger);
     svtf->tuList.append(tu);
 
     // выполняем привязку метода

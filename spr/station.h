@@ -120,21 +120,23 @@ public:
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
 
+// закрытые члены
 private:
-   // закрытые члены - таблицы ТС по станции
+
+   // таблицы ТС по станции
     QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
     QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
     QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
     QList <class Ts*> TsSorted;                             // отсортированы по имени
 
-    // закрытые члены - таблицы ТУ по станции
+    // таблицы ТУ по станции
     QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
     QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
     QList <class Tu*> TuSorted;                             // отсортированы по имени
 
-    QHash <int, class Rc  *> allrc;                         // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Svtf*> allsvtf;                       // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Strl*> allstrl;                       // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
+    QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
+    QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
 
     QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
 
