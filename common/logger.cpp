@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QDate>
 #include <QDebug>
+#include <QTextCodec>
 
 #include "logger.h"
 
@@ -37,7 +38,6 @@ Logger::Logger(QString filename,                                    // имя ф
 
     if (truncate)
         QFile(GetActualFile()).remove();
-
 }
 
 Logger::~Logger()
@@ -71,7 +71,12 @@ void Logger::log (QString str)
         QTextStream out (&file);
         QString msg = QString("%1%2").arg(bLogTime?QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss  "):"").arg(str);
         out << msg <<"\r\n";
-        qDebug() << msg;                    // дублируем отладочном окне
+
+        //QTextCodec *codec = QTextCodec::codecForName("CP866");
+        QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
+        qDebug() << msg.toStdString().c_str();                    // дублируем отладочном окне
+        QTextCodec::setCodecForLocale( QTextCodec::codecForName("UTF-8"));
+
     }
 
     locker->unlock();
@@ -88,7 +93,7 @@ void Logger::LogStr (QString str, LogSourcer source, LogTypes type)
     if (logger != nullptr)
         logger->log(str);
     else
-        qDebug() << str;
+        qDebug() << qPrintable(str);
 }
 
 // получить 16-ричную строку

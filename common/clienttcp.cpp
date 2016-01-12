@@ -133,8 +133,8 @@ void ClientTcp::slotError (QAbstractSocket::SocketError er)
     _lasterror = er;
     log (msg=QString("Клиент %1. Ошибка: %2").arg(Name()).arg(TcpHeader::ErrorInfo(er)));
     emit error (this);
-//  if (run && !connected())
-//      sock->connectToHost(ip,port);
+    if (run && !connected())
+        sock->connectToHost(ip,port);
 }
 
 void ClientTcp::log (QString& msg)

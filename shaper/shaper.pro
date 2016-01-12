@@ -50,7 +50,9 @@ SOURCES += main.cpp\
     ../spr/route.cpp \
     ../forms/dlgrcinfo.cpp \
     ../forms/dlgstrlinfo.cpp \
-    ../forms/dlgstationsinfo.cpp
+    ../forms/dlgstationsinfo.cpp \
+    ../forms/dlgtsinfo.cpp \
+    ../forms/tsstatuswidget.cpp
     ../common/boolexpression.cpp \
 
 
@@ -89,14 +91,17 @@ HEADERS  += mainwindow.h \
     ../spr/route.h \
     ../forms/dlgrcinfo.h \
     ../forms/dlgstrlinfo.h \
-    ../forms/dlgstationsinfo.h
+    ../forms/dlgstationsinfo.h \
+    ../forms/dlgtsinfo.h \
+    ../forms/tsstatuswidget.h
     ../common/boolexpression.h \
 
 
 FORMS    += mainwindow.ui \
     ../forms/dlgrcinfo.ui \
     ../forms/dlgstrlinfo.ui \
-    ../forms/dlgstationsinfo.ui
+    ../forms/dlgstationsinfo.ui \
+    ../forms/dlgtsinfo.ui
 
 RESOURCES += \
     images.qrc

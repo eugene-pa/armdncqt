@@ -4,6 +4,7 @@
 #include "../forms/dlgrcinfo.h"
 #include "../forms/dlgstrlinfo.h"
 #include "../forms/dlgstationsinfo.h"
+#include "../forms/dlgtsinfo.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -15,7 +16,7 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
-    QString images("../images/");                                   // путь к образам
+    QString images(":/status/images/");                                   // путь к образам
 #endif
 #ifdef Q_OS_MAC
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
@@ -232,5 +233,6 @@ void MainWindow::on_action_OtuInfo_triggered()
 // обработчик меню информация по синалам ТС
 void MainWindow::on_action_TsInfo_triggered()
 {
-
+    DlgTsInfo * dlg = new DlgTsInfo(this, g_actualStation);
+    dlg->show();
 }
