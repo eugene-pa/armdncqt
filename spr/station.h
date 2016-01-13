@@ -44,6 +44,7 @@ public:
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
+
     // открытые функции
     Station(QSqlQuery& query, Logger& logger);              // конструктор на базе записи в БД
     ~Station();
@@ -115,6 +116,11 @@ public:
     QHash <int, class Rc  *> Allrc  () { return allrc;  }   // РЦ станции, индексированные по индексу ТС
     QHash <int, class Svtf*> Allsvtf() { return allsvtf;}   // РЦ станции, индексированные по индексу ТС
     QHash <int, class Strl*> Allstrl() { return allstrl;}   // РЦ станции, индексированные по индексу ТС
+
+    class Ts * GetTsByIndex(int indx);                      // получить ТС по индексу
+    bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
+    bool GetTsPulseStsByIndex(int indx);                    // получить состояние мигания сигнала в марице ТС
+
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

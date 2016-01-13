@@ -494,6 +494,24 @@ void Station::ParseExtForms()
     }
 }
 
+// получить ТС по индексу
+Ts * Station::GetTsByIndex(int indx)
+{
+    return TsIndexed.contains(indx) ? TsIndexed[indx] : nullptr;
+}
+
+// получить состояние сигнала в марице ТС
+bool Station::GetTsStsByIndex     (int indx)
+{
+    return indx >=0 && indx < tsSts.count() ? tsSts[indx] : false;
+}
+
+// получить состояние мигания сигнала в марице ТС
+bool Station::GetTsPulseStsByIndex(int indx)
+{
+    return indx >=0 && indx < tsStsPulse.count() ? tsStsPulse[indx] : false;
+}
+
 // TODO:
 // --------------------------------------------------------------------------------------------------------
 

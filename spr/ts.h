@@ -36,6 +36,8 @@ static int CompareByNames(const void*,const void*);
     void SetParsed() { parsed = true; }
     bool IsParsed () { return parsed; }
 
+    bool IsVirtual () { return expression!=nullptr;  }
+    bool IsReal    () { return kontact.length() > 0; }
 
 private:
                                                             // статические данные из БД

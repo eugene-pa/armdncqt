@@ -2,6 +2,8 @@
 #define TSSTATUSWIDGET_H
 
 #include <QWidget>
+#include "../spr/station.h"
+#include "../spr/ts.h"
 
 class TsStatusWidget : public QWidget
 {
@@ -12,7 +14,8 @@ public:
 
     virtual void paintEvent(QPaintEvent* e);
 
-    void Update (class Station * pst);
+    void Update (Station * pst, int p=1);                   // обновить
+    void setPage (int p) { page = p; }                      //
 
 signals:
 
@@ -20,8 +23,10 @@ public slots:
 
 private:
     const int dxy = 16;
+    int page;
     void DrawGrid(QPainter *p);
-    class Station * pSt;                                        // указатель на класс станции
+    void DrawTs  (QPainter *p);
+    Station * pSt;                                        // указатель на класс станции
 
 };
 
