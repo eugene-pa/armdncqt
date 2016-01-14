@@ -26,6 +26,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
     tsStsRawPrv     .fill(0,TsMaxLengthBits);
     tsStsPulsePrv   .fill(0,TsMaxLengthBits);
     tsSts           .fill(0,TsMaxLengthBits);
+    tsInverse       .fill(0,TsMaxLengthBits);
 
     mpcEbilock      = false;
     rpcMpcMPK       = false;
@@ -510,6 +511,11 @@ bool Station::GetTsStsByIndex     (int indx)
 bool Station::GetTsPulseStsByIndex(int indx)
 {
     return indx >=0 && indx < tsStsPulse.count() ? tsStsPulse[indx] : false;
+}
+
+void Station::MarkInverse(int index)
+{
+    tsInverse[index] = true;
 }
 
 // TODO:

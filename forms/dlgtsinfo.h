@@ -17,9 +17,15 @@ public:
 
     void paintEvent(QPaintEvent *);
 
+private slots:
+    void on_checkBox_toggled(bool checked);
+
 private:
     Ui::DlgTsInfo *ui;
     class Station * pSt;
+
+    void timerEvent(QTimerEvent *event);
+    void fillTable();
 };
 
 #endif // DLGTSINFO_H

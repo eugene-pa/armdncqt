@@ -121,6 +121,24 @@ public:
     bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
     bool GetTsPulseStsByIndex(int indx);                    // получить состояние мигания сигнала в марице ТС
 
+    // таблицы ТС по станции
+     QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
+     QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
+     QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
+     QList <class Ts*> TsSorted;                             // отсортированы по имени
+
+     // таблицы ТУ по станции
+     QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
+     QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
+     QList <class Tu*> TuSorted;                             // отсортированы по имени
+
+     QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
+     QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
+     QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
+
+     QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
+
+     QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
@@ -128,25 +146,6 @@ public slots:
 
 // закрытые члены
 private:
-
-   // таблицы ТС по станции
-    QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
-    QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
-    QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
-    QList <class Ts*> TsSorted;                             // отсортированы по имени
-
-    // таблицы ТУ по станции
-    QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
-    QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
-    QList <class Tu*> TuSorted;                             // отсортированы по имени
-
-    QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
-    QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
-    QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
-
-    QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
-
-    QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
 
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]

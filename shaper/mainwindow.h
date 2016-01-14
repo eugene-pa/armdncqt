@@ -74,6 +74,7 @@ private:
     QLabel hostStatus;
 
     ClientTcp * clientTcp;                                  // подключение к потоку ТС
+    void loadResources();
 };
 
 #endif // MAINWINDOW_H

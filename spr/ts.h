@@ -39,6 +39,12 @@ static int CompareByNames(const void*,const void*);
     bool IsVirtual () { return expression!=nullptr;  }
     bool IsReal    () { return kontact.length() > 0; }
 
+    QString Kolodka() { return kolodka; }
+    QString Kontact() { return kontact; }
+    int M() { return modul; }
+    int I() { return _i; }
+    int J() { return _j; }
+
 private:
                                                             // статические данные из БД
     int     iname;                                          // ключ имени в таблице TsNames

@@ -6,6 +6,7 @@ TsStatusWidget::TsStatusWidget(QWidget *parent) : QWidget(parent)
 {
     page = 1;
     pSt = nullptr;
+    normal = false;
 }
 
 TsStatusWidget::~TsStatusWidget()
@@ -31,8 +32,9 @@ void TsStatusWidget::DrawGrid(QPainter *p)
     }
 }
 
-void TsStatusWidget::Update (class Station * pst, int p)
+void TsStatusWidget::updateWidget (class Station * pst, int p)
 {
+    startTimer(1000);
     pSt = pst;
     page = p;
     if (pSt)
@@ -50,7 +52,7 @@ void TsStatusWidget::DrawTs  (QPainter *p)
             indxByte    = i / 8,                                // индекс байта в массиве
             j           = (i % 8);                              // номер бита в байте
 
-        QRect r(col * 16 + 2, row * 16 + 2, 12, 13);
+        QRect r(col * 16 + 2, row * 16 + 2, 13, 13);
 
         QColor bck(211,211,211);                                 //  = palette().background().color();
         QBrush brush(bck);
@@ -65,11 +67,12 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         // Учтем номер страницы
         bool sts        = false,
              stsPulse   = false;
+
         indxByte += (page - 1) * (1024 / 8);
         int indxBit = indxByte*8 + j;
 
         Ts * ts = pSt->GetTsByIndex(indxBit);
-        sts      = ts!=nullptr ? ts->Sts()      : pSt->GetTsStsByIndex(indxBit);
+        sts      = ts!=nullptr ? normal ? ts->Sts() : ts->StsRaw() : pSt->GetTsStsByIndex(indxBit);
         stsPulse = ts!=nullptr ? ts->StsPulse() : pSt->GetTsPulseStsByIndex(indxBit);
 
         // 0
@@ -95,6 +98,8 @@ void TsStatusWidget::DrawTs  (QPainter *p)
 
         if (sts==false && stsPulse==false)                      // 0
         {
+            r.setHeight(r.height()-1);
+            r.setWidth(r.width()-1);
             p->drawRect(r);
         }
         else
@@ -116,4 +121,9 @@ void TsStatusWidget::DrawTs  (QPainter *p)
             p->drawEllipse(r.center(),3,3);
         }
     }
+}
+
+void TsStatusWidget::timerEvent(QTimerEvent *event)
+{
+    this->update();
 }

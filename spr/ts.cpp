@@ -99,7 +99,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
                     logger.log(QString("%1. Ошибка в поле NoStrl: %2").arg(NameEx()).arg(nostrl));
 
                 if (inverse)
-                    ;
+                    st->MarkInverse(index);
             }
         }
         else
@@ -107,7 +107,8 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
             logger.log(QString("Некорректный номер станции. Игнорируем сигнал %1").arg(NameEx()));
         }
 
-//        QString kolodka;
+        if (_kolodka > 0)
+            kolodka = QString("K%1").arg(_kolodka);
     }
     catch(...)
     {

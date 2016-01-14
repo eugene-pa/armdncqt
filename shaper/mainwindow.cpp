@@ -52,11 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(mdiArea);
 
     // загрузка пользовательской графики (можно вынести в глоб.функцию)
-    g_green   = new QPixmap(images + "icon_grn.ico");
-    g_red     = new QPixmap(images + "icon_red.ico");
-    g_yellow  = new QPixmap(images + "icon_yel.ico");
-    g_gray    = new QPixmap(images + "icon_gry.ico");
-    g_white   = new QPixmap(images + "icon_wht.ico");
+    loadResources();
 
     // добавляем в статус бар поля "IP_ПОРТ" и индикатор соединения
     ui->statusBar->addPermanentWidget(new QLabel(server_ipport));   //
@@ -235,4 +231,22 @@ void MainWindow::on_action_TsInfo_triggered()
 {
     DlgTsInfo * dlg = new DlgTsInfo(this, g_actualStation);
     dlg->show();
+}
+
+void MainWindow::loadResources()
+{
+    g_green             = new QPixmap(images + "icon_grn.ico");
+    g_red               = new QPixmap(images + "icon_red.ico");
+    g_yellow            = new QPixmap(images + "icon_yel.ico");
+    g_gray              = new QPixmap(images + "icon_gry.ico");
+    g_white             = new QPixmap(images + "icon_wht.ico");
+    g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
+    g_green_box         = new QPixmap(images + "box_grn.ico");
+    g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
+    g_red_box           = new QPixmap(images + "box_red.ico");
+    g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
+    g_yellow_box        = new QPixmap(images + "box_yel.ico");
+    g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");
+    g_gray_box          = new QPixmap(images + "box_gry.ico");
+    g_white_box         = new QPixmap(images + "box_wht.ico");
 }

@@ -14,20 +14,24 @@ public:
 
     virtual void paintEvent(QPaintEvent* e);
 
-    void Update (Station * pst, int p=1);                   // обновить
+    void updateWidget (Station * pst, int p=1);             // обновить
     void setPage (int p) { page = p; }                      //
+
+    void setNormal (bool s ) { normal = s; this->update(); }
 
 signals:
 
 public slots:
 
 private:
+    bool normal;
     const int dxy = 16;
     int page;
     void DrawGrid(QPainter *p);
     void DrawTs  (QPainter *p);
     Station * pSt;                                        // указатель на класс станции
 
+    void timerEvent(QTimerEvent *event);
 };
 
 #endif // TSSTATUSWIDGET_H
