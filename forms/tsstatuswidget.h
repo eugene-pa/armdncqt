@@ -13,13 +13,15 @@ public:
     ~TsStatusWidget();
 
     virtual void paintEvent(QPaintEvent* e);
+    virtual void mousePressEvent(QMouseEvent * event);
 
     void updateWidget (Station * pst, int p=1);             // обновить
     void setPage (int p) { page = p; }                      //
 
-    void setNormal (bool s ) { normal = s; this->update(); }
+    void setNormal (bool s ) { normal = s; update(); }
 
 signals:
+    void tsSelected (int no);                               // выделен сигнал
 
 public slots:
 
@@ -27,10 +29,10 @@ private:
     bool normal;
     const int dxy = 16;
     int page;
-    void DrawGrid(QPainter *p);
-    void DrawTs  (QPainter *p);
-    Station * pSt;                                        // указатель на класс станции
-
+    void DrawGrid(QPainter *p);                             // отрисовка окантовки
+    void DrawTs  (QPainter *p);                             // отрисовка ТС
+    Station * pSt;                                          // указатель на класс станции
+    int actualNode;                                         // актуальный узел матрицы
     void timerEvent(QTimerEvent *event);
 };
 

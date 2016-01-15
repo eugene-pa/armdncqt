@@ -107,8 +107,7 @@ Ts::Ts(QSqlQuery& query, Logger& logger)
             logger.log(QString("Некорректный номер станции. Игнорируем сигнал %1").arg(NameEx()));
         }
 
-        if (_kolodka > 0)
-            kolodka = QString("K%1").arg(_kolodka);
+        kolodka = QString("K%1").arg(_kolodka);
     }
     catch(...)
     {

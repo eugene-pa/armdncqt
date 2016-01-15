@@ -1,4 +1,5 @@
 #include "QPainter"
+#include <QMouseEvent>
 #include "tsstatuswidget.h"
 
 
@@ -7,6 +8,7 @@ TsStatusWidget::TsStatusWidget(QWidget *parent) : QWidget(parent)
     page = 1;
     pSt = nullptr;
     normal = false;
+    actualNode = -1;
 }
 
 TsStatusWidget::~TsStatusWidget()
@@ -23,12 +25,20 @@ void TsStatusWidget::paintEvent(QPaintEvent* e)
 
 void TsStatusWidget::DrawGrid(QPainter *p)
 {
-    //p->fillRect();
     for (int i=0; i<=32; i++)
     {
         p->setPen(i%8 ? Qt::gray : Qt::black);
         p->drawLine(0,dxy*i,dxy*32,dxy*i);
         p->drawLine(dxy*i,0,dxy*i,dxy*32);
+    }
+    if (actualNode >=0)
+    {
+        int row         = actualNode / 32,                  // строка в матрице
+            col         = actualNode % 32;                  // столбец в матрице
+        QRect r(col * 16+1, row * 16+1, 15, 15);
+        p->setBrush(Qt::transparent);
+        p->setPen(QPen(Qt::cyan, 2));
+        p->drawRect(r);
     }
 }
 
@@ -72,8 +82,9 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         int indxBit = indxByte*8 + j;
 
         Ts * ts = pSt->GetTsByIndex(indxBit);
-        sts      = ts!=nullptr ? normal ? ts->Sts() : ts->StsRaw() : pSt->GetTsStsByIndex(indxBit);
-        stsPulse = ts!=nullptr ? ts->StsPulse() : pSt->GetTsPulseStsByIndex(indxBit);
+        // состояние берем из массива ТС, так как в одном узле может быть несколько логических сигналов
+        sts      = normal ? pSt->GetTsStsByIndex(indxBit) : pSt->GetTsStsRawByIndex(indxBit);
+        stsPulse = /*ts!=nullptr ? ts->StsPulse() :*/ pSt->GetTsPulseStsByIndex(indxBit);
 
         // 0
         //   - светло-серый фон
@@ -106,8 +117,9 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         if (sts && stsPulse==false)                              // 1
         {
             if (ts==nullptr)
-                clr = (indxByte % 8) == (j % 8) ? Qt::darkGray : Qt::yellow;
+                clr = pSt->Kp2000() && (indxByte % 8) == (j % 8) ? Qt::darkGray : Qt::yellow;
             p->setPen(clr);
+            p->setBrush(clr);
             p->fillRect(r, clr);
         }
         else                                                    // мигание
@@ -120,10 +132,36 @@ void TsStatusWidget::DrawTs  (QPainter *p)
             p->setBrush(QBrush(bck));
             p->drawEllipse(r.center(),3,3);
         }
+
+        if (ts!=nullptr)
+        {
+            // выделение сигналов с совпадающими местами в матрице окантовкой узла матрицы
+            if (ts->GetNext() != nullptr)
+            {
+                p->setPen(Qt::green);
+                p->drawRect(r.x() -1, r.y()-1, r.width() + 2, r.height() + 2);
+            }
+
+            // выделение сигналов с инверсией штрихом сверху
+            if (ts->IsInverse())
+            {
+                p->setPen(QPen(Qt::black, 3));
+                p->drawLine(r.topLeft() + QPoint(1,1),r.topRight() + QPoint(-1,1));
+            }
+        }
     }
 }
 
 void TsStatusWidget::timerEvent(QTimerEvent *event)
 {
     this->update();
+}
+
+void TsStatusWidget::mousePressEvent(QMouseEvent * event)
+{
+    QPoint point = event->pos();
+    actualNode = (point.y() / 16) * 32 + point.x() / 16;
+    int no =  actualNode + 1 + (page - 1) * 1024;
+    emit tsSelected (no);
+    update();
 }

@@ -38,12 +38,15 @@ static int CompareByNames(const void*,const void*);
 
     bool IsVirtual () { return expression!=nullptr;  }
     bool IsReal    () { return kontact.length() > 0; }
+    bool IsInverse () { return inverse; }
+    bool IsPulsing () { return pulse;   }
 
     QString Kolodka() { return kolodka; }
     QString Kontact() { return kontact; }
     int M() { return modul; }
     int I() { return _i; }
     int J() { return _j; }
+
 
 private:
                                                             // статические данные из БД
@@ -53,7 +56,7 @@ private:
     int     _i;
     int     _j;
     bool   inverse;
-    bool   pulse;
+    bool   pulse;                                           // мигающий
     int    stativ;
     int    place;
     int    _kolodka;

@@ -54,7 +54,6 @@ public:
     QString& Name(){ return name; }                         // имя
     int  Ras    () { return ras; }                          // #RAS
     int  Addr   () { return addr;}                          // линейный адрес
-//  int  Version() { return version;}                       // линейный адрес
     int  GidUralId() { return gidUralId; }                  // идентификация в ГИД УРАЛ в локальной НСИ
     QString& Config() { return config; }                    // конфигурация КП
 
@@ -120,6 +119,7 @@ public:
     class Ts * GetTsByIndex(int indx);                      // получить ТС по индексу
     bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
     bool GetTsPulseStsByIndex(int indx);                    // получить состояние мигания сигнала в марице ТС
+    bool GetTsStsRawByIndex  (int indx);                    // получить оригинальное состояние сигнала в марице ТС
 
     // таблицы ТС по станции
      QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС

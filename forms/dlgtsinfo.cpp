@@ -1,4 +1,5 @@
 #include "QPainter"
+#include "QCloseEvent"
 
 #include "dlgtsinfo.h"
 #include "tsstatuswidget.h"
@@ -11,18 +12,10 @@ DlgTsInfo::DlgTsInfo(QWidget *parent, class Station * pst) :
     ui(new Ui::DlgTsInfo)
 {
     ui->setupUi(this);
-    ui->labelSt->setText(pst->Name());
 
-    ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
-    ui->widgetTs->setNormal(ui->checkBox->isChecked());
+    ChangeStation(pst);
 
-    QTableWidget * t = ui->tableWidget;                     // заполнение таблицы описания ТС
-    t->setColumnCount(4);
-    t->verticalHeader()->setDefaultSectionSize(20);
-    t->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    t->setHorizontalHeaderLabels(QStringList() << "№" << "Сигнал" << "Место" << "M/I/J");
-    fillTable();
-
+    QObject::connect(ui->widgetTs, SIGNAL(tsSelected (int)), this, SLOT(on_tsSelected(int)));
     startTimer(1000);
 }
 
@@ -31,23 +24,57 @@ DlgTsInfo::~DlgTsInfo()
     delete ui;
 }
 
+void DlgTsInfo::ChangeStation(class Station *pst)
+{
+    pSt = pst;
+    ui->labelSt->setText(pst->Name());
+
+    ui->widgetTs->setNormal(ui->checkBox->isChecked());
+    ui->spinBox->setRange(1,4);
+
+    QTableWidget * t = ui->tableWidget;                     // заполнение таблицы описания ТС
+    t->clear();
+
+    t->setColumnCount(4);
+    t->verticalHeader()->setDefaultSectionSize(20);
+    t->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    t->setHorizontalHeaderLabels(QStringList() << "№" << "Сигнал" << "Место" << "M/I/J");
+    fillTable();
+
+    ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
+}
+
 void DlgTsInfo::fillTable()
 {
     QTableWidget * t = ui->tableWidget;
-    t->setRowCount(pSt->TsIndexed.count());
+    t->setRowCount(pSt->Ts.count());
 
     int row = 0;
-    foreach (Ts * ts, pSt->TsIndexed.values())
+    foreach (Ts * ts, pSt->Ts.values())
     {
         QPixmap * img = ts->StsPulse() ? g_green_box_blink : ts->Sts() ? g_green_dark_box : g_white_box;
-        t->setItem(row,0, new QTableWidgetItem (*img, QString("%1").arg(ts->GetIndex(),5,10,QChar(' ')))); // №
-                            //QTableWidgetItem (QString("%1").arg(rc->No()      ,5,10,QChar(' ')))); // форматирование с ведущими нулями для сортировки
-        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)ts));                    // запомним ТС
+        // 1 столбец - номер сигнала = индекс+1
+        t->setItem(row,0, new QTableWidgetItem (*img, QString("%1").arg(ts->GetIndex() + 1,5,10,QChar(' '))));
 
-        t->setItem(row,1, new QTableWidgetItem (ts->Name()));                                    // имя
+        // 2 столбец - имя сигнала
+        QString name = ts->Name();
+        t->setItem(row,1, new QTableWidgetItem (name));                                    // имя
+        //t->setItem(row,1, new QTableWidgetItem (ts->Name()));                                    // имя
 
         t->setItem(row,2, new QTableWidgetItem (QString("%1:%2").arg(ts->Kolodka()).arg(ts->Kontact())));
         t->setItem(row,3, new QTableWidgetItem (QString("%1/%2/%3").arg(ts->M()).arg(ts->I()).arg(ts->J())));
+
+        QColor clr = ts->Locked() ? Qt::gray : ts->IsVirtual() ? Qt::darkBlue : ts->IsPulsing () ? Qt::red : ts->IsInverse() ? Qt::white : Qt::black;
+        if (clr != Qt::black)
+            for (int i=0; i<4; i++)
+            {
+                t->item(row,i)->setForeground(clr);
+                if (ts->IsInverse())
+                    t->item(row,i)->setBackground(Qt::darkGray);
+            }
+
+        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)ts));                    // запомним ТС
+
         row++;
     }
 
@@ -70,15 +97,41 @@ void DlgTsInfo::timerEvent(QTimerEvent *event)
     for (int i=0; i<t->rowCount(); i++)
     {
         QTableWidgetItem * item = t->item(i,0);
-        QVariant p = item->data(Qt::UserRole);
         Ts * ts = (Ts *) item->data(Qt::UserRole).value<void*>();
+        if (ts==nullptr)
+            return;
         QPixmap * img = ts->StsPulse() ? g_green_box_blink : ts->Sts() ? g_green_dark_box : g_white_box;
         item->setIcon(QIcon(*img));
-        int a = 99;
     }
 }
 
 void DlgTsInfo::on_checkBox_toggled(bool checked)
 {
     ui->widgetTs->setNormal(checked);
+}
+
+void DlgTsInfo::on_spinBox_valueChanged(int arg1)
+{
+    ui->widgetTs->updateWidget(pSt, arg1);
+}
+
+// слот обработки уведомления о выборе ТС
+void DlgTsInfo::on_tsSelected (int no)
+{
+    QTableWidget * t = ui->tableWidget;
+    for(int i=0; i<t->rowCount(); i++)
+    {
+        Ts * ts = (Ts *) t->item(i,0)->data(Qt::UserRole).value<void*>();
+        if (ts->GetIndex() + 1 == no)
+        {
+            t->selectRow(i);
+            break;
+        }
+    }
+}
+
+void DlgTsInfo::closeEvent(QCloseEvent * e)
+{
+    setVisible(false);
+    e->ignore();
 }

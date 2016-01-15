@@ -40,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QDateTime t = QDateTime::currentDateTime();
     n = sizeof(t);
 */
+    dlgTs = nullptr;                                                    // состояние ТС
+
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
@@ -163,6 +165,8 @@ void MainWindow::rawdataready(ClientTcp *client)
 void MainWindow::stationSelected(int index)
 {
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
+    if (dlgTs != nullptr)
+        dlgTs->ChangeStation(g_actualStation);
 }
 
 
@@ -229,8 +233,17 @@ void MainWindow::on_action_OtuInfo_triggered()
 // обработчик меню информация по синалам ТС
 void MainWindow::on_action_TsInfo_triggered()
 {
-    DlgTsInfo * dlg = new DlgTsInfo(this, g_actualStation);
-    dlg->show();
+    if (dlgTs==nullptr)
+    {
+        dlgTs = new DlgTsInfo(this, g_actualStation);
+        dlgTs->show();
+    }
+    else
+    {
+        dlgTs->setVisible(!dlgTs->isVisible());
+        if (dlgTs->isVisible())
+            dlgTs->ChangeStation(g_actualStation);
+    }
 }
 
 void MainWindow::loadResources()

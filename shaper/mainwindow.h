@@ -75,6 +75,8 @@ private:
 
     ClientTcp * clientTcp;                                  // подключение к потоку ТС
     void loadResources();
+
+    class DlgTsInfo * dlgTs;                                // состояние ТС
 };
 
 #endif // MAINWINDOW_H

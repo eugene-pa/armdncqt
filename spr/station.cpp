@@ -513,6 +513,12 @@ bool Station::GetTsPulseStsByIndex(int indx)
     return indx >=0 && indx < tsStsPulse.count() ? tsStsPulse[indx] : false;
 }
 
+// получить оригинальное состояние сигнала в марице ТС
+bool Station::GetTsStsRawByIndex(int indx)
+{
+    return indx >=0 && indx < tsStsRaw.count() ? tsStsRaw[indx] : false;
+}
+
 void Station::MarkInverse(int index)
 {
     tsInverse[index] = true;
