@@ -9,7 +9,7 @@ class NxtPrv
     friend class Rc;
 public:
     // нужно додумать конструктор
-    NxtPrv (Rc * l, Rc * r, class Svtf *s1, class Svtf *s2, class Svtf *s3, class Svtf *s4)
+    NxtPrv (class Rc * l, Rc * r, class Svtf *s1, class Svtf *s2, class Svtf *s3, class Svtf *s4)
     {
         lft = l;
         rht = r;
@@ -18,8 +18,8 @@ public:
         svtf_RL     = s3;
         Svtf_RL_M   = s4;
     }
-    Rc *    lft;                                            // РЦ слева
-    Rc *    rht;                                            // РЦ справа
+    class Rc *    lft;                                      // РЦ слева
+    class Rc *    rht;                                      // РЦ справа
     QVector	<class LinkedStrl*>strl;                        // Опред.стрелки со знаком
     class Svtf * svtf_LR;                                   // разделяющий поездной светофор   слева - направо
     class Svtf * Svtf_LR_M;                                 // разделяющий маневровый светофор слева - направо

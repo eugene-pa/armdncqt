@@ -65,6 +65,11 @@ private slots:
 
     void on_action_TsInfo_triggered();
 
+    void on_action_KPinfo_triggered();
+
+signals:
+    void changeStation(class Station *);                    // смена станции
+
 private:
     Ui::MainWindow *ui;
     class QMdiArea *mdiArea;                                // виджет MDI
@@ -77,6 +82,8 @@ private:
     void loadResources();
 
     class DlgTsInfo * dlgTs;                                // состояние ТС
+    class DlgRcInfo * dlgRc;                                // состояние РЦ
+
 };
 
 #endif // MAINWINDOW_H

@@ -1,5 +1,6 @@
 #include "QPainter"
-#include <QMouseEvent>
+#include "QMouseEvent"
+#include "QToolTip"
 #include "tsstatuswidget.h"
 
 
@@ -9,6 +10,9 @@ TsStatusWidget::TsStatusWidget(QWidget *parent) : QWidget(parent)
     pSt = nullptr;
     normal = false;
     actualNode = -1;
+    setMouseTracking(true);
+
+    startTimer(1500);
 }
 
 TsStatusWidget::~TsStatusWidget()
@@ -44,12 +48,11 @@ void TsStatusWidget::DrawGrid(QPainter *p)
 
 void TsStatusWidget::updateWidget (class Station * pst, int p)
 {
-    startTimer(1000);
-    pSt = pst;
-    page = p;
-    if (pSt)
+    if (pSt != pst || page != p)
     {
-
+        pSt = pst;
+        page = p;
+        update();
     }
 }
 
@@ -164,4 +167,11 @@ void TsStatusWidget::mousePressEvent(QMouseEvent * event)
     int no =  actualNode + 1 + (page - 1) * 1024;
     emit tsSelected (no);
     update();
+}
+
+void TsStatusWidget::mouseMoveEvent(QMouseEvent * event)
+{
+    QPoint point = event->pos();
+    Ts * ts = pSt->GetTsByIndex((point.y() / 16) * 32 + point.x() / 16 + (page - 1) * 1024);
+    QToolTip::showText(event->globalPos(), ts==nullptr ? "" : ts->GetTooltip());
 }

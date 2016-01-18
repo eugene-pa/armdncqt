@@ -79,6 +79,7 @@
     <property name="title">
      <string>Объекты</string>
     </property>
+    <addaction name="action_KPinfo"/>
     <addaction name="action_TsInfo"/>
     <addaction name="action_TuInfo"/>
     <addaction name="action_OtuInfo"/>
@@ -435,6 +436,11 @@
   <action name="action_OtuInfo">
    <property name="text">
     <string>ОТУ</string>
+   </property>
+  </action>
+  <action name="action_KPinfo">
+   <property name="text">
+    <string>КП</string>
    </property>
   </action>
  </widget>

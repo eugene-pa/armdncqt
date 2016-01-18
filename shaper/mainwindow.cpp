@@ -5,6 +5,7 @@
 #include "../forms/dlgstrlinfo.h"
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
+#include "../forms/dlgkpinfo.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -165,19 +166,40 @@ void MainWindow::rawdataready(ClientTcp *client)
 void MainWindow::stationSelected(int index)
 {
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
-    if (dlgTs != nullptr)
-        dlgTs->ChangeStation(g_actualStation);
+    emit changeStation(g_actualStation);
+//    if (dlgTs != nullptr)
+//        dlgTs->ChangeStation(g_actualStation);
 }
 
 
 // ----------------------------------------------------------------------------------------
 // вызов диалогов табличной информации об объектах: информация по РЦ, стрелкам, сигналам
 // ----------------------------------------------------------------------------------------
+
+// обработчик меню информация по синалам ТС
+void MainWindow::on_action_TsInfo_triggered()
+{
+    if (dlgTs==nullptr)
+    {
+        dlgTs = new DlgTsInfo(this, g_actualStation);
+        dlgTs->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgTs, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgTs->setVisible(!dlgTs->isVisible());
+}
+
 // обработчик меню информация по РЦ
 void MainWindow::on_action_RcInfo_triggered()
 {
-    DlgRcInfo * dlg = new DlgRcInfo(g_actualStation, this);
-    dlg->showNormal();
+    if (dlgRc==nullptr)
+    {
+        dlgRc = new DlgRcInfo(g_actualStation, this);
+        dlgRc->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgRc, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgRc->setVisible(!dlgTs->isVisible());
 }
 
 // обработчик меню информация по стрелкам
@@ -227,24 +249,15 @@ void MainWindow::on_action_TuInfo_triggered()
 // обработчик меню информация по синалам ОТУ
 void MainWindow::on_action_OtuInfo_triggered()
 {
-
 }
 
-// обработчик меню информация по синалам ТС
-void MainWindow::on_action_TsInfo_triggered()
+
+void MainWindow::on_action_KPinfo_triggered()
 {
-    if (dlgTs==nullptr)
-    {
-        dlgTs = new DlgTsInfo(this, g_actualStation);
-        dlgTs->show();
-    }
-    else
-    {
-        dlgTs->setVisible(!dlgTs->isVisible());
-        if (dlgTs->isVisible())
-            dlgTs->ChangeStation(g_actualStation);
-    }
+    DlgKPinfo * dlg = new DlgKPinfo();
+    dlg->show();
 }
+
 
 void MainWindow::loadResources()
 {

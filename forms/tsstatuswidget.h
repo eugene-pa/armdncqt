@@ -14,11 +14,13 @@ public:
 
     virtual void paintEvent(QPaintEvent* e);
     virtual void mousePressEvent(QMouseEvent * event);
+    virtual void mouseMoveEvent(QMouseEvent *);
 
     void updateWidget (Station * pst, int p=1);             // обновить
     void setPage (int p) { page = p; }                      //
 
     void setNormal (bool s ) { normal = s; update(); }
+    void setActualNode(int n) { actualNode = n; update(); }
 
 signals:
     void tsSelected (int no);                               // выделен сигнал

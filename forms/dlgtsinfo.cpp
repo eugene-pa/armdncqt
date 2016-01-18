@@ -1,9 +1,7 @@
 #include "QPainter"
-#include "QCloseEvent"
-
-#include "dlgtsinfo.h"
-#include "tsstatuswidget.h"
 #include "ui_dlgtsinfo.h"
+#include "dlgtsinfo.h"
+#include "../forms/tsstatuswidget.h"
 #include "../spr/station.h"
 #include "../spr/ts.h"
 
@@ -13,10 +11,20 @@ DlgTsInfo::DlgTsInfo(QWidget *parent, class Station * pst) :
 {
     ui->setupUi(this);
 
-    ChangeStation(pst);
+    ui->spinBox->setRange(1,4);                             // страницы 1-4
 
+    QTableWidget * t = ui->tableWidget;                     // заполнение таблицы описания ТС
+    t->setSelectionMode(QAbstractItemView::ContiguousSelection);
+    t->setColumnCount(4);
+    t->verticalHeader()->setDefaultSectionSize(20);
+    t->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    t->setHorizontalHeaderLabels(QStringList() << "№" << "Сигнал" << "Место" << "M/I/J");
+
+    // привязываем обработчик выбора сигнала виджета widgetTs
     QObject::connect(ui->widgetTs, SIGNAL(tsSelected (int)), this, SLOT(on_tsSelected(int)));
-    startTimer(1000);
+
+    changeStation(pst);
+    startTimer(1500);
 }
 
 DlgTsInfo::~DlgTsInfo()
@@ -24,37 +32,41 @@ DlgTsInfo::~DlgTsInfo()
     delete ui;
 }
 
-void DlgTsInfo::ChangeStation(class Station *pst)
+// слот обработки события смена станции
+void DlgTsInfo::changeStation(class Station *pst)
 {
+    if (pSt == pst)
+        return;
+
     pSt = pst;
-    ui->labelSt->setText(pst->Name());
+    ui->labelSt->setText(pst->Name());                      // имя станции
+    ui->widgetTs->setNormal(ui->checkBox->isChecked());     // состояние нормализации
 
-    ui->widgetTs->setNormal(ui->checkBox->isChecked());
-    ui->spinBox->setRange(1,4);
-
-    QTableWidget * t = ui->tableWidget;                     // заполнение таблицы описания ТС
-    t->clear();
-
-    t->setColumnCount(4);
-    t->verticalHeader()->setDefaultSectionSize(20);
-    t->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    t->setHorizontalHeaderLabels(QStringList() << "№" << "Сигнал" << "Место" << "M/I/J");
-    fillTable();
-
+    fillTable();                                            // заполнить таблицу имен ТС
     ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
 }
 
+// получить значок состояния ТС
+QIcon DlgTsInfo::getStsImage (Ts * ts)
+{
+    return QIcon(*(ts->StsPulse() ? g_green_box_blink : (ui->checkBox->isChecked() ? ts->Sts() : ts->StsRaw()) ? g_green_dark_box : g_white_box));
+}
+
+
+// заполнение таблицы ТС
 void DlgTsInfo::fillTable()
 {
     QTableWidget * t = ui->tableWidget;
+
+    t->clear();
+    t->setSortingEnabled(false);
     t->setRowCount(pSt->Ts.count());
 
     int row = 0;
     foreach (Ts * ts, pSt->Ts.values())
     {
-        QPixmap * img = ts->StsPulse() ? g_green_box_blink : ts->Sts() ? g_green_dark_box : g_white_box;
         // 1 столбец - номер сигнала = индекс+1
-        t->setItem(row,0, new QTableWidgetItem (*img, QString("%1").arg(ts->GetIndex() + 1,5,10,QChar(' '))));
+        t->setItem(row,0, new QTableWidgetItem (getStsImage(ts), QString("%1").arg(ts->GetIndex() + 1,5,10,QChar(' '))));
 
         // 2 столбец - имя сигнала
         QString name = ts->Name();
@@ -84,14 +96,14 @@ void DlgTsInfo::fillTable()
 
 }
 
-void DlgTsInfo::paintEvent(QPaintEvent *)
+// обработка событий таймера
+void DlgTsInfo::timerEvent(QTimerEvent *event)
 {
-//    QPainter p(this);                       // Создаём новый объект рисовальщика
-//    p.setPen(QPen(Qt::red,1,Qt::SolidLine));    // Настройки рисования
-//    p.drawLine(0,0,100,100);           // Рисование линии
+    UpdateList();
 }
 
-void DlgTsInfo::timerEvent(QTimerEvent *event)
+// обновить состояние ТС в списке
+void DlgTsInfo::UpdateList()
 {
     QTableWidget * t = ui->tableWidget;
     for (int i=0; i<t->rowCount(); i++)
@@ -100,22 +112,25 @@ void DlgTsInfo::timerEvent(QTimerEvent *event)
         Ts * ts = (Ts *) item->data(Qt::UserRole).value<void*>();
         if (ts==nullptr)
             return;
-        QPixmap * img = ts->StsPulse() ? g_green_box_blink : ts->Sts() ? g_green_dark_box : g_white_box;
-        item->setIcon(QIcon(*img));
+        item->setIcon(getStsImage(ts));
     }
 }
 
+// слот обработки флажка "Нормализация"
 void DlgTsInfo::on_checkBox_toggled(bool checked)
 {
+    UpdateList();
     ui->widgetTs->setNormal(checked);
 }
 
+// слот обработки поля смены страницы
 void DlgTsInfo::on_spinBox_valueChanged(int arg1)
 {
     ui->widgetTs->updateWidget(pSt, arg1);
 }
 
 // слот обработки уведомления о выборе ТС
+// учитывая произвольный характер сортировки, перебираем список вручную
 void DlgTsInfo::on_tsSelected (int no)
 {
     QTableWidget * t = ui->tableWidget;
@@ -130,8 +145,21 @@ void DlgTsInfo::on_tsSelected (int no)
     }
 }
 
+// при закрытии окна меняем видимость
 void DlgTsInfo::closeEvent(QCloseEvent * e)
 {
     setVisible(false);
     e->ignore();
+}
+
+// обработка выбора ТС в списке
+void DlgTsInfo::on_tableWidget_itemSelectionChanged()
+{
+    QTableWidgetItem * item = ui->tableWidget->selectedItems()[0];
+    Ts * ts = (Ts *) ui->tableWidget->item(item->row(),0)->data(Qt::UserRole).value<void*>();
+    if (ts != nullptr)
+    {
+        ui->spinBox->setValue(ts->GetIndex() / 1024 + 1);       // сменить страницу, если надо
+        ui->widgetTs->setActualNode(ts->GetIndex() % 1024);     // выделить актуальный сигнал
+    }
 }

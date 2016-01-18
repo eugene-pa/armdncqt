@@ -15,10 +15,14 @@ public:
     explicit DlgRcInfo(class Station * st, QWidget *parent = 0);
     ~DlgRcInfo();
 
+public slots:
+    void changeStation(class Station *);                    // смена станции
 private slots:
 
 
 private:
+    virtual void closeEvent(QCloseEvent *);
+
     Ui::DlgRcInfo *ui;
     class Station * st;
     void FillData();

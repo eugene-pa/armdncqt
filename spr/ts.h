@@ -47,6 +47,7 @@ static int CompareByNames(const void*,const void*);
     int I() { return _i; }
     int J() { return _j; }
 
+    QString GetTooltip();
 
 private:
                                                             // статические данные из БД

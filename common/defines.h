@@ -14,6 +14,7 @@
 #include <QSqlQuery>
 #include <QBitArray>
 #include <QVariant>
+#include "QCloseEvent"
 
 //#include <QWidget>
 //#include <QGraphicsView>

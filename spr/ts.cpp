@@ -188,6 +188,18 @@ int Ts::CompareByNames(const void* p1,const void* p2)
     return ((Ts*)p1)->Name() < ((Ts*)p2)->Name();
 }
 
+QString Ts::GetTooltip()
+{
+    QString ret = QString("#%1  %2  %3:%4  %5  %6").arg(index+1).arg(Name()).arg(this->kolodka).arg(kontact).arg(inverse ? "Инверсия" : "").arg(pulse ? "Мигание":"");
+    Ts * ts = this;
+    while (ts->next != nullptr)
+    {
+        ts = ts->next;
+        ret += "\r\n" + ts->GetTooltip();
+    }
+    return ret;
+}
+
 // проблемы реализации функций в  h-файле из-за перекрестных ссылок ts.h  и station.h
 bool Ts::Sts      () { return st->TsSts      (index); }     // состояние (0/1), если мигает - 0
 bool Ts::StsPulse () { return st->TsPulse    (index); }     // состояние мигания

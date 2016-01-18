@@ -18,6 +18,16 @@ DlgRcInfo::~DlgRcInfo()
     delete ui;
 }
 
+// смена станции
+void DlgRcInfo::changeStation(class Station * p)
+{
+    if (p!=st)
+    {
+        ui->tableRc->clear();
+        st = p;
+        FillData();
+    }
+}
 
 // заполнение таблицы информацией о станциях
 // сортировка выполняется автоматически
@@ -31,6 +41,7 @@ void DlgRcInfo::FillData()
     setWindowTitle("Состояние РЦ по ст." + st->Name());
 
     QTableWidget * t = ui->tableRc;
+    t->setSortingEnabled(false);                             // запрещаем сортировку
     t->setColumnCount(10);
     t->setRowCount(st->Allrc().count());
     t->verticalHeader()->setDefaultSectionSize(20);
@@ -131,4 +142,11 @@ void DlgRcInfo::FillData()
     t->setSortingEnabled(true);                             // разрешаем сортировку
     t->sortByColumn(0, Qt::SortOrder::AscendingOrder);      // сортировка по умолчанию
     t->resizeColumnsToContents();
+}
+
+// при закрытии окна меняем видимость
+void DlgRcInfo::closeEvent(QCloseEvent * e)
+{
+    setVisible(false);
+    e->ignore();
 }
