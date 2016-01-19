@@ -131,12 +131,14 @@ extern QPixmap  * g_green,
                 * g_gray,
                 * g_white,
 
-                * g_green_box,
-                * g_green_dark_box,
-                * g_red_box,
-                * g_red_dark_box,
-                * g_yellow_box,
-                * g_yellow_dark_box,
+                * g_green_box,                              // МТС ок
+                * g_green_box_tu,                           // МТУ ок
+                * g_green_dark_box,                         // темно-зелееый
+                * g_red_box,                                // МТС error
+                * g_red_box_tu,                             // МТУ error
+                * g_red_dark_box,                           // темно-красный
+                * g_yellow_box,                             // желтый
+                * g_yellow_dark_box,                        // коричневый
                 * g_gray_box,
                 * g_white_box,
                 * g_green_box_blink;                        // индикаторы статуса

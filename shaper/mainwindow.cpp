@@ -254,7 +254,7 @@ void MainWindow::on_action_OtuInfo_triggered()
 
 void MainWindow::on_action_KPinfo_triggered()
 {
-    DlgKPinfo * dlg = new DlgKPinfo();
+    DlgKPinfo * dlg = new DlgKPinfo(g_actualStation, this);
     dlg->show();
 }
 
@@ -268,8 +268,10 @@ void MainWindow::loadResources()
     g_white             = new QPixmap(images + "icon_wht.ico");
     g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
     g_green_box         = new QPixmap(images + "box_grn.ico");
+    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");               // МТУ ок
     g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
     g_red_box           = new QPixmap(images + "box_red.ico");
+    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");               // МТУ error
     g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
     g_yellow_box        = new QPixmap(images + "box_yel.ico");
     g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");

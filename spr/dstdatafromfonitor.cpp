@@ -251,8 +251,5 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
             info->SetMtuMtsStatus(4, mvv2[i].bt2);
             info->SetMtuMtsStatus(5, mvv2[i].bt3);
         }
-
-        tSpokSnd = info->st->tSpokSnd;
-        tSpokRcv = info->st->tSpokRcv;
     }
 }

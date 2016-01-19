@@ -87,6 +87,18 @@ public:
     bool IsCom3On   () { return stsCom3On;  }
     bool IsCom4On   () { return stsCom4On;  }
     bool IsBackChannel() { return stsBackChannel; }         // последний опрос станции по обратному каналу
+    class SysInfo * GetSysInfo(bool rsrv) { return rsrv ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации основного  БМ
+    bool IsSupportKpExt (bool rsrv);                        // поддерживается ли расширенный блок диагностики
+    bool IsAtuError (bool rsrv);                            // проверка срабатывания АТУ (отличается в разных версиях)
+    bool IsKeyError (bool rsrv);                            // проверка ошибки ключа     (отличается в разных версиях)
+    bool IsOutError (bool rsrv);                            // проверка ошибки выхода    (отличается в разных версиях)
+    bool IsTestMode (bool rsrv);                            // проверка выполнения теста
+    bool IsWatchdogOn(bool rsrv);                           // проверка включения сторожевого таймера
+    bool IsMemError (bool rsrv);                            // проверка ошибки использования памяти
+    bool IsRetrans  (bool rsrv);                            // проверка режима ретрансляции
+    bool IsConsol   (bool rsrv);                            // проверка подключения отладочной консоли
+    bool IsOtuLineOk(bool rsrv);                            // проверка отклика ОМУЛ
+    bool IsOtuBrokOn(bool rsrv);                            // проверка готовности УПОК/БРОК
 
     bool IsActualErrorLockMsgPresent() { return errorLockLogicCount; }  // число актуальных ошибок логического контроля
     bool IsNewErrorLockMsgPresent   ();                                 // есть ли неквитированные сообщения подсистемы логич.контроля
@@ -120,6 +132,8 @@ public:
     bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
     bool GetTsPulseStsByIndex(int indx);                    // получить состояние мигания сигнала в марице ТС
     bool GetTsStsRawByIndex  (int indx);                    // получить оригинальное состояние сигнала в марице ТС
+
+    bool GetTsStsByName      (QString name);                 // получить состояние сигнала по имени
 
     // таблицы ТС по станции
      QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС

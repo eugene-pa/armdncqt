@@ -540,3 +540,89 @@ bool Station::IsTsExpire()
     // TODO: реализовать функцию
     return false;
 }
+
+// получить состояние сигнала по имени
+bool Station::GetTsStsByName (QString name)
+{
+    return Ts.contains(name) ? Ts[name]->Sts() : false;
+}
+
+// поддерживается ли расширенный блок диагностики
+bool Station::IsSupportKpExt (bool rsrv)
+{
+    if (this->Kp2000())
+        return false;
+    int ver = (rsrv ? rsrvSysInfo : mainSysInfo)->LoVersionNo();
+    return ver >= 21 && ver < 50;
+}
+
+// проверка срабатывания АТУ (отличается в разных версиях)
+bool Station::IsAtuError (bool rsrv)
+{
+    if (this->Kp2000())
+        return GetTsStsByName ("АТУ");
+    SysInfo * p = rsrv ? rsrvSysInfo : mainSysInfo;
+    return p->ErrAtu1() | p->ErrAtu2();
+}
+
+// проверка ошибки ключа     (отличается в разных версиях)
+bool Station::IsKeyError (bool rsrv)
+{
+    if (this->Kp2000())
+        return false;
+    SysInfo * p = rsrv ? rsrvSysInfo : mainSysInfo;
+    return p->ErrKey1() | p->ErrKey2();
+}
+
+// проверка ошибки выхода    (отличается в разных версиях)
+bool Station::IsOutError (bool rsrv)
+{
+    if (this->Kp2000())
+        return false;
+    SysInfo * p = rsrv ? rsrvSysInfo : mainSysInfo;
+    return p->ErrOut1() | p->ErrOut2();
+}
+
+// проверка выполнения теста
+bool Station::IsTestMode (bool rsrv)
+{
+    if (this->Kp2000())
+        return false;
+    return (rsrv ? rsrvSysInfo : mainSysInfo)->IsTestMode();
+}
+
+// проверка включения сторожевого таймера
+bool Station::IsWatchdogOn(bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->WatchDogOn() : false;
+}
+
+// проверка ошибки использования памяти
+bool Station::IsMemError (bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->MemoryLeak() : false;
+}
+
+// проверка режима ретрансляции
+bool Station::IsRetrans  (bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->RetranslateMode() : false;
+}
+
+// проверка подключения отладочной консоли
+bool Station::IsConsol   (bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->DebugOtuMode() : false;
+}
+
+// проверка отклика ОМУЛ
+bool Station::IsOtuLineOk    (bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuLineOk() : false;
+}
+
+// проверка готовности УПОК/БРОК
+bool Station::IsOtuBrokOn    (bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuBrokOn() : false;
+}

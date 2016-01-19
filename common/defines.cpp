@@ -27,8 +27,10 @@ QPixmap * g_green,
         * g_gray,
         * g_white,
         * g_green_box,
+        * g_green_box_tu,                           // МТУ ок
         * g_green_dark_box,
         * g_red_box,
+        * g_red_box_tu,                             // МТУ error
         * g_red_dark_box,
         * g_yellow_box,
         * g_yellow_dark_box,

@@ -2,6 +2,7 @@
 #define DLGKPINFO_H
 
 #include <QDialog>
+#include "../spr/station.h"
 
 namespace Ui {
 class DlgKPinfo;
@@ -12,11 +13,12 @@ class DlgKPinfo : public QDialog
     Q_OBJECT
 
 public:
-    explicit DlgKPinfo(QWidget *parent = 0);
+    explicit DlgKPinfo(class Station * p, QWidget *parent = 0);
     ~DlgKPinfo();
 
 private:
     Ui::DlgKPinfo *ui;
+    class Station * st;
 };
 
 #endif // DLGKPINFO_H
