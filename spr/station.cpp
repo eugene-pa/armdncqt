@@ -32,6 +32,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
     rpcMpcMPK       = false;
     rpcDialog       = false;
     apkdk           = false;
+    abtcm           = false;
     adkScb          = false;
     upokOtu         = false;
 
@@ -524,9 +525,6 @@ void Station::MarkInverse(int index)
     tsInverse[index] = true;
 }
 
-// TODO:
-// --------------------------------------------------------------------------------------------------------
-
 // есть ли неквитированные сообщения подсистемы логич.контроля
 bool Station::IsNewErrorLockMsgPresent()
 {
@@ -615,14 +613,35 @@ bool Station::IsConsol   (bool rsrv)
     return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->DebugOtuMode() : false;
 }
 
-// проверка отклика ОМУЛ
+// проверка готовности системы ОТУ
 bool Station::IsOtuLineOk    (bool rsrv)
 {
     return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuLineOk() : false;
 }
 
 // проверка готовности УПОК/БРОК
-bool Station::IsOtuBrokOn    (bool rsrv)
+//bool Station::IsOtuBrokOn    (bool rsrv)
+//{
+//    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuBrokOn() : false;
+//}
+
+
+// проверка флага исполнения ОТУ
+bool Station::IsOtuPending(bool rsrv)
 {
     return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuBrokOn() : false;
 }
+// проверка включения режима отладки ОТУ
+bool Station::IsDebugOtuMode(bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->DebugOtuMode() : false;
+}
+
+// проверка режима АРМ ДСП
+bool Station::IsArmDspModeOn(bool rsrv)
+{
+    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->ArmDspModeOn() : false;
+}
+
+// TODO:
+// --------------------------------------------------------------------------------------------------------

@@ -54,7 +54,6 @@ SOURCES += main.cpp\
     ../forms/dlgtsinfo.cpp \
     ../forms/tsstatuswidget.cpp \
     ../forms/dlgkpinfo.cpp \
-    ../forms/bminfowidget.cpp \
     ../forms/bminfoframe.cpp
     ../common/boolexpression.cpp \
 
@@ -98,7 +97,6 @@ HEADERS  += mainwindow.h \
     ../forms/dlgtsinfo.h \
     ../forms/tsstatuswidget.h \
     ../forms/dlgkpinfo.h \
-    ../forms/bminfowidget.h \
     ../forms/bminfoframe.h
     ../common/boolexpression.h \
 
@@ -109,7 +107,6 @@ FORMS    += mainwindow.ui \
     ../forms/dlgstationsinfo.ui \
     ../forms/dlgtsinfo.ui \
     ../forms/dlgkpinfo.ui \
-    ../forms/bminfowidget.ui \
     ../forms/bminfoframe.ui
 
 RESOURCES += \

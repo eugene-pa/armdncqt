@@ -16,6 +16,8 @@ public:
     explicit DlgKPinfo(class Station * p, QWidget *parent = 0);
     ~DlgKPinfo();
 
+    void redraw(class Station * p = nullptr);
+
 private:
     Ui::DlgKPinfo *ui;
     class Station * st;

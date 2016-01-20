@@ -54,7 +54,8 @@ public:
     QString& Name(){ return name; }                         // имя
     int  Ras    () { return ras; }                          // #RAS
     int  Addr   () { return addr;}                          // линейный адрес
-    int  GidUralId() { return gidUralId; }                  // идентификация в ГИД УРАЛ в локальной НСИ
+    int  GidUralId()  { return gidUralId; }                 // идентификация в ГИД УРАЛ в локальной НСИ
+    int  GidRemoteId(){ return gidUralIdRemote; }           // идентификация станции в потоке
     QString& Config() { return config; }                    // конфигурация КП
 
     void AddTs (class Ts*, Logger& logger);                 // добавить ТС
@@ -65,6 +66,7 @@ public:
     bool IsRpcMpcMPK () { return rpcMpcMPK; }               // конфигурация с РПЦ/МПЦ МПК (кроме того mpcEbilock = true)
     bool IsRpcDialog () { return rpcDialog; }               // конфигурация с РПЦ Диалог
     bool IsApkdk     () { return apkdk;     }               // конфигурация с АПКДК
+    bool IsAbtcm     () { return abtcm;     }               // конфигурация с АБТЦМ
     bool IsAdkscb    () { return adkScb;    }               // конфигурация с АДКСЦБ
     bool IsUpokotu   () { return upokOtu;   }               // конфигурация с УПОК
     bool Kp2000Lomikont() { return version == VERSIONKp2000Lomikont ; }
@@ -95,10 +97,13 @@ public:
     bool IsTestMode (bool rsrv);                            // проверка выполнения теста
     bool IsWatchdogOn(bool rsrv);                           // проверка включения сторожевого таймера
     bool IsMemError (bool rsrv);                            // проверка ошибки использования памяти
+    bool IsOtuLineOk(bool rsrv);                            // проверка готовности системы ОТУ
+//  bool IsOtuBrokOn(bool rsrv);                            // проверка готовности УПОК/БРОК
     bool IsRetrans  (bool rsrv);                            // проверка режима ретрансляции
     bool IsConsol   (bool rsrv);                            // проверка подключения отладочной консоли
-    bool IsOtuLineOk(bool rsrv);                            // проверка отклика ОМУЛ
-    bool IsOtuBrokOn(bool rsrv);                            // проверка готовности УПОК/БРОК
+    bool IsOtuPending(bool rsrv);                           // проверка флага исполнения ОТУ
+    bool IsDebugOtuMode(bool rsrv);                         // проверка включения режима отладки ОТУ
+    bool IsArmDspModeOn(bool rsrv);                         // проверка режима АРМ ДСП
 
     bool IsActualErrorLockMsgPresent() { return errorLockLogicCount; }  // число актуальных ошибок логического контроля
     bool IsNewErrorLockMsgPresent   ();                                 // есть ли неквитированные сообщения подсистемы логич.контроля
@@ -184,11 +189,15 @@ private:
     QString extForms;                                       // доп.формы
     QString orient;                                         // ориентация
 
-    bool    mpcEbilock;                                     // конфигурация с Ebilock950, а также РПЦ/МПЦ МПК + rpcMpcMPK
+    //	АДКСЦБ  EBILOCK АПКДК  РПЦДИАЛОГ  МПЦДИАЛОГ  МТУ=1(1)  МТС=19(2-20)  АБТЦМ
+    bool    mpcEbilock;                                     // конфигурация с Ebilock950, а также ЭЦ ЕМ, РПЦ/МПЦ МПК + rpcMpcMPK
     bool    rpcMpcMPK;                                      // конфигурация с РПЦ/МПЦ МПК (кроме того mpcEbilock = true)
     bool    rpcDialog;                                      // конфигурация с РПЦ Диалог
     bool    apkdk;                                          // конфигурация с АПКДК
     bool    adkScb;                                         // конфигурация с АДКСЦБ
+    bool	abtcm;                                          // конфигурация с АБТЦМ
+    bool	dcMpk;                                          // КП - ДЦ МПК
+
     bool    upokOtu;                                        // конфигурация с УПОК
     bool    bybylogic;                                      // логика удалений (У1,У2)
 

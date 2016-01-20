@@ -84,8 +84,10 @@ public:
     BYTE GetMtuMtsStatus(int i);                            // получить статус модулей БТ индексу 0-5
     void SetMtuMtsStatus(int i, BYTE bte);                  // установить статус модулей БТ индексу 0-5
 
-    QByteArray& Src() { return src; }
+    QDateTime&  LatTime() { return tmdt; }                  // время опроса
+    int  LinkErrors() { return errors; }                    // общее число ошибок связи с комплектом
 
+    QByteArray& Src() { return src; }                       // маасив инфо-блока
 private:
     class Station * st;
     // 0  байт - состояние КП

@@ -65,12 +65,35 @@ void BmInfoFrame::redraw()
     ui->label_Mem->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsMemError(rsrv) ? * g_red : * g_green);
 
     // Ретрансляция
-    //ui->label_PNP->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsRetrans(rsrv) ? * g_red : * g_green);
+    ui->label_PNP->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsRetrans(rsrv) ? * g_green : * g_gray);
 
     // Отладочная консоль
-    //ui->label_consol->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsConsol(rsrv) ? * g_red : * g_green);
+    ui->label_consol->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsConsol(rsrv) ? * g_green : * g_gray);
 
     // БРОК/ОМУЛ
-    //ui->label_OTU->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsOtuOk(rsrv) ? * g_red : * g_green);
+    // - не УПОК+БРОК - серый
+    // - не готовность - желтый
+    // - готовность ДЦ - зеленый круг
+    // - готовность в отладочном режиме(консоль на станции) - зеленый квадрат
+    // - выполнение ОТУ - белый круг(ДЦ) или квадрат(ОТЛАДКА)
+    ui->label_OTU->setPixmap(!st->IsUpokotu()  ? * g_gray :
+                             !st->IsOtuLineOk(rsrv)? * g_yellow :
+                              st->IsDebugOtuMode(rsrv) ? st->IsOtuPending(rsrv) ? *g_white_box : *g_green_box :
+                                                         st->IsOtuPending(rsrv) ? *g_white     : *g_green);
 
+    // режим АРМ ДСП
+    ui->label_ArmDsp->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsArmDspModeOn(rsrv) ? * g_green : * g_gray);
+
+    // время опроса
+    ui->label_last->setText(QString("%1").arg(sysinfo->LatTime().toString("hh:mm:ss")));
+
+    // версия ПО
+    ui->label_version->setText(st->Kp2000() ? "КП-2000" : !st->IsSupportKpExt(rsrv) ? "1.0.7.*" : QString("1.0.7.%1").arg(sysinfo->LoVersionNo()));
+
+    // число ошибок связи
+    ui->label_errors->setText(QString(" Ошб:%1").arg(sysinfo->LinkErrors()));
+
+    // скорость и реконнекты COM3/COM4
+    ui->label_COM3_about->setText(QString("v=%1  #%2").arg(sysinfo->SpeedCom3()).arg(sysinfo->BreaksCom3()));
+    ui->label_COM4_about->setText(QString("v=%1  #%2").arg(sysinfo->SpeedCom4()).arg(sysinfo->BreaksCom4()));
 }

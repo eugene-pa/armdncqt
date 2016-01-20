@@ -190,8 +190,8 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
         st->mainSysInfo->LoVersionNo (byteof(tSpokRcv,0));   // версия основного БМ
         st->mainSysInfo->SysStatusEx (byteof(tSpokRcv,1));   // расширенный статус основного БМ
-        st->mainSysInfo->LoVersionNo (byteof(tSpokRcv,2));   // версия резевного БМ
-        st->mainSysInfo->SysStatusEx (byteof(tSpokRcv,3));   // расширенный статус резевного БМ
+        st->rsrvSysInfo->LoVersionNo (byteof(tSpokRcv,2));   // версия резевного БМ
+        st->rsrvSysInfo->SysStatusEx (byteof(tSpokRcv,3));   // расширенный статус резевного БМ
 
         st->mainSysInfo->MVVStatus(byteof(tSpokSnd,0));      // статус МВВ основного БМ
         st->rsrvSysInfo->MVVStatus(byteof(tSpokSnd,1));      // статус МВВ резевного БМ
@@ -227,14 +227,16 @@ bool DStDataFromMonitor::Extract(Station *st, DDataFromMonitor * pDtFrmMnt, DRas
 
 void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
 {
-    info->linestatus = (LineStatus)LinkError[i];             // Тип ошибки: 0-OK,1-молчит,2-CRC
-    info->errors = CntLinkEr[i];                             // Общий счетчик ошибок связи
-    info->tmdt = QDateTime::fromTime_t(LastTime [i]);        // Астр.время окончания последнего цикла ТС
-    info->SysStatus(SysStatus[i]);                           // состояние SysStatus
-    info->SpeedCom3(mvv1[i].speedCom3l);                     // скорость Com3
-    info->BreaksCom3(RcnctCom3[i]);                          // число реконнектов Com3
-    info->SpeedCom4(mvv2[i].speedCom4l);                     // скорость Com4
-    info->BreaksCom4(RcnctCom4[i]);                          // число реконнектов Com4
+    info->linestatus = (LineStatus)LinkError[i];            // Тип ошибки: 0-OK,1-молчит,2-CRC
+    info->errors = CntLinkEr[i];                            // Общий счетчик ошибок связи
+    info->tmdt = QDateTime::fromTime_t(LastTime [i]);       // Астр.время окончания последнего цикла ТС
+    info->SysStatus(SysStatus[i]);                          // состояние SysStatus
+    long s = mvv1[i].speedCom3l;
+    info->SpeedCom3(info->st->Kp2007() ? s : s/1200);       // скорость Com3 с учетом различия версий
+    info->BreaksCom3(RcnctCom3[i]);                         // число реконнектов Com3
+    s = mvv2[i].speedCom4l;
+    info->SpeedCom4(info->st->Kp2007() ? s : s/1200);       // скорость Com4 с учетом различия версий
+    info->BreaksCom4(RcnctCom4[i]);                         // число реконнектов Com4
 
 
     // В КП-2007 использую эти поля для передачи отказов модулей ТУ/ТС
@@ -242,8 +244,6 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
     {
         if (info->st->Kp2007())
         {
-            info->SpeedCom3(info->SpeedCom3() * 1200);        // скорость - в одном байте коэффициентом отеосительно 1200
-            info->SpeedCom4(info->SpeedCom3() * 1200);
             info->SetMtuMtsStatus(0, mvv1[i].bt1);
             info->SetMtuMtsStatus(1, mvv1[i].bt2);
             info->SetMtuMtsStatus(2, mvv1[i].bt3);
