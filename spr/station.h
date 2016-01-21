@@ -138,26 +138,26 @@ public:
     bool GetTsPulseStsByIndex(int indx);                    // получить состояние мигания сигнала в марице ТС
     bool GetTsStsRawByIndex  (int indx);                    // получить оригинальное состояние сигнала в марице ТС
 
-    bool GetTsStsByName      (QString name);                 // получить состояние сигнала по имени
+    bool GetTsStsByName      (QString name);                // получить состояние сигнала по имени
 
     // таблицы ТС по станции
-     QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
-     QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
-     QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
-     QList <class Ts*> TsSorted;                             // отсортированы по имени
+    QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
+    QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
+    QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
+    QList <class Ts*> TsSorted;                             // отсортированы по имени
 
-     // таблицы ТУ по станции
-     QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
-     QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
-     QList <class Tu*> TuSorted;                             // отсортированы по имени
+    // таблицы ТУ по станции
+    QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
+    QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
+    QList <class Tu*> TuSorted;                             // отсортированы по имени
 
-     QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
-     QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
-     QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
+    QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
+    QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
+    QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
 
-     QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
+    QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
 
-     QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
+    QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
@@ -201,6 +201,7 @@ private:
     bool    upokOtu;                                        // конфигурация с УПОК
     bool    bybylogic;                                      // логика удалений (У1,У2)
 
+    int     nEbilockTsLength;                               // длина массива Ebilock из строки конфигурации КП "EBILOCK(80)"
 
     QByteArray     mts;                                     // массив номеров модулей ТС
     QByteArray     mtu;                                     // массив номеров модулей ТУ
@@ -241,10 +242,22 @@ private:
     int realStreamTsLength;									// Реальная длина данных ТС в блоке DtFrmMnt из расчета 1 бит на сигнал (192, 384, 512...)
     QString   buf;                                          // строка сообщений
 
+    // данные по перегонам от систем ДК
+    QBitArray dirInputDk;                                   // cостояние перегонов от систем ДК в отдельном буфере
+    QDateTime lastTimeReceiveDk;                            // время последнего приема сигналов ДК
+    int       lenDk;                                        // длина последних принятых данных ДК
+    int       offsetDk;                                     // смещение данных ДК в массивах
+
+    QVector<class AbtcmInfo    *> abtcms;                   // описание подключений АБТЦМ
+    QVector<class rpcDialogInfo*> rpcDialogs;               // описание подключений РПЦ Диалог
+    QVector<class ecMpkInfo    *> ecMpks;                   // описание подключений ЭЦ-МПК
+
     // закрытые функции
     bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
     bool TestBit (QBitArray& bits, int index);              // проверка бита в битовом массиве
     void ParseExtForms();                                   // разбор доп.форм
+    void ParseConfigKP2007(Logger& logger);                 // разбор строки конфигурации КП станции
+    void ParseMT (bool tu=false);                           // разбор описания модулей МТУ, МТС
 };
 
 // класс идентификации формы станции (имя формы, ID кнопки)

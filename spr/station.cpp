@@ -9,6 +9,10 @@
 #include "strl.h"
 #include "esr.h"
 #include "dstdatafromfonitor.h"
+#include "abtcminfo.h"
+#include "rpcdialoginfo.h"
+#include "ecmpkinfo.h"
+
 //#include "tu.h"
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
@@ -27,6 +31,8 @@ Station::Station(QSqlQuery& query, Logger& logger)
     tsStsPulsePrv   .fill(0,TsMaxLengthBits);
     tsSts           .fill(0,TsMaxLengthBits);
     tsInverse       .fill(0,TsMaxLengthBits);
+
+    dirInputDk      .fill(0,TsMaxLengthBits);
 
     mpcEbilock      = false;
     rpcMpcMPK       = false;
@@ -48,6 +54,8 @@ Station::Station(QSqlQuery& query, Logger& logger)
     stsBackChannel  = false;
 
     errorLockLogicCount = 0;
+    offsetDk        = 0;
+    lenDk           = 0;
 
     mainSysInfo = new SysInfo();
     mainSysInfo->st = this;
@@ -90,6 +98,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
         extForms = query.value("ExtFormList").toString();   // доп.формы, формат: 'имя_без_расширения' RADIOID ['имя_без_расширения' RADIOID]...
         ParseExtForms();                                    // разбор строки
 
+        ParseConfigKP2007(logger);                          // разбор конфигурации
 
         Stations[no] = this;
     }
@@ -645,3 +654,208 @@ bool Station::IsArmDspModeOn(bool rsrv)
 
 // TODO:
 // --------------------------------------------------------------------------------------------------------
+
+
+// ОПЦИИ:
+// БРОК
+// УПОК
+// АДКСЦБ
+// АПКДК
+// АБТЦМ[(БУ12:N1,БУ13:N2)], N1, N2 - число байт по разным каналам
+// EBILOCK[(N)], N - число информативных байт
+// ЭЦ-МПК[(N1[,N2])] - число байт по разным каналам
+// РПЦДИАЛОГ(БМАААААА:ГГ[,БМАААААА:ГГ]
+
+void Station::ParseConfigKP2007(Logger& logger)
+{
+    config = "МТУ=1(1) МТС=17(2-8,9-16,17-18) EBILOCK(63) АБТЦМ(БУ12:27,БУ13:26) АДКСЦБ РПЦДИАЛОГ(БМ06361101:64,БМ06361102:64) ЭЦ-МПК(186,188)";
+
+    // БРОК
+    if (config.indexOf("БРОК") >=0 || config.indexOf("УПОК") >=0)
+        upokOtu= true;                                      // "БРОК" или "УПОК", чтобы точно указать тип ОТУ на станции
+
+    // АДКСЦБ
+    if (config.indexOf("АДКСЦБ") >=0)
+        adkScb	= true;
+
+    // EBILOCK
+    if (config.indexOf("EBILOCK")>=0)
+    {
+        mpcEbilock	= true;
+        // пробуем прочитать длину N в опции: EBILOCK(N)
+        QRegularExpression regexEx("[Ee][Bb][Ii][Ll][Oo][Cc][Kk]\\(\\d+\\)");
+        QRegularExpressionMatch match = regexEx.match(config);
+        if (match.hasMatch())
+        {
+            QRegularExpression regexN("\\d+");
+            nEbilockTsLength = regexN.match(match.captured()).captured().toInt();
+            offsetDk += nEbilockTsLength;
+        }
+    }
+
+    // АПКДК
+    if (config.indexOf("АПКДК") >=0)
+        apkdk = true;
+
+    // АБТЦ
+    abtcm = AbtcmInfo::Parse(abtcms, config, logger);
+
+    // РПЦДИАЛОГ
+    rpcDialog = rpcDialogInfo::Parse(rpcDialogs, config, logger);
+
+    // ЭЦ-МПК
+    rpcMpcMPK = ecMpkInfo::Parse(ecMpks, config, logger);
+
+    // МТС,МТУ
+    ParseMT (false);
+    ParseMT (true);
+/*
+    indx = s.Find("МТС=");
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        CStringEx sMdl = sTmp.GetToken();
+        ParseModulesKP2007(sMdl,'С');
+    }
+
+    OffsetDk += nMts2007 * 4;
+
+    indx = s.Find("МТУ=");
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        CStringEx sMdl = sTmp.GetToken();
+        ParseModulesKP2007(sMdl,'У');
+    }
+
+
+    // 2012.01.24. Читаем опции, задающие списки разрешенных команд через запятую: ДНЦ:СУ=  ДНЦ:РСУ  ДСП:ДУ
+    // Списки должны храниться в списках объектов: 	EnableTuDncOnSuMode, EnableTuDncOnRsuMode, EnableTuDspOnDuMode
+    // Присвоим значения по умолчанию
+    sEnableTuDncOnSuMode	= "СУ.ОТ,ДОСУ,РОН,РОЧ,ОРОН,ОРОЧ,1РОН,1РОЧ,1ОРОН,1ОРОЧ,2РОН,2РОЧ,2ОРОН,2ОРОЧ";	// перечень ТУ, пропускаемых от АРМ ДНЦ в режиме СУ		ДНЦ:СУ=
+    sEnableTuDncOnRsuMode	= "СУ.ОТ,ДОСУ";																	// перечень ТУ, пропускаемых от АРМ ДНЦ в режиме РСУ	ДНЦ:РСУ=
+    sEnableTuDspOnDuMode	= "ВСУ.ВК,ВСУ.ОТ,РСТУ.ВК";														// перечень ТУ, пропускаемых от АРМ ДСП в режиме ДУ		ДСП:ДУ=
+    sDisableTuDspOnSuMode	= "РОН,РОЧ,ОРОН,ОРОЧ,1РОН,1РОЧ,1ОРОН,1ОРОЧ,2РОН,2РОЧ,2ОРОН,2ОРОЧ,ДОСУ";			// перечень ТУ, запрещаемых  от АРМ ДСП в режиме СУ		-ДСП:СУ=
+    sDisableTuDncOnDuMode	= "ВСУ.ВК,ВСУ.ОТ,РСТУ.ВК";														// перечень ТУ, запрещаемых  от АРМ ДНЦ в режиме ДЦ		-ДНЦ:ДУ=
+
+    indx = s.Find("	ДНЦ:СУ=");							// ДНЦ:СУ=
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        sTmp.Replace("="," ");
+        sTmp.GetToken();
+        sEnableTuDncOnSuMode = sTmp.GetToken();
+    }
+    indx = s.Find("ДНЦ:РСУ=	");							// ДНЦ:РСУ=
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        sTmp.Replace("="," ");
+        sTmp.GetToken();
+        sEnableTuDncOnRsuMode = sTmp.GetToken();
+    }
+    indx = s.Find("ДСП:ДУ=");							// ДСП:ДУ=
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        sTmp.Replace("="," ");
+        sTmp.GetToken();
+        sEnableTuDspOnDuMode = sTmp.GetToken();
+    }
+
+    indx = s.Find("-ДСП:СУ=");							// -ДСП:СУ=
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        sTmp.Replace("="," ");
+        sTmp.GetToken();
+        sDisableTuDspOnSuMode = sTmp.GetToken();
+    }
+
+    indx = s.Find("-ДНЦ:ДУ=");							// -ДНЦ:ДУ=
+    if (indx >= 0)
+    {
+        CStringEx sTmp = s.Mid(indx);
+        sTmp.Replace("="," ");
+        sTmp.GetToken();
+        sDisableTuDncOnDuMode = sTmp.GetToken();
+    }
+*/
+}
+
+//#endif // #ifndef RAS_STATION
+//#endif // #ifndef GID_URAL_PLUGIN
+/*
+void DStation::ParseModulesKP2007(CString& s,char cType)
+{
+    CStringEx sMdl(s);
+    sMdl.Replace("("," ");
+    sMdl.Replace(")"," ");
+    sMdl.Replace("["," ");
+    sMdl.Replace("]"," ");
+    sMdl.Replace("="," ");
+    sMdl.GetToken();					// МТС=
+    CString sAll = sMdl.GetToken();		// число модулей
+
+    int nAllDeclare = atoi(sAll);
+    int nAll = 0;
+    sMdl.Replace(","," ");				// запятые заменим на пробелы
+
+    CStringEx sGroup;
+    while ((sGroup = sMdl.GetToken()).GetLength())
+    {
+        CString sn;
+        if (sGroup.Find("-") >=0)
+        {
+            sGroup.Replace("-"," ");
+            sn = sGroup.GetToken();
+            int n1 = atoi(sn);
+            sn = sGroup.GetToken();
+            int n2 = atoi(sn);
+            for (int i=max(1,n1); i<= min (n2,MAX_MODULES_KP2007); i++)
+            {
+                modules2007[i-1] = cType;
+                if (cType=='У')
+                    nMtu2007 ++;
+                else
+                    nMts2007 ++;
+
+                if (i>24)
+                    bMvv2present = true;
+                nAll++;
+            }
+        }
+        else
+        {
+            int n = atoi(sGroup);
+            if (n > 0 && n < MAX_MODULES_KP2007)
+            {
+                modules2007[n-1] = cType;
+                if (cType=='У')
+                    nMtu2007 ++;
+                else
+                    nMts2007 ++;
+
+                if (n>24)
+                    bMvv2present = true;
+            }
+            else
+                PutLog(GetName(),s,"Ошибка описания модулей");
+            nAll++;
+        }
+    }
+    if (nAllDeclare != nAll)
+        PutLog(GetName(),s,"Несоответствие указанного числа модулей описанию");
+}
+
+*/
+
+// [Мм][Тт][Уу]
+void Station::ParseMT (bool tu)
+{
+    QString prefix = tu ? "[МмMm][ТтTt][УуUu]=" : "[МмMm][TТтt][СсCc]=";
+    QString option = QRegularExpression(prefix + "[^ ]*").match(config).captured();
+    // \d+\([\d,-]*\)  - проверка синтаксиса 17(2,3-8,9-16,17-18)
+    // уметь выделить выражение в скобках
+    // [\d-]*  -выделение количеств
+}

@@ -54,7 +54,10 @@ SOURCES += main.cpp\
     ../forms/dlgtsinfo.cpp \
     ../forms/tsstatuswidget.cpp \
     ../forms/dlgkpinfo.cpp \
-    ../forms/bminfoframe.cpp
+    ../forms/bminfoframe.cpp \
+    ../spr/abtcminfo.cpp \
+    ../spr/rpcdialoginfo.cpp \
+    ../spr/ecmpkinfo.cpp
     ../common/boolexpression.cpp \
 
 
@@ -97,7 +100,10 @@ HEADERS  += mainwindow.h \
     ../forms/dlgtsinfo.h \
     ../forms/tsstatuswidget.h \
     ../forms/dlgkpinfo.h \
-    ../forms/bminfoframe.h
+    ../forms/bminfoframe.h \
+    ../spr/abtcminfo.h \
+    ../spr/rpcdialoginfo.h \
+    ../spr/ecmpkinfo.h
     ../common/boolexpression.h \
 
 

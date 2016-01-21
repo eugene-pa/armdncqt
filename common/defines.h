@@ -15,6 +15,8 @@
 #include <QBitArray>
 #include <QVariant>
 #include "QCloseEvent"
+#include "QDateTime"
+#include "QRegularExpression"
 
 //#include <QWidget>
 //#include <QGraphicsView>
