@@ -1,16 +1,65 @@
 #include "bminfoframe.h"
 #include "ui_bminfoframe.h"
 
+
 BmInfoFrame::BmInfoFrame(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::BmInfoFrame)
 {
     ui->setupUi(this);
-
+    mt.append(ui->label_mt1);
+    mt.append(ui->label_mt2);
+    mt.append(ui->label_mt3);
+    mt.append(ui->label_mt4);
+    mt.append(ui->label_mt5);
+    mt.append(ui->label_mt6);
+    mt.append(ui->label_mt7);
+    mt.append(ui->label_mt8);
+    mt.append(ui->label_mt9);
+    mt.append(ui->label_mt10);
+    mt.append(ui->label_mt11);
+    mt.append(ui->label_mt12);
+    mt.append(ui->label_mt13);
+    mt.append(ui->label_mt14);
+    mt.append(ui->label_mt15);
+    mt.append(ui->label_mt16);
+    mt.append(ui->label_mt17);
+    mt.append(ui->label_mt18);
+    mt.append(ui->label_mt19);
+    mt.append(ui->label_mt20);
+    mt.append(ui->label_mt21);
+    mt.append(ui->label_mt22);
+    mt.append(ui->label_mt23);
+    mt.append(ui->label_mt24);
+    mt.append(ui->label_mt25);
+    mt.append(ui->label_mt26);
+    mt.append(ui->label_mt27);
+    mt.append(ui->label_mt28);
+    mt.append(ui->label_mt29);
+    mt.append(ui->label_mt30);
+    mt.append(ui->label_mt31);
+    mt.append(ui->label_mt32);
+    mt.append(ui->label_mt33);
+    mt.append(ui->label_mt34);
+    mt.append(ui->label_mt35);
+    mt.append(ui->label_mt36);
+    mt.append(ui->label_mt37);
+    mt.append(ui->label_mt38);
+    mt.append(ui->label_mt39);
+    mt.append(ui->label_mt40);
+    mt.append(ui->label_mt41);
+    mt.append(ui->label_mt42);
+    mt.append(ui->label_mt43);
+    mt.append(ui->label_mt44);
+    mt.append(ui->label_mt45);
+    mt.append(ui->label_mt46);
+    mt.append(ui->label_mt47);
+    mt.append(ui->label_mt48);
 }
 
 BmInfoFrame::~BmInfoFrame()
 {
+    mt.clear();
     delete ui;
 }
 
@@ -96,4 +145,10 @@ void BmInfoFrame::redraw()
     // скорость и реконнекты COM3/COM4
     ui->label_COM3_about->setText(QString("v=%1  #%2").arg(sysinfo->SpeedCom3()).arg(sysinfo->BreaksCom3()));
     ui->label_COM4_about->setText(QString("v=%1  #%2").arg(sysinfo->SpeedCom4()).arg(sysinfo->BreaksCom4()));
+
+    // отображение модулей ДОРАБОТАТЬ
+    for (int i=0; i<MaxModule; i++)
+    {
+        mt[i]->setPixmap(st->IsTsPresent(i) ? *g_green_box : st->IsTuPresent(i) ? *g_yellow_box : *g_gray_box);
+    }
 }

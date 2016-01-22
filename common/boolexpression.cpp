@@ -31,7 +31,17 @@ BoolExpression::BoolExpression(QString& expr, bool fullMathOps)
     ToRpn();                                                // получить ПОЛИЗ
     GetValue();
 }
+/*
+BoolExpression::BoolExpression(QString expr, bool fullMathOps)
+{
+    source      = expr;                                     // выражение
+    logicalType = !fullMathOps;
+    error       = OK;
 
+    ToRpn();                                                // получить ПОЛИЗ
+    GetValue();
+}
+*/
 BoolExpression::~BoolExpression()
 {
 }

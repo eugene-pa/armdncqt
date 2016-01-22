@@ -35,6 +35,9 @@ public:
 
     //BoolExpression(QString expr, class Station* pst, bool fullMathOps = false);
     BoolExpression(QString& expr, bool fullMathOps = false);
+    //BoolExpression(QString  expr, bool fullMathOps = false);
+
+
     ~BoolExpression();
 
     int GetValue();                                         // получить значение

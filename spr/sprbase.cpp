@@ -4,10 +4,11 @@
 #include <QVector>
 
 QString SprBase::buf;                                       // статический буфер для формирования сообщений
-QVector <QString> SprBase::BaseNames =
+QVector <QString> SprBase::BaseNames;
+/* =                                                        // не везде проходит инициализация!
 {
     "?", "ТС", "ТУ", "РЦ", "СВТФ", "СТРЛ",
-};
+};*/
 
 SprBase::SprBase()
 {
@@ -22,6 +23,13 @@ SprBase::SprBase()
     enabled = true;                                         // включен
     tag     = nullptr;
     basetype = BaseUnknown;
+
+    BaseNames.append("?"    );
+    BaseNames.append("ТС"   );
+    BaseNames.append("ТУ"   );
+    BaseNames.append("РЦ"   );
+    BaseNames.append("СВТФ" );
+    BaseNames.append("СТРЛ" );
 }
 
 SprBase::~SprBase()

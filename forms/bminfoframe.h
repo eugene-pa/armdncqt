@@ -27,6 +27,8 @@ private:
     class Station * st;                                     //
     class SysInfo * sysinfo;
     void redraw();
+
+    QVector<class QLabel*> mt;
 };
 
 #endif // BMINFOFRAME_H

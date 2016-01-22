@@ -497,7 +497,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLabel" name="label_mt1_2">
+      <widget class="QLabel" name="label_mt2">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -513,7 +513,7 @@
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QLabel" name="label_mt1_3">
+      <widget class="QLabel" name="label_mt3">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -529,7 +529,7 @@
       </widget>
      </item>
      <item row="1" column="3">
-      <widget class="QLabel" name="label_mt1_4">
+      <widget class="QLabel" name="label_mt4">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -545,7 +545,7 @@
       </widget>
      </item>
      <item row="1" column="4">
-      <widget class="QLabel" name="label_mt1_5">
+      <widget class="QLabel" name="label_mt5">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -561,7 +561,7 @@
       </widget>
      </item>
      <item row="1" column="5">
-      <widget class="QLabel" name="label_mt1_6">
+      <widget class="QLabel" name="label_mt6">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -577,7 +577,7 @@
       </widget>
      </item>
      <item row="1" column="6">
-      <widget class="QLabel" name="label_mt1_7">
+      <widget class="QLabel" name="label_mt7">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -593,7 +593,7 @@
       </widget>
      </item>
      <item row="1" column="7">
-      <widget class="QLabel" name="label_mt1_8">
+      <widget class="QLabel" name="label_mt8">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -609,7 +609,7 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_mt1_9">
+      <widget class="QLabel" name="label_mt9">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -625,7 +625,7 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLabel" name="label_mt1_10">
+      <widget class="QLabel" name="label_mt10">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -641,7 +641,7 @@
       </widget>
      </item>
      <item row="2" column="2">
-      <widget class="QLabel" name="label_mt1_11">
+      <widget class="QLabel" name="label_mt11">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -657,7 +657,7 @@
       </widget>
      </item>
      <item row="2" column="3">
-      <widget class="QLabel" name="label_mt1_12">
+      <widget class="QLabel" name="label_mt12">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -673,7 +673,7 @@
       </widget>
      </item>
      <item row="2" column="4">
-      <widget class="QLabel" name="label_mt1_13">
+      <widget class="QLabel" name="label_mt13">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -689,7 +689,7 @@
       </widget>
      </item>
      <item row="2" column="5">
-      <widget class="QLabel" name="label_mt1_14">
+      <widget class="QLabel" name="label_mt14">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -705,7 +705,7 @@
       </widget>
      </item>
      <item row="2" column="6">
-      <widget class="QLabel" name="label_mt1_15">
+      <widget class="QLabel" name="label_mt15">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -721,7 +721,7 @@
       </widget>
      </item>
      <item row="2" column="7">
-      <widget class="QLabel" name="label_mt1_16">
+      <widget class="QLabel" name="label_mt16">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -737,7 +737,7 @@
       </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="label_mt1_17">
+      <widget class="QLabel" name="label_mt17">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -753,7 +753,7 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLabel" name="label_mt1_18">
+      <widget class="QLabel" name="label_mt18">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -769,7 +769,7 @@
       </widget>
      </item>
      <item row="3" column="2">
-      <widget class="QLabel" name="label_mt1_19">
+      <widget class="QLabel" name="label_mt19">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -785,7 +785,7 @@
       </widget>
      </item>
      <item row="3" column="3">
-      <widget class="QLabel" name="label_mt1_20">
+      <widget class="QLabel" name="label_mt20">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -801,7 +801,7 @@
       </widget>
      </item>
      <item row="3" column="4">
-      <widget class="QLabel" name="label_mt1_21">
+      <widget class="QLabel" name="label_mt21">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -817,7 +817,7 @@
       </widget>
      </item>
      <item row="3" column="5">
-      <widget class="QLabel" name="label_mt1_22">
+      <widget class="QLabel" name="label_mt22">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -833,7 +833,7 @@
       </widget>
      </item>
      <item row="3" column="6">
-      <widget class="QLabel" name="label_mt1_23">
+      <widget class="QLabel" name="label_mt23">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -849,7 +849,7 @@
       </widget>
      </item>
      <item row="3" column="7">
-      <widget class="QLabel" name="label_mt1_24">
+      <widget class="QLabel" name="label_mt24">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -993,7 +993,7 @@
       </widget>
      </item>
      <item row="5" column="0">
-      <widget class="QLabel" name="label_mt1_25">
+      <widget class="QLabel" name="label_mt25">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1009,7 +1009,7 @@
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLabel" name="label_mt1_26">
+      <widget class="QLabel" name="label_mt26">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1025,7 +1025,7 @@
       </widget>
      </item>
      <item row="5" column="2">
-      <widget class="QLabel" name="label_mt1_27">
+      <widget class="QLabel" name="label_mt27">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1041,7 +1041,7 @@
       </widget>
      </item>
      <item row="5" column="3">
-      <widget class="QLabel" name="label_mt1_28">
+      <widget class="QLabel" name="label_mt28">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1057,7 +1057,7 @@
       </widget>
      </item>
      <item row="5" column="4">
-      <widget class="QLabel" name="label_mt1_29">
+      <widget class="QLabel" name="label_mt29">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1073,7 +1073,7 @@
       </widget>
      </item>
      <item row="5" column="5">
-      <widget class="QLabel" name="label_mt1_30">
+      <widget class="QLabel" name="label_mt30">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1089,7 +1089,7 @@
       </widget>
      </item>
      <item row="5" column="6">
-      <widget class="QLabel" name="label_mt1_31">
+      <widget class="QLabel" name="label_mt31">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1105,7 +1105,7 @@
       </widget>
      </item>
      <item row="5" column="7">
-      <widget class="QLabel" name="label_mt1_32">
+      <widget class="QLabel" name="label_mt32">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1121,7 +1121,7 @@
       </widget>
      </item>
      <item row="6" column="0">
-      <widget class="QLabel" name="label_mt1_33">
+      <widget class="QLabel" name="label_mt33">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1137,7 +1137,7 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QLabel" name="label_mt1_34">
+      <widget class="QLabel" name="label_mt34">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1153,7 +1153,7 @@
       </widget>
      </item>
      <item row="6" column="2">
-      <widget class="QLabel" name="label_mt1_35">
+      <widget class="QLabel" name="label_mt35">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1169,7 +1169,7 @@
       </widget>
      </item>
      <item row="6" column="3">
-      <widget class="QLabel" name="label_mt1_36">
+      <widget class="QLabel" name="label_mt36">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1185,7 +1185,7 @@
       </widget>
      </item>
      <item row="6" column="4">
-      <widget class="QLabel" name="label_mt1_37">
+      <widget class="QLabel" name="label_mt37">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1201,7 +1201,7 @@
       </widget>
      </item>
      <item row="6" column="5">
-      <widget class="QLabel" name="label_mt1_38">
+      <widget class="QLabel" name="label_mt38">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1217,7 +1217,7 @@
       </widget>
      </item>
      <item row="6" column="6">
-      <widget class="QLabel" name="label_mt1_39">
+      <widget class="QLabel" name="label_mt39">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1233,7 +1233,7 @@
       </widget>
      </item>
      <item row="6" column="7">
-      <widget class="QLabel" name="label_mt1_40">
+      <widget class="QLabel" name="label_mt40">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1249,7 +1249,7 @@
       </widget>
      </item>
      <item row="7" column="0">
-      <widget class="QLabel" name="label_mt1_41">
+      <widget class="QLabel" name="label_mt41">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1265,7 +1265,7 @@
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QLabel" name="label_mt1_42">
+      <widget class="QLabel" name="label_mt42">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1281,7 +1281,7 @@
       </widget>
      </item>
      <item row="7" column="2">
-      <widget class="QLabel" name="label_mt1_43">
+      <widget class="QLabel" name="label_mt43">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1297,7 +1297,7 @@
       </widget>
      </item>
      <item row="7" column="3">
-      <widget class="QLabel" name="label_mt1_44">
+      <widget class="QLabel" name="label_mt44">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1313,7 +1313,7 @@
       </widget>
      </item>
      <item row="7" column="4">
-      <widget class="QLabel" name="label_mt1_45">
+      <widget class="QLabel" name="label_mt45">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1329,7 +1329,7 @@
       </widget>
      </item>
      <item row="7" column="5">
-      <widget class="QLabel" name="label_mt1_46">
+      <widget class="QLabel" name="label_mt46">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1345,7 +1345,7 @@
       </widget>
      </item>
      <item row="7" column="6">
-      <widget class="QLabel" name="label_mt1_47">
+      <widget class="QLabel" name="label_mt47">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1361,7 +1361,7 @@
       </widget>
      </item>
      <item row="7" column="7">
-      <widget class="QLabel" name="label_mt1_48">
+      <widget class="QLabel" name="label_mt48">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1613,10 +1613,6 @@
      </item>
     </layout>
    </widget>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
-   <zorder>layoutWidget</zorder>
   </widget>
  </widget>
  <resources>

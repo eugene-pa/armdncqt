@@ -29,7 +29,7 @@ public slots:
 
 private:
     bool normal;
-    const int dxy = 16;
+    int dxy;
     int page;
     void DrawGrid(QPainter *p);                             // отрисовка окантовки
     void DrawTs  (QPainter *p);                             // отрисовка ТС

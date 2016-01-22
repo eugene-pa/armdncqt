@@ -6,6 +6,7 @@
 
 TsStatusWidget::TsStatusWidget(QWidget *parent) : QWidget(parent)
 {
+    dxy = 16;
     page = 1;
     pSt = nullptr;
     normal = false;

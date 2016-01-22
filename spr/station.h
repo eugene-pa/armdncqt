@@ -116,10 +116,11 @@ public:
     bool TsRaw      (int i) { return TestBit(tsStsRaw,  i); }// состояние не нормализованное
     bool TsPulse    (int i) { return TestBit(tsStsPulse,i); }// состояние пульсации
 
-    int MtsCount () { return mts.count(); }                 // число модулей ТС
-    int MtuCount () { return mtu.count(); }                 // число модулей ТУ
+// TODO:
+int MtsCount () { return 0/*mts.count()*/; }                 // число модулей ТС
+int MtuCount () { return 0/*mtu.count()*/; }                 // число модулей ТУ
 
-    bool SetBit (QBitArray& bits, int index, bool a=true);  // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
+    void SetBit (QBitArray& bits, int index, bool a=true);  // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
     void MarkInverse(int index);
 
     void AddRc  (class Rc   *, Logger& logger);             // добавить РЦ
@@ -158,6 +159,9 @@ public:
     QList <class ShapeId*> formList;                        // список классов-идентификаторов форм
 
     QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
+
+    bool IsTsPresent(int i) { return i>=0 && i<MaxModule && mts[i]; }
+    bool IsTuPresent(int i) { return i>=0 && i<MaxModule && mtu[i]; }
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
@@ -203,8 +207,9 @@ private:
 
     int     nEbilockTsLength;                               // длина массива Ebilock из строки конфигурации КП "EBILOCK(80)"
 
-    QByteArray     mts;                                     // массив номеров модулей ТС
-    QByteArray     mtu;                                     // массив номеров модулей ТУ
+    QBitArray     mts;                                      // пометка модулей ТС
+    QBitArray     mtu;                                      // пометка модулей ТУ
+    bool          mvv2present;                              // наличие МВВ2
 
     // состояние сигналов ТС
     QBitArray tsInverse;                                    // битовый массив инверсии
