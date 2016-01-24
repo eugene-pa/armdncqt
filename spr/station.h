@@ -262,7 +262,8 @@ private:
     bool TestBit (QBitArray& bits, int index);              // проверка бита в битовом массиве
     void ParseExtForms();                                   // разбор доп.форм
     void ParseConfigKP2007(Logger& logger);                 // разбор строки конфигурации КП станции
-    void ParseMT (bool tu=false);                           // разбор описания модулей МТУ, МТС
+    void ParseMT (bool tu=false);                           // разбор описания модулей МТУ, МТС    
+    void ParseTuEclusion();                                 // явное опсание исключений ТУ для разных режимов управления
 };
 
 // класс идентификации формы станции (имя формы, ID кнопки)

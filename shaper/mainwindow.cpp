@@ -202,6 +202,18 @@ void MainWindow::on_action_RcInfo_triggered()
         dlgRc->setVisible(!dlgTs->isVisible());
 }
 
+void MainWindow::on_action_KPinfo_triggered()
+{
+    if (dlgKp==nullptr)
+    {
+        dlgKp = new DlgKPinfo(g_actualStation, this);
+        dlgKp->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgKp, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgKp->setVisible(dlgKp->isVisible());
+}
+
 // обработчик меню информация по стрелкам
 void MainWindow::on_action_StrlInfo_triggered()
 {
@@ -215,6 +227,8 @@ void MainWindow::on_action_stationsInfo_triggered()
     DlgStationsInfo * dlg = new DlgStationsInfo(this);
     dlg->show();
 }
+
+
 
 // обработчик меню информация по светофорам
 void MainWindow::on_action_SvtfInfo_triggered()
@@ -251,12 +265,6 @@ void MainWindow::on_action_OtuInfo_triggered()
 {
 }
 
-
-void MainWindow::on_action_KPinfo_triggered()
-{
-    DlgKPinfo * dlg = new DlgKPinfo(g_actualStation, this);
-    dlg->show();
-}
 
 
 void MainWindow::loadResources()

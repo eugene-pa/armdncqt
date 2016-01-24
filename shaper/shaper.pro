@@ -57,7 +57,8 @@ SOURCES += main.cpp\
     ../forms/bminfoframe.cpp \
     ../spr/abtcminfo.cpp \
     ../spr/rpcdialoginfo.cpp \
-    ../spr/ecmpkinfo.cpp
+    ../spr/ecmpkinfo.cpp \
+    ../forms/qled.cpp
     ../common/boolexpression.cpp \
 
 
@@ -103,7 +104,8 @@ HEADERS  += mainwindow.h \
     ../forms/bminfoframe.h \
     ../spr/abtcminfo.h \
     ../spr/rpcdialoginfo.h \
-    ../spr/ecmpkinfo.h
+    ../spr/ecmpkinfo.h \
+    ../forms/qled.h
     ../common/boolexpression.h \
 
 

@@ -18,9 +18,13 @@ public:
 
     void redraw(class Station * p = nullptr);
 
+public slots:
+    void changeStation(class Station *);                    // смена станции
+
 private:
     Ui::DlgKPinfo *ui;
     class Station * st;
+    QColor okColor;
 };
 
 #endif // DLGKPINFO_H

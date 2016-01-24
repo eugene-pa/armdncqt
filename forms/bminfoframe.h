@@ -2,7 +2,9 @@
 #define BMINFOFRAME_H
 
 #include <QFrame>
+//#include <QBrush>
 #include "../spr/station.h"
+#include "qled.h"
 
 namespace Ui {
 class BmInfoFrame;
@@ -26,9 +28,15 @@ private:
     bool rsrv;                                              // признак резервного БМ
     class Station * st;                                     //
     class SysInfo * sysinfo;
-    void redraw();
 
-    QVector<class QLabel*> mt;
+    void redraw();                                          // отрисовка состояния модуля
+    void RedrawUndefined();                                 // отрисовка неопределенного состояния модуля (нет данных)
+
+    QColor okColor;
+    QColor erColor;
+    QBrush okBrush;
+    QBrush erBrush;
+    QVector<class QLed*> mt;
 };
 
 #endif // BMINFOFRAME_H

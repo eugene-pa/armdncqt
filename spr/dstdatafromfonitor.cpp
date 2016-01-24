@@ -84,12 +84,12 @@ void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo* info)
             mvv1[i].speedCom3 = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
             mvv2[i].speedCom4 = mvv2[i].speedCom4l/1200;
 
-            mvv1[i].bt1 = info->GetMtuMtsStatus(0);          // отказы модулей
-            mvv1[i].bt2 = info->GetMtuMtsStatus(1);
-            mvv1[i].bt3 = info->GetMtuMtsStatus(2);
-            mvv2[i].bt1 = info->GetMtuMtsStatus(0);
-            mvv2[i].bt2 = info->GetMtuMtsStatus(1);
-            mvv2[i].bt3 = info->GetMtuMtsStatus(2);
+            mvv1[i].bt1 = info->GetMtuMtsLineStatus(0);          // отказы модулей
+            mvv1[i].bt2 = info->GetMtuMtsLineStatus(1);
+            mvv1[i].bt3 = info->GetMtuMtsLineStatus(2);
+            mvv2[i].bt1 = info->GetMtuMtsLineStatus(0);
+            mvv2[i].bt2 = info->GetMtuMtsLineStatus(1);
+            mvv2[i].bt3 = info->GetMtuMtsLineStatus(2);
         }
 
         tSpokSnd = info->st->tSpokSnd;
@@ -248,12 +248,12 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
     {
         if (info->st->Kp2007())
         {
-            info->SetMtuMtsStatus(0, mvv1[i].bt1);
-            info->SetMtuMtsStatus(1, mvv1[i].bt2);
-            info->SetMtuMtsStatus(2, mvv1[i].bt3);
-            info->SetMtuMtsStatus(3, mvv2[i].bt1);
-            info->SetMtuMtsStatus(4, mvv2[i].bt2);
-            info->SetMtuMtsStatus(5, mvv2[i].bt3);
+            info->SetMtuMtsLineStatus(0, mvv1[i].bt1);
+            info->SetMtuMtsLineStatus(1, mvv1[i].bt2);
+            info->SetMtuMtsLineStatus(2, mvv1[i].bt3);
+            info->SetMtuMtsLineStatus(3, mvv2[i].bt1);
+            info->SetMtuMtsLineStatus(4, mvv2[i].bt2);
+            info->SetMtuMtsLineStatus(5, mvv2[i].bt3);
         }
     }
 }

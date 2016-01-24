@@ -4,6 +4,7 @@ SysInfo::SysInfo()
 {
     st = nullptr;
     src.fill(0,SysInfoLength);
+    errors = 0;
 }
 
 SysInfo::SysInfo(Station * pst)
@@ -17,8 +18,8 @@ SysInfo::~SysInfo()
 
 }
 
-// получить статус модулей БТ индексу 0-5
-BYTE SysInfo::GetMtuMtsStatus(int i)
+// получить статус линейки из 8 модулей БТ индексу 0-5
+BYTE SysInfo::GetMtuMtsLineStatus(int i)
 {
     switch (i)
     {
@@ -32,8 +33,8 @@ BYTE SysInfo::GetMtuMtsStatus(int i)
     return 0;
 }
 
-// установить статус модулей БТ индексу 0-5
-void SysInfo::SetMtuMtsStatus(int i, BYTE bte)
+// установить статус линейки из 8 модулей БТ индексу 0-5
+void SysInfo::SetMtuMtsLineStatus(int i, BYTE bte)
 {
     switch (i)
     {
@@ -44,4 +45,11 @@ void SysInfo::SetMtuMtsStatus(int i, BYTE bte)
         case 4: src[10] = bte; break;
         case 5: src[11] = bte; break;
     }
+}
+
+
+// проверка состояния модуля МТУ/МТС по индексу 0-47
+bool SysInfo::MtuMtsStatus(int i)
+{
+    return i < 0 || i > MaxModule ? false : GetMtuMtsLineStatus(i/8) & (1 << i% 8);
 }

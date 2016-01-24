@@ -57,6 +57,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
     stsBackChannel  = false;
 
     errorLockLogicCount = 0;
+    stsFrmMntrTsExpired = false;
     offsetDk        = 0;
     lenDk           = 0;
 
@@ -147,7 +148,7 @@ void Station::GetValue(QString& name, int& ret)
 }
 
 
-// синтаксический разбор индексированных имен ТУ/ТС
+// синтаксический разбор индексированных имен ТУ/ТС; вызывается при вычислении выражений
 // 1/3+
 // 1/3+[#3]
 // 1/3+[Минводы]
@@ -537,19 +538,6 @@ void Station::MarkInverse(int index)
     tsInverse[index] = true;
 }
 
-// есть ли неквитированные сообщения подсистемы логич.контроля
-bool Station::IsNewErrorLockMsgPresent()
-{
-    // TODO: реализовать функцию
-    return false;
-}
-
-// устарели ли ТС
-bool Station::IsTsExpire()
-{
-    // TODO: реализовать функцию
-    return false;
-}
 
 // получить состояние сигнала по имени
 bool Station::GetTsStsByName (QString name)
@@ -655,9 +643,6 @@ bool Station::IsArmDspModeOn(bool rsrv)
     return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->ArmDspModeOn() : false;
 }
 
-// TODO:
-// --------------------------------------------------------------------------------------------------------
-
 
 // ОПЦИИ:
 // БРОК
@@ -713,6 +698,72 @@ void Station::ParseConfigKP2007(Logger& logger)
     ParseMT (false);
     ParseMT (true);
 
+    // явное опсание исключений ТУ для разных режимов управления
+    ParseTuEclusion();
+}
+
+
+// МТС=17(2-8,9-16,17-18)
+// [Мм][Тт][Уу]
+void Station::ParseMT (bool tu)
+{
+    QString prefix = tu ? "[МмMm][ТтTt][УуUu]=" : "[МмMm][TТтt][СсCc]=";
+    // выделяем всю лексему с опцией
+    QString lexem = QRegularExpression(prefix + "[^ ]*").match(config).captured();
+    if (lexem.length())
+    {
+        // выделяем содержимое опции
+        QString option = QRegularExpression("(?<=" + prefix + ")[^ ]+").match(lexem).captured();
+        // определяем число модулей
+        int n = QRegularExpression("\\d+(?=\\()").match(option).captured().toInt();
+        // выделяем модули
+        QString modules = QRegularExpression("(?<=[\\d+]\\()[^ \\)]+").match(option).captured();
+
+        // выделяем модули (одиночные '1' и диапазоны вида '2-8')
+        QRegularExpressionMatchIterator match = QRegularExpression("\\d+[-\\d]*").globalMatch(modules);
+        while (match.hasNext())
+        {
+            QString pare = match.next().captured().replace("-"," ");
+            int m1=0, m2=0, max = MaxModule;
+            QTextStream(&pare) >> m1 >> m2;
+            if (m1 > 0 && m1 <= max )
+            do
+            {
+                if (m1 > 24)
+                    mvv2present = true;
+                SetBit (tu ? mtu : mts, m1-1, true);            // пометить
+                m1++;
+            }
+                while (m1 <= qMin (m2, max));
+        }
+    }
+}
+
+// установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
+void Station::SetBit (QBitArray& bits, int indx, bool s)
+{
+    if (bits.count() > 0 && indx >=0 && indx < bits.count())
+        bits[indx] = s;
+}
+
+
+// TODO:
+// --------------------------------------------------------------------------------------------------------
+
+// есть ли неквитированные сообщения подсистемы логич.контроля
+bool Station::IsNewErrorLockMsgPresent()
+{
+    // TODO: реализовать функцию
+    return false;
+}
+
+
+// явное опсание исключений ТУ для разных режимов управления
+void Station::ParseTuEclusion()
+{
+
+}
+
 /*
 
     // 2012.01.24. Читаем опции, задающие списки разрешенных команд через запятую: ДНЦ:СУ=  ДНЦ:РСУ  ДСП:ДУ
@@ -767,113 +818,13 @@ void Station::ParseConfigKP2007(Logger& logger)
         sDisableTuDncOnDuMode = sTmp.GetToken();
     }
 */
-}
 
-//#endif // #ifndef RAS_STATION
-//#endif // #ifndef GID_URAL_PLUGIN
-/*
-void DStation::ParseModulesKP2007(CString& s,char cType)
+
+// устарели ли ТС
+bool Station::IsTsExpire()
 {
-    CStringEx sMdl(s);
-    sMdl.Replace("("," ");
-    sMdl.Replace(")"," ");
-    sMdl.Replace("["," ");
-    sMdl.Replace("]"," ");
-    sMdl.Replace("="," ");
-    sMdl.GetToken();					// МТС=
-    CString sAll = sMdl.GetToken();		// число модулей
-
-    int nAllDeclare = atoi(sAll);
-    int nAll = 0;
-    sMdl.Replace(","," ");				// запятые заменим на пробелы
-
-    CStringEx sGroup;
-    while ((sGroup = sMdl.GetToken()).GetLength())
-    {
-        CString sn;
-        if (sGroup.Find("-") >=0)
-        {
-            sGroup.Replace("-"," ");
-            sn = sGroup.GetToken();
-            int n1 = atoi(sn);
-            sn = sGroup.GetToken();
-            int n2 = atoi(sn);
-            for (int i=max(1,n1); i<= min (n2,MAX_MODULES_KP2007); i++)
-            {
-                modules2007[i-1] = cType;
-                if (cType=='У')
-                    nMtu2007 ++;
-                else
-                    nMts2007 ++;
-
-                if (i>24)
-                    bMvv2present = true;
-                nAll++;
-            }
-        }
-        else
-        {
-            int n = atoi(sGroup);
-            if (n > 0 && n < MAX_MODULES_KP2007)
-            {
-                modules2007[n-1] = cType;
-                if (cType=='У')
-                    nMtu2007 ++;
-                else
-                    nMts2007 ++;
-
-                if (n>24)
-                    bMvv2present = true;
-            }
-            else
-                PutLog(GetName(),s,"Ошибка описания модулей");
-            nAll++;
-        }
-    }
-    if (nAllDeclare != nAll)
-        PutLog(GetName(),s,"Несоответствие указанного числа модулей описанию");
+    // TODO: реализовать функцию
+    return false;
 }
 
-*/
 
-// МТС=17(2-8,9-16,17-18)
-// [Мм][Тт][Уу]
-void Station::ParseMT (bool tu)
-{
-    QString prefix = tu ? "[МмMm][ТтTt][УуUu]=" : "[МмMm][TТтt][СсCc]=";
-    // выделяем всю лексему с опцией
-    QString lexem = QRegularExpression(prefix + "[^ ]*").match(config).captured();
-    if (lexem.length())
-    {
-        // выделяем содержимое опции
-        QString option = QRegularExpression("(?<=" + prefix + ")[^ ]+").match(lexem).captured();
-        // определяем число модулей
-        int n = QRegularExpression("\\d+(?=\\()").match(option).captured().toInt();
-        // выделяем модули
-        QString modules = QRegularExpression("(?<=[\\d+]\\()[^ \\)]+").match(option).captured();
-
-        QRegularExpressionMatchIterator match = QRegularExpression("\\d+[-\\d]*").globalMatch(modules);
-        while (match.hasNext())
-        {
-            QString pare = match.next().captured().replace("-"," ");
-            int m1=0, m2=0, max = MaxModule;
-            QTextStream(&pare) >> m1 >> m2;
-            if (m1 > 0 && m1 <= max )
-            do
-            {
-                if (m1 > 24)
-                    mvv2present = true;
-                SetBit (tu ? mtu : mts, m1-1, true);            // пометить
-                m1++;
-            }
-                while (m1 <= qMin (m2, max));
-        }
-    }
-}
-
-// установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
-void Station::SetBit (QBitArray& bits, int indx, bool s)
-{
-    if (bits.count() > 0 && indx >=0 && indx < bits.count())
-        bits[indx] = s;
-}
