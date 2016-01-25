@@ -22,6 +22,9 @@ public:
 
     void timerEvent(QTimerEvent *event);
 
+public slots:
+    void ledClicked (QLed *);                               // уведомление о клике
+
 private:
     Ui::BmInfoFrame *ui;
 

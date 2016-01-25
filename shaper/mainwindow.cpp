@@ -1,3 +1,4 @@
+#include <QTextCodec>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "shapechild.h"
@@ -41,7 +42,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QDateTime t = QDateTime::currentDateTime();
     n = sizeof(t);
 */
+    // устанавливаем кодировку для отладочного окна вывода
+#ifdef Q_OS_WIN
+    QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
+#endif
+
     dlgTs = nullptr;                                                    // состояние ТС
+    dlgRc = nullptr;                                                    // состояние РЦ
+    dlgKp = nullptr;                                                    // диалог КП
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");

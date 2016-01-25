@@ -81,15 +81,15 @@ void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo* info)
     {
         if (info->st->Kp2007())
         {
-            mvv1[i].speedCom3 = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
-            mvv2[i].speedCom4 = mvv2[i].speedCom4l/1200;
+            mvv1[i].bt[0] = mvv1[i].speedCom3l/1200;    // скорость - в одном байте коэффициентом отеосительно 1200
+            mvv2[i].bt[0] = mvv2[i].speedCom4l/1200;
 
-            mvv1[i].bt1 = info->GetMtuMtsLineStatus(0);          // отказы модулей
-            mvv1[i].bt2 = info->GetMtuMtsLineStatus(1);
-            mvv1[i].bt3 = info->GetMtuMtsLineStatus(2);
-            mvv2[i].bt1 = info->GetMtuMtsLineStatus(0);
-            mvv2[i].bt2 = info->GetMtuMtsLineStatus(1);
-            mvv2[i].bt3 = info->GetMtuMtsLineStatus(2);
+            mvv1[i].bt[1] = info->GetMtuMtsLineStatus(0);          // отказы модулей
+            mvv1[i].bt[2] = info->GetMtuMtsLineStatus(1);
+            mvv1[i].bt[3] = info->GetMtuMtsLineStatus(2);
+            mvv2[i].bt[1] = info->GetMtuMtsLineStatus(0);
+            mvv2[i].bt[2] = info->GetMtuMtsLineStatus(1);
+            mvv2[i].bt[3] = info->GetMtuMtsLineStatus(2);
         }
 
         tSpokSnd = info->st->tSpokSnd;
@@ -177,7 +177,8 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
         &&	st->gidUralIdRemote && st->gidUralId
         &&	st->gidUralIdRemote != st->gidUralId )
     {
-        Logger::LogStr(QString("Несоответствие ЕСР-кодов. Ст.%1 %2 != %3 (удал)").arg(st->name, st->gidUralId, st->gidUralIdRemote));
+        QString msg = QString("ESR dissonance: %1 %2 != %3 (remoteе)").arg(st->name).arg(st->gidUralId).arg(st->gidUralIdRemote);
+        Logger::LogStr(msg);
     }
 
     st->stsRsrv = Rsrv & 0x0001 ? TRUE : FALSE;             // КП на резервном БМ: проверяем младший бит
@@ -231,6 +232,10 @@ bool DStDataFromMonitor::Extract(Station *st, DDataFromMonitor * pDtFrmMnt, DRas
 
 void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
 {
+    if (info->st->Kp2007())
+    {
+        int a = 99;
+    }
     info->linestatus = (LineStatus)LinkError[i];            // Тип ошибки: 0-OK,1-молчит,2-CRC
     info->errors = CntLinkEr[i];                            // Общий счетчик ошибок связи
     info->tmdt = QDateTime::fromTime_t(LastTime [i]);       // Астр.время окончания последнего цикла ТС
@@ -248,12 +253,12 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
     {
         if (info->st->Kp2007())
         {
-            info->SetMtuMtsLineStatus(0, mvv1[i].bt1);
-            info->SetMtuMtsLineStatus(1, mvv1[i].bt2);
-            info->SetMtuMtsLineStatus(2, mvv1[i].bt3);
-            info->SetMtuMtsLineStatus(3, mvv2[i].bt1);
-            info->SetMtuMtsLineStatus(4, mvv2[i].bt2);
-            info->SetMtuMtsLineStatus(5, mvv2[i].bt3);
+            info->SetMtuMtsLineStatus(0, mvv1[i].bt[1]);
+            info->SetMtuMtsLineStatus(1, mvv1[i].bt[2]);
+            info->SetMtuMtsLineStatus(2, mvv1[i].bt[3]);
+            info->SetMtuMtsLineStatus(3, mvv2[i].bt[1]);
+            info->SetMtuMtsLineStatus(4, mvv2[i].bt[2]);
+            info->SetMtuMtsLineStatus(5, mvv2[i].bt[3]);
         }
     }
 }

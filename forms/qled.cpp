@@ -1,4 +1,3 @@
-#include "QPainter"
 #include "qled.h"
 
 
@@ -10,6 +9,8 @@ QLed::QLed(QWidget * p, ledShape shape, ledStatus status,  QBrush fore, QBrush b
 
 void QLed::set (ledShape shape, ledStatus status, QBrush fore, QBrush back)
 {
+    textColor    = QColor(64,64,64);                       // цвет текста
+    borderColor  = QColor(Qt::gray);                       // цвет окантовки
     this->shape  = shape;
     this->fore   = fore;
     this->back   = back;
@@ -28,6 +29,7 @@ void QLed::set (ledShape shape, ledStatus status, QBrush fore, QBrush back)
     else
     if (!timerId)
         timerId = startTimer(500);
+    update();
 }
 
 void QLed::timerEvent(QTimerEvent *event)
@@ -44,7 +46,7 @@ void QLed::paintEvent(QPaintEvent* e)
                    status==off ? back : fore;
     QRect rect = this->rect();
     rect.setBottomRight(QPoint(rect.right()-1,rect.bottom()-1));
-    p.setPen(Qt::gray/*QPen(brush.color())*/);
+    p.setPen(borderColor);
     p.setBrush(brush);
     if (shape == box)
         p.drawRect(rect);
@@ -53,10 +55,19 @@ void QLed::paintEvent(QPaintEvent* e)
     p.setPen(Qt::black);
     if (text.length())
     {
+        p.setPen(textColor);
         p.setFont(QFont("Arial",-1, QFont::Bold));
         p.drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, text);
     }
 }
 
+void QLed::mousePressEvent(QMouseEvent * event)
+{
+    emit ledClicked(this);
+}
 
-
+void QLed::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint point = event->pos();
+    QToolTip::showText(event->globalPos(), objectName());
+}

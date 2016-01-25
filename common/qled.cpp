@@ -39,7 +39,7 @@ void QLed::timerEvent(QTimerEvent *event)
 void QLed::paintEvent(QPaintEvent* e)
 {
     QPainter p(this);
-    p.setRenderHint(QPainter::Antialiasing);
+    //p.setRenderHint(QPainter::Antialiasing);
     QBrush brush = status== blink ? pulse ? fore : back :
                    status==off ? back : fore;
     QRect rect = this->rect();

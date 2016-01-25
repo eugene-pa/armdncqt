@@ -11,7 +11,7 @@ BmInfoFrame::BmInfoFrame(QWidget *parent) :
     okColor = QColor(0,220,0);
     erColor = QColor(255,0,0);
     okBrush = QBrush(okColor);
-    erBrush = QBrush(erBrush);
+    erBrush = QBrush(erColor);
 
     // динамически создаем матрицу МТ с разметкой
     for (int i=0; i<8; i++)
@@ -27,7 +27,12 @@ BmInfoFrame::BmInfoFrame(QWidget *parent) :
             ui->gridLayout->addWidget(w,i,j);
 
             if (led != nullptr)
+            {
                 mt.append(led);
+                led->setObjectName(QString("Модуль %1").arg(mt.length()));
+                // привязываем обработчик выбора сигнала виджета widgetTs
+                QObject::connect(led, SIGNAL(ledClicked (QLed*)), this, SLOT(ledClicked(QLed*)));
+            }
             else
                 label->setAlignment(Qt::AlignCenter);
         }
@@ -92,8 +97,6 @@ void BmInfoFrame::RedrawUndefined()
         if (st->IsTuPresent(i))
             mt[i]->setText("У");
     }
-
-
 }
 
 
@@ -130,16 +133,16 @@ void BmInfoFrame::redraw()
     ui->label_Test->set(QLed::round, QLed::on, st->Kp2000() ? Qt::NoBrush : st->IsTestMode(rsrv) ? QBrush(Qt::white) : Qt::NoBrush);
 
     // Таймер
-    ui->label_Timer->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsWatchdogOn(rsrv) ? okBrush : * g_gray);
+    ui->label_Timer->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsWatchdogOn(rsrv) ? okBrush : Qt::NoBrush);
 
     // Память
-    ui->label_Mem->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsMemError(rsrv) ? * g_red : okBrush);
+    ui->label_Mem->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsMemError(rsrv) ? erBrush : okBrush);
 
     // Ретрансляция
-    ui->label_PNP->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsRetrans(rsrv) ? okBrush : * g_gray);
+    ui->label_PNP->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsRetrans(rsrv) ? okBrush : Qt::NoBrush);
 
     // Отладочная консоль
-    ui->label_consol->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsConsol(rsrv) ? okBrush : * g_gray);
+    ui->label_consol->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsConsol(rsrv) ? okBrush : Qt::NoBrush);
 
     // БРОК/ОМУЛ
     // - не УПОК+БРОК - серый
@@ -152,7 +155,7 @@ void BmInfoFrame::redraw()
                                                                                       st->IsDebugOtuMode(rsrv) ? QBrush (Qt::white) : okBrush);
 
     // режим АРМ ДСП
-    ui->label_ArmDsp->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsArmDspModeOn(rsrv) ? okBrush : * g_gray);
+    ui->label_ArmDsp->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsArmDspModeOn(rsrv) ? okBrush : Qt::NoBrush);
 
     // время опроса
     ui->label_last->setText(QString("%1").arg(sysinfo->LatTime().toString("hh:mm:ss")));
@@ -170,11 +173,15 @@ void BmInfoFrame::redraw()
     // отображение модулей
     for (int i=0; i<mt.length(); i++)
     {
-        bool er = sysinfo->GetMtuMtsLineStatus(i);
-        mt[i]->set(QLed::box, st->IsTsPresent(i) || st->IsTuPresent(i) ? QLed::on : QLed::off, er ? erBrush : okBrush, Qt::NoBrush);
+        bool er = sysinfo->MtuMtsStatus(i);
+        mt[i]->set(QLed::box, (st->IsTsPresent(i) || st->IsTuPresent(i)) ? QLed::on : QLed::off, er ? erBrush : okBrush, Qt::NoBrush);
         if (st->IsTuPresent(i))
             mt[i]->setText("У");
     }
+}
 
-    update();                                               // без этого не отображает изменения...
+// уведомление о клике по индикатору
+void BmInfoFrame::ledClicked (QLed *led)
+{
+    QString s = led->objectName();
 }

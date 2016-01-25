@@ -36,7 +36,7 @@ void DlgKPinfo::redraw(Station * p)
         ui->frame_Rsrv->setObj(st, true );
         ui->label_st->setText (st->Name());
     }
-    //ui->label_ArmDsp->setPixmap(!st->IsSupportKpExt(rsrv) ? * g_gray : st->IsArmDspModeOn(rsrv) ? * g_green : * g_gray);
+
     bool rsrv = st->IsRsrv();
     SysInfo * sysinfo = st->GetSysInfo(rsrv);
     ui->label_COM3      ->set(QLed::round, QLed::on, st->IsBackChannel() ? Qt::NoBrush : QBrush(okColor));

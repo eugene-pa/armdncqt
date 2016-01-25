@@ -71,14 +71,8 @@ void Logger::log (QString str)
         QTextStream out (&file);
         QString msg = QString("%1%2").arg(bLogTime?QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss  "):"").arg(str);
         out << msg <<"\r\n";
-#ifdef Q_OS_MAC
-        qDebug() << msg;
-#else
-        //QTextCodec *codec = QTextCodec::codecForName("CP866");
-        QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
+
         qDebug() << msg.toStdString().c_str();                    // дублируем отладочном окне
-        QTextCodec::setCodecForLocale( QTextCodec::codecForName("UTF-8"));
-#endif
     }
 
     locker->unlock();
@@ -86,6 +80,7 @@ void Logger::log (QString str)
 
 
 // статическая функция протоколирования строки в SQL и логе; если сохраняем в SQL, отображаем в строке сообщений
+// странно, но такое решение приводит к искажению кодировки входной строки при вызове функции из другого потока
 void Logger::LogStr (QString str, LogSourcer source, LogTypes type)
 {
     if (source!=SRC_UNDEFINED && type!=TYP_UNDEFINED)
