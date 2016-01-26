@@ -28,7 +28,8 @@ Tu::Tu(QSqlQuery& query, Logger& logger)
         norc    = query.value("NoRc"    ).toInt(&ret);
         nostrl  = query.value("NoStrl"  ).toInt(&ret);
         nosvtf  = query.value("NoSvtf"  ).toInt(&ret);
-        kolodka = query.value("Kolodka" ).toInt(&ret);
+        _kolodka= query.value("Kolodka" ).toInt(&ret);
+        kolodka = QString("K%1").arg(_kolodka);
         kontact = query.value("Klem"    ).toString();
         locked  = query.value("Lock"    ).toBool();
         delay   = query.value("Delay"   ).toFloat();
@@ -123,6 +124,10 @@ ushort Tu::GetIJ()
         {
             validIJ = modul>0 && modul<=25 &&_i>0 && _i<=8 && _j>0 && _j<=8;
             ij = modul << 8 | _i << 4 | _j;
+
+            if (validIJ && st->Kp2000() && _kolodka > 0)
+                st->MarkTu(modul);
+
         }
         else
         if (st && st->IsMpcEbilock())                       // МПЦ:        №ТУ
@@ -181,6 +186,7 @@ bool Tu::ReadBd (QString& dbpath, Logger& logger)
 
     logger.log("Сортировка списка ТУ TuSorted");
     Station::SortTu();
+    Station::CountMT();
 
     return true;
 

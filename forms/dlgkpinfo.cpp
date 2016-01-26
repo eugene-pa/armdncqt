@@ -10,6 +10,8 @@ DlgKPinfo::DlgKPinfo(class Station * p, QWidget *parent) :
 
     okColor = QColor(0,220,0);
     redraw(p);
+
+    startTimer (1000);
 }
 
 DlgKPinfo::~DlgKPinfo()
@@ -28,10 +30,10 @@ void DlgKPinfo::changeStation(class Station * p)
 
 void DlgKPinfo::redraw(Station * p)
 {
-    if (p!=st)
+    if (p!=nullptr && p!=st)
     {
         st = p;
-        setWindowTitle(QString ("Состояние КП ст.%1 (адр=%2[%3], id=%4:%5)").arg(st->Name()).arg(st->Addr()).arg(st->Ras()).arg(st->GidUralId()).arg(st->GidRemoteId()));
+        setWindowTitle(QString ("Состояние КП ст.%1 (#%2  адр=%3[%4], id=%5:%6)").arg(st->Name()).arg(st->No()).arg(st->Addr()).arg(st->Ras()).arg(st->GidUralId()).arg(st->GidRemoteId()));
         ui->frame_Main->setObj(st, false);
         ui->frame_Rsrv->setObj(st, true );
         ui->label_st->setText (st->Name());
@@ -42,9 +44,14 @@ void DlgKPinfo::redraw(Station * p)
     ui->label_COM3      ->set(QLed::round, QLed::on, st->IsBackChannel() ? Qt::NoBrush : QBrush(okColor));
     ui->label_COM4      ->set(QLed::round, QLed::on,!st->IsBackChannel() ? Qt::NoBrush : QBrush(okColor));
 
-    bool netSts = false;
+    // В существующей версии оценка работоспособности сети оценивается путем сравнения
+    QDateTime to = st->GetLastTime (false),
+              tr = st->GetLastTime (true);
+    bool netSts = qAbs(to.secsTo(tr)) < 10;
     ui->label_NET       ->set(QLed::round, QLed::on,!st->IsSupportKpExt(rsrv) ? Qt::NoBrush : netSts ? QBrush(okColor) : QBrush(Qt::yellow));
-    ui->label_CompareTS ->set(QLed::round, QLed::on,!st->IsSupportKpExt(rsrv) ? Qt::NoBrush : sysinfo->TsCompared() ? QBrush(okColor) : QBrush(Qt::yellow));
+
+    // сравнение ТС = ОК, если сеть ОК и флаг сравнения ОК
+    ui->label_CompareTS ->set(QLed::round, QLed::on,!st->IsSupportKpExt(rsrv) ? Qt::NoBrush : netSts && sysinfo->TsCompared() ? QBrush(okColor) : QBrush(Qt::yellow));
 
     ui->label_OTU        ->set(QLed::round, QLed::on, QBrush(okColor));
     ui->label_MPC        ->set(QLed::round, QLed::on,!st->IsMpcEbilock() ? Qt::NoBrush : sysinfo->IsMpcOk () ? QBrush(okColor) : QBrush(Qt::red));
@@ -53,3 +60,12 @@ void DlgKPinfo::redraw(Station * p)
     ui->label_DK         ->set(QLed::round, QLed::on,!(st->IsApkdk() || st->IsAbtcm()) ? Qt::NoBrush : sysinfo->OkApkDk() ? QBrush(okColor) : QBrush(Qt::red));
 }
 
+void DlgKPinfo::timerEvent(QTimerEvent *event)
+{
+    update();
+}
+
+void DlgKPinfo::paintEvent(QPaintEvent* e)
+{
+    redraw();
+}

@@ -65,10 +65,15 @@ void BmInfoFrame::setObj(class Station * p, bool s)
 }
 
 
+void BmInfoFrame::paintEvent(QPaintEvent* e)
+{
+    redraw();
+}
+
 // обработка тика таймера
 void BmInfoFrame::timerEvent(QTimerEvent *event)
 {
-    redraw();
+    update();
 }
 
 
@@ -94,24 +99,30 @@ void BmInfoFrame::RedrawUndefined()
     for (int i=0; i<MaxModule; i++)
     {
         mt[i]->set(QLed::box, st->IsTsPresent(i) || st->IsTuPresent(i) ? QLed::on : QLed::off, QBrush(Qt::gray), Qt::NoBrush);
-        if (st->IsTuPresent(i))
-            mt[i]->setText("У");
+        mt[i]->setText(st->IsTuPresent(i) ? "У" : "");
     }
 }
 
 
 void BmInfoFrame::redraw()
 {
-    if (st->IsTsExpire())
+    bool bmExpired = qAbs(QDateTime::currentDateTime().secsTo(sysinfo->LastTime())) > 30;
+    if (st->IsTsExpire() || bmExpired)
     {
         RedrawUndefined();
         return;
     }
+
+    // здесь отрисовываем РАБОТАЮЩИЙ блок (если он не работает - серый и сюда не попадаем)
+
     // Основной/резервный
     ui->label_actual->set(QLed::round, QLed::on, rsrv ?  st->IsRsrv() ? okBrush : Qt::gray
                                                       : !st->IsRsrv() ? okBrush : Qt::gray );
-    // готовность БМ    TODO!!!
-    ui->label_ready->set(QLed::round, QLed::on, okBrush);
+
+    // Индикаторы подтяжки. Для основного блока зеленый если на основном, белый - если на резерве
+    ui->label_ready->set(QLed::round, QLed::on, st->Kp2000() ? Qt::NoBrush :
+                                                               !rsrv ? !st->IsRsrv() ? okBrush : QBrush(Qt::white) : // основной блок - зеленый или белый, так как живой
+                                                               st->IsRsrv() ? okBrush : st->GetSysInfo(false)->IsLineOnAnother() ? okBrush : erBrush);  // резервный блок
 
     // COM3
     ui->label_COM3->set(QLed::round, QLed::on, sysinfo->Com3Connected() ? okBrush : sysinfo->Com3Error() ? erBrush : Qt::yellow);
@@ -158,7 +169,7 @@ void BmInfoFrame::redraw()
     ui->label_ArmDsp->set(QLed::round, QLed::on, !st->IsSupportKpExt(rsrv) ? Qt::NoBrush : st->IsArmDspModeOn(rsrv) ? okBrush : Qt::NoBrush);
 
     // время опроса
-    ui->label_last->setText(QString("%1").arg(sysinfo->LatTime().toString("hh:mm:ss")));
+    ui->label_last->setText(QString("%1").arg(sysinfo->LastTime().toString("hh:mm:ss")));
 
     // версия ПО
     ui->label_version->setText(st->Kp2000() ? "КП-2000" : !st->IsSupportKpExt(rsrv) ? "1.0.7.*" : QString("1.0.7.%1").arg(sysinfo->LoVersionNo()));
@@ -175,8 +186,7 @@ void BmInfoFrame::redraw()
     {
         bool er = sysinfo->MtuMtsStatus(i);
         mt[i]->set(QLed::box, (st->IsTsPresent(i) || st->IsTuPresent(i)) ? QLed::on : QLed::off, er ? erBrush : okBrush, Qt::NoBrush);
-        if (st->IsTuPresent(i))
-            mt[i]->setText("У");
+        mt[i]->setText(st->IsTuPresent(i) ? "У" : "");
     }
 }
 

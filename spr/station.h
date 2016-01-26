@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "properties.h"
+#include "../common/defines.h"
 #include "../common/boolexpression.h"
 #include "../common/logger.h"
 #include "ts.h"
@@ -44,6 +45,7 @@ public:
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
+    static void CountMT();                                  // посчитать модули и сдвинуть пометки МТС для КП2000 на число ТУ
 
     // открытые функции
     Station(QSqlQuery& query, Logger& logger);              // конструктор на базе записи в БД
@@ -104,6 +106,7 @@ public:
     bool IsOtuPending(bool rsrv);                           // проверка флага исполнения ОТУ
     bool IsDebugOtuMode(bool rsrv);                         // проверка включения режима отладки ОТУ
     bool IsArmDspModeOn(bool rsrv);                         // проверка режима АРМ ДСП
+    QDateTime GetLastTime (bool rsrv);                      // получить время последнего опроса нужного блока
 
     bool IsActualErrorLockMsgPresent() { return errorLockLogicCount; }  // число актуальных ошибок логического контроля
     bool IsNewErrorLockMsgPresent   ();                                 // есть ли неквитированные сообщения подсистемы логич.контроля
@@ -116,12 +119,13 @@ public:
     bool TsRaw      (int i) { return TestBit(tsStsRaw,  i); }// состояние не нормализованное
     bool TsPulse    (int i) { return TestBit(tsStsPulse,i); }// состояние пульсации
 
-// TODO:
-int MtsCount () { return 0/*mts.count()*/; }                 // число модулей ТС
-int MtuCount () { return 0/*mtu.count()*/; }                 // число модулей ТУ
+    int MtsCount () { return mtsCount; }                    // число модулей ТС
+    int MtuCount () { return mtuCount; }                    // число модулей ТУ
 
     void SetBit (QBitArray& bits, int index, bool a=true);  // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
     void MarkInverse(int index);
+    void MarkTs (int n) { SetBit(mts, n-1); }               // пометить модуль ТС как существующий
+    void MarkTu (int n) { SetBit(mtu, n-1); }               // пометить модуль ТУ как существующий
 
     void AddRc  (class Rc   *, Logger& logger);             // добавить РЦ
     void AddSvtf(class Svtf *, Logger& logger);             // добавить СВТФ
@@ -209,6 +213,8 @@ private:
 
     QBitArray     mts;                                      // пометка модулей ТС
     QBitArray     mtu;                                      // пометка модулей ТУ
+    int     mtsCount;                                       // число модулей ТС
+    int     mtuCount;                                       // число модулей ТУ
     bool          mvv2present;                              // наличие МВВ2
 
     // состояние сигналов ТС

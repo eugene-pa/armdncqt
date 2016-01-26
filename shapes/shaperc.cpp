@@ -1,6 +1,19 @@
 #include "shaperc.h"
 #include "shapeset.h"
 
+QPen ShapeRc::PenFree;                                      // свободная РЦ
+QPen ShapeRc::PenBusy;                                      // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
+QPen ShapeRc::PenRqRoute;                                   // в устанавливаемом маршруте
+QPen ShapeRc::PenPzdRoute;                                  // в поездном маршруте
+QPen ShapeRc::PenMnvRoute;                                  // в маневровом маршруте
+QPen ShapeRc::PenZmk;                                       // замкнутая РЦ не в неиспользованном маршруте
+QPen ShapeRc::PenZmkContur;                                 // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
+QPen ShapeRc::PenZmkConturMnv;                              // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
+QPen ShapeRc::PenIr;                                        // искусственная разделка (мигает поверх других состояний)
+QPen ShapeRc::PenExpired;                                   // ТС устарели
+QPen ShapeRc::PenUndefined;                                 // объект неопределен - пассивная отрисовка
+
+
 ShapeRc::ShapeRc(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     Parse(src);
@@ -76,8 +89,10 @@ void ShapeRc::normalize()
 void ShapeRc::Draw(QPainter* painter)
 {
     //QBrush brush(Qt::black);
-
     QColor color(Qt::black);
+
+    //if (sprRc != nullptr)
+
     QPen pen(color);
     pen.setWidth(5);
     //pen.setCosmetic(true);

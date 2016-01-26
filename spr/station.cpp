@@ -61,6 +61,9 @@ Station::Station(QSqlQuery& query, Logger& logger)
     offsetDk        = 0;
     lenDk           = 0;
 
+    mtsCount        = 0;
+    mtuCount        = 0;
+
     mainSysInfo = new SysInfo();
     mainSysInfo->st = this;
     rsrvSysInfo = new SysInfo();
@@ -304,6 +307,34 @@ void Station::SortTu()
     foreach (Station * st, Stations.values())
     {
         qSort(st->TuSorted.begin(), st->TuSorted.end(),Tu::CompareByNames);
+    }
+}
+
+// сдвинуть пометки МТС для КП2000 на число ТУ
+void Station::CountMT()
+{
+    foreach (Station * st, Stations.values())
+    {
+        // считаем модули ТСб ТУ
+        for (int i=0; i<st->mts.count(); i++)
+        {
+            if (st->IsTsPresent(i))
+                st->mtsCount++;
+            if (st->IsTuPresent(i))
+                st->mtuCount++;
+        }
+
+        // для КП2000 сдвигаем пометки МТС на число модулей ТУ
+        if (st->Kp2000())
+        {
+            // просмотр с конца, чтобы не мшать просмотру внесением изменений
+            for (int i=st->mts.count()-1; i>=0; i--)
+                if (st->IsTsPresent(i))
+                    st->SetBit(st->mts, i + st->mtuCount);
+            for (int i=0; i<st->mtu.count(); i++)
+                if (st->IsTuPresent(i))
+                    st->SetBit(st->mts, i, false);
+        }
     }
 }
 
@@ -643,6 +674,12 @@ bool Station::IsArmDspModeOn(bool rsrv)
     return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->ArmDspModeOn() : false;
 }
 
+// получить время последнего опроса нужного блока
+QDateTime Station::GetLastTime (bool rsrv)
+{
+    return rsrv ? rsrvSysInfo->LastTime() : mainSysInfo->LastTime();
+}
+
 
 // ОПЦИИ:
 // БРОК
@@ -724,20 +761,21 @@ void Station::ParseMT (bool tu)
         while (match.hasNext())
         {
             QString pare = match.next().captured().replace("-"," ");
-            int m1=0, m2=0, max = MaxModule;
-            QTextStream(&pare) >> m1 >> m2;
-            if (m1 > 0 && m1 <= max )
+            int m=0, mend=0, max = MaxModule;
+            QTextStream(&pare) >> m >> mend;
+            if (m > 0 && m <= max )
             do
             {
-                if (m1 > 24)
+                if (m > 24)
                     mvv2present = true;
-                SetBit (tu ? mtu : mts, m1-1, true);            // пометить
-                m1++;
+                SetBit (tu ? mtu : mts, m-1, true);            // пометить
+                m++;
             }
-                while (m1 <= qMin (m2, max));
+                while (m <= qMin (mend, max));
         }
     }
 }
+
 
 // установить бит в заданном массиве в заданное состояние (по умолчанию в 1)
 void Station::SetBit (QBitArray& bits, int indx, bool s)
@@ -824,7 +862,7 @@ void Station::ParseTuEclusion()
 bool Station::IsTsExpire()
 {
     // TODO: реализовать функцию
-    return false;
+    return stsFrmMntrTsExpired;
 }
 
 

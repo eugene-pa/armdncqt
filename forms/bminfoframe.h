@@ -20,7 +20,9 @@ public:
 
     void setObj(class Station * p, bool s = false);         // назначить объект
 
-    void timerEvent(QTimerEvent *event);
+protected:
+    virtual void timerEvent(QTimerEvent *event);
+    virtual void paintEvent(QPaintEvent* e);
 
 public slots:
     void ledClicked (QLed *);                               // уведомление о клике

@@ -58,7 +58,7 @@ void DlgTsInfo::fillTable()
 {
     QTableWidget * t = ui->tableWidget;
 
-    t->clear();
+    t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
     t->setRowCount(pSt->Ts.count());
 

@@ -53,9 +53,9 @@ private:
                                                             // статические данные из БД
     int     iname;                                          // ключ имени в таблице TsNames
     int     index;                                          // индекс бита в поле ТС (0...n-1)
-    int     modul;                                          //
-    int     _i;
-    int     _j;
+    int     modul;                                          // поле БД модуль
+    int     _i;                                             // поле БД I
+    int     _j;                                             // поле БД J
     bool   inverse;
     bool   pulse;                                           // мигающий
     int    stativ;

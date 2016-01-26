@@ -180,6 +180,9 @@ int Ts::getIndex(Logger& logger)
     if (    !validIJ
         &&  name.indexOf("ОТПР.") != 0)
         logger.log(QString("Ошибка описания m/i/j сигнала %1: %2/%3/%4").arg(NameEx()).arg(modul).arg(_i).arg(_j));
+    if (validIJ && st->Kp2000() && _kolodka > 0)
+        st->MarkTs(modul);
+
     return index = (modul - 1) * tsPerModule + (_i - 1) * jmax + _j - 1;
 }
 

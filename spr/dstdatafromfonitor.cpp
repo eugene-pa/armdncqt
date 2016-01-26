@@ -128,7 +128,7 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
             return false;
     }
 
-    TRACE (st->name);
+//  TRACE (st->name);
 
     if (!IsArmTools ())
     {

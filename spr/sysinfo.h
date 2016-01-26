@@ -85,7 +85,7 @@ public:
     void SetMtuMtsLineStatus(int i, BYTE bte);              // установить статус линейки из 8 модулей БТ индексу 0-5
     bool MtuMtsStatus(int i);                               // проверка состояния модуля МТУ/МТС
 
-    QDateTime&  LatTime() { return tmdt; }                  // время опроса
+    QDateTime&  LastTime() { return tmdt; }                 // время опроса
     int  LinkErrors() { return errors; }                    // общее число ошибок связи с комплектом
 
     QByteArray& Src() { return src; }                       // маасив инфо-блока
