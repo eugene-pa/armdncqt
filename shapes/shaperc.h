@@ -11,24 +11,25 @@ protected:
     Status State;                                           // статус отображения отрезка РЦ
                                                             // важно: может не полностью совпадать со статусом объекта РЦ,
                                                             // т.к., например, есть отрезки, не проходящие по стрелкам
-    class RcInfo * sprRc;                                   // указатель на справочник РЦ
+    class Rc * sprRc;                                       // указатель на справочник РЦ
 //  QVector<LinkedRc> strlList;                             // список опреляющих стрелок
     QPainterPath path;                                      // путь для отрисовки смежных отрезков, хранится в первом из смежных отрезков
     bool combined;                                          // признак того, что РЦ объединена в составе пути этого или сопряженного отрезка
 
 public:
-    static	short	mThick;                                 // толщина
-    static QPen PenFree;                                    // свободная РЦ
-    static QPen PenBusy;                                    // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
-    static QPen PenRqRoute;                                 // в устанавливаемом маршруте
-    static QPen PenPzdRoute;                                // в поездном маршруте
-    static QPen PenMnvRoute;                                // в маневровом маршруте
-    static QPen PenZmk;                                     // замкнутая РЦ не в неиспользованном маршруте
-    static QPen PenZmkContur;                               // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
-    static QPen PenZmkConturMnv;                            // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
-    static QPen PenIr;                                      // искусственная разделка (мигает поверх других состояний)
-    static QPen PenExpired;                                 // ТС устарели
-    static QPen PenUndefined;                               // объект неопределен - пассивная отрисовка
+    static QPen *PenFree;                                   // свободная РЦ
+    static QPen *PenBusy;                                   // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
+    static QPen *PenRqRoute;                                // в устанавливаемом маршруте
+    static QPen *PenPzdRoute;                               // в поездном маршруте
+    static QPen *PenMnvRoute;                               // в маневровом маршруте
+    static QPen *PenZmk;                                    // замкнутая РЦ не в неиспользованном маршруте
+    static QPen *PenZmkContur;                              // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
+    static QPen *PenZmkConturMnv;                           // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
+    static QPen *PenIr;                                     // искусственная разделка (мигает поверх других состояний)
+    static QPen *PenExpired;                                // ТС устарели
+    static QPen *PenUndefined;                              // объект неопределен - пассивная отрисовка
+
+    static void InitInstruments();                          // инициализация статических инструментов отрисовки
 
     // перечисление типов(формы) примитива
     enum LineTypes

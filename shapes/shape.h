@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QPainter>
 
+
 // Базовые классы DShape, реализация реального времени
 
 enum ShapeType
@@ -53,7 +54,9 @@ public:
     DShape(QString& src, ShapeSet* parent);					// конструктор без параметров
     virtual ~DShape();										// конструктор без параметров
 
-    static	short	mThick;									// толщина
+    static class ColorScheme * colorScheme;                 // цветовые схемы
+    static void InitInstruments(QString, class Logger& );   // вызов инициализации статических инструментов отрисовки для асех примитивов
+    static	qreal	mThick;									// толщина
 //  static	bool	bUpdateOnlyMode;						// отрисовка только обновлений
 //  static	bool	bRqRefreshPage;							// запрос на полную перерисовку страницы
 

@@ -18,6 +18,8 @@
 
 QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
 bool    Station::LockLogicEnable;                           // включен логический контроль
+bool    Station::InputStreamRss = false;                    // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
+
 short	Station::MainLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
 short	Station::RsrvLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
@@ -55,6 +57,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
     stsCom3On       = false;
     stsCom4On       = false;
     stsBackChannel  = false;
+    alarmATU        = false;
 
     errorLockLogicCount = 0;
     stsFrmMntrTsExpired = false;
@@ -865,4 +868,127 @@ bool Station::IsTsExpire()
     return stsFrmMntrTsExpired;
 }
 
+// обработка данных
+// (функция SpellTS оригинального проекта)
+// Надо уметь различать первичную обработку потока данных от станции связи (модуль Управление или аналоги)
+// и вторичную обработку уже обработанного потока двнных (модуль АРМ ШН, Табло и др)
+// Вместо использования определений препроцессора "MONITOR" и т.п. использую статическую переменную режиа опроса bRawData;
+void Station::AcceptTS   ()
+{
+    lastAcceptedTsTime = QDateTime::currentDateTime();      // засечка времени опроса
+    errorLockLogicCount = 0;                                // сброс ошибок лог.контроля (посчитаем заново)
 
+    // если входной поток от РСС - обрабатываем первичные данные
+    if (InputStreamRss)
+    {
+        tsSts = tsStsRaw ^ tsInverse;                       // нормализация ТС
+
+        GetVirtualTs();                                     // вычисление виртуальных ТС по формулам - 2 раза,
+        GetVirtualTs();                                     // для обеспечения ссылок 1-го уровня на вирт.сигналы
+
+        // CheckPeregons();                                    // контроль смежных перегонов
+    }
+
+    CheckTs     ();                                         // проверка ТС на достоверность
+    CheckMode	();                                         // отследить режимы управлеия станцией
+    CheckK7     ();											// отследить состояние К7
+
+    alarmATU = this->Kp2007() ? IsRsrv() : GetTsStsByName("АТУ"); // ошибки АТУ
+
+
+    //Strl::AcceptTS (this);									// состояние стрелок
+    Rc  ::AcceptTS (this);                                  // состояние РЦ
+    //Svtf::AcceptTS (this);									// состояние светофоров	2014.10.22 перенес ДО МАРШРУТОВ
+
+    //DPereezd	  ::AcceptTS (NoSt);											// 2015.01.22 переезды
+    //DPeregon	  ::AcceptTS ();												// 2015.01.22 все перегоны
+
+}
+
+// вычисление виртуальных ТС по формулам
+void Station::GetVirtualTs()
+{
+
+}
+
+// проверка ТС на достоверность (диагональ, "лишние" ТС)
+void Station::CheckTs()
+{
+
+}
+
+// отследить режимы управлеия станцией
+void Station::CheckMode	()
+{
+
+}
+
+// отследить состояние К7
+void Station::CheckK7     ()
+{
+
+}
+
+/*
+
+        // строго говоря, при медленном опросе станций желательно было бы разнести функции первичной обработки и вычисления сигналов ТС и функции логического контроля
+        // так как при вызове DRailwaySwitch::AcceptTS состояние РЦ и светофоров остаются с предыдущего шага
+
+        CheckIZS			();														// контроль состояния искусств.замыкания стрелок
+        CheckAD				();														// перекрытие сигналов на автодействии
+
+        CheckLockingKeys  ();														// 2015.02.06.
+
+#ifdef _MONITOR
+#ifdef VIRTUAL_DSP
+        if (m_DspStationNo==0)
+#endif // #ifdef VIRTUAL_DSP
+        {
+            DRoute		::DoRoutes (NoSt);											// отследить состояние маpшpутов
+            DRoute		::SubstituteZmk (NoSt);										// Косвенное замыкание
+        }
+
+#endif // #ifdef _MONITOR
+
+
+#ifdef _MONITOR
+#ifdef VIRTUAL_DSP
+        if (m_DspStationNo==0)
+#endif // #ifdef VIRTUAL_DSP
+        {
+        DPeregon	::RemoveOldTrains  ();											// удалить устаревшие поезда на перегоне
+        DPeregon	::ClearEmptyPeregon();											// очистить пустые перегоны
+
+        CheckErrorLock();															// формирование вирт.сигнала "ЭЦ.ОШБ" по результатам проверки соответствия зависимостей ЭЦ и АБ
+
+        DLightSignal  ::CheckOutgoingSvtf(NoSt);									// состояние выходных светофоров и поездов, готовых к отправлению
+///		DListTrains::AllTrains.CheckClosedSvtf  (NoSt);								// состояние выходных светофоров и поездов по отправлению
+        TryPutNextStrel();															// очередную стрелку - в очередь
+
+        DRailChain	  ::Mdp();														// модель движения поездов
+        }
+#endif // #ifdef _MONITOR
+
+
+
+
+    // За блок вынесена обработка событий, так как там есть запущенные тайм-ауты
+    // Это не очень правильно. Можно было работать по таймеру
+    CheckEvents		();						// СООБЩЕНИЯ
+
+
+    #ifndef _TABLO
+    #ifndef _ARM_TOOLS
+    AfxGetMainWnd()->PostMessage(WM_USER_TS_ACCEPTED,NoSt);
+    #endif // #ifndef _ARM_TOOLS
+    #endif // #ifndef _TABLO
+
+
+#ifdef EXT_TU_ARMDNC_ENABLE
+    #ifdef _MONITOR
+    CheckTuWithTs();
+    #endif // #ifdef _MONITOR
+#endif // #ifdef EXT_TU_ARMDNC_ENABLE
+}
+
+*/

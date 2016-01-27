@@ -10,6 +10,7 @@
 #include "sprbase.h"
 #include "../common/logger.h"
 
+#define SafeValue(p) p==nullptr ? false : p->Value()
 
 // класс описания шаблонов свойств
 class IdentityType
@@ -35,7 +36,7 @@ class Property
 public:
     Property (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
     bool Valid() { return ts != nullptr; }                  // валидность свойства
-    bool Sts();
+    bool Value();                                           // состояние
     QString& NameTs  ();                                    // имя ТС
     QString& NameTsEx();                                    // Ст.имя_станции ТС=имя_тс
     QString& NameProp() { return type->Name(); }

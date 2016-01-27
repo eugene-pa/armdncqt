@@ -98,7 +98,7 @@ void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo* info)
 }
 
 // извлечь данные. pSt - принудительно указывает станцию
-bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
+Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 {
     // 2012.12.28. Адаптация формата класса с короткими данными (PAGE=1) к формату класса с длинными данными (PAGE=3) за счет сдвига
     bool bDoShortData = realTsLength < TsMaxLengthBytes;
@@ -164,9 +164,9 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
 
     // ПРОБЛЕМА: в версии QT 5.2 + VS2010 не срабатывает исключающее или для QBitArray
-    //st->tsStsRaw = st->tsSts ^ st->tsInverse;               // восстанавливаем исходное состояние по конечному с накладной инверсии
-    for (int i=0; i<TsMaxLengthBits; i++)
-        st->tsStsRaw[i] = st->tsSts[i] ^ st->tsInverse[i];
+    st->tsStsRaw = st->tsSts ^ st->tsInverse;               // восстанавливаем исходное состояние по конечному с накладной инверсии
+    //for (int i=0; i<TsMaxLengthBits; i++)
+    //    st->tsStsRaw[i] = st->tsSts[i] ^ st->tsInverse[i];
 
     // IgnoreError - устарело
 
@@ -213,10 +213,10 @@ bool DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
             )
             info->src[0] = info->src[0] | 0x80 ;              // омул в порядке!
     }
-    return true;
+    return st;
 }
 
-bool DStDataFromMonitor::Extract(Station *st, DDataFromMonitor * pDtFrmMnt, DRas *pRas)
+Station* DStDataFromMonitor::Extract(Station *st, DDataFromMonitor * pDtFrmMnt, DRas *pRas)
 {
     // 2012.12.28. Адаптация формата класса с короткими данными (PAGE=1) к формату класса с длинными данными (PAGE=1) за счет сдвига
     int LenOneSt = pDtFrmMnt->GetLenOneSt();				// размер класса из потока

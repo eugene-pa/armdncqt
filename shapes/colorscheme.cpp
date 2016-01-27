@@ -13,6 +13,8 @@ ColorScheme::ColorScheme(QString dbPath, Logger * plogger)
     schemes.append(&scheme2);
     schemes.append(&scheme3);
 
+    actualScheme = &scheme2;                                // по умолчанию - цветовая схема стандарта ОСТ
+
     ReadBd(dbPath);
 }
 

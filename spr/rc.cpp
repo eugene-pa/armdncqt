@@ -17,6 +17,18 @@ Rc::Rc(SprBase * tuts, Logger& logger)
     prvActual = nullptr;                                    // активная связь влево  по стрелкам
     nxtActual = nullptr;                                    // активная связь вправо по стрелкам
 
+    stsBusy         = false;
+    stsBusyFalse    = false;
+    stsBusyPrv      = false;
+    stsZmk          = false;
+    stsIr           = false;
+    stsMu           = false;
+    stsBlock        = false;
+    stsBusyPulse    = false;
+    stsZmkPulse     = false;
+    stsRouteRq      = false;
+    stsRouteOk      = false;
+    stsPassed       = false;
 
     // формируем свойства РЦ
     locked      = new Property("блокировка"                 , propertyIds, logger);
@@ -284,4 +296,26 @@ bool Rc::ReadRelations(QString& dbpath, Logger& logger)
     }
 
     return ret;
+}
+
+// обработка объектов по станции
+void Rc::AcceptTS (Station *st)
+{
+    foreach(Rc * rc, st->Allrc().values())
+    {
+        rc->stsBusyPrv  = rc->stsBusy;
+
+        rc->stsBusy     = SafeValue(rc->busy);
+        rc->stsZmk      = SafeValue(rc->zmk);
+        rc->stsIr       = SafeValue(rc->ir) | SafeValue(rc->uri) | SafeValue(rc->selected_ir) | SafeValue(rc->unlocking);
+        rc->stsMu       = SafeValue(rc->mu);
+        rc->stsBlock    = SafeValue(rc->locked);
+        rc->stsBusyFalse= SafeValue(rc->falsebusy);
+
+        rc->stsRouteRq  = rc->ActualRoute() == nullptr ? false : rc->ActualRoute()->StsRqSet(); // в устанавливаемом маршруте         - вычислим по маршруту
+        rc->stsRouteOk  = rc->ActualRoute() == nullptr ? false : rc->ActualRoute()->StsOn(); // в неразделанном маршруте
+//        rc->stsPassed   = SafeValue(rc->);        // устанавливается при обработке маршрутов
+//        rc->stsBusyPulse= SafeValue(rc->);        // РЕТАЙМ. мигает занятость     - ???
+//        rc->stsZmkPulse = SafeValue(rc->);        // РЕТАЙМ. мигает замыкание     - ???
+    }
 }

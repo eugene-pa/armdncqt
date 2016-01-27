@@ -34,6 +34,7 @@ public:
     // открытые статические члены
     static QHash<int, Station*> Stations;                   // хэш-таблица указателей на справочники станций
     static bool LockLogicEnable;                            // включен логический контроль
+    static bool InputStreamRss;                             // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
     static short	MainLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
     static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
@@ -77,11 +78,13 @@ public:
     bool Kp2007        () { return version == VERSION2007           ; }
     bool Retime        () { return version == VERSIONRetime         ; }
     bool KpPa          () { return Kp2007() || Kp2000() || Kp2000Lomikont() || Kp2000Tums(); }
-
     int  Version    () { return version;    }
     bool Enable     () { return enable;     }
     bool Actual     () { return stsActual;  }               // станция выбрана ДНЦ для работы
     bool ByByLogic  () { return bybylogic;  }               // логика удалений (У1,У2)
+
+    void AcceptTS   ();                                     // обработка данных
+
     bool IsAu       () { return stsAu;      }
     bool IsSu       () { return stsSu;      }
     bool IsRu       () { return stsRu;      }
@@ -114,7 +117,7 @@ public:
 
     // доступ к состоянию ТС по смещению ТС в массиве
     bool TsSts      (int i)
-        { return TsStsMoment(i) && !TsPulse(i); }            // состояние ТС (1 - если не мигает и в единице)
+        { return TsStsMoment(i) && !TsPulse(i); }            // позиционное состояние ТС (1 - если не мигает и в единице)
     bool TsStsMoment(int i) { return TestBit(tsSts,     i); }// состояние ТС по моменту
     bool TsRaw      (int i) { return TestBit(tsStsRaw,  i); }// состояние не нормализованное
     bool TsPulse    (int i) { return TestBit(tsStsPulse,i); }// состояние пульсации
@@ -237,6 +240,8 @@ private:
     bool    stsCom4On;
     bool    stsBackChannel;                                 // последний опрос станции по обратному каналу
 
+    bool    alarmATU;                                       // признак ошибки АТУ (контроль АТУ для старых КП или состояние в блоки диагностики)
+
     int     errorLockLogicCount;                            // число актуальных ошибок логического контроля
     bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
     bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
@@ -245,6 +250,8 @@ private:
     class SysInfo * rsrvSysInfo;                            // блок сист.информации резервного БМ
     time_t  tSpokSnd;                                       // время передачи данных в СПОК
     time_t  tSpokRcv;                                       // время приема данных от СПОК
+
+    QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока
     // это можно было бы сделать, чтобы избежать полного разбора потока при приеме, просто скопировав данные (наложив шаблон класса)
@@ -270,6 +277,11 @@ private:
     void ParseConfigKP2007(Logger& logger);                 // разбор строки конфигурации КП станции
     void ParseMT (bool tu=false);                           // разбор описания модулей МТУ, МТС    
     void ParseTuEclusion();                                 // явное опсание исключений ТУ для разных режимов управления
+    void GetVirtualTs();                                    // вычисление виртуальных ТС по формулам
+    void CheckTs();                                         // проверка ТС на достоверность (диагональ, "лишние" ТС)
+    void CheckMode();                                       // отследить режимы управлеия станцией
+    void CheckK7();                                         // отследить состояние К7
+
 };
 
 // класс идентификации формы станции (имя формы, ID кнопки)

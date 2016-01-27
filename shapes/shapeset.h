@@ -11,7 +11,7 @@ class ShapeSet
 protected:
     QString filePath;										// указатель на буфер
     QString formname;                                       // имя
-    QVector<DShape *> set;                                  // массив примитивов
+    QVector<class DShape *> set;                            // массив примитивов
 
     bool   bTabloShape;										// Обзорный кадр
     float  xMin;											// Минимальная ккордината примитива по оси X

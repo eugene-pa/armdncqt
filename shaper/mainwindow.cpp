@@ -10,7 +10,7 @@
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
-ColorScheme * colorScheme;
+
 
 QString server_ipport = "192.168.0.100:1013";                       // подключение к потоку ТС из настроечного файла
 
@@ -18,18 +18,21 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
+    QString formDir("C:/armdncqt/pictures/");
     QString images(":/status/images/");                                   // путь к образам
 #endif
 #ifdef Q_OS_MAC
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
     QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
+    QString formDir("/Users/evgenyshmelev/armdncqt/Pictures/");
     QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
 #endif
 #ifdef Q_OS_LINUX
     QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
     QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
     QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
+    QString formDir  ("/home/eugene/QTProjects/armdncqt/pictures/");
     QString images("../images/");                                   // путь к образам
 #endif
 
@@ -78,8 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Tu::ReadBd (dbname, logger);
     Rc::ReadRelations(dbname, logger);
 
-    colorScheme = new ColorScheme(extDb, &logger);
-    TrnspDescription::readBd(extDb, logger);
+    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
 
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionNewForm, StationsCmb = new QComboBox);
@@ -118,7 +120,7 @@ void Log (QString msg)
 // новая форма
 void MainWindow::on_actionNewForm_triggered()
 {
-    ShapeChild * child = new ShapeChild(new ShapeSet(form, &logger));
+    ShapeChild * child = new ShapeChild(new ShapeSet(/*form*/formDir + StationsCmb->currentText() + ".shp", &logger));
     mdiArea->addSubWindow(child);
     child->show();
     //ShapeChild

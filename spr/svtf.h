@@ -27,9 +27,11 @@ public:
     static bool AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// добавить ТС
     static bool AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// добавить ТС
 
-    static Svtf * GetById(int no);                            // получить справочник по номеру светофора
+    static Svtf * GetById(int no);                          // получить справочник по номеру светофора
+    static void AcceptTS (class Station *);                 // обработка объектов по станции
 
-    //QString& SvtfDiag() { return svtfdiag; }                // тип диагностики
+
+    //QString& SvtfDiag() { return svtfdiag; }              // тип диагностики
     bool IsTypeIn   () { return svtftype == SVTF_IN;  }
     bool IsTypeOut  () { return svtftype == SVTF_OUT; }
     bool IsTypeMrsh () { return svtftype == SVTF_MRSH;}

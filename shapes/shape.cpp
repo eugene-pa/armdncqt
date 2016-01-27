@@ -1,8 +1,13 @@
 #include <QDebug>
 #include <math.h>
 #include "shape.h"
+#include "colorscheme.h"
 #include "shapeset.h"
+#include "shaperc.h"
+#include "shapetrnsp.h"
 
+ColorScheme * DShape::colorScheme;                          // цветовые схемы
+qreal	DShape::mThick = 4;                                 // толщина линий
 
 DShape::DShape(QString& src, ShapeSet* parent)
 {
@@ -23,6 +28,15 @@ DShape::DShape(QString& src, ShapeSet* parent)
 DShape::~DShape()
 {
 
+}
+
+// вызов инициализации статических инструментов отрисовки для асех примитивов
+void DShape::InitInstruments(QString bdpath, Logger& logger)
+{
+    colorScheme = new ColorScheme(bdpath, &logger);         // загрузка цветовых схем
+    TrnspDescription::readBd(bdpath, logger);               // загрузка транспарантов
+
+    ShapeRc::InitInstruments();                             // инициализация инструментов примитивов
 }
 
 void DShape::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)

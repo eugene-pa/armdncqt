@@ -53,12 +53,24 @@ public:
     static QHash<int, Rc *>& AllRc() { return rchash; }     // получить таблицу всех РЦ
 
     static bool ReadRelations(QString& dbpath, Logger& );   // чтение таблицы связей РЦ и формирование дерева связей
+    static void AcceptTS (class Station *);                 // обработка объектов по станции
 
     // открытые функции
     Rc(SprBase * tuts, Logger& logger);                     // конструктор по ТС/ТУ
     ~Rc();
 
     bool StsBusy () { return stsBusy; }                     // занятость
+    //bool stsBusyFalse;                                      // ложная занятость
+    //bool stsBusyPrv  ;                                      // занятость в пред.цикле
+    bool StsZmk() { return stsZmk; }                        // замыкание
+    bool StsIr () { return stsIr;  }                        // разделка
+    bool StsMu () { return stsMu;  }                        // местное управление
+    bool StsBlock(){return stsBlock; }                      // блокироана РЦ
+    //bool stsBusyPulse;                                      // РЕТАЙМ. мигает занятость     - ???
+    //bool stsZmkPulse ;                                      // РЕТАЙМ. мигает замыкание     - ???
+    bool StsRouteRq (){ return stsRouteRq; }                // в устанавливаемом маршруте   - м.б.не нужно, т.к.есть actualRoute
+    bool StsRouteOk (){ return stsRouteOk; }                // в установленноммаршруте      - м.б.не нужно, т.к.есть actualRoute
+    bool StsPassed  (){ return stsPassed;  }                // пройдена в маршруте          - м.б.не нужно, т.к.есть actualRoute
 
     // открытые статические функции
     static bool AddTemplate (class IdentityType *);         // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
@@ -82,14 +94,14 @@ private:
     // хочу иметь коллекцию определенных для данной РЦ свойств и методов
     QVector <Ts *> allts;                                   // список действительных ТС объекта
     Property *locked;                                       // блокировка
-    Property *unlocking;                                    // восприятие разблокировки
-    Property *selected_ir;                                  // выбор для разделки
-    Property *zmk;                                          // замыкание
     Property *busy;                                         // зканятость
+    Property *zmk;                                          // замыкание
     Property *ir;                                           // ИР
+    Property *unlocking;                                    // ИР - восприятие разблокировки
+    Property *selected_ir;                                  // ИР - выбор для разделки
+    Property *uri;                                          // ИР - разделка в терминах ЭЦ/ЭЦ МПК
     Property *falsebusy;                                    // ложная занятость
     Property *mu;                                           // МУ
-    Property *uri;                                          // разделка в терминах ЭЦ/ЭЦ МПК
 
     // методы
     QVector <Tu *> alltu;                                   // список действительных ТУ объекта

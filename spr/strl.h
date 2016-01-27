@@ -40,7 +40,8 @@ public:
     static bool AddTs       (QSqlQuery& query, class Ts * ts, Logger& logger);// добавить ТС
     static bool AddTu       (QSqlQuery& query, class Tu * tu, Logger& logger);// добавить ТС
 
-    static Strl * GetById(int no);                            // получить справочник по номеру стрелки
+    static Strl * GetById(int no);                          // получить справочник по номеру стрелки
+    static void AcceptTS (class Station *);                 // обработка объектов по станции
 
 private:
     static QHash <int, Strl *> strlhash;                    // СТРЛ , индексированные по индексу ТС

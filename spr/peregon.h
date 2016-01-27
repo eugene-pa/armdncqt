@@ -14,6 +14,8 @@ public:
     static Peregon * GetById(int no);                       // получить справочник по номеру перегона
     static Peregon * Peregon::GetSprByOrgNoAndKrug (int no, int bridgeno);
 
+    static void AcceptTS (class Station *);                 // обработка объектов по станции
+
     Peregon();
     ~Peregon();
 

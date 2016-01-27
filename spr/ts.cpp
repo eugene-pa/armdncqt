@@ -203,8 +203,12 @@ QString Ts::GetTooltip()
     return ret;
 }
 
-// проблемы реализации функций в  h-файле из-за перекрестных ссылок ts.h  и station.h
+// значения ТС в итоге получаются обращением к битовым массивам в классе Station
 bool Ts::Sts      () { return st->TsSts      (index); }     // состояние (0/1), если мигает - 0
 bool Ts::StsPulse () { return st->TsPulse    (index); }     // состояние мигания
 bool Ts::StsRaw   () { return st->TsRaw      (index); }     // состояние ненормализованное
 bool Ts::Sts_     () { return st->TsStsMoment(index); }     // состояние мгновенное
+bool Ts::Value    ()                                        // 0/1 c учетом типа: для мигающих, если мигает, для позиционных 0/1
+{
+    return pulse ? st->TsPulse(index) : st->TsSts(index);
+}

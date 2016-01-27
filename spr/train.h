@@ -17,6 +17,8 @@ public:
     static Train * GetSprByOrgNoAndKrug(int sno, int bridgeno);
     static Train * AddTrain(int sno, int no=0);             // добавить поезд
 
+    static void AcceptTS (class Station *);                 // обработка объектов по станции
+
     Train();
     ~Train();
 

@@ -45,6 +45,10 @@ public:
     Route(QSqlQuery& query, Logger& logger);
     ~Route();
 
+    bool StsRqSet() { return sts == RQSET; }                // проверка состояния Установка маршрута
+    bool StsOn   () { return sts == WAIT_CLOSE || sts == WAIT_RZMK; }   // проверка замкнутости маршрута
+
+
 private:
     static QHash <int, Route *> routes;                     // маршруты, индексированные по индексу ТС
 

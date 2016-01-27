@@ -1,21 +1,26 @@
 #include "shaperc.h"
 #include "shapeset.h"
+#include "colorscheme.h"
+#include "../spr/station.h"
 
-QPen ShapeRc::PenFree;                                      // свободная РЦ
-QPen ShapeRc::PenBusy;                                      // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
-QPen ShapeRc::PenRqRoute;                                   // в устанавливаемом маршруте
-QPen ShapeRc::PenPzdRoute;                                  // в поездном маршруте
-QPen ShapeRc::PenMnvRoute;                                  // в маневровом маршруте
-QPen ShapeRc::PenZmk;                                       // замкнутая РЦ не в неиспользованном маршруте
-QPen ShapeRc::PenZmkContur;                                 // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
-QPen ShapeRc::PenZmkConturMnv;                              // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
-QPen ShapeRc::PenIr;                                        // искусственная разделка (мигает поверх других состояний)
-QPen ShapeRc::PenExpired;                                   // ТС устарели
-QPen ShapeRc::PenUndefined;                                 // объект неопределен - пассивная отрисовка
+QPen *ShapeRc::PenFree;                                     // свободная РЦ
+QPen *ShapeRc::PenBusy;                                     // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
+QPen *ShapeRc::PenRqRoute;                                  // в устанавливаемом маршруте
+QPen *ShapeRc::PenPzdRoute;                                 // в поездном маршруте
+QPen *ShapeRc::PenMnvRoute;                                 // в маневровом маршруте
+QPen *ShapeRc::PenZmk;                                      // замкнутая РЦ не в неиспользованном маршруте
+QPen *ShapeRc::PenZmkContur;                                // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
+QPen *ShapeRc::PenZmkConturMnv;                             // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
+QPen *ShapeRc::PenIr;                                       // искусственная разделка (мигает поверх других состояний)
+QPen *ShapeRc::PenExpired;                                  // ТС устарели
+QPen *ShapeRc::PenUndefined;                                // объект неопределен - пассивная отрисовка
 
 
 ShapeRc::ShapeRc(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
+    sprRc = nullptr;
+    combined = false;
+
     Parse(src);
     normalize();
     setDimensions ();
@@ -25,6 +30,24 @@ ShapeRc::~ShapeRc()
 {
 
 }
+
+// инициализация статических инструментов отрисовки
+void ShapeRc::InitInstruments()
+{
+    PenFree     = new QPen (QBrush(colorScheme->GetColor("Normal"   )), mThick);    // свободная РЦ
+    PenBusy     = new QPen (QBrush(colorScheme->GetColor("Busy"     )), mThick);    // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
+    PenRqRoute  = new QPen (QBrush(colorScheme->GetColor("RouteSet" )), mThick);    // в устанавливаемом маршруте
+    PenPzdRoute = new QPen (QBrush(colorScheme->GetColor("RoutePzd" )), mThick);    // в поездном маршруте
+    PenMnvRoute = new QPen (QBrush(colorScheme->GetColor("RouteMnv" )), mThick);    // в маневровом маршруте
+    PenZmk      = new QPen (QBrush(colorScheme->GetColor("Zmk"      )), mThick);    // замкнутая РЦ не в неиспользованном маршруте
+    PenZmkContur= new QPen (QBrush(colorScheme->GetColor("RoutePzd" )), mThick);    // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
+    PenZmkConturMnv= new QPen (QBrush(colorScheme->GetColor("RouteMnv")),mThick);   // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
+    PenIr       = new QPen (QBrush(colorScheme->GetColor("Ir"       )), mThick);    // искусственная разделка (мигает поверх других состояний)
+    PenExpired  = new QPen (QBrush(colorScheme->GetColor("Expired"  )), mThick);    // ТС устарели
+    PenUndefined= new QPen (QBrush(colorScheme->GetColor("Undefined")), mThick);    // объект неопределен - пассивная отрисовка
+}
+
+
 
 // разбор строки описания
 // 0     1    2    3    4       5    6      7     8      9      10
@@ -55,6 +78,10 @@ void ShapeRc::Parse(QString& src)
         x2    = lexems[5].toFloat(&ret);            ok &= ret;
         y2    = lexems[6].toFloat(&ret);            ok &= ret;
         idObj = lexems[7].toInt(&ret);              ok &= ret;
+
+        // объектная привязка
+        st      = Station::GetById(idst);
+        sprRc   = Rc::GetById(idObj);
 
         if (!ok)
         {
@@ -93,13 +120,12 @@ void ShapeRc::Draw(QPainter* painter)
 
     //if (sprRc != nullptr)
 
-    QPen pen(color);
-    pen.setWidth(5);
+    QPen * pen = sprRc == nullptr ? PenUndefined : sprRc->StsBusy() ? PenBusy : sprRc->StsZmk() ? PenZmk : PenFree;
     //pen.setCosmetic(true);
-    pen.setCapStyle(Qt::FlatCap);
+    pen->setCapStyle(Qt::FlatCap);
     if(y1 != y2)
         painter->setRenderHint(QPainter::Antialiasing);
-    painter->setPen(pen);
+    painter->setPen(*pen);
     painter->drawLine(rect.topLeft(), rect.bottomRight());
     //setScale(2);
 }

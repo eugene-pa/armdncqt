@@ -25,10 +25,12 @@ static int CompareByNames(const void*,const void*);
     Ts * GetNext() { return next; }                         // получить след.в цепочке
     void SetNext (Ts * ts) { next = ts; }                   // установить ссылку на след.в цепочке
 
+    // значения ТС в итоге получаются обращением к битовым массивам в классе Station
     bool Sts      ();                                       // состояние (0/1), если мигает - 0
     bool StsPulse ();                                       // состояние мигания
     bool StsRaw   ();                                       // состояние ненормализованное
     bool Sts_     ();                                       // состояние мгновенное
+    bool Value    ();                                       // 0/1 c учетом типа: для мигающих, если мигает, для позиционных 0/1
 
     //bool    IsBusy() { return busy;   }                     // поле Occupation
     //bool    IsSvtfmain() { return svtfmain; }               // поле SvtfMain

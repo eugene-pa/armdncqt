@@ -131,8 +131,8 @@ protected:
 public:
 //inline WORD GetLength() { return sizeof (DStDataFromMonitor); }
     int	 Prepare(class Station *pSt);					// сформировать данные
-    bool Extract(class Station *st, DDataFromMonitor * pDtFrmMnt, DRas *pRas);
-    bool Extract(class Station *st=NULL, int realTsLength = TsMaxLengthBytes, DRas *pRas = NULL);	// извлечь данные (pSt - принудительно указывает станцию)
+    class Station* Extract(class Station *st, DDataFromMonitor * pDtFrmMnt, DRas *pRas);
+    class Station* Extract(class Station *st=NULL, int realTsLength = TsMaxLengthBytes, DRas *pRas = NULL);	// извлечь данные (pSt - принудительно указывает станцию)
 
 //	void ExtractEx(DStation *pSt,int len_st, DRas *pRas=NULL);	// извлечь данные (pSt - принудительно указывает станцию)
     void ExtractDebugTS();                                  // отладочная

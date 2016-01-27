@@ -78,7 +78,10 @@ void DDataFromMonitor::ExtractStInfo (int bridgeno /*= 0*/)
                 }
             }
 
-            pStData->Extract(pSt, this, NULL);
+            pSt = pStData->Extract(pSt, this, NULL);        // извлекакем данные
+            if (pSt)
+                pSt->AcceptTS();                            // обрабатываем станцию
+
             dataptr += LenOneSt;
         }
     }
@@ -99,6 +102,7 @@ void DDataFromMonitor::ExtractStInfo (int bridgeno /*= 0*/)
             }
         }
     }
+
 
 }
 

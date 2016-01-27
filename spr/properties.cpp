@@ -113,6 +113,11 @@ bool Property::Parse (class Ts * ts, Logger& logger)
     return ret;
 }
 
+// состояние
+bool Property::Value()
+{
+    return Valid() ? ts->Value() : false;
+}
 
 
 // Method
