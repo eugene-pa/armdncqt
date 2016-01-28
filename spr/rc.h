@@ -149,8 +149,9 @@ private:
 
     QDateTime tmdt;                                         // засечка последнего обновления
 
-
     // закрытые функции
+    void Accept();                                          // обработка ТС
+    UniStatusRc GetUniStatus();                             // получить статус UNI
 };
 
 #endif // RC_H

@@ -152,3 +152,33 @@ Svtf * Svtf::GetById(int no)
 {
     return svtfhash.contains(no) ? svtfhash[no] : nullptr;
 }
+
+
+// обработка объектов по станции
+void Svtf::AcceptTS (Station *st)
+{
+    foreach(Svtf * svtf, st->Allsvtf().values())
+    {
+        svtf->Accept();
+    }
+}
+
+void Svtf::Accept()
+{
+    stsOpen = IsOpen();                                     // открыт
+
+    // состояние в терминах УП
+    int unistatus = (int)GetUniStatus();
+    if (uniSts != unistatus)
+    {
+        uniSts = unistatus;                                 // унифицированное состояние
+        uniStsChanged = true;                               // пометка изменения состояния в терминах унифицированного состояния
+    }
+}
+
+// получить статус UNI
+SprBase::UniStatusRc Svtf::GetUniStatus()
+{
+    // TODO!!!
+    return SprBase::StsFreeUnlocked;
+}

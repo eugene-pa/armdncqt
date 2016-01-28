@@ -53,8 +53,8 @@ private:
     Property * vzrez;                                       // взрез
     Property * selectedunlock;                              // выбор для разблокировки
     Property * selectedvsa;                                 // выбор для СА
-    Property * selectedvsa_p;                               // выбор для СА-
-    Property * selectedvsa_m;                               // выбор для СА+
+    Property * selectedvsa_p;                               // выбор для СА+
+    Property * selectedvsa_m;                               // выбор для СА-
     Property * locked;                                      // запирание
     Property * minus;                                       // контроль минус
     Property * plus;                                        // контроль плюс
@@ -76,8 +76,36 @@ private:
                                                             // свойство name содержит имя стрелки с ознаком ±, например: 1/3±
     QString basename;                                       // свойство basename содержит только имя, например: 1/3
 
-    // закрытые функции
+    class Rc * sprRc;                                       // РЦ, в которую входит стрелка
+    class Rc * sprRc2;                                      // вторая РЦ, в которую входит спаренная стрелка
 
+    bool stsPls;                                            // +
+    bool stsMns;                                            // -
+    bool stsPlsPrv;                                         // + в пред.шаге
+    bool stsMnsPrv;                                         // - в пред.шаге
+    bool stsPlsRq;                                          // переводим в +
+    bool stsMnsRq;                                          // переводим в -
+    bool stsInformed;                                       // уведомляли
+    bool stsMu;                                             // МУ
+    bool stsZs;                                             // ЗС
+    bool stsZpr;                                            // ЗПР
+    bool stsOtuPlus;                                        // ВСА в +
+    bool stsOtuMinus;                                       // ВСА в -
+    bool stsOtu;                                            // ВСА
+    bool stsVzres;                                          // взрез
+    bool stsSelRsbl;                                        // выбор для разблокировки
+
+    bool stsBusyRc;                                         // занятость РЦ под стрелкой
+    bool stsBusyAnyRc;                                      // занятость любой из двух РЦ под спаренными стрелками
+    bool stsZmkRc;                                          // замыкание РЦ под стрелкой
+    bool stsZmkAnyRc;                                       // замыкание любой из двух РЦ под спаренными стрелками
+    bool stsIrRc;                                           // ИР РЦ под стрелкой
+    bool stsIrAnyRc;                                        // ИР любой из двух РЦ под спаренными стрелками
+
+
+    // закрытые функции
+    void Accept();                                          // обработка ТС
+    SprBase::UniStatusRc GetUniStatus();                    // получить статус UNI
 };
 
 #endif // STRL_H

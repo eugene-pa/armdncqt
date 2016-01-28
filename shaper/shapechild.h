@@ -12,7 +12,8 @@ public:
     QString currentFile() { return curFile; }
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    virtual void closeEvent(QCloseEvent *event);
+    virtual void timerEvent(QTimerEvent *event);
 
 private slots:
 

@@ -7,6 +7,16 @@ QHash<QString, class IdentityType *> Strl::propertyIds;     //  множеств
 QHash<QString, class IdentityType *> Strl::methodIds;       //  множество шаблонов возможных методов СТРЛ
 QHash <int, Strl *> Strl::strlhash;                         // СТРЛ , индексированные по индексу ТС
 
+// -----------------------------------------------------------
+// конструктор стрелки с указанием заданного положения
+LinkedStrl::LinkedStrl(int no)
+{
+    this->no = no;
+    strl = Strl::GetById(abs(no));
+    name = strl != nullptr ? strl->basename + (no > 0 ? "+" : "-") : "?";
+}
+// -----------------------------------------------------------
+
 Strl::Strl(SprBase * tuts, Logger& logger)
 {
     formula_zs = nullptr;
@@ -17,6 +27,30 @@ Strl::Strl(SprBase * tuts, Logger& logger)
     no   = tuts->NoStrl();                                  // номер стрелки из БД
     nost = tuts->NoSt();                                    // номер станции из БД
     st   = tuts->St();                                      // справочник
+
+    sprRc   = nullptr;                                      // РЦ, в которую входит стрелка
+    sprRc2  = nullptr;                                      // вторая РЦ, в которую входит спаренная стрелка
+    stsPls  = false;                                        // +
+    stsMns = false;                                         // -
+    stsPlsPrv = false;                                      // + в пред.шаге
+    stsMnsPrv = false;                                      // - в пред.шаге
+    stsPlsRq = false;                                       // переводим в +
+    stsMnsRq = false;                                       // переводим в -
+    stsInformed = false;                                    // уведомляли
+    stsMu = false;                                          // МУ
+    stsZs = false;                                          // ЗС
+    stsZpr = false;                                         // ЗПР
+    stsOtuPlus = false;                                     // ВСА в +
+    stsOtuMinus = false;                                    // ВСА в -
+    stsOtu = false;                                         // ВСА
+    stsVzres = false;                                       // взрез
+    stsSelRsbl = false;                                     // выбор для разблокировки
+    stsBusyRc = false;                                      // занятость РЦ под стрелкой
+    stsBusyAnyRc = false;                                   // занятость любой из двух РЦ под спаренными стрелками
+    stsZmkRc = false;                                       // замыкание РЦ под стрелкой
+    stsZmkAnyRc = false;                                    // замыкание любой из двух РЦ под спаренными стрелками
+    stsIrRc = false;                                        // ИР РЦ под стрелкой
+    stsIrAnyRc = false;                                     // ИР любой из двух РЦ под спаренными стрелками
 
     // формируем свойства
     vzrez           = new Property("взрез"                   , propertyIds, logger);
@@ -180,10 +214,51 @@ Strl * Strl::GetById(int no)
     return strlhash.contains(no) ? strlhash[no] : nullptr;
 }
 
-// конструктор стрелки с указанием заданного положения
-LinkedStrl::LinkedStrl(int no)
+// обработка объектов по станции
+void Strl::AcceptTS (Station *st)
 {
-    this->no = no;
-    strl = Strl::GetById(abs(no));
-    name = strl->basename + (no > 0 ? "+" : "-");
+    foreach(Strl * strl, st->Allstrl().values())
+    {
+        strl->Accept();
+    }
+}
+
+void Strl::Accept ()
+{
+    stsPlsPrv = stsPls;                                     // + в пред.шаге
+    stsMnsPrv = stsMns;                                     // - в пред.шаге
+    stsPls    = SafeValue(plus);                            // +
+    stsMns    = SafeValue(minus);                           // -
+    stsZs     = formula_zs == nullptr ? false : formula_zs->ValueBool(); // ЗС
+    stsZpr    = SafeValue(locked);                          // ЗПР
+    stsOtuPlus= SafeValue(selectedvsa_p);                   // ВСА в +
+    stsOtuMinus=SafeValue(selectedvsa_m);                   // ВСА в -
+    stsOtu    = SafeValue(selectedvsa) | stsOtuPlus | stsOtuMinus;// ВСА
+    stsVzres  = SafeValue(vzrez);                           // взрез
+    stsSelRsbl= SafeValue(selectedunlock);                  // выбор для разблокировки
+
+    // Здесь надо уметь обрабатывать и отдельно записанные выражения МУ
+    stsMu     = SafeValue(mu) || formula_mu != nullptr && formula_mu->ValueBool();// МУ
+
+    stsBusyRc = sprRc != nullptr && sprRc->StsBusy();       // занятость РЦ под стрелкой
+    stsBusyAnyRc = stsBusyRc || sprRc2 != nullptr && sprRc2->StsBusy(); // занятость любой из двух РЦ под спаренными стрелками
+    stsZmkRc = sprRc != nullptr && sprRc->StsZmk();         // замыкание РЦ под стрелкой
+    stsZmkAnyRc = stsZmkRc || sprRc2 != nullptr && sprRc2->StsZmk(); // замыкание любой из двух РЦ под спаренными стрелками
+    stsIrRc = sprRc != nullptr && sprRc->StsIr();           // ИР РЦ под стрелкой
+    stsIrAnyRc= stsIrRc || sprRc2 != nullptr && sprRc2->StsIr(); // ИР любой из двух РЦ под спаренными стрелками
+
+    // состояние в терминах УП
+    int unistatus = (int)GetUniStatus();
+    if (uniSts != unistatus)
+    {
+        uniSts = unistatus;                                 // унифицированное состояние
+        uniStsChanged = true;                               // пометка изменения состояния в терминах унифицированного состояния
+    }
+}
+
+// получить статус UNI
+SprBase::UniStatusRc Strl::GetUniStatus()
+{
+    // TODO!!!
+    return SprBase::StsFreeUnlocked;
 }

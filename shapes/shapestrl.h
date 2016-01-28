@@ -40,12 +40,18 @@ public:
     };
 
 protected:
-    bool	plus;											// TRUE - плюс по основному ходу, FALSE - ответвление
+    Status State;                                           // статус отображения отрезка РЦ
+                                                            // важно: может не полностью совпадать со статусом объекта РЦ,
+                                                            // т.к., например, есть отрезки, не проходящие по стрелкам
+    class   Strl* sprStrl;                                  // стрелка
+    class   Rc  * sprRc;                                    // РЦ под стрелкой
+    QVector<class LinkedStrl*> strl;                        // определяющие стрелки
+    bool	plusNormal;         							// TRUE - плюс по основному ходу, FALSE - ответвление
     QString name;                                           // имя (обозначение) стрелки
     int     idrc;											// N РЦ стрелки
     bool	b45;											// прорисовка под 45 град
-    void    DrawUndefined (QPainter*, bool gryclr, DStation * st, class DRailwaySwitch * strl);	// неопределенное положение стрелки
 
+    void    DrawUndefined (QPainter*, bool gryclr, DStation * st, class DRailwaySwitch * strl);	// неопределенное положение стрелки
 public:
     ShapeStrl(QString& src, ShapeSet* parent);
     ~ShapeStrl();

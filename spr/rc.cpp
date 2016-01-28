@@ -303,19 +303,44 @@ void Rc::AcceptTS (Station *st)
 {
     foreach(Rc * rc, st->Allrc().values())
     {
-        rc->stsBusyPrv  = rc->stsBusy;
-
-        rc->stsBusy     = SafeValue(rc->busy);
-        rc->stsZmk      = SafeValue(rc->zmk);
-        rc->stsIr       = SafeValue(rc->ir) | SafeValue(rc->uri) | SafeValue(rc->selected_ir) | SafeValue(rc->unlocking);
-        rc->stsMu       = SafeValue(rc->mu);
-        rc->stsBlock    = SafeValue(rc->locked);
-        rc->stsBusyFalse= SafeValue(rc->falsebusy);
-
-        rc->stsRouteRq  = rc->ActualRoute() == nullptr ? false : rc->ActualRoute()->StsRqSet(); // в устанавливаемом маршруте         - вычислим по маршруту
-        rc->stsRouteOk  = rc->ActualRoute() == nullptr ? false : rc->ActualRoute()->StsOn(); // в неразделанном маршруте
-//        rc->stsPassed   = SafeValue(rc->);        // устанавливается при обработке маршрутов
-//        rc->stsBusyPulse= SafeValue(rc->);        // РЕТАЙМ. мигает занятость     - ???
-//        rc->stsZmkPulse = SafeValue(rc->);        // РЕТАЙМ. мигает замыкание     - ???
+        rc->Accept();
     }
 }
+
+// обработка ТС
+void Rc::Accept()
+{
+    stsBusyPrv  = stsBusy;
+    stsBusy     = SafeValue(busy);
+    stsZmk      = SafeValue(zmk);
+    stsIr       = SafeValue(ir) | SafeValue(uri) | SafeValue(selected_ir) | SafeValue(unlocking);
+    stsMu       = SafeValue(mu);
+    stsBlock    = SafeValue(locked);
+    stsBusyFalse= SafeValue(falsebusy);
+
+    stsRouteRq  = ActualRoute() == nullptr ? false : ActualRoute()->StsRqSet(); // в устанавливаемом маршруте
+    stsRouteOk  = ActualRoute() == nullptr ? false : ActualRoute()->StsOn();    // в неразделанном маршруте
+
+    // состояние stsPassed вычисляется при первичной обработке и передается в потоке дальше
+    if (stsBusy && ActualRoute())
+        stsPassed   = true;
+
+//  stsBusyPulse= SafeValue();                          // РЕТАЙМ. мигает занятость     - ???
+//  stsZmkPulse = SafeValue();                          // РЕТАЙМ. мигает замыкание     - ???
+
+    // состояние в терминах УП
+    int unistatus = (int)GetUniStatus();
+    if (uniSts != unistatus)
+    {
+        uniSts = unistatus;                             // унифицированное состояние
+        uniStsChanged = true;                           // пометка изменения состояния в терминах унифицированного состояния
+    }
+}
+
+// получить статус UNI
+SprBase::UniStatusRc Rc::GetUniStatus()
+{
+    // TODO!!!
+    return SprBase::StsFreeUnlocked;
+}
+

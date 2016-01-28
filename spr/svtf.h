@@ -42,6 +42,18 @@ public:
     void SetRcBefore (class Rc * rc) { rcBefore = rc; }     // РЦ перед светофором
     void SetRcAfter  (class Rc * rc) { rcAfter  = rc; }     // РЦ после светофора
 
+    bool IsOpen     () { return SafeValue(opened); }        // открыт
+    bool IsBlocked  () { return SafeValue(locked); }        // заблокирован
+    bool IsMnvRout  () { return SafeValue(mnvM); }          // установлен маневровый маршрут от светофора
+    bool IsPzdRout  () { return SafeValue(pzdM); }          // установлен поездной маршрут от светофора
+    bool IsRzbl     () { return SafeValue(seltounlock); }   // выбран для разблокирования
+    bool IsAd       () { return SafeValue(ad); }            // светофор на автодействии
+    bool IsOm       () { return SafeValue(canceling); }     // идет отмена маршрута от светофора
+    bool IsYel      () { return SafeValue(yelllow); }       // желтый огонь светофора (АБТЦМ)
+    bool IsPulsing  () { return SafeValue(blinking); }      // мигающее показание светофора
+    bool IsPrgls    () { return SafeValue(calling); }       // пригласит.огонь светофора
+    bool IsMnvrEx   () { return SafeValue(manevr); }        // доп.контроль маневрового сигнала
+
 private:
     static QHash <int, Svtf *> svtfhash;                     // СВТФ , индексированные по индексу ТС
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СВТФ
@@ -82,8 +94,11 @@ private:
     class Rc * rcBefore;                                    // РЦ перед светофором
     class Rc * rcAfter;                                     // РЦ после светофора
 
-    // закрытые функции
+    bool stsOpen;                                           // открыт
 
+    // закрытые функции
+    void Svtf::Accept();                                    // обработка ТС
+    SprBase::UniStatusRc GetUniStatus();                    // получить статус UNI
 };
 
 #endif // SVTF_H

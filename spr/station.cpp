@@ -896,9 +896,9 @@ void Station::AcceptTS   ()
     alarmATU = this->Kp2007() ? IsRsrv() : GetTsStsByName("АТУ"); // ошибки АТУ
 
 
-    //Strl::AcceptTS (this);									// состояние стрелок
+    Strl::AcceptTS (this);									// состояние стрелок
     Rc  ::AcceptTS (this);                                  // состояние РЦ
-    //Svtf::AcceptTS (this);									// состояние светофоров	2014.10.22 перенес ДО МАРШРУТОВ
+    Svtf::AcceptTS (this);									// состояние светофоров	2014.10.22 перенес ДО МАРШРУТОВ
 
     //DPereezd	  ::AcceptTS (NoSt);											// 2015.01.22 переезды
     //DPeregon	  ::AcceptTS ();												// 2015.01.22 все перегоны

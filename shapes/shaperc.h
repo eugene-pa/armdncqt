@@ -12,7 +12,7 @@ protected:
                                                             // важно: может не полностью совпадать со статусом объекта РЦ,
                                                             // т.к., например, есть отрезки, не проходящие по стрелкам
     class Rc * sprRc;                                       // указатель на справочник РЦ
-//  QVector<LinkedRc> strlList;                             // список опреляющих стрелок
+    QVector<class LinkedStrl*> strl;                        // определяющие стрелки
     QPainterPath path;                                      // путь для отрисовки смежных отрезков, хранится в первом из смежных отрезков
     bool combined;                                          // признак того, что РЦ объединена в составе пути этого или сопряженного отрезка
 
@@ -71,17 +71,19 @@ public:
     virtual QString ObjectInfo();
     virtual void  Prepare();
 
+protected:
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 
     void normalize();
 
-    bool isBusy     () { return State[StsBusy    ]; }      // занятость
-    bool isZmk      () { return State[StsZmk     ]; }      // замыкание
-    bool isRqRoute  () { return State[StsRqRoute ]; }      // в устанавливаемом маршруте
-    bool isPzdRoute () { return State[StsPzdRoute]; }      // в поездном маршруте
-    bool isMnvRoute () { return State[StsMnvRoute]; }      // в маневровом маршруте
-    bool isPassed   () { return State[StsPassed  ]; }      // пройдена
-    bool isIr       () { return State[StsIr      ]; }      // ИР
+    bool isBusy     () { return State[StsBusy    ]; }       // занятость
+    bool isZmk      () { return State[StsZmk     ]; }       // замыкание
+    bool isRqRoute  () { return State[StsRqRoute ]; }       // в устанавливаемом маршруте
+    bool isPzdRoute () { return State[StsPzdRoute]; }       // в поездном маршруте
+    bool isMnvRoute () { return State[StsMnvRoute]; }       // в маневровом маршруте
+    bool isPassed   () { return State[StsPassed  ]; }       // пройдена
+    bool isIr       () { return State[StsIr      ]; }       // ИР
 
 //static	inline short GetThick(){return mThick;									}
 //static	void  SetThick(short w, bool bUpdateDefault = true);

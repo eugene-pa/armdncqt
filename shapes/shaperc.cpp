@@ -77,11 +77,20 @@ void ShapeRc::Parse(QString& src)
         y1    = lexems[4].toFloat(&ret);            ok &= ret;
         x2    = lexems[5].toFloat(&ret);            ok &= ret;
         y2    = lexems[6].toFloat(&ret);            ok &= ret;
+        setDimensions ();
+
         idObj = lexems[7].toInt(&ret);              ok &= ret;
 
         // объектная привязка
-        st      = Station::GetById(idst);
-        sprRc   = Rc::GetById(idObj);
+        st      = Station::GetById(idst);                   // станция
+        sprRc   = Rc::GetById(idObj);                       // РЦ
+
+        for (int i=8; i<11; i++)
+        {
+            if (int nostrl = lexems[7].toInt(&ret) && ret)
+                strl.append(new LinkedStrl(nostrl));
+            ok &= ret;
+        }
 
         if (!ok)
         {

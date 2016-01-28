@@ -19,7 +19,9 @@ ShapeChild::ShapeChild(ShapeSet * set)
 
     setScene(scene);
     centerOn(0,0);
-    scale(2,2);                                         // масштабирование всего представления
+    //scale(2,2);                                         // масштабирование всего представления
+
+    startTimer(1000);
 }
 
 
@@ -46,3 +48,7 @@ void ShapeChild::setCurrentFile(const QString &fileName)
     setWindowModified(false);
 }
 
+void ShapeChild::timerEvent(QTimerEvent *event)
+{
+    scene->update();
+}
