@@ -35,14 +35,19 @@ void ShapeStrl::Parse(QString& src)
     QStringList lexems = src.split(' ',QString::SkipEmptyParts);
     if (lexems.length() >= 14)
     {
+        // 0 - примитв
         type    = (ShapeType)lexems[0].toInt(&ret);    ok &= ret;
+        // 1 - станция
         idst    = lexems[1].toInt(&ret);               ok &= ret;
+        // 2 - тип стрелки
         subtype = lexems[2].toInt(&ret);               ok &= ret;
 
+        // 3-6 - координаты
         x1    = lexems[3].toFloat(&ret);               ok &= ret;
         y1    = lexems[4].toFloat(&ret);               ok &= ret;
         x2    = lexems[5].toFloat(&ret);               ok &= ret;
         y2    = lexems[6].toFloat(&ret);               ok &= ret;
+
         // вторая пара координат нужна для универсальных вычислений
         if (x2 == 0 && y2 == 0)
         {
@@ -51,23 +56,29 @@ void ShapeStrl::Parse(QString& src)
         }
         setDimensions ();
 
+        // #стрелка
         idObj = lexems[7].toInt(&ret);                 ok &= ret;
 
+        // 8-10 - направляюшие стрелки
         for (int i=8; i<11; i++)
         {
-            if (int nostrl = lexems[7].toInt(&ret) && ret)
+            int nostrl = nostrl = lexems[i].toInt(&ret);
+            if (nostrl && ret)
                 strl.append(new LinkedStrl(nostrl));
             ok &= ret;
         }
+
+        if (!LinkedStrl::checkList(strl, set->logger()))
+            log (QString("Ошибка описания определяющих стрелок примитва: %1").arg(src));
 
         // 11- нормальное полложение (0 - по основному ходу, 1 - ответвление)
         int normal = lexems[11].toInt(&ret);            ok &= ret;
         plusNormal = normal ==0 ? true : false;             // TRUE - плюс по основному ходу, FALSE - ответвление
 
-        // 12 - РЦ
+        // 12 - #РЦ
         idrc    = lexems[12].toInt(&ret);               ok &= ret;
 
-        // 13 - имя
+        // 13 - символьное имя стрелки (надпись)
         name    = lexems[13];                               // имя (номер стрелки)
         name.replace("$","");
 
@@ -79,6 +90,11 @@ void ShapeStrl::Parse(QString& src)
         st      = Station::GetById(idst);                   // станция
         sprStrl = Strl::GetById(idObj);                     // стрелка
         sprRc   = Rc::GetById(idrc);                        // РЦ
+        if (sprRc != nullptr & sprStrl != nullptr)
+            sprStrl->SetRc(sprRc);                          // Неочевидное поведение: ссылки SprRc и SprRc2 класса StrlInfo устанавливаются ТОЛЬКО ПРИ ЧТЕНИИ ФОРМ
+
+        //Area   = new Rect(X1, Y1 - 8, 16, 16);                   // корректируем прямоугольник  стрелки с учетои ее разброса
+        //Center = new Point(Area.X + Width / 2, Area.Y + Height / 2);
 
         if (!ok)
         {
@@ -91,39 +107,13 @@ void ShapeStrl::Parse(QString& src)
     }
 }
 
-/*
-    protected override void CheckData(string src)               // вирт. функция подготовки справочников
-    {
-        if (X2 == 0 && Y2 == 0)
-        {
-            X2 = X1 + 16;
-            Y2 = Y1 + 16;
-        }
-
-        SetDimensions();
-        Area   = new Rect(X1, Y1 - 8, 16, 16);                   // корректируем прямоугольник  стрелки с учетои ее разброса
-        Center = new Point(Area.X + Width / 2, Area.Y + Height / 2);
-
-        SprSt   = CheckSt(NoSt, src);
-        SprRc   = CheckRc(NoRc, src);
-        SprStrl = CheckStrl(NoStrl, src);
-        if (SprRc != null && SprStrl != null)
-        {
-            // Неочевидное поведение: ссылки SprRc и SprRc2 класса StrlInfo устанавливаются ТОЛЬКО ПРИ ЧТЕНИИ ФОРМ
-            if (SprStrl.SprRc == null)
-                SprStrl.SprRc = SprRc;
-            else
-            if (SprStrl.SprRc != SprRc)
-                SprStrl.SprRc2 = SprRc;
-        }
-        foreach (LinkedStrl linkedStrl in StrlList)
-            CheckStrl(Math.Abs(linkedStrl.SignNoStrl), src);
-
-    }
+// проверка нахождения определяющих стрелок в требуемом положении
+bool ShapeStrl::isStrlOk()
+{
+    return LinkedStrl::checkRqSts(strl);
+}
 
 
-
-*/
 // функция рисования
 void ShapeStrl::Draw(QPainter* painter)
 {

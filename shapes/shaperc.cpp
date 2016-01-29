@@ -87,14 +87,17 @@ void ShapeRc::Parse(QString& src)
 
         for (int i=8; i<11; i++)
         {
-            if (int nostrl = lexems[7].toInt(&ret) && ret)
+            int nostrl = nostrl = lexems[i].toInt(&ret);
+            if (nostrl && ret)
                 strl.append(new LinkedStrl(nostrl));
             ok &= ret;
         }
+        if (!LinkedStrl::checkList(strl, set->logger()))
+            log (QString("Ошибка описания определяющих стрелок примитва: %1").arg(src));
 
         if (!ok)
         {
-            log (QString("%1: %2").arg("Ошибка синтаксиса примитива").arg(src));
+            log (QString("Ошибка синтаксиса примитива: %1").arg(src));
         }
     }
     else
@@ -121,15 +124,24 @@ void ShapeRc::normalize()
     }
 }
 
+// проверка нахождения определяющих стрелок в требуемом положении
+bool ShapeRc::isStrlOk()
+{
+    return LinkedStrl::checkRqSts(strl)==0;
+}
+
+
 // функция рисования
 void ShapeRc::Draw(QPainter* painter)
 {
     //QBrush brush(Qt::black);
     QColor color(Qt::black);
 
-    //if (sprRc != nullptr)
+    QPen * pen = sprRc == nullptr ? PenUndefined : !isStrlOk()      ? PenFree :     // не по стрелкам
 
-    QPen * pen = sprRc == nullptr ? PenUndefined : sprRc->StsBusy() ? PenBusy : sprRc->StsZmk() ? PenZmk : PenFree;
+                                                   sprRc->StsBusy() ? PenBusy :     // занята
+                                                   sprRc->StsZmk()  ? PenZmk  :     // замкнута
+                                                                      PenFree;      // свободна
     //pen.setCosmetic(true);
     pen->setCapStyle(Qt::FlatCap);
     if(y1 != y2)

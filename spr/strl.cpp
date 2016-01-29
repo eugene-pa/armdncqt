@@ -88,6 +88,22 @@ Strl::~Strl()
 
 }
 
+void Strl::SetRc(class Rc* rc)
+{
+    if (sprRc != rc && sprRc2!=rc)
+    {
+        if (sprRc == nullptr)
+            sprRc = rc;
+        else
+        if (sprRc2 == nullptr)
+            sprRc2 = rc;
+        else
+        {
+            qDebug() << "Too maany RC for STRL" << this;
+        }
+    }
+}
+
 
 // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
 bool Strl::AddTemplate(IdentityType * ident)

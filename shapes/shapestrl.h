@@ -52,6 +52,7 @@ protected:
     bool	b45;											// прорисовка под 45 град
 
     void    DrawUndefined (QPainter*, bool gryclr, DStation * st, class DRailwaySwitch * strl);	// неопределенное положение стрелки
+    bool    isStrlOk();                                     // проверка нахождения определяющих стрелок в требуемом положении
 public:
     ShapeStrl(QString& src, ShapeSet* parent);
     ~ShapeStrl();

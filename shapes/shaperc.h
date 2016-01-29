@@ -85,6 +85,7 @@ protected:
     bool isPassed   () { return State[StsPassed  ]; }       // пройдена
     bool isIr       () { return State[StsIr      ]; }       // ИР
 
+    bool isStrlOk();                                        // проверка нахождения определяющих стрелок в требуемом положении
 //static	inline short GetThick(){return mThick;									}
 //static	void  SetThick(short w, bool bUpdateDefault = true);
 

@@ -3,28 +3,6 @@
 
 #include "station.h"
 
-// описание стрелки в заданном положении
-// Идея: для формализации описания стрелок в маршруте типа "2/4+ 6- 8+" преобразуем их в список LinkedStrl
-class LinkedStrl
-{
-    friend class Rc;
-    friend class Station;
-    friend class NxtPrv;
-    friend class DlgRcInfo;
-public:
-    LinkedStrl(int no);
-
-    bool IsOk()                                             // проверка нахождения в заданном положении
-    {
-        return true;
-    }
-    QString& Name() { return name; }
-private:
-    int no;                                                 // номер со знаком
-    class Strl * strl;
-    QString name;
-};
-
 
 class Strl : public SprBase
 {
@@ -34,6 +12,8 @@ public:
     // открытые функции
     Strl(SprBase * tuts, Logger& logger);                    // конструктор по ТС/ТУ
     ~Strl();
+
+    void SetRc(class Rc* rc);                               // связать стрелку с РЦ
 
     // открытые статические функции
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
@@ -107,5 +87,60 @@ private:
     void Accept();                                          // обработка ТС
     SprBase::UniStatusRc GetUniStatus();                    // получить статус UNI
 };
+
+// описание стрелки в заданном положении
+// Идея: для формализации описания стрелок в маршруте типа "2/4+ 6- 8+" преобразуем их в список LinkedStrl
+class LinkedStrl
+{
+    friend class Rc;
+    friend class Station;
+    friend class NxtPrv;
+    friend class DlgRcInfo;
+public:
+    LinkedStrl(int no);
+    bool valid() { return strl != nullptr; }                // проверка валидности описания
+    bool isok()                                             // проверка нахождения в заданном положении
+    {
+        return strl == nullptr ? true : no < 0 ? strl->stsMns : strl->stsPls;
+    }
+    QString& Name() { return name; }
+
+    // статическая функция проверка валидности списка связей
+    static bool checkList(QVector<LinkedStrl*> list, Logger* logger)
+    {
+        bool ret = true;
+        foreach (LinkedStrl * l, list)
+        {
+            if (!l->valid())
+            {
+                ret = false;
+                if (logger!=nullptr)
+                    logger->log(QString("Не найдена стрелка #").arg(l->no));
+            }
+        }
+        return ret;
+    }
+
+    // статическая функция проверка положения стрелок списка связей
+    // функция возвращает 0, если все ОК, или номер первой наайденной стрелки в неправильном положении
+    static int checkRqSts(QVector<LinkedStrl*> list)
+    {
+        foreach (LinkedStrl * l, list)
+        {
+            bool s = l->isok();
+            if (!l->isok())
+                return l->no;
+        }
+        return 0;
+    }
+
+
+private:
+    int   no;                                                 // номер со знаком
+    class Strl * strl;
+    QString name;
+};
+
+
 
 #endif // STRL_H
