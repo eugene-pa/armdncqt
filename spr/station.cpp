@@ -207,6 +207,7 @@ Station * Station::GetById(int no)
 // TODO: реализовать
 Station * Station::GetSprByNoOrgAndKrug(int no, int bridgeno)
 {
+    Q_UNUSED(bridgeno)
     return GetById(no);
 }
 
@@ -761,6 +762,7 @@ void Station::ParseMT (bool tu)
 
         // выделяем модули (одиночные '1' и диапазоны вида '2-8')
         QRegularExpressionMatchIterator match = QRegularExpression("\\d+[-\\d]*").globalMatch(modules);
+        int nModules = 0;
         while (match.hasNext())
         {
             QString pare = match.next().captured().replace("-"," ");
@@ -773,8 +775,14 @@ void Station::ParseMT (bool tu)
                     mvv2present = true;
                 SetBit (tu ? mtu : mts, m-1, true);            // пометить
                 m++;
+                nModules++;
             }
                 while (m <= qMin (mend, max));
+        }
+
+        if (n!=nModules)
+        {
+            // сообщение о некорректном описании модулей
         }
     }
 }

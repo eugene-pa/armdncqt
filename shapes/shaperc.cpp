@@ -1,7 +1,5 @@
-#include "shaperc.h"
 #include "shapeset.h"
-#include "colorscheme.h"
-#include "../spr/station.h"
+#include "shaperc.h"
 
 QPen *ShapeRc::PenFree;                                     // свободная РЦ
 QPen *ShapeRc::PenBusy;                                     // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
@@ -60,10 +58,12 @@ void ShapeRc::Parse(QString& src)
     QStringList lexems = src.split(' ',QString::SkipEmptyParts);
     if (lexems.length() == 11)
     {
+        // 0- примитив
         type = (ShapeType)lexems[0].toInt(&ret);    ok &= ret;
+        // 1- номер станции
         idst = lexems[1].toInt(&ret);               ok &= ret;
+        // 2- тип отрезка: для наклонной линии 0-"/"  1-"\"
         subtype = lexems[2].toInt(&ret);            ok &= ret;
-
         if (type == ANGLE_COD)
         {
             switch (subtype)
@@ -73,18 +73,20 @@ void ShapeRc::Parse(QString& src)
                 default:subtype = Free;     break;
             }
         }
+        if (!LinkedStrl::checkList(strl, set->logger()))
+            log (QString("Ошибка описания определяющих стрелок примитва: %1").arg(src));
+
+        // 3-6- координаты
         x1    = lexems[3].toFloat(&ret);            ok &= ret;
         y1    = lexems[4].toFloat(&ret);            ok &= ret;
         x2    = lexems[5].toFloat(&ret);            ok &= ret;
         y2    = lexems[6].toFloat(&ret);            ok &= ret;
         setDimensions ();
 
+        // номер РЦ
         idObj = lexems[7].toInt(&ret);              ok &= ret;
 
-        // объектная привязка
-        st      = Station::GetById(idst);                   // станция
-        sprRc   = Rc::GetById(idObj);                       // РЦ
-
+        // направляющие стрелки
         for (int i=8; i<11; i++)
         {
             int nostrl = nostrl = lexems[i].toInt(&ret);
@@ -92,8 +94,10 @@ void ShapeRc::Parse(QString& src)
                 strl.append(new LinkedStrl(nostrl));
             ok &= ret;
         }
-        if (!LinkedStrl::checkList(strl, set->logger()))
-            log (QString("Ошибка описания определяющих стрелок примитва: %1").arg(src));
+
+        // объектная привязка
+        st      = Station::GetById(idst);                   // станция
+        sprRc   = Rc::GetById(idObj);                       // РЦ
 
         if (!ok)
         {
@@ -130,6 +134,66 @@ bool ShapeRc::isStrlOk()
     return LinkedStrl::checkRqSts(strl)==0;
 }
 
+// проверка, удовлетворяет ли положение направляющих стрелок отрезка ЗАДАННОМУ положению стрелок указанного маршрута
+// функция используется для прокладки трассы устанавливаемого маршрута, при этом фактическое положение стрелок может отличаться от заданного
+bool ShapeRc::isStrlInRoute(Route* route)
+{
+    foreach (LinkedStrl* link, strl)
+    {
+        foreach (LinkedStrl* routeLink, route->GetStrlList())
+        {
+            if (link->strl->Id() == routeLink->strl->Id() && link->rqStatus() != routeLink->rqStatus())
+                return false;
+        }
+    }
+    return true;
+}
+
+// вычисление состояния примитива
+void ShapeRc::accept()
+{
+    state->set(StsRqRoute, false);
+    if (st == nullptr || sprRc == nullptr)
+        state->set(Status::StsUndefined, true);
+    else
+    {
+        state->set(Status::StsUndefined, false);
+        if (st->IsTsExpire())
+            state->set(Status::StsExpire, true);
+        else
+        {
+            state->set(Status::StsExpire, false);
+            // учитываем положение стрелок
+            bool strok = isStrlOk();
+            state->set(StsBusy, sprRc->StsBusy() && strok);
+            state->set(StsZmk , sprRc->StsZmk () && strok);
+            state->set(StsIr  , sprRc->StsIr  () && strok);
+
+            // устанавливаемый маршрут - не по фактическому, а по требуемому положению направляющих стрелок
+//
+//            if (SprRc.ActualRoute != null && SprRc.ActualRoute.ActualSts == RouteInfo.RouteSts.RqSet)
+//            {
+//                if (IsStrlInRoute(SprRc.ActualRoute))
+//                    StsAct[StsRqRoute] = true;                                  // устанавливается
+//            }
+//            if (SprRc.ActualRoute != null && AllStrlOk)
+//            {
+//                StsAct[StsPassed] = SprRc.StsPass;
+//                if (!SprRc.StsPass && SprRc.ActualRoute.ActualSts != RouteInfo.RouteSts.RqSet)
+//                {
+//                    if (SprRc.ActualRoute.IsManevr)
+//                        StsAct[StsMnvRoute] = true;                         // маневровый
+//                    else
+//                        StsAct[StsPzdRoute] = true;                         // поездной
+//                }
+//            }
+//            else
+//            {
+//                StsAct[StsPzdRoute] = StsAct[StsPzdRoute] = StsAct[StsMnvRoute] = StsAct[StsPassed] = false;
+//            }
+        }
+    }
+}
 
 // функция рисования
 void ShapeRc::Draw(QPainter* painter)

@@ -45,6 +45,7 @@ public:
     Route(QSqlQuery& query, Logger& logger);
     ~Route();
 
+    QVector<LinkedStrl*> GetStrlList() { return listStrl; } // получить массив стрелок с указанием заданного положения
     bool StsRqSet() { return sts == RQSET; }                // проверка состояния Установка маршрута
     bool StsOn   () { return sts == WAIT_CLOSE || sts == WAIT_RZMK; }   // проверка замкнутости маршрута
 
@@ -88,10 +89,10 @@ private:
     QDateTime tPeregonOk;			                        // Засечка времени, когда перегон развернулся; после этого надо выдержать N сек. перед установкой маршрута
 
     CString tuSet;                                          // ЗАДАНИЕ МАРШРУТА (Список ТУ через пробел; если он пустой - переводим стрелки и открываем сигнал)
-    QList <Tu*> tuSetList;                                  // список ТУ установки маршрута
+    QVector <Tu*> tuSetList;                                // список ТУ установки маршрута
 
     CString	tuCancelName;			                        // ОТМЕНА МАРШРУТА (Список ТУ через пробел; если он пустой - закрываем сигнал)
-    QList <Tu*> tuCancelList;                               // список ТУ установки маршрута
+    QVector <Tu*> tuCancelList;                             // список ТУ установки маршрута
 
     CString cancelModeTs;		                            // ТС для контроля зависания режима набора маршрута
     CString cancelModeTu;		                            // ТУ для отмены режима набора маршрута в случае зависания
@@ -99,10 +100,10 @@ private:
     QString	zmkName;			                            // код имени обобщенного сигнала замыкания
     Ts *    zmkTs;                                          // справочник обобщенного сигнала замыкания
 
-    QList <Route *> listRoutes;                             // список составных маршрутов (пустой для элементарных)
-    QList <Rc*    >	listRc;		                            // список РЦ  в маpшpуте
-    QList <Strl  *>	listStrl;	                            // список стpелок в маpшpуте
-    QList <Route *> listCrossRoutes;                        // список враждебных маршрутов
+    QVector <Route *     > listRoutes;                      // список составных маршрутов (пустой для элементарных)
+    QVector <Rc *        > listRc;                          // список РЦ  в маpшpуте
+    QVector <LinkedStrl* > listStrl;                        // список стpелок в маpшpуте
+    QVector <Route *     > listCrossRoutes;                 // список враждебных маршрутов
 
     int     idType;				                            // код вида маршрута (ключ для RouteType)
     CString	tuText;				                            // имя ТУ (для ручного ввода)
@@ -125,7 +126,7 @@ private:
 
     // === Контроль соответствия зависимостей ===
     enum { TIME_TO_CLOSE_SVTF = 15, };
-    bool    alarmNonClosed;	                            // признак выдачи сообщения о неперекрытии сигнала
+    bool    alarmNonClosed;	                                // признак выдачи сообщения о неперекрытии сигнала
     bool    alarmSerialError;	                            // признак выдачи сообщения об ошибке логики проследования РЦ
     bool	alarmOverflow;		                            // признак инициализации контроля проезда запрещающего сигнала светофора
     QDateTime timeBusyRc;			                        // время занятия первой РЦ в маршруте
@@ -135,7 +136,7 @@ private:
     bool	svtfEndStatus;		                            // состояние светофора, описывающего ограничивающий конец маршрута для выполнения функции контроля проезда запрещающего
     CString	prgTsExpr;			                            // выражение вычисления направления и свободности перегона для определения необходимости его разворота
     CString	PrgTu;				                            // команды разворота перегона
-    QList <Tu*> tuPeregon;                                  // список ТУ разворота перегона
+    QVector <Tu*> tuPeregon;                                // список ТУ разворота перегона
     bool	informedPrg;                                    // флаг выдачи пpедупpеждения о пpосpочке контроля разворота перегона
 
 //	bool	bCheckForArmDsp;                                // контролируем в АРМ ДСП ЦИТТРАНС

@@ -8,15 +8,12 @@ class LinkedRc;
 class ShapeRc : public DShape
 {
 protected:
-    Status State;                                           // статус отображения отрезка РЦ
-                                                            // важно: может не полностью совпадать со статусом объекта РЦ,
-                                                            // т.к., например, есть отрезки, не проходящие по стрелкам
     class Rc * sprRc;                                       // указатель на справочник РЦ
     QVector<class LinkedStrl*> strl;                        // определяющие стрелки
     QPainterPath path;                                      // путь для отрисовки смежных отрезков, хранится в первом из смежных отрезков
     bool combined;                                          // признак того, что РЦ объединена в составе пути этого или сопряженного отрезка
 
-public:
+
     static QPen *PenFree;                                   // свободная РЦ
     static QPen *PenBusy;                                   // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
     static QPen *PenRqRoute;                                // в устанавливаемом маршруте
@@ -28,8 +25,6 @@ public:
     static QPen *PenIr;                                     // искусственная разделка (мигает поверх других состояний)
     static QPen *PenExpired;                                // ТС устарели
     static QPen *PenUndefined;                              // объект неопределен - пассивная отрисовка
-
-    static void InitInstruments();                          // инициализация статических инструментов отрисовки
 
     // перечисление типов(формы) примитива
     enum LineTypes
@@ -49,7 +44,7 @@ public:
         Free    = 10,                                       // свободные координаты
     };
 
-    enum
+    enum                                                    // состояние примитива для визуализации (определяем по состоянию объекта с учетом стрелок)
     {
         StsBusy    = 2,                                     // занятость
         StsZmk        ,                                     // замыкание
@@ -60,8 +55,10 @@ public:
         StsIr         ,                                     // ИР
     };
 
+public:
     ShapeRc(QString& src, ShapeSet* parent);                // конструктор
     ~ShapeRc();
+    static void InitInstruments();                          // инициализация статических инструментов отрисовки
 
     virtual void  Draw (QPainter*);                         // функция рисования
     virtual void  Parse(QString&);                          // разбор строки описания
@@ -77,15 +74,19 @@ protected:
 
     void normalize();
 
-    bool isBusy     () { return State[StsBusy    ]; }       // занятость
-    bool isZmk      () { return State[StsZmk     ]; }       // замыкание
-    bool isRqRoute  () { return State[StsRqRoute ]; }       // в устанавливаемом маршруте
-    bool isPzdRoute () { return State[StsPzdRoute]; }       // в поездном маршруте
-    bool isMnvRoute () { return State[StsMnvRoute]; }       // в маневровом маршруте
-    bool isPassed   () { return State[StsPassed  ]; }       // пройдена
-    bool isIr       () { return State[StsIr      ]; }       // ИР
+    // состояния визуализации
+    bool isBusy     () { return (*state)[StsBusy    ]; }    // занятость
+    bool isZmk      () { return (*state)[StsZmk     ]; }    // замыкание
+    bool isRqRoute  () { return (*state)[StsRqRoute ]; }    // в устанавливаемом маршруте
+    bool isPzdRoute () { return (*state)[StsPzdRoute]; }    // в поездном маршруте
+    bool isMnvRoute () { return (*state)[StsMnvRoute]; }    // в маневровом маршруте
+    bool isPassed   () { return (*state)[StsPassed  ]; }    // пройдена
+    bool isIr       () { return (*state)[StsIr      ]; }    // ИР
 
-    bool isStrlOk();                                        // проверка нахождения определяющих стрелок в требуемом положении
+    void accept();                                          // вычисление состояния примитива
+    bool isStrlOk();                                        // проверка нахождения определяющих стрелок в требуемом положении    
+    bool isStrlInRoute(Route* route);                       // проверка, удовлетворяет ли положение направляющих стрелок отрезка ЗАДАННОМУ положению стрелок указанного маршрута
+                                                            // функция используется для прокладки трассы устанавливаемого маршрута, при этом фактическое положение стрелок может отличаться от заданного
 //static	inline short GetThick(){return mThick;									}
 //static	void  SetThick(short w, bool bUpdateDefault = true);
 

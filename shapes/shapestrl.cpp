@@ -67,7 +67,6 @@ void ShapeStrl::Parse(QString& src)
                 strl.append(new LinkedStrl(nostrl));
             ok &= ret;
         }
-
         if (!LinkedStrl::checkList(strl, set->logger()))
             log (QString("Ошибка описания определяющих стрелок примитва: %1").arg(src));
 
@@ -90,7 +89,7 @@ void ShapeStrl::Parse(QString& src)
         st      = Station::GetById(idst);                   // станция
         sprStrl = Strl::GetById(idObj);                     // стрелка
         sprRc   = Rc::GetById(idrc);                        // РЦ
-        if (sprRc != nullptr & sprStrl != nullptr)
+        if (sprRc != nullptr && sprStrl != nullptr)
             sprStrl->SetRc(sprRc);                          // Неочевидное поведение: ссылки SprRc и SprRc2 класса StrlInfo устанавливаются ТОЛЬКО ПРИ ЧТЕНИИ ФОРМ
 
         //Area   = new Rect(X1, Y1 - 8, 16, 16);                   // корректируем прямоугольник  стрелки с учетои ее разброса

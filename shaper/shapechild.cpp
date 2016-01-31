@@ -50,5 +50,6 @@ void ShapeChild::setCurrentFile(const QString &fileName)
 
 void ShapeChild::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
     scene->update();
 }

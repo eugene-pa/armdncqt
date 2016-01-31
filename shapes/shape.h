@@ -5,6 +5,9 @@
 #include <QColor>
 #include <QPainter>
 
+#include "colorscheme.h"
+#include "../spr/station.h"
+
 
 // Базовые классы DShape, реализация реального времени
 
@@ -48,6 +51,7 @@ protected:
 //  QColor      mPrvCol;									// цвет прорисовки в прошлый раз
 //  short       mNstrl[3];									// 1,2,3 направляющие стрелки
 
+    class Status * state;                                   // класс статус
     void        setDimensions();
     void        log (QString msg);
 public:
@@ -395,8 +399,9 @@ virtual QString ObjectInfo();
 class  Status
 {
 protected:
-    unsigned int sts;                                       // состояния пользователя
-    #define max_indx (int)sizeof(int)*8
+    //unsigned int sts;                                       // состояния пользователя
+    QBitArray   sts;
+    #define max_indx 32
 
 public:
     enum STATUS_TYPES
@@ -407,7 +412,8 @@ public:
 
     Status()
     {
-        sts  = 0;
+        //sts  = 0;
+        sts.fill(false, 32);
     }
 
     bool IsAvailable (int i) { return i >= 0 && i < max_indx ; }    // проверка валидности индекса
@@ -419,18 +425,13 @@ public:
     void set (int i, bool s)
     {
         if (IsAvailable(i))
-        {
-            if (s)
-                sts |= (1 << i);
-            else
-                sts &= ~(1 << i);
-        }
+            sts[i] = s;
     }
 
     // перегруженный индексатор индексации используется для проверки состояний
     bool operator[] (int i)
     {
-        return (i>=0 && i<max_indx) ? (sts & (1 << i) ? true : false) : false;
+        return IsAvailable(i) ? sts[i] : false;
     }
 
 

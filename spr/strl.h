@@ -9,11 +9,23 @@ class Strl : public SprBase
     friend class LinkedStrl;
 public:
 
+    enum STRL_STATAUS                                       // положение стрелки
+    {
+        STRL_MINUS      = -1,
+        STRL_UNDEFINED  = 0,
+        STRL_PLUS       = 1,
+    };
+
     // открытые функции
     Strl(SprBase * tuts, Logger& logger);                    // конструктор по ТС/ТУ
     ~Strl();
 
     void SetRc(class Rc* rc);                               // связать стрелку с РЦ
+
+    // положение стрелки
+    STRL_STATAUS status() { return stsPls == stsMns ? STRL_UNDEFINED :
+                                   stsPls           ? STRL_PLUS      :
+                                                      STRL_MINUS; }
 
     // открытые статические функции
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
@@ -96,14 +108,20 @@ class LinkedStrl
     friend class Station;
     friend class NxtPrv;
     friend class DlgRcInfo;
+    friend class ShapeRc;
 public:
-    LinkedStrl(int no);
+
+    LinkedStrl(int no);                                     // конструктор
+
     bool valid() { return strl != nullptr; }                // проверка валидности описания
+
+    Strl::STRL_STATAUS  rqStatus() { return no > 0 ? Strl::STRL_PLUS : Strl::STRL_MINUS; } // требуемое положение
+
     bool isok()                                             // проверка нахождения в заданном положении
     {
         return strl == nullptr ? true : no < 0 ? strl->stsMns : strl->stsPls;
     }
-    QString& Name() { return name; }
+    QString& Name() { return name; }                        // имя: "1/3+"
 
     // статическая функция проверка валидности списка связей
     static bool checkList(QVector<LinkedStrl*> list, Logger* logger)
@@ -127,7 +145,6 @@ public:
     {
         foreach (LinkedStrl * l, list)
         {
-            bool s = l->isok();
             if (!l->isok())
                 return l->no;
         }
@@ -137,6 +154,7 @@ public:
 
 private:
     int   no;                                                 // номер со знаком
+
     class Strl * strl;
     QString name;
 };

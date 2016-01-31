@@ -23,11 +23,12 @@ DShape::DShape(QString& src, ShapeSet* parent)
     blinking = false;                                       // примитив мигает
     visible  = true;                                        // отрисовывается по условиям
     selected = false;                                       // отрисовывается по условиям
+    state = new Status();
 }
 
 DShape::~DShape()
 {
-
+    delete state;
 }
 
 // вызов инициализации статических инструментов отрисовки для асех примитивов
