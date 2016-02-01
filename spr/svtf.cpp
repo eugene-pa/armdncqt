@@ -131,6 +131,8 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 
 bool Svtf::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
+    Q_UNUSED(query)
+
     int id = tu->IdSvtf();
     Svtf * svtf = svtfhash.contains(id) ? svtfhash[id] : new Svtf(tu, logger);
     svtf->tuList.append(tu);

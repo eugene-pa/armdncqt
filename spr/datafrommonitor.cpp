@@ -180,6 +180,7 @@ void DDataFromMonitor::ExtractRcInfo(int bridgeno)
 // обработка информация по поездам
 void DDataFromMonitor::ExtractTrainsInfo(int bridgeno)
 {
+    Q_UNUSED(bridgeno)
     //DListTrains::AllTrains.Extract((DTrainsDataFromMonitor *)GetPtrTrainsInfo(),GetLenTrainsInfo(), BridgeNo);
 }
 

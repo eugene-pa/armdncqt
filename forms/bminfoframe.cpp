@@ -67,12 +67,14 @@ void BmInfoFrame::setObj(class Station * p, bool s)
 
 void BmInfoFrame::paintEvent(QPaintEvent* e)
 {
+    Q_UNUSED(e)
     redraw();
 }
 
 // обработка тика таймера
 void BmInfoFrame::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
     update();
 }
 

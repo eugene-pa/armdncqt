@@ -99,6 +99,7 @@ void DlgTsInfo::fillTable()
 // обработка событий таймера
 void DlgTsInfo::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
     UpdateList();
 }
 

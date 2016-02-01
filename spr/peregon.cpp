@@ -22,5 +22,6 @@ Peregon * Peregon::GetById(int no)
 // TODO: реализовать
 Peregon * Peregon::GetSprByOrgNoAndKrug (int no, int bridgeno)
 {
+    Q_UNUSED(bridgeno)
     return Peregon::GetById(no);
 }

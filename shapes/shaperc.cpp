@@ -134,6 +134,7 @@ bool ShapeRc::isStrlOk()
     return LinkedStrl::checkRqSts(strl)==0;
 }
 
+// содержимое этой функции логично сделать членом класса Route
 // проверка, удовлетворяет ли положение направляющих стрелок отрезка ЗАДАННОМУ положению стрелок указанного маршрута
 // функция используется для прокладки трассы устанавливаемого маршрута, при этом фактическое положение стрелок может отличаться от заданного
 bool ShapeRc::isStrlInRoute(Route* route)
@@ -154,43 +155,46 @@ void ShapeRc::accept()
 {
     state->set(StsRqRoute, false);
     if (st == nullptr || sprRc == nullptr)
-        state->set(Status::StsUndefined, true);
+        state->set(Status::StsUndefined, true);             // неопред.состояние - нет справочников
     else
     {
         state->set(Status::StsUndefined, false);
         if (st->IsTsExpire())
-            state->set(Status::StsExpire, true);
+            state->set(Status::StsExpire, true);            // не данных - устарели ТС
         else
         {
             state->set(Status::StsExpire, false);
             // учитываем положение стрелок
-            bool strok = isStrlOk();
-            state->set(StsBusy, sprRc->StsBusy() && strok);
-            state->set(StsZmk , sprRc->StsZmk () && strok);
-            state->set(StsIr  , sprRc->StsIr  () && strok);
+            bool strok = isStrlOk();                        // акт.маршрут или nullptr
+            state->set(StsBusy, sprRc->StsBusy() && strok); // занятость
+            state->set(StsZmk , sprRc->StsZmk () && strok); // замыкание
+            state->set(StsIr  , sprRc->StsIr  () && strok); // ИР
 
+            Route * route = sprRc->ActualRoute();
             // устанавливаемый маршрут - не по фактическому, а по требуемому положению направляющих стрелок
-//
-//            if (SprRc.ActualRoute != null && SprRc.ActualRoute.ActualSts == RouteInfo.RouteSts.RqSet)
-//            {
-//                if (IsStrlInRoute(SprRc.ActualRoute))
-//                    StsAct[StsRqRoute] = true;                                  // устанавливается
-//            }
-//            if (SprRc.ActualRoute != null && AllStrlOk)
-//            {
-//                StsAct[StsPassed] = SprRc.StsPass;
-//                if (!SprRc.StsPass && SprRc.ActualRoute.ActualSts != RouteInfo.RouteSts.RqSet)
-//                {
-//                    if (SprRc.ActualRoute.IsManevr)
-//                        StsAct[StsMnvRoute] = true;                         // маневровый
-//                    else
-//                        StsAct[StsPzdRoute] = true;                         // поездной
-//                }
-//            }
-//            else
-//            {
-//                StsAct[StsPzdRoute] = StsAct[StsPzdRoute] = StsAct[StsMnvRoute] = StsAct[StsPassed] = false;
-//            }
+            if (route != nullptr && route->Sts() == Route::RQSET)
+            {
+                if (isStrlInRoute(route))
+                    state->set(StsRqRoute, true);           // устанавливается (тип здесь неважен)
+            }
+
+            if (route != nullptr && strok)
+            {
+                state->set(StsPassed  , sprRc->StsPassed());
+                if (!sprRc->StsPassed() && route->Sts() != Route::RQSET)
+                {
+                    if (route->IsManevr())
+                        state->set(StsMnvRoute, true);      // маневровый
+                    else
+                        state->set(StsPzdRoute, true);      // поездной
+                }
+            }
+            else
+            {
+                state->set(StsPzdRoute, false);
+                state->set(StsMnvRoute, false);
+                state->set(StsPassed  , false);
+            }
         }
     }
 }

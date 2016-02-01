@@ -151,6 +151,7 @@ void MainWindow::disconnected(ClientTcp *client)
 // ошибка сокета
 void MainWindow::error (ClientTcp *client)
 {
+    Q_UNUSED(client)
     hostStatus.setPixmap(*g_red);
 }
 
@@ -175,6 +176,7 @@ void MainWindow::rawdataready(ClientTcp *client)
 // выбор станции в списке
 void MainWindow::stationSelected(int index)
 {
+    Q_UNUSED(index)
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
     emit changeStation(g_actualStation);
 //    if (dlgTs != nullptr)

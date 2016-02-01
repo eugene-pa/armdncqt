@@ -34,12 +34,15 @@ void QLed::set (ledShape shape, ledStatus status, QBrush fore, QBrush back)
 
 void QLed::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
     pulse = !pulse;
     update();
 }
 
 void QLed::paintEvent(QPaintEvent* e)
 {
+    Q_UNUSED(e)
+
     QPainter p(this);
     //p.setRenderHint(QPainter::Antialiasing);
     QBrush brush = status== blink ? pulse ? fore : back :
@@ -63,6 +66,7 @@ void QLed::paintEvent(QPaintEvent* e)
 
 void QLed::mousePressEvent(QMouseEvent * event)
 {
+    Q_UNUSED(event)
     emit ledClicked(this);
 }
 

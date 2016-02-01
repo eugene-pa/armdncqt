@@ -37,9 +37,11 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
             {                                               //  синхронизируем время на клиенте при расхождении более 10 сек
                 if (abs(t - tmdt) >10 )
                 {
-                    // нужен универсальный способ изменения времени системы
+                    // нужно уметь измененить время разных ОС
                     time_t t = tmdt;
-                    struct tm * pTm = localtime(&t);
+                    struct tm _tm;
+                    localtime_s(&_tm, &t);
+                    //struct tm * pTm = localtime_s(&t);
 //                    SYSTEMTIME st = {1900+pTm->tm_year,pTm->tm_mon+1,pTm->tm_wday,pTm->tm_mday,pTm->tm_hour,pTm->tm_min,pTm->tm_sec,0 };
 //                    SetLocalTime(&st);
                 }

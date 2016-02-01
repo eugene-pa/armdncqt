@@ -2,6 +2,8 @@
 
 ecMpkInfo::ecMpkInfo(UINT length, UINT offset)
 {
+    Q_UNUSED(offset)
+    Q_UNUSED(length)
     this->tsGroups = tsGroups;                              // число групп ТС
     this->tsOffset = tsOffset;                              // смещение группы ТС
 }

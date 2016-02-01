@@ -23,6 +23,7 @@ TsStatusWidget::~TsStatusWidget()
 
 void TsStatusWidget::paintEvent(QPaintEvent* e)
 {
+    Q_UNUSED(e)
     QPainter p(this);
     DrawGrid(&p);
     DrawTs  (&p);
@@ -158,6 +159,7 @@ void TsStatusWidget::DrawTs  (QPainter *p)
 
 void TsStatusWidget::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
     this->update();
 }
 

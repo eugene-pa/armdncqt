@@ -23,5 +23,6 @@ Train * Train::GetBySysNo(int sno)
 //
 Train * Train::GetSprByOrgNoAndKrug(int sno, int bridgeno)
 {
+    Q_UNUSED(bridgeno)
     return GetBySysNo(sno);
 }

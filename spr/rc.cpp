@@ -82,6 +82,7 @@ Rc * Rc::GetById(int no)
 // получить справочник по номеру РЦ и номеру потока
 Rc * Rc::GetSprByOrgNoAndKrug(int no, int bridgeno)
 {
+    Q_UNUSED(bridgeno)
     return GetById(no);
 }
 
@@ -164,6 +165,8 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 // обработать ТУ, помеченный как РЦ
 Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
+    Q_UNUSED(query)
+
     // ищем существующую РЦ или добавляем новую
     int id = tu->IdRc();
     Rc * rc = rchash.contains(id) ? rchash[id] : new Rc(tu, logger);

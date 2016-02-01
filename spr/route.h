@@ -45,10 +45,21 @@ public:
     Route(QSqlQuery& query, Logger& logger);
     ~Route();
 
+    // открытые функции
     QVector<LinkedStrl*> GetStrlList() { return listStrl; } // получить массив стрелок с указанием заданного положения
     bool StsRqSet() { return sts == RQSET; }                // проверка состояния Установка маршрута
     bool StsOn   () { return sts == WAIT_CLOSE || sts == WAIT_RZMK; }   // проверка замкнутости маршрута
+    ROUTE_STS Sts() { return sts; }                         // состояние маршрута
 
+    bool IsManevr() { return type == ROUT_MANEVR; }
+    bool IsComplex()
+    {
+        return     type == ROUT_I_COMPLEX
+                || type == ROUT_O_COMPLEX
+                || type == ROUT_IO_THROUGH
+                || type == ROUT_M_COMLEX
+                || listRoutes.length() > 0;
+    }
 
 private:
     static QHash <int, Route *> routes;                     // маршруты, индексированные по индексу ТС

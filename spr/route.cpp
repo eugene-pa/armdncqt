@@ -4,6 +4,7 @@ QHash <int, Route *> Route::routes;                     // маршруты, и�
 
 Route::Route(QSqlQuery& query, Logger& logger)
 {
+    Q_UNUSED(query)
     bool ret = true;
     try
     {

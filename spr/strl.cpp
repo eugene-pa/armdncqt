@@ -204,6 +204,8 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 
 bool Strl::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 {
+    Q_UNUSED(query)
+
     // ищем существующую стрелку или добавляем новую
     int id = tu->IdStrl();
     Strl * strl = strlhash.contains(id) ? strlhash[id] : new Strl(tu, logger);

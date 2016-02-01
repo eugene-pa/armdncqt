@@ -100,6 +100,8 @@ void DStDataFromMonitor::PrepareSysInfo (int i, SysInfo* info)
 // извлечь данные. pSt - принудительно указывает станцию
 Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 {
+    Q_UNUSED(pRas)
+
     // 2012.12.28. Адаптация формата класса с короткими данными (PAGE=1) к формату класса с длинными данными (PAGE=3) за счет сдвига
     bool bDoShortData = realTsLength < TsMaxLengthBytes;
     if (bDoShortData)
@@ -108,7 +110,7 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
              * p2 = PulseTS,								// начало блока пульсации в целевом длинном пакете
              * p3 = &reserv2_1;								// указатель на данные за блоками ТС в целевом длинном пакете
 
-        int epilog_length = sizeof (DStDataFromMonitor) - ((BYTE*)&reserv2_1 - (BYTE *) this); // можно и так: (BYTE*)&tSpokRcv - (BYTE*)&reserv2_1 + sizeof(tSpokRcv);
+        int epilog_length = (int)(sizeof (DStDataFromMonitor) - ((BYTE*)&reserv2_1 - (BYTE *) this)); // можно и так: (BYTE*)&tSpokRcv - (BYTE*)&reserv2_1 + sizeof(tSpokRcv);
         memmove (p3, p1 + realTsLength * 2, epilog_length);	// сдвигаем данные подвала (остатка за блоком ТС)
         memmove (p2, p1 + realTsLength, realTsLength);      // сдвигаем данные пульсации
     }
@@ -234,7 +236,7 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
 {
     if (info->st->Kp2007())
     {
-        int a = 99;
+        // int a = 99;
     }
     info->linestatus = (LineStatus)LinkError[i];            // Тип ошибки: 0-OK,1-молчит,2-CRC
     info->errors = CntLinkEr[i];                            // Общий счетчик ошибок связи
