@@ -202,14 +202,36 @@ void ShapeRc::accept()
 // функция рисования
 void ShapeRc::Draw(QPainter* painter)
 {
-    //QBrush brush(Qt::black);
+    // строго говоря, функция accept() не должна вызываться при отрисовке, она должна вызываться при обновлении данных
+    // можно рассмотреть вопрос о синхронизации обновлений данных с обновлением статуса примитивов,
+    // например: подписать на обновление станции статическую функцию, обновляющую все примитивы станции
+    // уши: надо отслеживать срабатывание таймеров
+    accept();
+
+    blinking = isIr();
+
+    // если е было изменений и не надо мигать - выход - не работает в QT
+//    if (!state->hasChanges() && !blinking)
+//        return;
+
+    // если толщина линий не соответствует требуемой - изменить инструменты
+    if (PenFree->width() != DShape::mThick)
+        InitInstruments();
+
+    QPen *pen =
+            sprRc == nullptr                        ?   PenUndefined    :       // не привязана
+            state->isExpire ()                      ?   PenExpired      :       // нет данных
+            isIr() && DShape::globalPulse           ?   PenIr           :       // ИР в активной фазе
+            sprRc->StsBusy()                        ?   PenBusy         :       // занята
+            isPzdRoute () && !isPassed()            ?   PenPzdRoute     :       // в поездном и не пройдена
+            isMnvRoute () && !isPassed()            ?   PenMnvRoute     :       // в маневровом и не пройдена
+            isRqRoute  ()                           ?   PenRqRoute      :       // устанавливается маршрут
+            isZmk      ()                           ?   PenZmk          :       // замкнута
+            state->isUndefined()                    ?   PenUndefined    :
+                                                        PenFree;
+
     QColor color(Qt::black);
 
-    QPen * pen = sprRc == nullptr ? PenUndefined : !isStrlOk()      ? PenFree :     // не по стрелкам
-
-                                                   sprRc->StsBusy() ? PenBusy :     // занята
-                                                   sprRc->StsZmk()  ? PenZmk  :     // замкнута
-                                                                      PenFree;      // свободна
     //pen.setCosmetic(true);
     pen->setCapStyle(Qt::FlatCap);
     if(y1 != y2)

@@ -8,6 +8,7 @@
 
 ColorScheme * DShape::colorScheme;                          // цветовые схемы
 qreal	DShape::mThick = 4;                                 // толщина линий
+bool    DShape::globalPulse = true;                         // управление миганием примитивов
 
 DShape::DShape(QString& src, ShapeSet* parent)
 {

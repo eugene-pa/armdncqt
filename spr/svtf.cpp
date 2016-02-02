@@ -80,6 +80,7 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     // теперь нужно выполнить привязку свойства
     if (svtfmain)
     {
+        svtf->name = ts->Name();
         svtf->opened->SetTs(ts);
         svtf->svtferror     = query.value("SvtfError" ).toString(); // выражение ошибки светофора
         svtf->svtftypename  = query.value("SvtfClass" ).toString().toUpper();   // имя типа

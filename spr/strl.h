@@ -7,6 +7,7 @@
 class Strl : public SprBase
 {
     friend class LinkedStrl;
+    friend class Station;
 public:
 
     enum STRL_STATAUS                                       // положение стрелки
@@ -106,12 +107,14 @@ class LinkedStrl
 {
     friend class Rc;
     friend class Station;
+    friend class Route;
     friend class NxtPrv;
     friend class DlgRcInfo;
     friend class ShapeRc;
 public:
 
-    LinkedStrl(int no);                                     // конструктор
+    LinkedStrl(int no);                                     // конструктор по номеру стрелки со знаком
+    LinkedStrl(class Station* st, QString& name);           // конструктор по имени контроля и станции
 
     bool valid() { return strl != nullptr; }                // проверка валидности описания
 

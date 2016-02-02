@@ -168,7 +168,7 @@ bool Station::parseNames (QString& srcname, Station*& st, QString& name)
 {
     st = this;
     name = srcname;
-//  KrugInfo krug = st.KrugObject;
+//    KrugInfo krug = st.KrugObject;
 
     try
     {
@@ -194,6 +194,7 @@ bool Station::parseNames (QString& srcname, Station*& st, QString& name)
         qDebug() << QString("Ошибка парсинга выражения %1").arg(srcname);
         return false;
     }
+
     return true;
 }
 
@@ -684,6 +685,38 @@ QDateTime Station::GetLastTime (bool rsrv)
     return rsrv ? rsrvSysInfo->LastTime() : mainSysInfo->LastTime();
 }
 
+// найти светофор по имени; используется при парсинге справочника маршрутов
+Svtf * Station::GetSvtfByName(QString& name)
+{
+    foreach(Svtf * svtf, allsvtf)
+    {
+        if (svtf->Name() == name)
+            return svtf;
+    }
+    return nullptr;
+}
+
+// найти стрелку по имени сигнала с учетом возможности индексации
+Strl * Station::GetStrlByName(QString& name, int& no)
+{
+    Station * st;
+    QString tsname;
+    parseNames (name, st, tsname);
+
+    no = 0;
+    foreach(Strl * strl, st->allstrl)
+    {
+        if (strl->plus != nullptr && strl->plus ->NameTs() == tsname)
+        {
+            no = strl->No(); return strl;
+        }
+        if (strl->minus!= nullptr && strl->minus->NameTs() == tsname)
+        {
+            no = - strl->No(); return strl;
+        }
+    }
+    return nullptr;
+}
 
 // ОПЦИИ:
 // БРОК
@@ -761,6 +794,7 @@ void Station::ParseMT (bool tu)
         QString modules = QRegularExpression("(?<=[\\d+]\\()[^ \\)]+").match(option).captured();
 
         // выделяем модули (одиночные '1' и диапазоны вида '2-8')
+        // здесь и ранее можно было использовать QString.split(QRegExp)
         QRegularExpressionMatchIterator match = QRegularExpression("\\d+[-\\d]*").globalMatch(modules);
         int nModules = 0;
         while (match.hasNext())
@@ -807,7 +841,7 @@ bool Station::IsNewErrorLockMsgPresent()
 }
 
 
-// явное опсание исключений ТУ для разных режимов управления
+// явное описание исключений ТУ для разных режимов управления
 void Station::ParseTuEclusion()
 {
 

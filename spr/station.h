@@ -169,6 +169,8 @@ public:
 
     bool IsTsPresent(int i) { return i>=0 && i<MaxModule && mts[i]; }
     bool IsTuPresent(int i) { return i>=0 && i<MaxModule && mtu[i]; }
+    class Svtf * GetSvtfByName(QString& name);              // найти светофор по имени; используется при парсинге справочника маршрутов
+    class Strl * GetStrlByName(QString& name, int& no);     // найти стрелку по имени
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

@@ -8,13 +8,21 @@ QHash<QString, class IdentityType *> Strl::methodIds;       //  множеств
 QHash <int, Strl *> Strl::strlhash;                         // СТРЛ , индексированные по индексу ТС
 
 // -----------------------------------------------------------
-// конструктор стрелки с указанием заданного положения
+// конструктор стрелки по номеру со знаком
 LinkedStrl::LinkedStrl(int no)
 {
     this->no = no;
     strl = Strl::GetById(abs(no));
     name = strl != nullptr ? strl->basename + (no > 0 ? "+" : "-") : "?";
 }
+
+// конструктор по имени контроля +/- и станции
+LinkedStrl::LinkedStrl(class Station* st, QString& name)
+{
+    strl = st->GetStrlByName(name, no);
+    name = strl != nullptr ? strl->basename + (no > 0 ? "+" : "-") : "?";
+}
+
 // -----------------------------------------------------------
 
 Strl::Strl(SprBase * tuts, Logger& logger)

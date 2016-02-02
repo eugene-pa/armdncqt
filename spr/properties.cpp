@@ -86,6 +86,12 @@ Property::Property (QString name, QHash<QString, class IdentityType *> hash, Log
     }
 }
 
+// имя ТС
+QString& Property::NameTs()
+{
+    return ts == nullptr ? empty : ts->Name();
+}
+
 QString& Property::NameTsEx()                               // Ст.имя_станции ТС=имя_тс
 {
     return ts == nullptr ? empty : ts->NameEx();

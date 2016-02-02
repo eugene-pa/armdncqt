@@ -51,7 +51,7 @@ protected:
 //  QColor      mPrvCol;									// цвет прорисовки в прошлый раз
 //  short       mNstrl[3];									// 1,2,3 направляющие стрелки
 
-    class Status * state;                                   // класс статус
+    class Status * state;                                   // статус
     void        setDimensions();
     void        log (QString msg);
 public:
@@ -61,6 +61,7 @@ public:
     static class ColorScheme * colorScheme;                 // цветовые схемы
     static void InitInstruments(QString, class Logger& );   // вызов инициализации статических инструментов отрисовки для асех примитивов
     static	qreal	mThick;									// толщина
+    static	bool    globalPulse;                            // eуправление миганием примитивов
 //  static	bool	bUpdateOnlyMode;						// отрисовка только обновлений
 //  static	bool	bRqRefreshPage;							// запрос на полную перерисовку страницы
 
@@ -399,9 +400,10 @@ virtual QString ObjectInfo();
 class  Status
 {
 protected:
-    //unsigned int sts;                                       // состояния пользователя
-    QBitArray   sts;
     #define max_indx 32
+
+    QBitArray   sts;                                        // состояние
+    QBitArray   stsPrv;                                     // состояние на предыдущем шаге
 
 public:
     enum STATUS_TYPES
@@ -412,10 +414,11 @@ public:
 
     Status()
     {
-        //sts  = 0;
-        sts.fill(false, 32);
+        sts   .fill(false, 32);                             // инициируем 0
+        stsPrv.fill(true, 32);                              // инициируем 1 для гарантии несравнения
     }
 
+    bool hasChanges() { return sts == stsPrv; }             // были ли изменения с прошлого раза
     bool IsAvailable (int i) { return i >= 0 && i < max_indx ; }    // проверка валидности индекса
     bool isExpire()             { return (*this)[StsExpire   ]; }
     bool isUndefined  ()        { return (*this)[StsUndefined]; }

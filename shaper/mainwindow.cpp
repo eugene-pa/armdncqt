@@ -74,12 +74,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(&hostStatus);
 
     // загрузка НСИ
-    Esr::ReadBd(dbname, logger);
-    Station::ReadBd(dbname, logger);
-    IdentityType::ReadBd (extDb, logger);
-    Ts::ReadBd (dbname, logger);
-    Tu::ReadBd (dbname, logger);
-    Rc::ReadRelations(dbname, logger);
+    Esr::ReadBd(dbname, logger);                            // ЕСР
+    Station::ReadBd(dbname, logger);                        // станции
+    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
+    Ts::ReadBd (dbname, logger);                            // ТС
+    Tu::ReadBd (dbname, logger);                            // ТУ
+    Rc::ReadRelations(dbname, logger);                      // связи РЦ
+    Route::ReadBd(dbname, logger);                          // маршруты
 
     DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
 
