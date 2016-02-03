@@ -718,6 +718,38 @@ Strl * Station::GetStrlByName(QString& name, int& no)
     return nullptr;
 }
 
+// найти РЦ по имени[возможно, индексированному]
+Rc * Station::GetRcByName  (QString& name)
+{
+    Station * st;
+    QString tsname;
+    parseNames (name, st, tsname);
+
+    no = 0;
+    foreach(Rc * rc, st->allrc)
+    {
+        if (rc->Name()==tsname)
+            return rc;
+    }
+    return nullptr;
+}
+
+// поиск ТУ по имени с возможностью индексации станции ЧО[#3], ЧО[Вад]
+Tu * Station::GetTuByName (QString& name)
+{
+    Station * st;
+    QString tuname;
+    parseNames (name, st, tuname);
+
+    foreach (class Tu* tu, Tu)
+    {
+        if (tu->Name() == tuname)
+            return tu;
+    }
+    return nullptr;
+}
+
+
 // ОПЦИИ:
 // БРОК
 // УПОК

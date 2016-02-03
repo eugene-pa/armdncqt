@@ -140,6 +140,7 @@ public:
     QHash <int, class Rc  *> Allrc  () { return allrc;  }   // РЦ станции, индексированные по индексу ТС
     QHash <int, class Svtf*> Allsvtf() { return allsvtf;}   // РЦ станции, индексированные по индексу ТС
     QHash <int, class Strl*> Allstrl() { return allstrl;}   // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Route*>Allroute(){ return routes; }   // маршруты на станции, индексированные по номеру маршрута на станции
 
     class Ts * GetTsByIndex(int indx);                      // получить ТС по индексу
     bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
@@ -148,7 +149,7 @@ public:
 
     bool GetTsStsByName      (QString name);                // получить состояние сигнала по имени
 
-    // таблицы ТС по станции
+    // таблицы ТС по станции (перенести в protected)
     QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
     QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
     QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
@@ -157,20 +158,18 @@ public:
     // таблицы ТУ по станции
     QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
     QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
-    QVector <class Tu*> TuSorted;                             // отсортированы по имени
-
-    QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
-    QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
-    QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
+    QVector <class Tu*> TuSorted;                           // отсортированы по имени
 
     QVector <class ShapeId*> formList;                      // список классов-идентификаторов форм
 
-    QHash <int, Route *> routes;                            // маршруты на станции, индексированные по номеру маршрута на станции
 
     bool IsTsPresent(int i) { return i>=0 && i<MaxModule && mts[i]; }
     bool IsTuPresent(int i) { return i>=0 && i<MaxModule && mtu[i]; }
     class Svtf * GetSvtfByName(QString& name);              // найти светофор по имени; используется при парсинге справочника маршрутов
-    class Strl * GetStrlByName(QString& name, int& no);     // найти стрелку по имени
+    class Strl * GetStrlByName(QString& name, int& no);     // найти стрелку по имени[возможно, индексированному]
+    class Rc   * GetRcByName  (QString& name);              // найти РЦ по имени[возможно, индексированному]
+    class Tu   * GetTuByName  (QString& name);              // поиск ТУ по имени с возможностью индексации станции ЧО[#3], ЧО[Вад]
+
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
@@ -178,6 +177,10 @@ public slots:
 
 // закрытые члены
 private:
+   QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
+   QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
+   QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
+   QHash <int, class Route*>routes;                        // маршруты на станции, индексированные по номеру маршрута на станции
 
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]
