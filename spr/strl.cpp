@@ -35,6 +35,7 @@ Strl::Strl(SprBase * tuts, Logger& logger)
     no   = tuts->NoStrl();                                  // номер стрелки из БД
     nost = tuts->NoSt();                                    // номер станции из БД
     st   = tuts->St();                                      // справочник
+    krug = tuts->Krug();                                    // круг
 
     sprRc   = nullptr;                                      // РЦ, в которую входит стрелка
     sprRc2  = nullptr;                                      // вторая РЦ, в которую входит спаренная стрелка

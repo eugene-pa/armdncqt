@@ -84,6 +84,7 @@ private:
     class DlgTsInfo * dlgTs;                                // состояние ТС
     class DlgRcInfo * dlgRc;                                // состояние РЦ
     class DlgKPinfo * dlgKp;                                // диалог КП
+    class DlgRoutes * dlgRoutes;                            // диалог маршрутов
 
 };
 

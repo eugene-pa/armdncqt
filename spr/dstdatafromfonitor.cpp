@@ -179,7 +179,7 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
         &&	st->gidUralIdRemote && st->gidUralId
         &&	st->gidUralIdRemote != st->gidUralId )
     {
-        QString msg = QString("ESR dissonance: %1 %2 != %3 (remoteе)").arg(st->name).arg(st->gidUralId).arg(st->gidUralIdRemote);
+        QString msg = QString("ESR dissonance: %1 %2 != %3 (remote)").arg(st->name).arg(st->gidUralId).arg(st->gidUralIdRemote);
         Logger::LogStr(msg);
     }
 

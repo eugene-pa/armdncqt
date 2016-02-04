@@ -222,7 +222,7 @@ void ShapeRc::Draw(QPainter* painter)
             sprRc == nullptr                        ?   PenUndefined    :       // не привязана
             state->isExpire ()                      ?   PenExpired      :       // нет данных
             isIr() && DShape::globalPulse           ?   PenIr           :       // ИР в активной фазе
-            sprRc->StsBusy()                        ?   PenBusy         :       // занята
+            isBusy()                                ?   PenBusy         :       // занята
             isPzdRoute () && !isPassed()            ?   PenPzdRoute     :       // в поездном и не пройдена
             isMnvRoute () && !isPassed()            ?   PenMnvRoute     :       // в маневровом и не пройдена
             isRqRoute  ()                           ?   PenRqRoute      :       // устанавливается маршрут

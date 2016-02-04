@@ -11,6 +11,7 @@ Rc::Rc(SprBase * tuts, Logger& logger)
     no   = tuts->NoRc();                                    // в общем случае идентификация РЦ в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
     nost = tuts->NoSt();                                    // номер станции
     st   = tuts->St();                                      // справочник
+    krug = tuts->Krug();                                    // круг
 
     actualRoute = nullptr;
     actualtrain = nullptr;

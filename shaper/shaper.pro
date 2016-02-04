@@ -58,7 +58,9 @@ SOURCES += main.cpp\
     ../spr/abtcminfo.cpp \
     ../spr/rpcdialoginfo.cpp \
     ../spr/ecmpkinfo.cpp \
-    ../forms/qled.cpp
+    ../forms/qled.cpp \
+    ../spr/krug.cpp \
+    ../forms/dlgroutes.cpp
     ../common/boolexpression.cpp \
 
 
@@ -105,7 +107,9 @@ HEADERS  += mainwindow.h \
     ../spr/abtcminfo.h \
     ../spr/rpcdialoginfo.h \
     ../spr/ecmpkinfo.h \
-    ../forms/qled.h
+    ../forms/qled.h \
+    ../spr/krug.h \
+    ../forms/dlgroutes.h
     ../common/boolexpression.h \
 
 
@@ -115,7 +119,8 @@ FORMS    += mainwindow.ui \
     ../forms/dlgstationsinfo.ui \
     ../forms/dlgtsinfo.ui \
     ../forms/dlgkpinfo.ui \
-    ../forms/bminfoframe.ui
+    ../forms/bminfoframe.ui \
+    ../forms/dlgroutes.ui
 
 RESOURCES += \
     images.qrc

@@ -1,12 +1,14 @@
-
 #include "station.h"
+#include "krug.h"
 
 QString Ts::buf;
 
 
 // конструктор принимает на входе запись из таблицы TS
-Ts::Ts(QSqlQuery& query, Logger& logger)
+Ts::Ts(QSqlQuery& query, KrugInfo * krug, Logger& logger)
 {
+    this->krug = krug;
+
     SetBaseType(BaseTs);
     bool ret = true;
     try
@@ -122,7 +124,7 @@ Ts::~Ts()
 }
 
 // чтение БД
-bool Ts::ReadBd (QString& dbpath, Logger& logger)
+bool Ts::ReadBd (QString& dbpath, KrugInfo * krug, Logger& logger)
 {
     bool ret = true;
     logger.log(QString("Чтение таблицы [ТS] БД %1").arg(dbpath));
@@ -138,7 +140,7 @@ bool Ts::ReadBd (QString& dbpath, Logger& logger)
             {
                 while (query.next())
                 {
-                    new Ts(query, logger);
+                    new Ts(query, krug, logger);
                 }
             }
         }

@@ -27,6 +27,7 @@
 class Station : public QObject
 {
     friend class DStDataFromMonitor;
+    friend class Route;
 
     Q_OBJECT
 
@@ -42,14 +43,14 @@ public:
     static Station * GetById(int no);                       // получить справочник по номеру станции
     static Station * GetSprByNoOrgAndKrug(int no, int bridgeno);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
-    static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
+    static bool ReadBd (QString&, class KrugInfo*, Logger&);// чтение БД
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
     static void CountMT();                                  // посчитать модули и сдвинуть пометки МТС для КП2000 на число ТУ
 
     // открытые функции
-    Station(QSqlQuery& query, Logger& logger);              // конструктор на базе записи в БД
+    Station(QSqlQuery&, class KrugInfo* , Logger& );        // конструктор на базе записи в БД
     ~Station();
 
 
@@ -137,10 +138,10 @@ public:
 
     Route * GetRouteByNo(int no);                           // получить маршрут по номеру маршрута на станции
 
-    QHash <int, class Rc  *> Allrc  () { return allrc;  }   // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Svtf*> Allsvtf() { return allsvtf;}   // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Strl*> Allstrl() { return allstrl;}   // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Route*>Allroute(){ return routes; }   // маршруты на станции, индексированные по номеру маршрута на станции
+    QHash <int, class Rc  *> & Allrc  () { return allrc;  } // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Svtf*> & Allsvtf() { return allsvtf;} // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Strl*> & Allstrl() { return allstrl;} // РЦ станции, индексированные по индексу ТС
+    QHash <int, class Route*>& Allroute(){ return routes; } // маршруты на станции, индексированные по номеру маршрута на станции
 
     class Ts * GetTsByIndex(int indx);                      // получить ТС по индексу
     bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
@@ -182,12 +183,13 @@ private:
    QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
    QHash <int, class Route*>routes;                        // маршруты на станции, индексированные по номеру маршрута на станции
 
+    class KrugInfo* krug;                                  // класс круга
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]
     QString name;
     int     ras;                                            // номер станции связи
     int     addr;                                           // линейный адрес
-    int     krugId;                                         // номер круга
+    int     krugId;                                         // номер круга из БД
     int     version;                                        // версия конфигурации станции (KpVersion)
     int     otuAddr;                                        // адрес в подсистеме ОТУ (СПОК/БРОК)
     QString config;                                         // строка конфигурации

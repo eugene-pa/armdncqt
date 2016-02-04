@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QtGlobal>
 
+#include "krug.h"
 #include "station.h"
 #include "rc.h"
 #include "svtf.h"
@@ -24,9 +25,11 @@ short	Station::MainLineCPU;                               // -1(3)/0/1/2 (отк
 short	Station::RsrvLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
 // конструктор принимает на входе запись из таблицы Stations
-Station::Station(QSqlQuery& query, Logger& logger)
+Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 {
     bool ret;
+
+    this->krug = krug;
 
     tsStsRaw        .fill(0,TsMaxLengthBits);               // инициируем битовые массивы  нужным размером
     tsStsPulse      .fill(0,TsMaxLengthBits);
@@ -82,7 +85,7 @@ Station::Station(QSqlQuery& query, Logger& logger)
 
         ras     = query.value("Ras").toInt(&ret);           // номер станции связи
         addr    = query.value("Addr").toInt(&ret);          // линейный а дрес
-        krugId  = query.value("NoKrug").toInt(&ret);        // номер круга
+        krugId  = query.value("NoKrug").toInt(&ret);        // номер круга из БД
         version = query.value("Version").toInt(&ret);       // версия конфигурации станции (KpVersion)
         otuAddr = query.value("Config").toInt(&ret);        // адрес в подсистеме ОТУ (СПОК/БРОК)
         config  = query.value("ConfigKP2007").toString();   // строка конфигурации KP2007
@@ -224,7 +227,7 @@ Station * Station::GetByName(QString stname)
 }
 
 // чтение БД
-bool Station::ReadBd (QString& dbpath, Logger& logger)
+bool Station::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
 {
     logger.log(QString("Чтение таблицы [Stations] из БД %1").arg(dbpath));
     QString sql("SELECT * FROM [Stations] WHERE NoSt > 0 ORDER BY [NoSt]");
@@ -239,7 +242,7 @@ bool Station::ReadBd (QString& dbpath, Logger& logger)
             {
                 while (query.next())
                 {
-                    new Station(query, logger);
+                    new Station(query, krug, logger);
                 }
             }
         }

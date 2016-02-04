@@ -1,11 +1,14 @@
 #include "route.h"
+#include "krug.h"
 
 QHash <int, Route *> Route::routes;                             // маршруты, индексированные по индексу ТС
 
-Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
+Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
 {
     Q_UNUSED(query)
     bool ret = true;
+
+    this->krug = krug;
 
     svtfBeg = svtfEnd = nullptr;                                // обнуляем указатели
     srcStrlError    = false;                                    // ошибки описания сбрасываем
@@ -19,14 +22,16 @@ Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
     prgTsExpr       = false;                                    // вычислитель выражения контроля требуемого направления на перегоне
     zmkExpr         = false;                                    // вычислитель выражения контроля замыкания
     bSetStrlBefore  = false;                                    // Признак необходимости перевести стрелки перед дачей команды (лексема СТРЕЛКИ)
+    srcComplexError = false;
+    srcOpponentError= false;
 
     try
     {
         // Поле Cod должно быть обязательно!
         sts     = PASSIVE;
-        id      = query.value("Cod" ).toInt(&ret);              // код маршрута
+        no      = query.value("Cod" ).toInt(&ret);              // код маршрута-ключ
         nost    = query.value("NoSt").toInt(&ret);              // номер станции
-        no      = query.value("No").toInt(&ret);                // номер маршрута на станции
+        relNo   = query.value("No").toInt(&ret);                // номер маршрута на станции
         st      = Station::GetById(nost);                       // справочник
         if (st==nullptr)
         {
@@ -64,7 +69,7 @@ Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
                     listStrl.append(lnk);
                 else
                 {
-                    logger.log(QString("Маршрут %1. Ошибка описания стрелки %2 в маршруте: '%3'").arg(NameLog()).arg(list[i]).arg(srcStrl));
+                    logger.log(QString("Маршрут %1. Ошибка описания стрелки %2 в маршруте: '%3'").arg(nameLog()).arg(list[i]).arg(srcStrl));
                     srcStrlError = true;
                 }
             }
@@ -82,29 +87,29 @@ Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
                     listRc.append(rc);
                 else
                 {
-                    logger.log(QString("Маршрут %1. Ошибка описания РЦ %2 в маршруте: '%3'").arg(NameLog()).arg(s).arg(srcRc));
+                    logger.log(QString("Маршрут %1. Ошибка описания РЦ %2 в маршруте: '%3'").arg(nameLog()).arg(s).arg(srcRc));
                     srcRcError = true;
                 }
             }
         }
 
         // [TuBegEnd] - последовательность ТУ установки маршрута
-        tuSetError = !ParseTuList (query, "TuBegEnd", srcTuSet, tuSetList, logger);
+        tuSetError = !parseTuList (query, "TuBegEnd", srcTuSet, tuSetList, logger);
 
         // [TuCancel] - последовательность ТУ отмены маршрута
-        tuCancelError = !ParseTuList (query, "TuCancel", srcTuCancel, tuCancelList, logger);
+        tuCancelError = !parseTuList (query, "TuCancel", srcTuCancel, tuCancelList, logger);
 
         // [CancelModeTu] - последовательность ТУ отмены набора
-        tuCancelPendingError = !ParseTuList (query, "CancelModeTu", srcTuCancelPending, tuCancelPendingList, logger);
+        tuCancelPendingError = !parseTuList (query, "CancelModeTu", srcTuCancelPending, tuCancelPendingList, logger);
 
         // [CancelModeTs] - контроль "зависания" набора маршрута
-        hangSetModeError = !ParseExpression(query, "CancelModeTs", srcHangSetMode, hangSetModeExpr, logger);
+        hangSetModeError = !parseExpression(query, "CancelModeTs", srcHangSetMode, hangSetModeExpr, logger);
 
         // [PrgTsExpr] - выражение для контроля требуемого направления на перегоне
-        srcPrgTsError = !ParseExpression(query, "PrgTsExpr", srcPrgTsExpr, prgTsExpr, logger);
+        srcPrgTsError = !parseExpression(query, "PrgTsExpr", srcPrgTsExpr, prgTsExpr, logger);
 
         // [PrgTu] - список ТУ разворота перегона
-        srcPrgTuError = !ParseTuList (query, "PrgTu", srcPrgTu, tuPeregon, logger);
+        srcPrgTuError = !parseTuList (query, "PrgTu", srcPrgTu, tuPeregon, logger);
 
         // [CodZmk] - делаем подстановку и читаем это поле как символьное с учетом возможности задания формулы
         srcZzmk = query.value("CodZmk").toString();
@@ -116,7 +121,7 @@ Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
             {
                 srcZzmk = indxTsZmk == 0 ? "" : st->TsByIndxTsName.contains(indxTsZmk) ? st->TsByIndxTsName[indxTsZmk]->Name() : "";
                 if (srcZzmk.length() == 0)
-                    logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk в маршруте: '%2'").arg(NameLog()).arg(srcZzmk));
+                    logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk в маршруте: '%2'").arg(nameLog()).arg(srcZzmk));
             }
             else
                 srcZzmk.clear();
@@ -136,10 +141,11 @@ Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
             srcComplex.clear();
 
 
+        // ПРОБЛЕМА: при импорте/экспорте пробел в имени поля "Враждебные маршруты" заменяется подчеркиванием!
         // [Враждебные маршруты] - перечисление через пробел (или запятую)
         // читаем строку, разбор строки выполняется на "втором проходе" после чтения всей таблицы, чтобы не зависить от порядка описания маршрутов в таблице
         // чм. static public void CheckOpponents(paLog logger)
-        srcOpponentRoutes = query.value("Враждебные маршруты").toString();
+        srcOpponentRoutes = query.value("Враждебные_маршруты").toString();
         if (srcOpponentRoutes.length() > 0 && srcOpponentRoutes=="-")
             srcOpponentRoutes.clear();
 
@@ -152,10 +158,8 @@ Route::Route(QSqlQuery& query, Logger& logger) : SprBase()
         // [Park]
         srcpark = query.value("Park").toString();
 
-        int key = id; // GetKey(krug, Cod);
-
-        routes[key] = this;                                 // добавляем справочник в общий список маршрутов
-        st->Allroute()[no] = this;                          // добавляем справочник в список маршрутов станции
+        routes[Id()] = this;                                // добавляем справочник в общий список маршрутов
+        st->Allroute()[relNo] = this;
     }
     catch(...)
     {
@@ -183,7 +187,7 @@ Route * Route::GetByNo(int no, Station* st)
 }
 
 // чтение БД
-bool Route::ReadBd (QString& dbpath, Logger& logger)
+bool Route::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
 {
     bool ret = true;
     logger.log(QString("Чтение таблиц маршрутов RouteSrc,RouteTypes,TypeOfRout БД %1").arg(dbpath));
@@ -199,7 +203,7 @@ bool Route::ReadBd (QString& dbpath, Logger& logger)
             {
                 while (query.next())
                 {
-                    new Route(query, logger);
+                    new Route(query, krug, logger);
                 }
             }
         }
@@ -210,19 +214,112 @@ bool Route::ReadBd (QString& dbpath, Logger& logger)
         ret = false;
     }
 
-//    CheckComplex  (krug, logger);                         // обработать списки составных
-//    CheckOpponents(krug, logger);                         // обработать списки враждебных
+    checkComplex  (krug, logger);                         // обработать списки составных
+    checkOpponents(krug, logger);                         // обработать списки враждебных
 
     return ret;
 }
 
-QString Route::NameLog()
+// обработать списки составных
+void Route::checkComplex  (class KrugInfo* krug, Logger& logger)
 {
-    return QString("Ст.%1. Маршрут №%2").arg(st->Name()).arg(id);
+    foreach (Route * route, routes.values())
+    {
+        if (krug==nullptr || krug==route->krug)
+        {
+            route->checkComplex(logger);
+        }
+    }
+}
+
+// обработать списки враждебных
+void Route::checkOpponents(class KrugInfo* krug, Logger& logger)
+{
+    foreach (Route * route, routes.values())
+    {
+        if (krug==nullptr || krug==route->krug)
+        {
+            route->checkOpponents(logger);
+        }
+    }
+}
+
+// обработать списки составных  маршрута
+bool Route::checkComplex (Logger& logger)
+{
+    bool ret = true;                                        // сбрасывается при хотя бы одной любой ошибке
+    if (srcComplex.length()==0)
+        return ret;
+
+    QStringList list = srcComplex.split(QRegExp("[\\s,\\+]+"));
+
+    int indx = 0;
+    foreach (QString s, list)
+    {
+        bool out = false;
+        int no = s.toInt(&out);
+        if (out)
+        {
+            Route * route = st->GetRouteByNo(no);
+            if (route != nullptr)
+            {
+                listRoutes.append(route);
+                int n = listRoutes.length();
+
+                // - светофор либо не задается вообще, либо должен совпадать со светофором первого маршрута в списке
+                if (indx == 0)
+                {
+                    if (svtfBeg!=nullptr && svtfBeg != route->svtfBeg)
+                        logger.log(QString("Составной маршрут %1. Светофор первого маршрута в списке не соответствует светофору в маршруте: [Complex]=%2 ").arg(nameLog()).arg(srcComplex));
+                    svtfBeg = route->svtfBeg;                // ассоциируем светофор первого составного маршрута
+                }
+            }
+            else
+                ret = false;
+        }
+        indx++;
+    }
+
+    if (srcComplexError = !ret)
+        logger.log(QString("Ошибка в описании составного маршрута %1. [Complex]=%2 ").arg(nameLog()).arg(srcComplex));
+
+    return ret;
+}
+
+// обработать списки враждебных маршрута
+bool Route::checkOpponents (Logger& logger)
+{
+    bool ret = true;                                        // сбрасывается при хотя бы одной любой ошибке
+    if (srcOpponentRoutes.length() > 0)
+    {
+        QStringList list = srcOpponentRoutes.split(QRegExp("[\\s,\\+]+"));
+        foreach (QString s, list)
+        {
+            bool out = false;
+            int no = s.toInt(&out);
+            if (out)
+            {
+                Route * route = st->GetRouteByNo(no);
+                if (route != nullptr)
+                    listCrossRoutes.append(route);
+                else
+                    ret = false;
+            }
+        }
+    }
+    if (srcOpponentError = !ret)
+        logger.log(QString("Ошибка в описании составного маршрута %1. [Complex]=%2 ").arg(nameLog()).arg(srcComplex));
+    return ret;
+}
+
+
+QString Route::nameLog()
+{
+    return QString("Ст.%1. Маршрут №%2").arg(st->Name()).arg(relNo);
 }
 
 // чтение последовательности ТУ, проверка синтаксиса и запись в список
-bool Route::ParseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger)
+bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger)
 {
     bool ret = true;
     src = query.value(field).toString().trimmed();
@@ -243,7 +340,7 @@ bool Route::ParseTuList (QSqlQuery& query, QString field, QString& src, QVector 
                 list.append(tu);                            // список ТУ установки маршрута
             else
             {
-                logger.log(QString("Маршрут %1. Ошибка описания ТУ %2 в маршруте: [%3]='%4'").arg(NameLog()).arg(s).arg(field).arg(src));
+                logger.log(QString("Маршрут %1. Ошибка описания ТУ %2 в маршруте: [%3]='%4'").arg(nameLog()).arg(s).arg(field).arg(src));
                 ret = false;
             }
         }
@@ -252,7 +349,7 @@ bool Route::ParseTuList (QSqlQuery& query, QString field, QString& src, QVector 
 }
 
 // создание вычислителя для обработки формул
-bool Route::ParseExpression(QSqlQuery& query, QString field, QString& src, BoolExpression *& expr, Logger& logger)
+bool Route::parseExpression(QSqlQuery& query, QString field, QString& src, BoolExpression *& expr, Logger& logger)
 {
     bool ret = true;
     expr = nullptr;
@@ -265,19 +362,9 @@ bool Route::ParseExpression(QSqlQuery& query, QString field, QString& src, BoolE
         else
         {
             ret = false;
-            logger.log(QString("Маршрут %1. Ошибка выражения в поле %2 '%3': %4").arg(NameLog()).arg(field).arg(expr->Source()).arg(expr->ErrorText()));
+            logger.log(QString("Маршрут %1. Ошибка выражения в поле %2 '%3': %4").arg(nameLog()).arg(field).arg(expr->Source()).arg(expr->ErrorText()));
         }
     }
     return true;
 }
 
-//{
-//    LogicalExpression expr = null;
-//    if (src.Length > 0)
-//    {
-//        expr = new LogicalExpression(src, SprSt.GetVar, null);
-//        if (!expr.Valid)
-//            Log(string.Format("{0}. [{1}]: {2}", NameEx, field, expr.ErrorTextFull), logger);
-//    }
-//    return expr;
-//}

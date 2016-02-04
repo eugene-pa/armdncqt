@@ -7,6 +7,8 @@
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
 #include "../forms/dlgkpinfo.h"
+#include "../forms/dlgroutes.h"
+#include "../spr/krug.h"
 
 Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -53,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgTs = nullptr;                                                    // состояние ТС
     dlgRc = nullptr;                                                    // состояние РЦ
     dlgKp = nullptr;                                                    // диалог КП
+    dlgRoutes = nullptr;                                                // диалог маршрутов
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
@@ -74,13 +77,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addPermanentWidget(&hostStatus);
 
     // загрузка НСИ
+    KrugInfo * krug = nullptr;
     Esr::ReadBd(dbname, logger);                            // ЕСР
-    Station::ReadBd(dbname, logger);                        // станции
+    Station::ReadBd(dbname, krug, logger);                  // станции
     IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
-    Ts::ReadBd (dbname, logger);                            // ТС
-    Tu::ReadBd (dbname, logger);                            // ТУ
+    Ts::ReadBd (dbname, krug, logger);                      // ТС
+    Tu::ReadBd (dbname, krug, logger);                      // ТУ
     Rc::ReadRelations(dbname, logger);                      // связи РЦ
-    Route::ReadBd(dbname, logger);                          // маршруты
+    Route::ReadBd(dbname, krug, logger);                    // маршруты
 
     DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
 
@@ -180,8 +184,6 @@ void MainWindow::stationSelected(int index)
     Q_UNUSED(index)
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
     emit changeStation(g_actualStation);
-//    if (dlgTs != nullptr)
-//        dlgTs->ChangeStation(g_actualStation);
 }
 
 
@@ -215,6 +217,7 @@ void MainWindow::on_action_RcInfo_triggered()
         dlgRc->setVisible(!dlgTs->isVisible());
 }
 
+// обработчик меню информация по КП
 void MainWindow::on_action_KPinfo_triggered()
 {
     if (dlgKp==nullptr)
@@ -225,6 +228,26 @@ void MainWindow::on_action_KPinfo_triggered()
     }
     else
         dlgKp->setVisible(dlgKp->isVisible());
+}
+
+
+// обработчик меню информация по маршрутам
+void MainWindow::on_action_RouteInfo_triggered()
+{
+    if (dlgRoutes==nullptr)
+    {
+        dlgRoutes = new DlgRoutes(g_actualStation, this);
+        dlgRoutes->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgRoutes, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgRoutes->setVisible(dlgRoutes->isVisible());
+}
+
+// обработчик меню информация по светофорам
+void MainWindow::on_action_SvtfInfo_triggered()
+{
+
 }
 
 // обработчик меню информация по стрелкам
@@ -241,19 +264,6 @@ void MainWindow::on_action_stationsInfo_triggered()
     dlg->show();
 }
 
-
-
-// обработчик меню информация по светофорам
-void MainWindow::on_action_SvtfInfo_triggered()
-{
-
-}
-
-// обработчик меню информация по маршрутам
-void MainWindow::on_action_RouteInfo_triggered()
-{
-
-}
 
 // обработчик меню информация по перегонам
 void MainWindow::on_action_prgInfo_triggered()

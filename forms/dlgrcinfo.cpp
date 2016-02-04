@@ -47,14 +47,8 @@ void DlgRcInfo::FillData()
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" << "Свтф >>" << "Свтф <<");
-//    QPixmap * green   = new QPixmap("../images/icon_grn.ico");
-//    ui->tableRc->setItem(0,0, new QTableWidgetItem (*green, "OK"));
-//    ui->tableRc->setItem(4,0, new QTableWidgetItem (*green, "OK"));
-//    QTableWidgetItem * item = new QTableWidgetItem ("ERROR");
-//    item->setBackground(Qt::red);
-//    ui->tableRc->setItem(3,0, item);
-    int row = 0;
 
+    int row = 0;
     foreach (Rc *rc, st->Allrc().values())
     {
         // РЦ

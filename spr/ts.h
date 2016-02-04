@@ -12,14 +12,14 @@ class Ts : public SprBase
 public:
 
 // открытве статические функции
-static bool ReadBd (QString& dbpath, Logger& logger);       // чтение БД
+static bool ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger);        // чтение БД
 static int CompareByNames(const void*,const void*);
 
 // открытве функции
-    Ts(QSqlQuery& query, Logger& logger);
+    Ts(QSqlQuery& query, class KrugInfo * krug, Logger& logger);
     ~Ts();
 
-    //QString& NameEx();                                      // имя станции и ТС
+    //QString& NameEx();                                    // имя станции и ТС
     int GetIndex() { return index; }                        // индекс бита в поле ТС (0...n-1)
     int GetIndexOfName() { return iname; }                  // ключ имени в таблице TsNames
     Ts * GetNext() { return next; }                         // получить след.в цепочке

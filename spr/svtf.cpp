@@ -15,6 +15,7 @@ Svtf::Svtf(SprBase * tuts, Logger& logger)
     no = tuts->NoSvtf();                                    // в общем случае идентификация в хэш-таблицах должна проиизводиться по ключу: (НомерКруга<<16)|НомерРц
     nost = tuts->NoSt();                                    // номер станции
     st   = tuts->St();                                      // справочник
+    krug = tuts->Krug();                                    // круг
 
     // формируем свойства
     opened      = new Property("открыт"                     , propertyIds, logger);
@@ -40,7 +41,7 @@ Svtf::Svtf(SprBase * tuts, Logger& logger)
     mm      = new Method  ("маршрутная кнопка"              , methodIds , logger);
     cancel  = new Method  ("отмена маршрута"                , methodIds , logger);
 
-    svtfhash[no] = this;                                    // добавляем в общую таблицу СВТФ
+    svtfhash[Id()] = this;                                  // добавляем в общую таблицу СВТФ
     tuts->St()->AddSvtf(this, logger);                      // добавляем в таблицу СВТФ станции
 
     // если объект конструируем по ТУ, значит не было ТС - ущербное описание объекта

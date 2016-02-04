@@ -154,13 +154,14 @@ public:
     // однако, в коде уже используется No как ключ, например, в конструкторе Rc: no = tuts->IdRc();
     int key (int no) { return (krugno << 16) | no; }        // получить идентификатор объекта по номеру с учетом круга
 
-    // отдельные функции для номера объекта и уникального идентификатора
+    // функции для номеров объекта без учета круга
     int No     () { return no;     }                        // номер объекта из БД
     int NoSt   () { return nost;   }                        // номер станции
     int NoRc   () { return norc;   }                        // no РЦ
     int NoSvtf () { return nosvtf; }                        // no светофора
     int NoStrl () { return nostrl; }                        // no стрелки
 
+    // функции для уникальных идентификаторов объекта с учетом круга
     int Id     () { return key (no);     }                  // уникальный идентификатор с учетом круга
     int IdSt   () { return key (nost);   }                  // ID станции
     int IdRc   () { return key (norc  ); }                  // ID РЦ
@@ -170,7 +171,7 @@ public:
     QString& Name()  { return name; }                       // имя объекта (м.б.сложным)
     QString& NameEx();                                      // имя станции, имя объекта
     class Station * St() { return  st; }
-//  class Krug * Krug() { return krug; }
+    class KrugInfo * Krug() { return krug; }
     QString& StationName();                                 // имя станции
     QString& StMessage()                                    // сообщение формата "Ст.Овечка"
         { return buf = QString("Ст.%1").arg(StationName()); }
@@ -195,6 +196,7 @@ public:
 
 protected:
     BaseType basetype;                                      // тип объекта
+    class KrugInfo * krug;                                  // указатель на класс круга
     int     krugno;                                         // номер круга
     int     no;                                             // числовой номер/идентификаторр/ключ объекта
     QString name;                                           // имя объекта
@@ -211,7 +213,6 @@ protected:
     QVector <class Ts*> tsList;                             // список всех ТС объекта
     QVector <class Tu*> tuList;                             // список всех ТУ объекта
 
-    class KrugSpr * krug;                                   // указатель на класс круга
     bool    enabled;                                        // включен (не отключен)
     void * tag;                                             // пользовательский объект по анлогии C#
     static QString buf;                                     // статический буфер для формирования сообщений

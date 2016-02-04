@@ -7,11 +7,11 @@ class Tu : public SprBase
 {
 public:
     // открытве статические функции
-    static bool ReadBd (QString& dbpath, Logger& logger);       // чтение БД
+    static bool ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger);       // чтение БД
     static int CompareByNames(const void*,const void*);
 
 // открытве функции
-    Tu(QSqlQuery& query, Logger& logger);
+    Tu(QSqlQuery& query, class KrugInfo* krug, Logger& logger);
     ~Tu();
 
     //QString& NameEx();                                      // имя станции и ТУ

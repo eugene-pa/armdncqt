@@ -7,6 +7,7 @@ class Route : public SprBase
 {
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
     friend class DDataFromMonitor;
+    friend class DlgRoutes;
 
 public:
 
@@ -41,9 +42,9 @@ public:
     static Route * GetById(int id);                         // получить справочник по уникальному ключу(номеру) маршрута
     static Route * GetByNo(int no, Station* st);            // получить справочник по уникальному ключу(номеру) маршрута
     static void DoRoutes(Station* st);                      // обработка всех маршрутов
-    static bool ReadBd (QString& dbpath, Logger& logger);   // чтение БД
+    static bool ReadBd (QString&, class KrugInfo*, Logger&);// чтение БД
 
-    Route(QSqlQuery& query, Logger& logger);
+    Route(QSqlQuery&, class KrugInfo*, Logger&);            // конструктор
     ~Route();
 
     // открытые функции
@@ -51,6 +52,11 @@ public:
     bool StsRqSet() { return sts == RQSET; }                // проверка состояния Установка маршрута
     bool StsOn   () { return sts == WAIT_CLOSE || sts == WAIT_RZMK; }   // проверка замкнутости маршрута
     ROUTE_STS Sts() { return sts; }                         // состояние маршрута
+
+    int RelNo   () { return relNo; }                        // номер на станции
+    QString Text() { return text;  }                        // описание
+    QString TypeName() { return typeName; }                 // тип
+    class Svtf * SvtfBeg() { return svtfBeg; }              // светофор, ограждающий начало маршрута
 
     bool IsManevr() { return type == ROUT_MANEVR; }
     bool IsComplex()
@@ -66,7 +72,7 @@ private:
     static QHash <int, Route *> routes;                     // маршруты, индексированные по коду маршрута
 
     // Константные данные
-    int     id;            		                            // [Cod]        номеp (код) маршрута, совпадающий с индексом
+    int     relNo;        		                            // [No]         номеp маршрута на станции
     QString text;				                            // [Text]       описание (из БД, пишется "вручную", более осмысленное, чем HelpText)
     bool	dir;				                            // [Dir]        напpавление маpшpута		false = Ч, true = Н
     QString	path;                                           // [Path]       oсновной путь приема/отправления; в маршрутах передачи путь на который отправляется поезд
@@ -123,6 +129,8 @@ private:
     bool    srcPrgTsError;                                  // ошибка в описании выражения контроля направления перегона
     bool    srcPrgTuError;                                  // ошибка в описании ТУ разворота перегона
     bool    srcZzmkError;                                   // ошибка в описании обобщенного выражения замыкания маршрута
+    bool    srcComplexError;
+    bool    srcOpponentError;
 
     bool	fBegEnd;                                        // Признак маршрутного набора - задание НАЧАЛО КОНЕЦ
     bool	bSetStrlBefore;		                            // Признак необходимости перевести стрелки перед дачей команды (лексема СТРЕЛКИ)
@@ -184,10 +192,13 @@ private:
     bool problemPrg;
 
     // закрытые функции
-    QString NameLog();                                      // обозначение маршрута для лога в формате: Ст.
-    bool ParseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger);
-    bool ParseExpression(QSqlQuery& query, QString field, QString& src, BoolExpression *& expr, Logger& logger);
-
+    QString nameLog();                                      // обозначение маршрута для лога в формате: Ст.
+    bool parseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger);
+    bool parseExpression(QSqlQuery& query, QString field, QString& src, BoolExpression *& expr, Logger& logger);
+    bool checkComplex   (Logger&);                          // обработать списки составных  маршрута
+    bool checkOpponents (Logger&);                          // обработать списки враждебных маршрута
+    static void checkComplex  (class KrugInfo*, Logger& );  // обработать списки составных  всех маршрутов, входящих в круг
+    static void checkOpponents(class KrugInfo*, Logger& );  // обработать списки враждебных всех маршрутов, входящих в круг
 };
 
 #endif // ROUTE_H

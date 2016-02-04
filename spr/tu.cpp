@@ -1,16 +1,18 @@
 #include <QVariant>
 #include "sprbase.h"
 #include "station.h"
-#include "ts.h"
-#include "tu.h"
-#include "../common/boolexpression.h"
-#include "rc.h"
-#include "strl.h"
-#include "svtf.h"
+//#include "ts.h"
+//#include "tu.h"
+//#include "../common/boolexpression.h"
+//#include "rc.h"
+//#include "strl.h"
+//#include "svtf.h"
 
 
-Tu::Tu(QSqlQuery& query, Logger& logger)
+Tu::Tu(QSqlQuery& query, class KrugInfo* krug, Logger& logger)
 {
+    this->krug = krug;
+
     SetBaseType(BaseTu);
     bool ret;
     try
@@ -140,7 +142,7 @@ ushort Tu::GetIJ()
 }
 
 // чтение таблицы [ТU]
-bool Tu::ReadBd (QString& dbpath, Logger& logger)
+bool Tu::ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger)
 {
     logger.log(QString("Чтение таблицы [ТU] БД %1").arg(dbpath));
 
@@ -170,7 +172,7 @@ bool Tu::ReadBd (QString& dbpath, Logger& logger)
             {
                 while (query.next())
                 {
-                    new Tu(query, logger);
+                    new Tu(query, krug, logger);
                 }
             }
         }
