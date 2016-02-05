@@ -26,6 +26,8 @@ QPixmap * g_green,
         * g_yellow,
         * g_gray,
         * g_white,
+        * g_cyan,
+
         * g_green_box,
         * g_green_box_tu,                           // МТУ ок
         * g_green_dark_box,

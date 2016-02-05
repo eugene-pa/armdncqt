@@ -132,11 +132,8 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
 //  TRACE (st->name);
 
-    if (!IsArmTools ())
-    {
-        //DRailChain::ClearRcInfoForStation  (St.NoSt);     // TODO
-        //DRoute    ::ClearRouteStatusForStation (St.NoSt); // TODO
-    }
+    // очистить состояние РЦ и маршрутов по станции, так как будут обновления
+    st->ClearRcAndRouteInfo();
 
 //	Присвоение номера станции из канала некорректно при подстановках в случае многоканального подключения
 //  Боюсь, что могу вылезти уши, надо потестировать. Пока обрамляю #ifdef

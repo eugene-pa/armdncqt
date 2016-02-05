@@ -13,8 +13,7 @@ class Train : public SprBase
 public:
 
     // открытые статические функции
-    static Train * GetBySysNo(int sno);                     // получить справочник по номеру поезда
-    static Train * GetSprByOrgNoAndKrug(int sno, int bridgeno);
+    static Train * GetBySysNo(int sno, class KrugInfo * krug = nullptr);// получить справочник по номеру поезда
     static Train * AddTrain(int sno, int no=0);             // добавить поезд
 
     static void AcceptTS (class Station *);                 // обработка объектов по станции

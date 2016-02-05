@@ -132,6 +132,7 @@ extern QPixmap  * g_green,
                 * g_yellow,
                 * g_gray,
                 * g_white,
+                * g_cyan,
 
                 * g_green_box,                              // МТС ок
                 * g_green_box_tu,                           // МТУ ок

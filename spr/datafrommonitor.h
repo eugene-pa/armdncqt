@@ -61,16 +61,16 @@ void PrepareRcInfo		();
 void PrepareTrainsInfo	();
 
 bool ExtractOptionsInfo	();
-void ExtractStInfo		(int BridgeNo = 0);			// 2012.04.04. Передаю в функцию номер ПОТОКА (записан в номере круга)
-void ExtractStDebugTsInfo();						// отладочная
-void ExtractRcInfo		(int BridgeNo = 0);			// 2012.04.04. Передаю в функцию номер ПОТОКА (записан в номере круга)
-void ExtractTrainsInfo	(int BridgeNo = 0);			// 2012.04.04. Передаю в функцию номер ПОТОКА (записан в номере круга)
+void ExtractStInfo		(class KrugInfo * krug = nullptr);  // c учетом круга
+void ExtractStDebugTsInfo();                                // отладочная
+void ExtractRcInfo		(class KrugInfo * krug = nullptr);  // c учетом круга
+void ExtractTrainsInfo	(class KrugInfo * krug = nullptr);  // c учетом круга
 
 // Конструктор передающей стороны
 //	DDataFromMonitor() { Signature = SIGNATURE; Len = sizeof (DDataFromMonitor); }
 static inline DDataFromMonitor * GetObject() { return (DDataFromMonitor *)DataBuf; }
     void Prepare();
-    void Extract(UINT length, int bridgeno = 0);	// 2012.04.04. Передаю в функцию номер ПОТОКА (записан в номере круга)
+    void Extract(UINT length, class KrugInfo * krug = nullptr);	// c учетом круга
 inline WORD	IsSignatured		() { return Signature==SIGNATURE					; }
 inline WORD GetLen				() { return Len										; }
     void ExtractDebugTS(/*void * pBuf,int Len*/);	// отладочная

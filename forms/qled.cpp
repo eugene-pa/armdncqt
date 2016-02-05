@@ -36,7 +36,8 @@ void QLed::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     pulse = !pulse;
-    update();
+    if (isVisible())
+        update();
 }
 
 void QLed::paintEvent(QPaintEvent* e)

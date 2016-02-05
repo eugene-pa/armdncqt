@@ -1,4 +1,5 @@
 #include "streamts.h"
+#include "krug.h"
 
 // Класс DDataFromMonitor вместе со вспомогательными классами DStDataFromMonitor,DOptionsDataFromMonitor,DRcDataFromMonitor,DTrainsDataFromMonitor
 // инкапсулируют содержательную частьпротокола обмена по сети между MONITOR и его клиентами (TABLO, АРМ ШНЦ и т.д.)
@@ -17,7 +18,7 @@ BYTE DDataFromMonitor::DataBuf[MAX_DATA_LEN_FROM_MONITOR];
 
 // извлечение данных из потока
 // сигнатуру можно не проверять, так как весь блок - обрамлен обязательно
-void DDataFromMonitor::Extract(UINT length, int bridgeno/* = 0*/)
+void DDataFromMonitor::Extract(UINT length, KrugInfo * krug)
 {
     if (length)
     {
@@ -25,11 +26,11 @@ void DDataFromMonitor::Extract(UINT length, int bridgeno/* = 0*/)
         {
             if (ExtractOptionsInfo())                       // 1. Общие параметры
             {
-                ExtractStInfo(bridgeno);                    // 2. Информация по станциям
+                ExtractStInfo(krug);                        // 2. Информация по станциям
                 if (!(IsArmTools() && g_QuickSearching))    // Если не включен режим ускорееного просмотра АРМ ШН - обрабатываем РЦ и поезда
                 {
-                    ExtractRcInfo	 (bridgeno);            // 3. информация по РЦ
-                    ExtractTrainsInfo(bridgeno);            // 4. информация по поездам
+                    ExtractRcInfo	 (krug);                // 3. информация по РЦ
+                    ExtractTrainsInfo(krug);                // 4. информация по поездам
                 }
             }
         }
@@ -49,7 +50,7 @@ bool DDataFromMonitor::ExtractOptionsInfo()
 // обработка информации о станциях и перегонах
 // информация о перегонах лежит после информации о станциях
 // если после обработки информации о станциях есть "остаточный" блок, интерпретируем его как информацию о перегонах
-void DDataFromMonitor::ExtractStInfo (int bridgeno /*= 0*/)
+void DDataFromMonitor::ExtractStInfo (KrugInfo * krug)
 {
     int stationInfoLength = nSt * LenOneSt;                 // 1. длина блока информации по станциям в блоке StInfo
 
@@ -66,11 +67,10 @@ void DDataFromMonitor::ExtractStInfo (int bridgeno /*= 0*/)
             Station * pSt = NULL;
             // при обработке одного потока станция ищется однозначно по номеру в потоке, поэтому в функцию обработки передается pSt = NULL
             // при обработке нескольких потоков ТС в одном приложении нет однозначного соответствия номер-станция,
-            // поэтому используется переменная bridgeno, задающая № обрабатываемого потока для поиска станции
-            // если задан поток, ищем станцию и передаем ее явно в функцию обработки
-            if (bridgeno)
+            // поэтому используется переменная krug
+            if (krug != nullptr)
             {
-                pSt = Station::GetSprByNoOrgAndKrug(pStData->NoSt, bridgeno);
+                pSt = Station::GetById(pStData->NoSt, krug);
                 if (!pSt)
                 {
                     qDebug() << "Не идентифицирована станция по номеру потока и номеру станции";
@@ -97,7 +97,7 @@ void DDataFromMonitor::ExtractStInfo (int bridgeno /*= 0*/)
         {
             for (WORD i=0; i<peregonInfoLength/sizeof(DPrgDataFromMonitor); i++)
             {
-                ((DPrgDataFromMonitor *)dataptr)->Extract(bridgeno);
+                ((DPrgDataFromMonitor *)dataptr)->Extract(krug);
                 dataptr += sizeof (DPrgDataFromMonitor);
             }
         }
@@ -109,67 +109,43 @@ void DDataFromMonitor::ExtractStInfo (int bridgeno /*= 0*/)
 
 // TODO:
 // обработка информация по РЦ
-void DDataFromMonitor::ExtractRcInfo(int bridgeno)
+void DDataFromMonitor::ExtractRcInfo(KrugInfo * krug)
 {
-    DRcDataFromMonitor * rcinfo = (DRcDataFromMonitor *)GetPtrRcInfo();
-    int length = GetLenRcInfo();
-    COneRc *datarc = (COneRc *)(GetPtrRcInfo() + sizeof (DRcDataFromMonitor));
+    DRcDataFromMonitor * rcinfo = (DRcDataFromMonitor *)GetPtrRcInfo();         // указатель на данные по всем РЦ
+    int length = GetLenRcInfo();                                                // длина данных по всем РЦ
+    COneRc *datarc = (COneRc *)(GetPtrRcInfo() + sizeof (DRcDataFromMonitor));  // указатель на данные очередной РЦ
 
     if (length == sizeof(DRcDataFromMonitor) + rcinfo->m_nRc * sizeof(COneRc))
     {
         for (int i=0; i<rcinfo->m_nRc; i++, datarc++)
         {
-            Rc * rc = Rc::GetById(datarc->NoRc);
-            // Если многопоточное подключение - делатеся поиск РЦ с учетом круга
-            if (bridgeno > 0)
+            Rc * rc = Rc::GetById(datarc->NoRc);                                // Если многопоточное подключение - делатеся поиск РЦ с учетом круга
+            if (rc == nullptr)
             {
-                rc = Rc::GetSprByOrgNoAndKrug (datarc->NoRc, bridgeno);
+                if (krug != nullptr)
+                    qDebug() << "Не идентифицирована РЦ в потоке" << datarc->NoRc;
+                continue;                                                       // не нашли - отвергаем ?
             }
-            if (rc==NULL)
-                continue;
-
             // TRACE (rc->NameEx());
 
-            rc->stsRouteRq	= datarc->stsMRSHR_RQ;
-            rc->stsPassed   = datarc->stsPASS;
-            rc->stsRouteOk	= datarc->stsMRSHR_OK;
-            rc->stsBusyFalse= datarc->stsFalseZ;
-            //rc->actualtrain = datarc->SNo  ? Train::GetById(datarc->SNo ) : nullptr;
-            //rc->actualRoute = datarc->Rout ? Route::GetById(datarc->Rout) : nullptr;
-            //НЕПОНЯТНО: pRc->Rout = BridgeNo == 0 && DRoute::IsValidNo(p->Rout) ? p->Rout : 0;	// 2012.
-/*
-            // 2009.08.03. Хочу обратным ходом установить состояние маршрута
-#ifdef _ARM_TOOLS
-            extern bool IgnoreRouresInfo;				// 2012.04,05. Можно игнорировать информацию о маршрутах для отображения в АРМ ШН, Табло
-            if (!IgnoreRouresInfo && pRc->Rout)
+            rc->stsRouteRq	= datarc->stsMRSHR_RQ;                              // состояние в уст.маршруте
+            rc->stsPassed   = datarc->stsPASS;                                  // пройдена в маршруте
+            rc->stsRouteOk	= datarc->stsMRSHR_OK;                              // в уст.маршруте
+            rc->stsBusyFalse= datarc->stsFalseZ;                                // ложная занятость
+            rc->actualRoute = datarc->Rout ? Route::GetById(datarc->Rout, krug) : nullptr;  // маршрут
+            rc->actualtrain = datarc->SNo  ? Train::GetBySysNo(datarc->SNo ) : nullptr;     // поезд
+
+            // состояние маршрута определяется "обратным ходом" по состоянию РЦ
+            if (rc->actualRoute)
             {
-                // здесь должна быть подстановка маршрутов
-                DRoute * pr = NULL;
-                if (BridgeNo == 0)
-                     pr = &DRoute::GetSpr(pRc->Rout);
+                if (rc->stsRouteRq)
+                    rc->actualRoute->sts = Route::RQSET;
                 else
-                {
-                    pRc->Rout = 0;
-                    int orgcod = 0;
-                    if (DStation::GetSpr(pRc->GetNoSt()).OrgNoRoutToActual.Lookup(pRc->Rout, orgcod )  && DRoute::IsValidNo(orgcod))
-                        pr = &DRoute::GetSpr(pRc->Rout=orgcod);
-                }
-                if (pr)
-                {
-                    if (p->stsMRSHR_RQ)
-                        pr->SetSts (DRoute::RQSET);
-                    else
-                    if (p->stsMRSHR_OK && !p->stsPASS && pr->GetSts()!=DRoute::WAIT_RZMK)
-                        pr->SetSts (DRoute::RQOPEN);
-                    else
-//					if (p->stsPASS)
-                        pr->SetSts (DRoute::WAIT_RZMK);
-                }
+                if (rc->stsRouteOk && !rc->stsPassed && rc->actualRoute->sts != Route::WAIT_RZMK)
+                    rc->actualRoute->sts= Route::RQOPEN;
+                else
+                    rc->actualRoute->sts = Route::WAIT_RZMK;
             }
-            else
-                pRc->Rout = 0;
-#endif // #ifdef ARMTOOLS
-*/
         }
     }
     else
@@ -178,9 +154,9 @@ void DDataFromMonitor::ExtractRcInfo(int bridgeno)
 
 // TODO:
 // обработка информация по поездам
-void DDataFromMonitor::ExtractTrainsInfo(int bridgeno)
+void DDataFromMonitor::ExtractTrainsInfo(KrugInfo * krug)
 {
-    Q_UNUSED(bridgeno)
+    Q_UNUSED(krug)
     //DListTrains::AllTrains.Extract((DTrainsDataFromMonitor *)GetPtrTrainsInfo(),GetLenTrainsInfo(), BridgeNo);
 }
 

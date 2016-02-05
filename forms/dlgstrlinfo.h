@@ -15,12 +15,16 @@ public:
     explicit DlgStrlInfo(class Station * st, QWidget *parent = 0);
     ~DlgStrlInfo();
 
+protected:
+    virtual void timerEvent(QTimerEvent *event);
+    virtual void closeEvent(QCloseEvent *);
+
 private:
     Ui::DlgStrlInfo *ui;
 
     class Station * st;
-    void FillData();
-
+    void fillData();
+    void UpdateStatus();
 };
 
 #endif // DLGSTRLINFO_H

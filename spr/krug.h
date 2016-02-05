@@ -31,6 +31,8 @@ public:
 
     QList <class Train*> trains() { return _trains; }       // информация о поездах круга
 
+    int key (int n) { return (_no << 16) | n; }             // получить идентификатор объекта с учетом круга
+
 protected:
     int     _no;                                            // числовой номер/идентификаторр/ключ объекта
     QString _name;                                          // имя объекта

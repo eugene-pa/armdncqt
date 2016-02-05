@@ -8,6 +8,7 @@ class Route : public SprBase
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
     friend class DDataFromMonitor;
     friend class DlgRoutes;
+    friend class Station;
 
 public:
 
@@ -39,7 +40,7 @@ public:
 
 
     // открытые статические функции
-    static Route * GetById(int id);                         // получить справочник по уникальному ключу(номеру) маршрута
+    static Route * GetById(int id, class KrugInfo * krug = nullptr);  // получить справочник по уникальному ключу(номеру) маршрута
     static Route * GetByNo(int no, Station* st);            // получить справочник по уникальному ключу(номеру) маршрута
     static void DoRoutes(Station* st);                      // обработка всех маршрутов
     static bool ReadBd (QString&, class KrugInfo*, Logger&);// чтение БД
@@ -48,6 +49,7 @@ public:
     ~Route();
 
     // открытые функции
+    bool IsOpen();                                          // Проверка открытого состояния ограждающего светофора
     QVector<LinkedStrl*> GetStrlList() { return listStrl; } // получить массив стрелок с указанием заданного положения
     bool StsRqSet() { return sts == RQSET; }                // проверка состояния Установка маршрута
     bool StsOn   () { return sts == WAIT_CLOSE || sts == WAIT_RZMK; }   // проверка замкнутости маршрута
@@ -67,6 +69,11 @@ public:
                 || type == ROUT_M_COMLEX
                 || listRoutes.length() > 0;
     }
+
+    QString GetRcEnum();                                    // получить перечисление идентифицированных РЦ маршрута
+    QString GetStrlEnum();                                  // получить перечисление идентифицированных стрелок маршрута
+    QString GetTuSetEnum();                                 // получить перечисление ТУ установки
+    QString GetTuCancelEnum();                              // получить перечисление ТУ отмены
 
 private:
     static QHash <int, Route *> routes;                     // маршруты, индексированные по коду маршрута

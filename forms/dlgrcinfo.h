@@ -22,10 +22,17 @@ private slots:
 
 private:
     virtual void closeEvent(QCloseEvent *);
+    virtual void timerEvent(QTimerEvent *event);
 
     Ui::DlgRcInfo *ui;
     class Station * st;
-    void FillData();
+    void fillData();
+    void updateStatus();
+    QBrush getBackground(class Rc * rc);
+
+    static QBrush brushBusy;
+    static QBrush brushBuzyZmk;
+
 
 };
 

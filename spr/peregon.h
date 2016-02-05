@@ -11,8 +11,7 @@ public:
     static QHash<int, Peregon*> Peregons;                   // хэш-таблица указателей на справочники перегонов
 
     // открытые статические функции
-    static Peregon * GetById(int no);                       // получить справочник по номеру перегона
-    static Peregon * Peregon::GetSprByOrgNoAndKrug (int no, int bridgeno);
+    static Peregon * Peregon::GetById (int no, class KrugInfo* krug = nullptr);    // получить справочник по номеру перегона
 
     static void AcceptTS (class Station *);                 // обработка объектов по станции
 

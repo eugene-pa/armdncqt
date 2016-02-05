@@ -54,7 +54,7 @@ protected:
     short   OddTrains [MAX_TRAINS_ON_PER];		// нечетные поезда
 public:
     int	 Prepare(class DPeregon *pPrg);			// сформировать данные
-    void Extract(int bridgeno);					// извлечь данные
+    void Extract(class KrugInfo * krug = nullptr);// извлечь данные
 };
 
 

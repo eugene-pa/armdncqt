@@ -78,29 +78,35 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     svtf->svtfdiag      = query.value("SvtfDiag"  ).toString();     // тип диагностического контроля
 
     bool   svtfmain = query.value("SvtfMain").toBool();
+
     // теперь нужно выполнить привязку свойства
-    if (svtfmain)
+    QString tname = query.value("SvtfClass" ).toString().toUpper();   // имя типа
+    if (svtfmain && tname!="ПРС")
     {
-        svtf->name = ts->Name();
-        svtf->opened->SetTs(ts);
-        svtf->svtferror     = query.value("SvtfError" ).toString(); // выражение ошибки светофора
-        svtf->svtftypename  = query.value("SvtfClass" ).toString().toUpper();   // имя типа
-        svtf->svtftype= svtf->svtftypename == "ВХ"  ? SVTF_X   :// входной
-                        svtf->svtftypename == "ВЫХ" ? SVTF_IN  :// выходной
-                        svtf->svtftypename == "МРШ" ? SVTF_OUT :// маршрутный
-                        svtf->svtftypename == "ПРХ" ? SVTF_PRH :// проходной
-                        svtf->svtftypename == "МНВ" ? SVTF_MNV :// маневровый
-                        svtf->svtftypename == "ПРС" ? SVTF_PRLS:// пригласительный
-                                                      SVTF_X;
-        // обрабатываем выражеение аварии светофора
-        QString s = query.value("SvtfError" ).toString();
-        if (s.length())
+        svtf->svtftypename = tname;
+        svtf->svtftype= tname == "ВХ"  ? SVTF_X   :         // входной
+                        tname == "ВЫХ" ? SVTF_IN  :         // выходной
+                        tname == "МРШ" ? SVTF_OUT :         // маршрутный
+                        tname == "ПРХ" ? SVTF_PRH :         // проходной
+                        tname == "МНВ" ? SVTF_MNV :         // маневровый
+                        tname == "ПРС" ? SVTF_PRLS:         // пригласительный
+                                         SVTF_X;
+        if (svtf->svtftype != SVTF_PRLS)
         {
-            svtf->formula_er = new BoolExpression(s);
-            if (svtf->formula_er->Valid())
-                QObject::connect(svtf->formula_er, SIGNAL(GetVar(QString&,int&)), svtf->st, SLOT(GetValue(QString&,int&)));
-            else
-                logger.log(QString("%1. Ошибка синтаксиса в поле StrlZsName '%2': %3").arg(svtf->NameEx()).arg(svtf->formula_er->Source()).arg(svtf->formula_er->ErrorText()));
+            svtf->name = ts->Name();
+            svtf->opened->SetTs(ts);
+            svtf->svtferror     = query.value("SvtfError" ).toString(); // выражение ошибки светофора
+
+            // обрабатываем выражеение аварии светофора
+            QString s = query.value("SvtfError" ).toString();
+            if (s.length())
+            {
+                svtf->formula_er = new BoolExpression(s);
+                if (svtf->formula_er->Valid())
+                    QObject::connect(svtf->formula_er, SIGNAL(GetVar(QString&,int&)), svtf->st, SLOT(GetValue(QString&,int&)));
+                else
+                    logger.log(QString("%1. Ошибка синтаксиса в поле StrlZsName '%2': %3").arg(svtf->NameEx()).arg(svtf->formula_er->Source()).arg(svtf->formula_er->ErrorText()));
+            }
         }
     }
     else

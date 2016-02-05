@@ -203,16 +203,10 @@ bool Station::parseNames (QString& srcname, Station*& st, QString& name)
 
 
 // поучить справочник по номеру станции
-Station * Station::GetById(int no)
+Station * Station::GetById(int no, class KrugInfo * krug)
 {
-    return Stations.contains(no) ? Stations[no] : nullptr;
-}
-
-// TODO: реализовать
-Station * Station::GetSprByNoOrgAndKrug(int no, int bridgeno)
-{
-    Q_UNUSED(bridgeno)
-    return GetById(no);
+    int id = krug==nullptr ? no : krug->key(no);
+    return Stations.contains(id ) ? Stations[id] : nullptr;
 }
 
 // поучить справочник по номеру станции
@@ -752,6 +746,21 @@ Tu * Station::GetTuByName (QString& name)
     return nullptr;
 }
 
+// очистка информации о состоянии РЦ и маршрутов перед приемом данных из потока
+void Station::ClearRcAndRouteInfo()
+{
+    foreach (Rc * rc, allrc)
+    {
+        rc->actualRoute = nullptr;
+        rc->actualtrain = nullptr;
+        rc->stsPassed   = false;
+    }
+
+    foreach (Route * route, routes)
+    {
+        route->sts = Route::PASSIVE;
+    }
+}
 
 // ОПЦИИ:
 // БРОК

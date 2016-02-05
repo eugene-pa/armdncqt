@@ -1,4 +1,5 @@
 ﻿#include "streamts.h"
+#include "krug.h"
 
 // 2009.12.11. Дополнительные данные, получаемые из модуля управление
 BYTE DOptionsDataFromMonitor::mntrIP3;                      // третий октет IP-адреса актуального АРМ ДНЦ
@@ -79,7 +80,7 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
 // ==============================================================================================================================================================
 //								class DPrgDataFromMonitor
 // ==============================================================================================================================================================
-void DPrgDataFromMonitor::Extract(int bridgeno)
+void DPrgDataFromMonitor::Extract(KrugInfo * krug)
 {
     if (Signature != SIGNATURE)
     {
@@ -87,15 +88,7 @@ void DPrgDataFromMonitor::Extract(int bridgeno)
         return;
     }
 
-    Peregon *prg = NULL;
-
-    if (bridgeno > 0)							// здесь должна быть сделан подстановка номера перегона
-    {
-        prg = Peregon::GetSprByOrgNoAndKrug (NoPrg, bridgeno);
-    }
-    else
-        prg = Peregon::GetById(NoPrg);          // основной поток
-
+    Peregon *prg = Peregon::GetById (NoPrg, krug);
     if (prg)
     {
 //        prg->ChdkOn		 = ChdkOn;              // вкл/окл контроль поездов по ЧДК

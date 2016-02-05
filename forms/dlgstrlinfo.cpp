@@ -11,14 +11,14 @@ DlgStrlInfo::DlgStrlInfo(Station * st, QWidget *parent) :
     this->st = st;
     ui->setupUi(this);
 
-    FillData();
+    fillData();
 }
 
 DlgStrlInfo::~DlgStrlInfo()
 {
     delete ui;
 }
-void DlgStrlInfo::FillData()
+void DlgStrlInfo::fillData()
 {
     setWindowTitle("Состояние стрелок по ст." + st->Name());
     ui->treeStrl->setColumnCount(3);
@@ -40,4 +40,21 @@ void DlgStrlInfo::FillData()
         itemplus->setBackground(1,Qt::green);
         itemminus->setBackground(1,Qt::yellow);
     }
+}
+
+void DlgStrlInfo::timerEvent(QTimerEvent *event)
+{
+    if (isVisible())
+        UpdateStatus();
+}
+
+void DlgStrlInfo::closeEvent(QCloseEvent *e)
+{
+    setVisible(false);
+    e->ignore();
+}
+
+void DlgStrlInfo::UpdateStatus()
+{
+
 }

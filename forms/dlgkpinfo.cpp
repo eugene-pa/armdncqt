@@ -63,7 +63,8 @@ void DlgKPinfo::redraw(Station * p)
 void DlgKPinfo::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    update();
+    if (isVisible())
+        update();
 }
 
 void DlgKPinfo::paintEvent(QPaintEvent* e)

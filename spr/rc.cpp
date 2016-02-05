@@ -1,4 +1,5 @@
 #include "station.h"
+#include "krug.h"
 
 QHash<QString, class IdentityType *> Rc::propertyIds;       // множество шаблонов возможных свойств РЦ
 QHash<QString, class IdentityType *> Rc::methodIds;         // множество шаблонов возможных методов РЦ
@@ -74,18 +75,12 @@ Rc::~Rc()
 }
 
 // получить справочник по номеру РЦ
-Rc * Rc::GetById(int no)
+Rc * Rc::GetById(int no, KrugInfo * krug)
 {
-    return rchash.contains(no) ? rchash[no] : nullptr;
+    int id = krug==nullptr ? no : krug->key(no);
+    return rchash.contains(id) ? rchash[id] : nullptr;
 }
 
-// TODO:
-// получить справочник по номеру РЦ и номеру потока
-Rc * Rc::GetSprByOrgNoAndKrug(int no, int bridgeno)
-{
-    Q_UNUSED(bridgeno)
-    return GetById(no);
-}
 
 // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов
 bool Rc::AddTemplate(IdentityType * ident)

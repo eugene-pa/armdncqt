@@ -2,6 +2,9 @@
 #include "ui_dlgrcinfo.h"
 #include "../spr/station.h"
 
+QBrush DlgRcInfo::brushBusy     = QBrush(QColor(255,128,128));
+QBrush DlgRcInfo::brushBuzyZmk  = QBrush(QColor(255,128,255));
+
 DlgRcInfo::DlgRcInfo(Station * st, QWidget *parent ) :
     QDialog(parent),
     ui(new Ui::DlgRcInfo)
@@ -9,7 +12,8 @@ DlgRcInfo::DlgRcInfo(Station * st, QWidget *parent ) :
     this->st = st;
     ui->setupUi(this);
 
-    FillData();
+    fillData();
+    startTimer (1500);
 }
 
 DlgRcInfo::~DlgRcInfo()
@@ -25,7 +29,28 @@ void DlgRcInfo::changeStation(class Station * p)
     {
         ui->tableRc->clear();
         st = p;
-        FillData();
+        fillData();
+    }
+}
+
+void DlgRcInfo::timerEvent(QTimerEvent *event)
+{
+    if (isVisible())
+        updateStatus();
+}
+
+void DlgRcInfo::updateStatus()
+{
+    QTableWidget * t = ui->tableRc;
+    for (int i=0; i<t->rowCount(); i++)
+    {
+        QTableWidgetItem * item = t->item(i,0);
+        Rc * rc = (Rc *) item->data(Qt::UserRole).value<void*>();
+        if (rc==nullptr)
+            continue;
+        QBrush brush = getBackground(rc);
+        if (brush != item->background())
+            item->setBackground(getBackground(rc));
     }
 }
 
@@ -36,7 +61,7 @@ void DlgRcInfo::changeStation(class Station * p)
 // - состояние РЦ (цвет)
 // - маршрут
 // - поезд
-void DlgRcInfo::FillData()
+void DlgRcInfo::fillData()
 {
     setWindowTitle("Состояние РЦ по ст." + st->Name());
 
@@ -48,14 +73,18 @@ void DlgRcInfo::FillData()
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" << "Свтф >>" << "Свтф <<");
 
+    t->setSelectionBehavior( QAbstractItemView::SelectRows );
+    t->setSelectionMode(QAbstractItemView::SingleSelection);
+
     int row = 0;
     foreach (Rc *rc, st->Allrc().values())
     {
         // РЦ
-        t->setItem(row,0, new QTableWidgetItem (*g_green, rc->Name()));
+        t->setItem(row,0, new QTableWidgetItem (/**g_green,*/ rc->Name()));
+        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)rc));    // запомним РЦ
+        t->item(row,0)->setBackground(getBackground(rc));
 
         // #
-        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)rc));    // запомним РЦ
         t->setItem(row,1, new QTableWidgetItem (QString("%1").arg(rc->No(),5,10,QChar(' ')))); // форматирование с ведущими нулями для сортировки
 
         // маршрут
@@ -140,4 +169,11 @@ void DlgRcInfo::closeEvent(QCloseEvent * e)
 {
     setVisible(false);
     e->ignore();
+}
+
+QBrush DlgRcInfo::getBackground(Rc * rc)
+{
+    return rc->stsBusy ? rc->stsZmk ? brushBuzyZmk : brushBusy :
+           rc->stsZmk  ? Qt::cyan : rc->actualRoute != nullptr ? Qt::green : Qt::white;
+
 }

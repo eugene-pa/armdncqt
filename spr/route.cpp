@@ -24,6 +24,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
     bSetStrlBefore  = false;                                    // Признак необходимости перевести стрелки перед дачей команды (лексема СТРЕЛКИ)
     srcComplexError = false;
     srcOpponentError= false;
+    srcZzmkError    = false;
 
     try
     {
@@ -40,6 +41,8 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
             return;
         }
         text    = query.value("Text").toString().trimmed();     // описание
+        name    = text;                                         // возможно, нужно более информативное имя
+
         QString tmp = query.value("Dir").toString().trimmed();  // направление Ч/Н
         dir     = tmp != "Ч";                                   // false = Ч, true = Н
         path    = query.value("Path").toString().trimmed();     // основной путь приема/отправления; в маршрутах передачи путь на который отправляется поезд
@@ -175,8 +178,9 @@ Route::~Route()
 }
 
 // получить справочник по уникальному ключу(номеру) маршрута
-Route * Route::GetById(int id)
+Route * Route::GetById(int no, KrugInfo * krug)
 {
+    int id = krug==nullptr ? no : krug->key(no);
     return routes.contains(id) ? routes[id] : nullptr;
 }
 
@@ -368,3 +372,44 @@ bool Route::parseExpression(QSqlQuery& query, QString field, QString& src, BoolE
     return true;
 }
 
+// получить перечисление идентифицированных РЦ маршрута
+QString Route::GetRcEnum()
+{
+    QString ret;
+    foreach (Rc * rc, listRc)
+        ret += rc->Name() + " ";
+    return ret;
+}
+
+// получить перечисление идентифицированных стрелок маршрута
+QString Route::GetStrlEnum()
+{
+    QString ret;
+    foreach(LinkedStrl * link, listStrl)
+        ret += link->Name() + " ";
+    return ret;
+}
+// получить перечисление ТУ установки
+QString Route::GetTuSetEnum()
+{
+    QString ret;
+    foreach(Tu * tu, tuSetList)
+        ret += tu->Name() + " ";
+    return ret;
+
+}
+
+// получить перечисление ТУ отмены
+QString Route::GetTuCancelEnum()
+{
+    QString ret;
+    foreach(Tu * tu, tuCancelList)
+        ret += tu->Name() + " ";
+    return ret;
+}
+
+// Проверка открытого состояния ограждающего светофора
+bool Route::IsOpen()
+{
+    return svtfBeg != nullptr && svtfBeg->IsOpen();
+}

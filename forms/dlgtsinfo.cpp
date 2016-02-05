@@ -100,7 +100,8 @@ void DlgTsInfo::fillTable()
 void DlgTsInfo::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    UpdateList();
+    if (isVisible())
+        UpdateList();
 }
 
 // обновить состояние ТС в списке
@@ -112,7 +113,7 @@ void DlgTsInfo::UpdateList()
         QTableWidgetItem * item = t->item(i,0);
         Ts * ts = (Ts *) item->data(Qt::UserRole).value<void*>();
         if (ts==nullptr)
-            return;
+            continue;
         item->setIcon(getStsImage(ts));
     }
 }

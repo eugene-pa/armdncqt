@@ -40,8 +40,8 @@ public:
     static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
     // открытые статические функции
-    static Station * GetById(int no);                       // получить справочник по номеру станции
-    static Station * GetSprByNoOrgAndKrug(int no, int bridgeno);
+    //static Station * GetById(int no);                       // получить справочник по номеру станции
+    static Station * GetById(int no, class KrugInfo * krug = nullptr);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
     static bool ReadBd (QString&, class KrugInfo*, Logger&);// чтение БД
     static void SortTs();                                   // сортировка списка ТС
@@ -171,6 +171,7 @@ public:
     class Rc   * GetRcByName  (QString& name);              // найти РЦ по имени[возможно, индексированному]
     class Tu   * GetTuByName  (QString& name);              // поиск ТУ по имени с возможностью индексации станции ЧО[#3], ЧО[Вад]
 
+    void  ClearRcAndRouteInfo();                            // очистка информации о состоянии РЦ и маршрутов перед приемом данных из потока
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

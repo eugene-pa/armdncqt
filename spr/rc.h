@@ -33,6 +33,7 @@ class Rc : public SprBase
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
     friend class DDataFromMonitor;
     friend class DlgRcInfo;
+    friend class Station;
 
 public:
     enum RcTypes
@@ -48,8 +49,7 @@ public:
     };
 
     // открытые статические функции
-    static Rc * GetById(int no);                            // получить справочник по номеру РЦ
-    static Rc * GetSprByOrgNoAndKrug(int no, int bridgeno);
+    static Rc * GetById(int no, class KrugInfo * krug=nullptr);   // получить справочник по номеру РЦ
     static QHash<int, Rc *>& AllRc() { return rchash; }     // получить таблицу всех РЦ
 
     static bool ReadRelations(QString& dbpath, Logger& );   // чтение таблицы связей РЦ и формирование дерева связей

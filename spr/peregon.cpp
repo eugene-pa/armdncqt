@@ -1,4 +1,5 @@
 #include "peregon.h"
+#include "krug.h"
 
 QHash<int, Peregon*> Peregon::Peregons;              // хэш-таблица указателей на справочники перегонов
 
@@ -12,16 +13,9 @@ Peregon::~Peregon()
 
 }
 
-
-// получить справочник по номеру перегона
-Peregon * Peregon::GetById(int no)
+// получить справочник по номеру перегона и кругу
+Peregon * Peregon::GetById (int no, KrugInfo* krug )
 {
-    return Peregons.contains(no) ? Peregons[no] : nullptr;
-}
-
-// TODO: реализовать
-Peregon * Peregon::GetSprByOrgNoAndKrug (int no, int bridgeno)
-{
-    Q_UNUSED(bridgeno)
-    return Peregon::GetById(no);
+    int id = krug==nullptr ? no : krug->key(no);
+    return Peregons.contains(id) ? Peregons[id] : nullptr;
 }

@@ -20,7 +20,7 @@ LinkedStrl::LinkedStrl(int no)
 LinkedStrl::LinkedStrl(class Station* st, QString& name)
 {
     strl = st->GetStrlByName(name, no);
-    name = strl != nullptr ? strl->basename + (no > 0 ? "+" : "-") : "?";
+    this->name = strl != nullptr ? strl->basename + (no > 0 ? "+" : "-") : "?";
 }
 
 // -----------------------------------------------------------

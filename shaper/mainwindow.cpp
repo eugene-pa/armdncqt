@@ -214,7 +214,7 @@ void MainWindow::on_action_RcInfo_triggered()
         QObject::connect(this, SIGNAL(changeStation(Station*)), dlgRc, SLOT(changeStation(Station*)));
     }
     else
-        dlgRc->setVisible(!dlgTs->isVisible());
+        dlgRc->setVisible(!dlgRc->isVisible());
 }
 
 // обработчик меню информация по КП
@@ -227,7 +227,7 @@ void MainWindow::on_action_KPinfo_triggered()
         QObject::connect(this, SIGNAL(changeStation(Station*)), dlgKp, SLOT(changeStation(Station*)));
     }
     else
-        dlgKp->setVisible(dlgKp->isVisible());
+        dlgKp->setVisible(!dlgKp->isVisible());
 }
 
 
@@ -241,7 +241,7 @@ void MainWindow::on_action_RouteInfo_triggered()
         QObject::connect(this, SIGNAL(changeStation(Station*)), dlgRoutes, SLOT(changeStation(Station*)));
     }
     else
-        dlgRoutes->setVisible(dlgRoutes->isVisible());
+        dlgRoutes->setVisible(!dlgRoutes->isVisible());
 }
 
 // обработчик меню информация по светофорам
@@ -297,6 +297,8 @@ void MainWindow::loadResources()
     g_yellow            = new QPixmap(images + "icon_yel.ico");
     g_gray              = new QPixmap(images + "icon_gry.ico");
     g_white             = new QPixmap(images + "icon_wht.ico");
+    g_cyan              = new QPixmap(images + "icon_cyn.ico");
+
     g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
     g_green_box         = new QPixmap(images + "box_grn.ico");
     g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");               // МТУ ок

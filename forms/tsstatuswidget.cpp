@@ -160,7 +160,8 @@ void TsStatusWidget::DrawTs  (QPainter *p)
 void TsStatusWidget::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    this->update();
+    if (isVisible())
+        this->update();
 }
 
 void TsStatusWidget::mousePressEvent(QMouseEvent * event)

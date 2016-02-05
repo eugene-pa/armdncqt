@@ -15,16 +15,20 @@ public:
     explicit DlgRoutes(class Station * st, QWidget *parent = 0);
     ~DlgRoutes();
 
+protected:
+    virtual void timerEvent(QTimerEvent *event);
+    virtual void closeEvent(QCloseEvent *);
+
 public slots:
     void changeStation(class Station *);                    // смена станции
 
 private slots:
 
 private:
-    virtual void closeEvent(QCloseEvent *);
     void FillData();
-    class Station * st;
+    QIcon getStsImage (class Route * route);                // получить значок состояния ТС
 
+    class Station * st;
     Ui::DlgRoutes *ui;
 };
 
