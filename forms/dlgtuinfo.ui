@@ -18,7 +18,7 @@
     <widget class="QTableWidget" name="tableTu"/>
    </item>
    <item row="1" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,3,1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,3,0">
      <item>
       <widget class="QLabel" name="label">
        <property name="sizePolicy">
@@ -28,7 +28,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Ширина импульса ТУ, сек</string>
+        <string>Импульс ТУ, сек</string>
        </property>
       </widget>
      </item>
@@ -63,19 +63,6 @@
         <enum>QSlider::TicksAbove</enum>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
