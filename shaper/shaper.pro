@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui widgets sql
-CONFIG   += console c++11
+CONFIG   += console
 QT       += network
 
 
@@ -60,7 +60,8 @@ SOURCES += main.cpp\
     ../spr/ecmpkinfo.cpp \
     ../forms/qled.cpp \
     ../spr/krug.cpp \
-    ../forms/dlgroutes.cpp
+    ../forms/dlgroutes.cpp \
+    ../forms/dlgtuinfo.cpp
     ../common/boolexpression.cpp \
 
 
@@ -109,7 +110,8 @@ HEADERS  += mainwindow.h \
     ../spr/ecmpkinfo.h \
     ../forms/qled.h \
     ../spr/krug.h \
-    ../forms/dlgroutes.h
+    ../forms/dlgroutes.h \
+    ../forms/dlgtuinfo.h
     ../common/boolexpression.h \
 
 
@@ -120,7 +122,8 @@ FORMS    += mainwindow.ui \
     ../forms/dlgtsinfo.ui \
     ../forms/dlgkpinfo.ui \
     ../forms/bminfoframe.ui \
-    ../forms/dlgroutes.ui
+    ../forms/dlgroutes.ui \
+    ../forms/dlgtuinfo.ui
 
 RESOURCES += \
     images.qrc

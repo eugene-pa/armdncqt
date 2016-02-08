@@ -45,7 +45,7 @@ DlgStationsInfo::DlgStationsInfo(QWidget *parent) :
 
     t->resizeColumnsToContents();
     t->setSortingEnabled(true);                         // разрешаем сортировку
-    t->sortByColumn(1, Qt::SortOrder::AscendingOrder);  // сортировка по умолчанию по №
+    t->sortByColumn(1, Qt::AscendingOrder);             // сортировка по умолчанию по №
 }
 
 DlgStationsInfo::~DlgStationsInfo()

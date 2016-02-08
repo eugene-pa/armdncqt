@@ -5,6 +5,8 @@
 
 class Tu : public SprBase
 {
+    friend class DlgTuInfo;
+
 public:
     // открытве статические функции
     static bool ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger);       // чтение БД
@@ -31,6 +33,10 @@ public:
     void SetEpilog(Tu * tu) { tuEpilog = tu; }              // проставить эпилог
     void SetPolus (Tu * tu) { tuPolus = tu; }               // проставить полюс
 
+    void setTuEnum();                                       // записать последовательность ТУ
+
+    QString Place()  { return place; }
+    QString TuEnum() { return tuEnum; }
 private:
                                                             // статические данные из БД
 // закрытые члены
@@ -59,6 +65,9 @@ private:
 
     QString kontact;                                        // контакт
     int    KontactInt;                                      // контакт целочисленный
+
+    QString tuEnum;                                         // перечисление ТУ
+    QString place;                                          // KNN:MM
 
     Tu * next;                                              // следующий справочник в списке объединенных по одним координатам ТУ
     Tu * prev;                                              // предыдущий справочник в списке объединенных по одним координатам ТУ

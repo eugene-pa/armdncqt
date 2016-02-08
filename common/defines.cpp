@@ -29,13 +29,16 @@ QPixmap * g_green,
         * g_cyan,
 
         * g_green_box,
-        * g_green_box_tu,                           // МТУ ок
+        * g_green_box_tu,                                   // МТУ ок
         * g_green_dark_box,
         * g_red_box,
-        * g_red_box_tu,                             // МТУ error
+        * g_red_box_tu,                                     // МТУ error
         * g_red_dark_box,
         * g_yellow_box,
         * g_yellow_dark_box,
         * g_gray_box,
         * g_white_box,
-        * g_green_box_blink;                                // индикаторы статуса
+        * g_green_box_blink,                                // индикаторы статуса
+        * g_strl_minus,                                     // -
+        * g_strl_plus;                                      // +
+

@@ -95,6 +95,8 @@ Tu::Tu(QSqlQuery& query, class KrugInfo* krug, Logger& logger)
         logger.log("Исключение в конструкторе Tu");
     }
 
+    kolodka = QString("K%1").arg(_kolodka);
+    place = QString("%1:%2").arg(kolodka).arg(kontact);
 
 }
 
@@ -198,4 +200,10 @@ bool Tu::ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger)
 int Tu::CompareByNames(const void* p1,const void* p2)
 {
     return ((Tu*)p1)->Name() < ((Tu*)p2)->Name();
+}
+
+// записать последовательность ТУ
+void Tu::setTuEnum()
+{
+    tuEnum = polus + " " + prolog + + " " + (_kolodka > 0 ? (name  + " ") : "") + epilog;
 }

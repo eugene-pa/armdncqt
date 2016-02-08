@@ -50,6 +50,7 @@ static int CompareByNames(const void*,const void*);
     int J() { return _j; }
 
     QString GetTooltip();
+    QString Place() { return place; }
 
 private:
                                                             // статические данные из БД
@@ -61,10 +62,11 @@ private:
     bool   inverse;
     bool   pulse;                                           // мигающий
     int    stativ;
-    int    place;
+    //int    place;
     int    _kolodka;
     QString kolodka;
     QString kontact;
+    QString place;                                          // KNN:MM
     QString question;                                       // поле question
 
 // выношу специфические свойства в классы объектов

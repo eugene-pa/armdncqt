@@ -66,8 +66,9 @@ void DlgRoutes::FillData()
         t->setItem(row,0, new QTableWidgetItem (QString("%1").arg(route->RelNo(),5,10,QChar(' '))));
 
         // 1 - Наименование
-        t->setItem(row,1, new QTableWidgetItem (getStsImage (route),route->Text()));
+        t->setItem(row,1, new QTableWidgetItem (/*getStsImage (route),*/route->Text()));
         t->item(row,1)->setData(Qt::UserRole,qVariantFromValue((void *)route));    // запомним маршрут
+        t->item(row,1)->setBackground(getBrush(route));
 
         // 2 - тип
         QString temp = route->TypeName();
@@ -84,7 +85,10 @@ void DlgRoutes::FillData()
         }
 
         // 3 - светофор
-        t->setItem(row,3, new QTableWidgetItem (route->SvtfBeg()==nullptr ? "" : route->SvtfBeg()->Name()));
+        temp = route->SvtfBeg()==nullptr ? "" : route->SvtfBeg()->Name();
+        if (route->svtfEnd != nullptr)
+          temp += " -> " + route->svtfEnd->Name();
+        t->setItem(row,3, new QTableWidgetItem (temp));
 
         // 4 - РЦ в маршруте
         t->setItem(row,4, new QTableWidgetItem (route->srcRc));
@@ -175,7 +179,7 @@ void DlgRoutes::FillData()
         row++;
     }
     t->setSortingEnabled(true);                             // разрешаем сортировку
-    t->sortByColumn(0, Qt::SortOrder::AscendingOrder);      // сортировка по умолчанию
+    t->sortByColumn(0, Qt::AscendingOrder);      // сортировка по умолчанию
     t->resizeColumnsToContents();
 
     ui->labelErrors->setText(QString::number(errors));      // число ошибок описания
@@ -194,7 +198,8 @@ void DlgRoutes::timerEvent(QTimerEvent *event)
             Route * route = (Route *) item->data(Qt::UserRole).value<void*>();
             if (route==nullptr)
                 continue;
-            item->setIcon(getStsImage(route));
+//          item->setIcon(getStsImage(route));
+            item->setBackground(getBrush(route));
         }
     }
 }
@@ -206,3 +211,12 @@ QIcon DlgRoutes::getStsImage (class Route * route)
            route->IsOpen()            ? route->IsManevr() ? * g_yellow : *g_green :
                                         *g_cyan;
 }
+
+// получить кисть по состоянию ТС
+QBrush DlgRoutes::getBrush   (class Route * route)
+{
+    return route->sts==Route::PASSIVE ? Qt::white :
+           route->IsOpen()            ? route->IsManevr() ? Qt::yellow : Qt::green :
+                                        Qt::cyan;
+}
+

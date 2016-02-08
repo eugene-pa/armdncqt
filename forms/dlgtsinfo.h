@@ -2,6 +2,7 @@
 #define DLGTSINFO_H
 
 #include <QDialog>
+#include "../spr/station.h"
 
 namespace Ui {
 class DlgTsInfo;
@@ -28,7 +29,7 @@ public:
 
 private:
     // события
-    void timerEvent(QTimerEvent *event);
+    virtual void timerEvent(QTimerEvent *event);
     virtual void closeEvent(QCloseEvent *);
 
     QIcon getStsImage (class Ts * ts);                      // получить значок состояния ТС

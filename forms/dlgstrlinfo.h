@@ -19,6 +19,9 @@ protected:
     virtual void timerEvent(QTimerEvent *event);
     virtual void closeEvent(QCloseEvent *);
 
+public slots:
+    void changeStation(class Station *);                    // смена станции
+
 private:
     Ui::DlgStrlInfo *ui;
 

@@ -509,6 +509,8 @@ void Station::ParsePrologEpilog(Logger& logger)
                 else
                     logger.log(QString("Не найдена ТУ полюса %1 для ТУ %2").arg(name).arg(tu->NameEx()));
             }
+
+            tu->setTuEnum();
         }
     }
 }

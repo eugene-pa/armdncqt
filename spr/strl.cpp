@@ -265,14 +265,14 @@ void Strl::Accept ()
     stsSelRsbl= SafeValue(selectedunlock);                  // выбор для разблокировки
 
     // Здесь надо уметь обрабатывать и отдельно записанные выражения МУ
-    stsMu     = SafeValue(mu) || formula_mu != nullptr && formula_mu->ValueBool();// МУ
+    stsMu     = SafeValue(mu) || (formula_mu != nullptr && formula_mu->ValueBool());// МУ
 
-    stsBusyRc = sprRc != nullptr && sprRc->StsBusy();       // занятость РЦ под стрелкой
-    stsBusyAnyRc = stsBusyRc || sprRc2 != nullptr && sprRc2->StsBusy(); // занятость любой из двух РЦ под спаренными стрелками
+    stsBusyRc = (sprRc != nullptr) && sprRc->StsBusy();       // занятость РЦ под стрелкой
+    stsBusyAnyRc = stsBusyRc || (sprRc2 != nullptr && sprRc2->StsBusy()); // занятость любой из двух РЦ под спаренными стрелками
     stsZmkRc = sprRc != nullptr && sprRc->StsZmk();         // замыкание РЦ под стрелкой
-    stsZmkAnyRc = stsZmkRc || sprRc2 != nullptr && sprRc2->StsZmk(); // замыкание любой из двух РЦ под спаренными стрелками
+    stsZmkAnyRc = stsZmkRc || (sprRc2 != nullptr && sprRc2->StsZmk()); // замыкание любой из двух РЦ под спаренными стрелками
     stsIrRc = sprRc != nullptr && sprRc->StsIr();           // ИР РЦ под стрелкой
-    stsIrAnyRc= stsIrRc || sprRc2 != nullptr && sprRc2->StsIr(); // ИР любой из двух РЦ под спаренными стрелками
+    stsIrAnyRc= stsIrRc || (sprRc2 != nullptr && sprRc2->StsIr()); // ИР любой из двух РЦ под спаренными стрелками
 
     // состояние в терминах УП
     int unistatus = (int)GetUniStatus();

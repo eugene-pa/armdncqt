@@ -21,7 +21,7 @@ Ts::Ts(QSqlQuery& query, KrugInfo * krug, Logger& logger)
         _i      = query.value("I"       ).toInt(&ret);
         _j      = query.value("J"       ).toInt(&ret);
         stativ  = query.value("Stativ"  ).toInt(&ret);
-        place   = query.value("Place"   ).toInt(&ret);
+        //place   = query.value("Place"   ).toInt(&ret);    // не используется
         _kolodka= query.value("Kolodka" ).toInt(&ret);
         kontact = query.value("Klem"    ).toString();
         norc    = query.value("NoRc"    ).toInt(&ret);
@@ -110,6 +110,7 @@ Ts::Ts(QSqlQuery& query, KrugInfo * krug, Logger& logger)
         }
 
         kolodka = QString("K%1").arg(_kolodka);
+        place = QString("%1:%2").arg(kolodka).arg(kontact);
     }
     catch(...)
     {

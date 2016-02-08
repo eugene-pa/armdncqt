@@ -120,14 +120,14 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
         QString msg("Нет сигнатуры в пакете от MONITOR");
 //		LogOutMsg(m_DbDir,s,LOG_NET,LOG_SYS);               // РЕАЛИЗОВАТЬ МЕХАНИЗМ ПРОТОКОЛИРОВАНИЯ И ЛОГОВ В ВИДЕ УНИВЕРСАЛЬНОЙ ФУНКЦИИ
         Logger::LogStr (msg);                               // параметры: сообщение, признак протоколирования, источник, тип, станция
-        return false;
+        return nullptr;
     }
 
     // если класс Station не задан явно, ищем по номеру
     if (st == nullptr)
     {
         if ((st = Station::GetById(NoSt))==nullptr)
-            return false;
+            return nullptr;
     }
 
 //  TRACE (st->name);
@@ -208,7 +208,7 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
         if (    tSpokSnd                                    // время отправки не нулевое
             &&  tSpokRcv                                    // время приема не нулевое
             &&	tSpokRcv > tSpokSnd                         // время приема больше времени отправки
-            &&  qMax(LastTime [0],LastTime [1]) - tSpokSnd < 0 * 5  // а время отправки не более 5 минут
+            &&  (int)qMax(LastTime [0],LastTime [1]) - (int)tSpokSnd < 0 * 5  // а время отправки не более 5 минут
             )
             info->src[0] = info->src[0] | 0x80 ;              // омул в порядке!
     }

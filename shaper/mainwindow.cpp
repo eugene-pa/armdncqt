@@ -6,17 +6,19 @@
 #include "../forms/dlgstrlinfo.h"
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
+#include "../forms/dlgtuinfo.h"
 #include "../forms/dlgkpinfo.h"
 #include "../forms/dlgroutes.h"
 #include "../spr/krug.h"
 
-Logger logger("Log/shaper.txt", true, true);
+//Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
 
-
+//QString server_ipport = "192.168.0.101:1010";                       // подключение к потоку ТС из настроечного файла
 QString server_ipport = "192.168.0.100:1013";                       // подключение к потоку ТС из настроечного файла
 
 #ifdef Q_OS_WIN
+    Logger logger("Log/shaper.txt", true, true);
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
@@ -24,6 +26,7 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString images(":/status/images/");                                   // путь к образам
 #endif
 #ifdef Q_OS_MAC
+    Logger logger("/Users/evgenyshmelev/armdncqt/Log/shaper.txt", true, true);
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
     QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
@@ -31,6 +34,7 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
 #endif
 #ifdef Q_OS_LINUX
+    Logger logger("/home/eugene/QTProjects/armdncqt/Log/shaper.txt", true, true);
     QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
     QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
     QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
@@ -42,18 +46,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-/*
-    int n = sizeof(QDateTime);
-    QDateTime t = QDateTime::currentDateTime();
-    n = sizeof(t);
-*/
     // устанавливаем кодировку для отладочного окна вывода
 #ifdef Q_OS_WIN
     QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
 #endif
 
     dlgTs = nullptr;                                                    // состояние ТС
+    dlgTu = nullptr;                                                    // состояние ТУ
     dlgRc = nullptr;                                                    // состояние РЦ
+    dlgStrl = nullptr;
     dlgKp = nullptr;                                                    // диалог КП
     dlgRoutes = nullptr;                                                // диалог маршрутов
 
@@ -204,6 +205,19 @@ void MainWindow::on_action_TsInfo_triggered()
         dlgTs->setVisible(!dlgTs->isVisible());
 }
 
+// обработчик меню информация по синалам ТУ
+void MainWindow::on_action_TuInfo_triggered()
+{
+    if (dlgTu==nullptr)
+    {
+        dlgTu = new DlgTuInfo(this, g_actualStation);
+        dlgTu->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgTu, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgTu->setVisible(!dlgTu->isVisible());
+}
+
 // обработчик меню информация по РЦ
 void MainWindow::on_action_RcInfo_triggered()
 {
@@ -244,17 +258,23 @@ void MainWindow::on_action_RouteInfo_triggered()
         dlgRoutes->setVisible(!dlgRoutes->isVisible());
 }
 
+// обработчик меню информация по стрелкам
+void MainWindow::on_action_StrlInfo_triggered()
+{
+    if (dlgStrl == nullptr)
+    {
+        dlgStrl = new DlgStrlInfo(g_actualStation, this);
+        dlgStrl->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgStrl, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgStrl->setVisible(!dlgStrl->isVisible());
+}
+
 // обработчик меню информация по светофорам
 void MainWindow::on_action_SvtfInfo_triggered()
 {
 
-}
-
-// обработчик меню информация по стрелкам
-void MainWindow::on_action_StrlInfo_triggered()
-{
-    DlgStrlInfo * dlg = new DlgStrlInfo(g_actualStation, this);
-    dlg->showNormal();
 }
 
 // обработчик меню информация по станциям
@@ -277,12 +297,6 @@ void MainWindow::on_action_trainsInfo_triggered()
 
 }
 
-// обработчик меню информация по синалам ТУ
-void MainWindow::on_action_TuInfo_triggered()
-{
-
-}
-
 // обработчик меню информация по синалам ОТУ
 void MainWindow::on_action_OtuInfo_triggered()
 {
@@ -301,13 +315,17 @@ void MainWindow::loadResources()
 
     g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
     g_green_box         = new QPixmap(images + "box_grn.ico");
-    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");               // МТУ ок
+    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");           // МТУ ок
     g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
     g_red_box           = new QPixmap(images + "box_red.ico");
-    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");               // МТУ error
+    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");           // МТУ error
     g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
     g_yellow_box        = new QPixmap(images + "box_yel.ico");
     g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");
     g_gray_box          = new QPixmap(images + "box_gry.ico");
     g_white_box         = new QPixmap(images + "box_wht.ico");
+
+    g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
+    g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
+
 }

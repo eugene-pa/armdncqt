@@ -35,6 +35,7 @@ void DlgRcInfo::changeStation(class Station * p)
 
 void DlgRcInfo::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
     if (isVisible())
         updateStatus();
 }
@@ -118,14 +119,10 @@ void DlgRcInfo::fillData()
             s += lnk->lft->Name();
             if (lnk->strl.count())
             {
-                s += "[";
+                s += " [";
                 foreach (LinkedStrl * lstrl, lnk->strl)
-                {
-                    s += lstrl->Name();
-                    s += " ";
-                }
-
-                s += "]";
+                    s += " " + lstrl->Name();
+                s += " ]";
             }
             s += "  ";
         }
@@ -139,13 +136,9 @@ void DlgRcInfo::fillData()
             s += lnk->rht->Name();
             if (lnk->strl.count())
             {
-                s += "[";
+                s += " [";
                 foreach (LinkedStrl * lstrl, lnk->strl)
-                {
-                    s += lstrl->Name();
-                    s += " ";
-                }
-
+                    s += " " + lstrl->Name();
                 s += "]";
             }
             s += "  ";
@@ -160,7 +153,7 @@ void DlgRcInfo::fillData()
     // "Свтф <<"
 
     t->setSortingEnabled(true);                             // разрешаем сортировку
-    t->sortByColumn(0, Qt::SortOrder::AscendingOrder);      // сортировка по умолчанию
+    t->sortByColumn(0, Qt::AscendingOrder);                 // сортировка по умолчанию
     t->resizeColumnsToContents();
 }
 

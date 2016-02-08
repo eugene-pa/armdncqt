@@ -21,6 +21,9 @@
 //#include <QWidget>
 //#include <QGraphicsView>
 
+
+#define nullptr 0
+
 // определения, облегчающие перенос кода с MSVC&MFC в QT
 typedef unsigned char   BYTE;
 typedef unsigned short  WORD;
@@ -144,6 +147,10 @@ extern QPixmap  * g_green,
                 * g_yellow_dark_box,                        // коричневый
                 * g_gray_box,
                 * g_white_box,
-                * g_green_box_blink;                        // индикаторы статуса
+                * g_green_box_blink,                        // индикаторы статуса
+
+                * g_strl_minus,                             // -
+                * g_strl_plus;                              // +
+
 
 #endif // DEFINES_H

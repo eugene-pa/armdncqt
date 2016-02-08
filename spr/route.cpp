@@ -14,17 +14,19 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
     srcStrlError    = false;                                    // ошибки описания сбрасываем
     srcRcError      = false;
     tuSetError      = false;
-    nextRc          = nullptr;                                  // РЦ, следующая  за ограждающим светофором (для логич.контроля)
-    fBegEnd         = false;                                    // Признак маршрутного набора - задание НАЧАЛО КОНЕЦ
-    bSetStrlBefore  = false;                                    // Признак необходимости перевести стрелки перед дачей команды
-    bInOutRetime    = false;
-    hangSetModeExpr = false;                                    // вычислитель выражения контроля "зависания" набора маршрута
-    prgTsExpr       = false;                                    // вычислитель выражения контроля требуемого направления на перегоне
-    zmkExpr         = false;                                    // вычислитель выражения контроля замыкания
-    bSetStrlBefore  = false;                                    // Признак необходимости перевести стрелки перед дачей команды (лексема СТРЕЛКИ)
     srcComplexError = false;
     srcOpponentError= false;
     srcZzmkError    = false;
+    bSetStrlBefore  = false;                                    // Признак необходимости перевести стрелки перед дачей команды
+    bInOutRetime    = false;
+    fBegEnd         = false;                                    // Признак маршрутного набора - задание НАЧАЛО КОНЕЦ
+    bSetStrlBefore  = false;                                    // Признак необходимости перевести стрелки перед дачей команды (лексема СТРЕЛКИ)
+
+    nextRc          = nullptr;                                  // РЦ, следующая  за ограждающим светофором (для логич.контроля)
+    hangSetModeExpr = nullptr;                                  // вычислитель выражения контроля "зависания" набора маршрута
+    prgTsExpr       = nullptr;                                  // вычислитель выражения контроля требуемого направления на перегоне
+    zmkExpr         = nullptr;                                  // вычислитель выражения контроля замыкания
+
 
     try
     {
@@ -268,8 +270,6 @@ bool Route::checkComplex (Logger& logger)
             if (route != nullptr)
             {
                 listRoutes.append(route);
-                int n = listRoutes.length();
-
                 // - светофор либо не задается вообще, либо должен совпадать со светофором первого маршрута в списке
                 if (indx == 0)
                 {
@@ -284,7 +284,7 @@ bool Route::checkComplex (Logger& logger)
         indx++;
     }
 
-    if (srcComplexError = !ret)
+    if ((srcComplexError = !ret))
         logger.log(QString("Ошибка в описании составного маршрута %1. [Complex]=%2 ").arg(nameLog()).arg(srcComplex));
 
     return ret;
@@ -311,7 +311,7 @@ bool Route::checkOpponents (Logger& logger)
             }
         }
     }
-    if (srcOpponentError = !ret)
+    if ((srcOpponentError = !ret))
         logger.log(QString("Ошибка в описании составного маршрута %1. [Complex]=%2 ").arg(nameLog()).arg(srcComplex));
     return ret;
 }

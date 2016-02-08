@@ -82,9 +82,11 @@ private:
     void loadResources();
 
     class DlgTsInfo * dlgTs;                                // состояние ТС
+    class DlgTuInfo * dlgTu;                                // состояние ТС
     class DlgRcInfo * dlgRc;                                // состояние РЦ
-    class DlgKPinfo * dlgKp;                                // диалог КП
-    class DlgRoutes * dlgRoutes;                            // диалог маршрутов
+    class DlgStrlInfo * dlgStrl;                            // состояние стрелок
+    class DlgKPinfo * dlgKp;                                // состояние  КП
+    class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
 
 };
 

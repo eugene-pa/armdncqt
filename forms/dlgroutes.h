@@ -26,7 +26,8 @@ private slots:
 
 private:
     void FillData();
-    QIcon getStsImage (class Route * route);                // получить значок состояния ТС
+    QIcon  getStsImage(class Route * route);                // получить значок состояния ТС
+    QBrush getBrush   (class Route * route);                // получить кисть по состоянию ТС
 
     class Station * st;
     Ui::DlgRoutes *ui;

@@ -73,6 +73,6 @@ void QLed::mousePressEvent(QMouseEvent * event)
 
 void QLed::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint point = event->pos();
+    //QPoint point = event->pos();
     QToolTip::showText(event->globalPos(), objectName());
 }

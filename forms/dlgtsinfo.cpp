@@ -1,7 +1,7 @@
 #include "QPainter"
 #include "ui_dlgtsinfo.h"
 #include "dlgtsinfo.h"
-#include "../forms/tsstatuswidget.h"
+#include "tsstatuswidget.h"
 #include "../spr/station.h"
 #include "../spr/ts.h"
 
@@ -67,13 +67,13 @@ void DlgTsInfo::fillTable()
     {
         // 1 столбец - номер сигнала = индекс+1
         t->setItem(row,0, new QTableWidgetItem (getStsImage(ts), QString("%1").arg(ts->GetIndex() + 1,5,10,QChar(' '))));
+        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)ts));// запомним ТС
 
         // 2 столбец - имя сигнала
         QString name = ts->Name();
-        t->setItem(row,1, new QTableWidgetItem (name));                                    // имя
-        //t->setItem(row,1, new QTableWidgetItem (ts->Name()));                                    // имя
+        t->setItem(row,1, new QTableWidgetItem (name));     // имя
 
-        t->setItem(row,2, new QTableWidgetItem (QString("%1:%2").arg(ts->Kolodka()).arg(ts->Kontact())));
+        t->setItem(row,2, new QTableWidgetItem (ts->Place()));
         t->setItem(row,3, new QTableWidgetItem (QString("%1/%2/%3").arg(ts->M()).arg(ts->I()).arg(ts->J())));
 
         QColor clr = ts->Locked() ? Qt::gray : ts->IsVirtual() ? Qt::darkBlue : ts->IsPulsing () ? Qt::red : ts->IsInverse() ? Qt::white : Qt::black;
@@ -85,13 +85,11 @@ void DlgTsInfo::fillTable()
                     t->item(row,i)->setBackground(Qt::darkGray);
             }
 
-        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)ts));                    // запомним ТС
-
         row++;
     }
 
-    t->setSortingEnabled(true);                                                                 // разрешаем сортировку
-    t->sortByColumn(0, Qt::SortOrder::AscendingOrder);                                          // сортировка по умолчанию
+    t->setSortingEnabled(true);                             // разрешаем сортировку
+    t->sortByColumn(0, Qt::AscendingOrder);                 // сортировка по умолчанию
     t->resizeColumnsToContents();
 
 }

@@ -8,6 +8,8 @@ class Strl : public SprBase
 {
     friend class LinkedStrl;
     friend class Station;
+    friend class DlgStrlInfo;
+
 public:
 
     enum STRL_STATAUS                                       // положение стрелки
@@ -27,6 +29,8 @@ public:
     STRL_STATAUS status() { return stsPls == stsMns ? STRL_UNDEFINED :
                                    stsPls           ? STRL_PLUS      :
                                                       STRL_MINUS; }
+    bool isPlus () { return status() == STRL_PLUS; }
+    bool isMinus() { return status() == STRL_MINUS; }
 
     // открытые статические функции
     static bool AddTemplate(class IdentityType *);          // проверить шаблон и при необходимости добавить в список шаблонов свойств или методов

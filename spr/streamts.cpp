@@ -27,7 +27,7 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
             g_TmDtServer = tmdt;                            // Запомним время на сервере
             g_DeltaTZ = 0;                                  // 2014.10.29. Хочу оценить разницу установок времени
             time_t t; time (&t);                            // тек.время
-            if (abs(t - tmdt) > 3000)                       // если разница с сервером порядка часа - учтем ее
+            if (qAbs(t - tmdt) > 3000)                       // если разница с сервером порядка часа - учтем ее
             {
                 g_DeltaTZ = tmdt - t;                       // разница с сервером
                 g_TmDtServer -= g_DeltaTZ;
@@ -36,15 +36,18 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
             if (!g_bIgnoreServerTime                        // Если нет флага ИГНОРИРОВАТЬ серверное время
                 && !g_bNoSetServerTime)                     // И ФЛАГА НЕ СИНХРОНИЗИРОВАТЬ!
             {                                               //  синхронизируем время на клиенте при расхождении более 10 сек
-                if (abs(t - tmdt) >10 )
+                if (qAbs(t - tmdt) >10 )
                 {
                     // нужно уметь измененить время разных ОС
+#ifdef Q_OS_WIN
                     time_t t = tmdt;
                     struct tm _tm;
                     localtime_s(&_tm, &t);
-                    //struct tm * pTm = localtime_s(&t);
 //                    SYSTEMTIME st = {1900+pTm->tm_year,pTm->tm_mon+1,pTm->tm_wday,pTm->tm_mday,pTm->tm_hour,pTm->tm_min,pTm->tm_sec,0 };
 //                    SetLocalTime(&st);
+#else
+                    struct tm * pTm = localtime(&t);
+#endif
                 }
             }
 

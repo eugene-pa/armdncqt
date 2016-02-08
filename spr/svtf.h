@@ -97,7 +97,7 @@ private:
     bool stsOpen;                                           // открыт
 
     // закрытые функции
-    void Svtf::Accept();                                    // обработка ТС
+    void Accept();                                    // обработка ТС
     SprBase::UniStatusRc GetUniStatus();                    // получить статус UNI
 };
 

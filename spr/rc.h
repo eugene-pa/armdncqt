@@ -85,6 +85,9 @@ public:
     QVector <Ts *> Allts() { return allts; }          // список действительных ТС объекта
     QVector <Tu *> Alltu() { return alltu; }          // список действительных ТУ объекта
 
+    QList <class QGraphicsItem *> shapes;                   // динамически создаваемый список примитивов, отображающих эту РЦ; нужен для обработки стыков
+                                                            // используется для улучшения отрисовки стыков РЦ путем отрисовки полилиний
+
 private:
     static QHash <int, Rc *> rchash;                        // РЦ полигона, индексированные по ID
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
@@ -115,10 +118,6 @@ private:
     QVector<NxtPrv*> nxt;                                   // список всех следующих РЦ с определяющими стрелками
     NxtPrv *prvActual;                                      // активная связь влево  по стрелкам
     NxtPrv *nxtActual;                                      // активная связь вправо по стрелкам
-
-    QVector <class DShape*> shapes;                         // динамически создаваемый список примитивов, отображающих эту РЦ; нужен для обработки стыков
-
-                                                            // список создается для актальной видеоформы при ее открытии
     RcTypes rcTopoType;                                     // тип по топологии
     int pathno;                                             // № пути
     int pregonno;                                           // № перегона
