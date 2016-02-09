@@ -63,13 +63,16 @@ void ShapeSet::ScanFile()
                 switch (type)
                 {
                     case SEGMENT_COD:
-                    case ANGLE_COD:     shape = new ShapeRc   (str,this);   break;
-                    case STRL_COD:      shape = new ShapeStrl (str,this);   break;
-                    case SVTF_COD:      shape = new ShapeSvtf (str,this);   break;
-                    case MODE_COD:      shape = new ShapeTrnsp(str,this);   break;
+                    case ANGLE_COD:     shape = new ShapeRc   (str,this);   setRc   .append(shape); break;
+                    case STRL_COD:      shape = new ShapeStrl (str,this);   setStrl .append(shape); break;
+                    case SVTF_COD:      shape = new ShapeSvtf (str,this);   setSvtf .append(shape); break;
+                    case MODE_COD:      shape = new ShapeTrnsp(str,this);   setTrnsp.append(shape); break;
+//                  case PRZD_COD:      shape = new ShapePrzd (str,this);   setPrzd .append(shape); break;
                 }
                 if (shape != 0)
+                {
                     set.append(shape);
+                }
             }
         }
     }

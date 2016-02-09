@@ -4,6 +4,7 @@
 #include "colorscheme.h"
 #include "shapeset.h"
 #include "shaperc.h"
+#include "shapestrl.h"
 #include "shapetrnsp.h"
 
 ColorScheme * DShape::colorScheme;                          // цветовые схемы
@@ -38,7 +39,8 @@ void DShape::InitInstruments(QString bdpath, Logger& logger)
     colorScheme = new ColorScheme(bdpath, &logger);         // загрузка цветовых схем
     TrnspDescription::readBd(bdpath, logger);               // загрузка транспарантов
 
-    ShapeRc::InitInstruments();                             // инициализация инструментов примитивов
+    ShapeRc::InitInstruments();                             // инициализация инструментов рисования РЦ
+    ShapeStrl::InitInstruments();                           // инициализация инструментов рисования стрелок
 }
 
 void DShape::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
@@ -71,6 +73,8 @@ void DShape::setDimensions ()
         rect.setTop   (y1);
         rect.setRight (x2);
         rect.setBottom(y2);
+
+        XY = QPointF(x1,y1);
     }
     catch (...)
     {

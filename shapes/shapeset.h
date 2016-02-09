@@ -12,6 +12,11 @@ protected:
     QString filePath;										// указатель на буфер
     QString formname;                                       // имя
     QVector<class DShape *> set;                            // массив примитивов
+    QVector<class DShape *> setRc;                          // массив отрезков
+    QVector<class DShape *> setStrl;                        // массив стрелок
+    QVector<class DShape *> setSvtf;                        // массив светофоров
+    QVector<class DShape *> setTrnsp;                       // массив транспарантов
+    QVector<class DShape *> setPrzd;                        // массив переездов
 
     bool   bTabloShape;										// Обзорный кадр
     float  xMin;											// Минимальная ккордината примитива по оси X

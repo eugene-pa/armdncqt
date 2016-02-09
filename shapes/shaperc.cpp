@@ -13,6 +13,9 @@ QPen *ShapeRc::PenIr;                                       // искусств�
 QPen *ShapeRc::PenExpired;                                  // ТС устарели
 QPen *ShapeRc::PenUndefined;                                // объект неопределен - пассивная отрисовка
 
+// TODO:
+//       - объединение отрезков в полилинии
+
 
 ShapeRc::ShapeRc(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
@@ -38,8 +41,8 @@ void ShapeRc::InitInstruments()
     PenPzdRoute = new QPen (QBrush(colorScheme->GetColor("RoutePzd" )), mThick);    // в поездном маршруте
     PenMnvRoute = new QPen (QBrush(colorScheme->GetColor("RouteMnv" )), mThick);    // в маневровом маршруте
     PenZmk      = new QPen (QBrush(colorScheme->GetColor("Zmk"      )), mThick);    // замкнутая РЦ не в неиспользованном маршруте
-    PenZmkContur= new QPen (QBrush(colorScheme->GetColor("RoutePzd" )), mThick);    // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
-    PenZmkConturMnv= new QPen (QBrush(colorScheme->GetColor("RouteMnv")),mThick);   // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
+    PenZmkContur= new QPen (QBrush(colorScheme->GetColor("RoutePzd" )), 1     );    // замкнутая РЦ для контура (рисуется поверх незаполненным контуром)
+    PenZmkConturMnv= new QPen (QBrush(colorScheme->GetColor("RouteMnv")),1    );    // замкнутая РЦ для контура в маневровом маршруте(рисуется поверх незаполненным контуром)
     PenIr       = new QPen (QBrush(colorScheme->GetColor("Ir"       )), mThick);    // искусственная разделка (мигает поверх других состояний)
     PenExpired  = new QPen (QBrush(colorScheme->GetColor("Expired"  )), mThick);    // ТС устарели
     PenUndefined= new QPen (QBrush(colorScheme->GetColor("Undefined")), mThick);    // объект неопределен - пассивная отрисовка
@@ -199,6 +202,15 @@ void ShapeRc::accept()
     }
 }
 
+
+// при отрисовке вызывается вирт.функция paint, которая вызывает функцию непосредственной отрисовки Draw(QPainter* painter)
+void ShapeRc::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
+    Draw(painter);
+}
+
 // функция рисования
 void ShapeRc::Draw(QPainter* painter)
 {
@@ -238,13 +250,22 @@ void ShapeRc::Draw(QPainter* painter)
         painter->setRenderHint(QPainter::Antialiasing);
     painter->setPen(*pen);
     painter->drawLine(rect.topLeft(), rect.bottomRight());
+
+    // если замыкание и занятость, дать окантовку замыкания
+    if (!state->isExpire() && isBusy() &&  (isZmk() || isPzdRoute() || isMnvRoute()))
+    {
+        qreal dh =  DShape::mThick/2;
+        qreal tg = (x2 - x1) == 0 ? 1 : (y2 - y1) / (x2 - x1);
+        qreal ctg = tg == 0 ? 1 : 1/tg;
+        qreal dy = dh * ctg;
+        qreal dx = dh * tg;
+
+        painter->setPen(isPzdRoute() ? *PenZmkContur : *PenZmkConturMnv);
+        painter->drawLine(QPointF(x1 - dx, y1 - dy), QPointF(x2 - dx, y2 - dy));
+        painter->drawLine(QPointF(x1 + dx, y1 + dy), QPointF(x2 + dx, y2 + dy));
+    }
+
     //setScale(2);
-}
-void ShapeRc::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
-{
-    Q_UNUSED(option)
-    Q_UNUSED(widget)
-    Draw(painter);
 }
 
 //// вычисление замещаемого прямоугольника

@@ -4,6 +4,7 @@
 #include <QGraphicsItem>
 #include <QColor>
 #include <QPainter>
+//#include <QPolygonF>
 
 #include "colorscheme.h"
 #include "../spr/station.h"
@@ -22,8 +23,16 @@ enum ShapeType
 	END_COD
 };
 
+enum TA
+{
+    _TA_LEFT  = 0,
+    _TA_RIGHT = 1
+};
+
 class DShape : public QGraphicsItem
 {
+    friend class ShapeSet;
+
 protected:
     class ShapeSet * set;                                   // класс родителя-собственника формы
     QString     source;                                     // исходная строка примитива
@@ -37,6 +46,7 @@ protected:
     float       width;                                      // ширина
     float       height;                                     // высота
     QRectF      rect;                                       //
+    QPointF     XY;                                         // базовая точка
 
     int         idObj;                                      // N РЦ/стрелки/светофора/транспаранта
     int 		idst;										// номер станции
@@ -73,6 +83,7 @@ public:
     inline bool	   IsBlinking() { return blinking; }        // мигает
     inline bool	   IsSelected() { return selected; }        // выделен
 
+    virtual void accept() { }                               // вычисление состояния примитива
     virtual void  Draw(QPainter* painter);                  // отрисовка
     virtual bool  CheckIt() { return true; }				// Проверка корректности привязки
     virtual void  FixUpUnsafe   () { }						// Очистка небезопасных ошибок привязки
