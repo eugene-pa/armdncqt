@@ -168,7 +168,7 @@ void ShapeRc::accept()
         {
             state->set(Status::StsExpire, false);
             // учитываем положение стрелок
-            bool strok = isStrlOk();                        // акт.маршрут или nullptr
+            bool strok = isStrlOk();                        // вхождение по направляющим стрелкам
             state->set(StsBusy, sprRc->StsBusy() && strok); // занятость
             state->set(StsZmk , sprRc->StsZmk () && strok); // замыкание
             state->set(StsIr  , sprRc->StsIr  () && strok); // ИР

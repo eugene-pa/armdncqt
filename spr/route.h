@@ -75,6 +75,8 @@ public:
     QString GetTuSetEnum();                                 // получить перечисление ТУ установки
     QString GetTuCancelEnum();                              // получить перечисление ТУ отмены
 
+    bool CheckRqState (QVector<LinkedStrl*>);               // проверка полного соответствия заданного списка направляюших стрелок положению стрелок маршрута
+
 private:
     static QHash <int, Route *> routes;                     // маршруты, индексированные по коду маршрута
 

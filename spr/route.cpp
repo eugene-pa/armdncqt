@@ -413,3 +413,17 @@ bool Route::IsOpen()
 {
     return svtfBeg != nullptr && svtfBeg->IsOpen();
 }
+
+// проверка полного соответствия заданного положения стрелок маршрута заданному положению списка направляюших стрелок
+bool Route::CheckRqState (QVector<LinkedStrl*> list)
+{
+    foreach (LinkedStrl* link, listStrl)
+    {
+        foreach (LinkedStrl* testedLink, list)
+        {
+            if (link->strl->Id() == testedLink->strl->Id() && link->rqStatus() != testedLink->rqStatus())
+                return false;
+        }
+    }
+    return true;
+}

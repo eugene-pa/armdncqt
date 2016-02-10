@@ -51,6 +51,7 @@ void ShapeSet::ScanFile()
     if (file.open(QFile::ReadOnly))
     {
         QTextStream in (&file);
+        in.setCodec("Windows-1251");
         QString str;
 
         while (!(str = in.readLine()).isNull())

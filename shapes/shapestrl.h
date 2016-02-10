@@ -10,8 +10,8 @@ struct StrlShapeProp                                        // полное оп
 
         x1P,  y1P,                                          // начало тонкой линии плюсового положения по прямому ходу
         x2P,  y2P,                                          // конец  тонкой линии плюсового положения по прямому ходу
-        x1M,  y1O,                                          // начало тонкой линии плюсового положения на ответвление
-        x2M,  y2O,                                          // конец  тонкой линии плюсового положения на ответвление
+        x1O,  y1O,                                          // начало тонкой линии плюсового положения на ответвление
+        x2O,  y2O,                                          // конец  тонкой линии плюсового положения на ответвление
 
         x1,   y1,                                           // конец общего отрезка
         x0,   y0,                                           // базовая точка ветвления стрелки точка
@@ -61,9 +61,9 @@ public:
         Sideways    = 1,                                    // на ответвление
     };
 
-    enum State                                              // состояние визуализации
+    enum                                                    // состояние визуализации
     {
-        StsPlus     = 0,                                    // +
+        StsPlus     = 2,                                    // +
         StsMinus    ,                                       // -
         StsAlarm    ,                                       // взрез индивидуальный
         StsZmk      ,                                       // замыкание
@@ -100,13 +100,11 @@ protected:
     static QPen * PenAlarmPulse1;                           // авария (1-я фаза мигания)
     static QPen * PenAlarmPulse2;                           // авария (2-я фаза мигания)
     static QPen * PenIzsRound;                              // перо замыкания / блокировки
+    static QPen * PenExpired;                               // ТС устарели
 
-    QPolygonF pathForPlus;                                  // путь для отрисовки в плюсе
-    QPolygonF pathForMinus;                                 // путь для отрисовки в минусе
-    //polyline.append(QPointF(x, y)); // add your points
-    //painter->drawPolyline(polyline);
+    static QFont * font;                                    // шрифт отрисовки названия
 
-
+    struct   StrlShapeProp * prop;                          // описание актуального набора геометрии
     class   Strl* sprStrl;                                  // стрелка
     class   Rc  * sprRc;                                    // РЦ под стрелкой
     QVector<class LinkedStrl*> strl;                        // определяющие стрелки
@@ -115,11 +113,35 @@ protected:
     int     idrc;											// N РЦ стрелки
     bool	b45;											// прорисовка под 45 град
 
+    QPolygonF pathForPlus;                                  // путь для отрисовки тела стрелки в плюсе
+    QPolygonF pathForMinus;                                 // путь для отрисовки тела стрелки в минусе
+    QPolygonF pathNormalPlus;                               // путь для отрисовки тела стрелки в плюсе
+    QPolygonF pathNormalMinus;                              // путь для отрисовки тела стрелки в минусе
+    QTextOption * option;                                   // опции отрисовки номера (выравнивание)
+    QPointF xyText;                                         // точка отрисовки текста
+    QSize   tSize;                                          // размер поля для номера
+    QRect     boundRect;                                    // прямоугольник для отрисовки окантовки
+
     void    DrawUndefined (QPainter*, bool gryclr, DStation * st, class DRailwaySwitch * strl);	// неопределенное положение стрелки
     bool    isStrlOk()                                      // проверка нахождения определяющих стрелок в требуемом положении
     {
-        return LinkedStrl::checkRqSts(strl);
+        return LinkedStrl::checkRqSts(strl)==0;
     }
+
+    // состояния визуализации
+    bool isPlus     () { return (*state)[StsPlus    ]; }    // +
+    bool isMinus    () { return (*state)[StsMinus   ]; }    // -
+    bool isBusy     () { return (*state)[StsBusy    ]; }    // занятость
+    bool isZmk      () { return (*state)[StsZmk     ]; }    // замыкание
+    bool isRqRoute  () { return (*state)[StsRqRoute ]; }    // в устанавливаемом маршруте
+    bool isPzdRoute () { return (*state)[StsPzdRoute]; }    // в поездном маршруте
+    bool isMnvRoute () { return (*state)[StsMnvRoute]; }    // в маневровом маршруте
+    bool isPassed   () { return (*state)[StsPassed  ]; }    // пройдена
+    bool isIr       () { return (*state)[StsIr      ]; }    // ИР
+    bool isOtu      () { return (*state)[StsOtu     ]; }    // OТУ
+    bool isAlarm    () { return (*state)[StsAlarm   ]; }    // взрез, потеря контроля
+
+    void drawRect(QPainter* painter, QPen pen);             // отрисовка квадратной окантовки стрелки
 
 public:
     static void InitInstruments();                          // инициализация статических инструментов отрисовки
@@ -129,6 +151,7 @@ public:
 
     inline QString Name() { return name; }                  // имя
     inline short GetIdRc() {return idrc; }                  // РЦ
+    class Route * ActualRoute() { return sprRc == nullptr ? nullptr : sprRc->ActualRoute(); }
 
     virtual void Draw(QPainter* pDC);						// функция рисования
     virtual void  Parse(QString&);

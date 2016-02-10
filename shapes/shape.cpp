@@ -69,6 +69,7 @@ void DShape::setDimensions ()
     {
         width  = fabs (x2 - x1);
         height = fabs (y2 - y1);
+
         rect.setLeft  (x1);
         rect.setTop   (y1);
         rect.setRight (x2);

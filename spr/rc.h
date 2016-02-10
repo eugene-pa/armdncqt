@@ -34,6 +34,8 @@ class Rc : public SprBase
     friend class DDataFromMonitor;
     friend class DlgRcInfo;
     friend class Station;
+    friend class ShapeRc;
+    //friend class ShapeStrl;
 
 public:
     enum RcTypes

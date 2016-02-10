@@ -9,6 +9,7 @@ class Strl : public SprBase
     friend class LinkedStrl;
     friend class Station;
     friend class DlgStrlInfo;
+    friend class ShapeStrl;
 
 public:
 
@@ -146,7 +147,7 @@ public:
         return ret;
     }
 
-    // статическая функция проверка положения стрелок списка связей
+    // статическая функция проверка соответствия фактического положения стрелок требуемому положению списка связей
     // функция возвращает 0, если все ОК, или номер первой наайденной стрелки в неправильном положении
     static int checkRqSts(QVector<LinkedStrl*> list)
     {
