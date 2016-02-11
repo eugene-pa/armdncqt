@@ -18,11 +18,13 @@ SprBase::SprBase()
     norc = 0;
     nosvtf = 0;
     nostrl = 0;
+    disabled= false;
     st      = nullptr;                                      // указатель на класс станции
     krug    = nullptr;                                      // указатель на класс круга
     enabled = true;                                         // включен
     tag     = nullptr;
     basetype = BaseUnknown;
+    unitype = Unknown;
 
     BaseNames.append("?"    );
     BaseNames.append("ТС"   );

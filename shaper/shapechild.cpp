@@ -21,7 +21,7 @@ ShapeChild::ShapeChild(ShapeSet * set)
     centerOn(0,0);
     //scale(2,2);                                         // масштабирование всего представления
 
-    startTimer(1000);
+    startTimer(750);
 }
 
 
@@ -50,6 +50,7 @@ void ShapeChild::setCurrentFile(const QString &fileName)
 
 void ShapeChild::timerEvent(QTimerEvent *event)
 {
+    DShape::globalPulse = !DShape::globalPulse;
     Q_UNUSED(event)
     scene->update();
 }

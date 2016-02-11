@@ -5,6 +5,7 @@
 #include "shapeset.h"
 #include "shaperc.h"
 #include "shapestrl.h"
+#include "shapesvtf.h"
 #include "shapetrnsp.h"
 
 ColorScheme * DShape::colorScheme;                          // цветовые схемы
@@ -39,8 +40,9 @@ void DShape::InitInstruments(QString bdpath, Logger& logger)
     colorScheme = new ColorScheme(bdpath, &logger);         // загрузка цветовых схем
     TrnspDescription::readBd(bdpath, logger);               // загрузка транспарантов
 
-    ShapeRc::InitInstruments();                             // инициализация инструментов рисования РЦ
+    ShapeRc  ::InitInstruments();                           // инициализация инструментов рисования РЦ
     ShapeStrl::InitInstruments();                           // инициализация инструментов рисования стрелок
+    ShapeSvtf::InitInstruments();                           // инициализация инструментов рисования светофоров
 }
 
 void DShape::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)

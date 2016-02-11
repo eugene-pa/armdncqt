@@ -53,6 +53,7 @@ public:
     bool IsPulsing  () { return SafeValue(blinking); }      // мигающее показание светофора
     bool IsPrgls    () { return SafeValue(calling); }       // пригласит.огонь светофора
     bool IsMnvrEx   () { return SafeValue(manevr); }        // доп.контроль маневрового сигнала
+    bool IsAlarm    () { return formula_er && formula_er->ValueBool(); }
 
 private:
     static QHash <int, Svtf *> svtfhash;                     // СВТФ , индексированные по индексу ТС

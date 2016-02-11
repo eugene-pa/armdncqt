@@ -23,8 +23,6 @@ ShapeRc::ShapeRc(QString& src, ShapeSet* parent) : DShape (src, parent)
     combined = false;
 
     Parse(src);
-    normalize();
-    setDimensions ();
 }
 
 ShapeRc::~ShapeRc()
@@ -84,6 +82,8 @@ void ShapeRc::Parse(QString& src)
         y1    = lexems[4].toFloat(&ret);            ok &= ret;
         x2    = lexems[5].toFloat(&ret);            ok &= ret;
         y2    = lexems[6].toFloat(&ret);            ok &= ret;
+
+        normalize();
         setDimensions ();
 
         // номер РЦ
@@ -109,7 +109,7 @@ void ShapeRc::Parse(QString& src)
     }
     else
     {
-        log (QString("%1: %2").arg("Ошибка синтаксиса примитива (ош.числа лексем)").arg(src));
+        log (QString("%1: %2").arg("Ошибка синтаксиса примитива ОТРЕЗОК РЦ (ош.числа лексем)").arg(src));
     }
 }
 
@@ -246,8 +246,7 @@ void ShapeRc::Draw(QPainter* painter)
 
     //pen.setCosmetic(true);
     pen->setCapStyle(Qt::FlatCap);
-    if(y1 != y2)
-        painter->setRenderHint(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::Antialiasing, y1 != y2);
     painter->setPen(*pen);
     painter->drawLine(rect.topLeft(), rect.bottomRight());
 

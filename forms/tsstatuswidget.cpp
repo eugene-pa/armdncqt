@@ -107,7 +107,7 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         //   - серый для других систем и внутри маленький квадрат
 
         QColor clr = ts == nullptr   ? bck :
-                     ts->Locked()    ? Qt::white :
+                     ts->Disabled()  ? Qt::white :
                      ts->IsVirtual() ? Qt::blue  :
                      ts->IsReal()    ? Qt::darkGreen : Qt::darkGray;
         p->setPen(clr);

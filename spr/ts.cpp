@@ -27,7 +27,7 @@ Ts::Ts(QSqlQuery& query, KrugInfo * krug, Logger& logger)
         norc    = query.value("NoRc"    ).toInt(&ret);
         nostrl  = query.value("NoStrl"  ).toInt(&ret);
         nosvtf  = query.value("NoSvtf"  ).toInt(&ret);
-        locked  = query.value("Lock"    ).toBool();
+        disabled= query.value("Lock"    ).toBool();
         inverse = query.value("Inverse" ).toBool();
 
         pulse   = query.value("Pulse"   ).toBool();

@@ -76,7 +76,7 @@ void DlgTsInfo::fillTable()
         t->setItem(row,2, new QTableWidgetItem (ts->Place()));
         t->setItem(row,3, new QTableWidgetItem (QString("%1/%2/%3").arg(ts->M()).arg(ts->I()).arg(ts->J())));
 
-        QColor clr = ts->Locked() ? Qt::gray : ts->IsVirtual() ? Qt::darkBlue : ts->IsPulsing () ? Qt::red : ts->IsInverse() ? Qt::white : Qt::black;
+        QColor clr = ts->Disabled() ? Qt::gray : ts->IsVirtual() ? Qt::darkBlue : ts->IsPulsing () ? Qt::red : ts->IsInverse() ? Qt::white : Qt::black;
         if (clr != Qt::black)
             for (int i=0; i<4; i++)
             {

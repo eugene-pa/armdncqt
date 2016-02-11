@@ -147,7 +147,7 @@ void Station::GetValue(QString& name, int& ret)
     if (st != nullptr && Ts.contains(tsname))
     {
         class Ts * ts = Ts[tsname];
-        ret =  ts->Locked() ? false :                         // Для блокированных ТС возвращаем false в выражениях (Решение не однозначное...)
+        ret =  ts->Disabled() ? false :                         // Для блокированных ТС возвращаем false в выражениях (Решение не однозначное...)
                pulse ? ts->StsPulse() : ts->Sts();
     }
     else

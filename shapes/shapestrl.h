@@ -3,16 +3,14 @@
 
 #include "shape.h"
 
-struct StrlShapeProp                                        // полное описание координат стрелки
+struct StrlShapeProp                                        // полное описание геометрии стрелки
 {
     TA	align;                                              // выравнивание надписи
     int xt,   yt,                                           // позиция надписи
-
         x1P,  y1P,                                          // начало тонкой линии плюсового положения по прямому ходу
         x2P,  y2P,                                          // конец  тонкой линии плюсового положения по прямому ходу
         x1O,  y1O,                                          // начало тонкой линии плюсового положения на ответвление
         x2O,  y2O,                                          // конец  тонкой линии плюсового положения на ответвление
-
         x1,   y1,                                           // конец общего отрезка
         x0,   y0,                                           // базовая точка ветвления стрелки точка
         x2,   y2,                                           // конец рлюсового положения
@@ -120,7 +118,7 @@ protected:
     QTextOption * option;                                   // опции отрисовки номера (выравнивание)
     QPointF xyText;                                         // точка отрисовки текста
     QSize   tSize;                                          // размер поля для номера
-    QRect     boundRect;                                    // прямоугольник для отрисовки окантовки
+    QRectF  boundRect;                                      // прямоугольник для отрисовки окантовки
 
     void    DrawUndefined (QPainter*, bool gryclr, DStation * st, class DRailwaySwitch * strl);	// неопределенное положение стрелки
     bool    isStrlOk()                                      // проверка нахождения определяющих стрелок в требуемом положении
@@ -140,6 +138,8 @@ protected:
     bool isIr       () { return (*state)[StsIr      ]; }    // ИР
     bool isOtu      () { return (*state)[StsOtu     ]; }    // OТУ
     bool isAlarm    () { return (*state)[StsAlarm   ]; }    // взрез, потеря контроля
+    bool isIzs      () { return (*state)[StsIzs     ]; }    // искусственно замкнута
+    bool isMu       () { return (*state)[StsMu      ]; }    // МУ
 
     void drawRect(QPainter* painter, QPen pen);             // отрисовка квадратной окантовки стрелки
 
@@ -160,62 +160,8 @@ public:
     virtual QString Dump();
     virtual QString ObjectInfo();
     virtual void  Prepare();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    void accept();                                          // вычисление состояния примитива
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+    virtual void accept();                                  // вычисление состояния примитива
 };
 
 #endif // SHAPESTRL_H
-
-
-
-
-
-/*
-//////////////////////////////////////////////////////////////////////////////////////
-/// \brief The DShapeStrl class
-///
-class DShapeStrl: public DShape 							// Стрелка
-{
-protected:
-
-struct StrlPropTagEx										// полное описание координат стрелки
-{
-    int	Align;		// выравнивание
-    int x0;			// х надписи
-    int y0;			// y надписи
-
-    int x1,y1;		// х1,y1 начало тонкой линии плюсового положения по прямому ходу
-    int x2,y2;		// х2,y2 конец  тонкой линии плюсового положения по прямому ходу
-    int _x1,_y1;	// х1,y1 начало тонкой линии плюсового положения на ответвление
-    int _x2,_y2;	// х2,y2 конец  тонкой линии плюсового положения на ответвление
-    //
-    int xx1,yy1,	// начало общего отрезка
-        xx2,yy2,	// конец общего отрезка - начало разветвления
-        xx3,yy3,	// конец отрезка плюсового положения по прямому ходу
-        xx4,yy4;	// конец отрезка плюсового положения на ответвление
-
-};
-
-//static StrlPropTag StrlProp[nMaxStrlType];                // выравнивание и смещение надписи по типам стрелок
-static StrlPropTagEx StrlProp60[nMaxStrlType];				// 60 градусов
-static StrlPropTagEx StrlProp45[nMaxStrlType];				// 45 градусов
-
-static	short	mLenX;										// длина по горизонтали
-static	short	mLenY;										// длина по вертикали
-static	short	dx;
-static	short	dy;
-
-static 	CFont	Font;										// Шрифт обозначения
-static 	CFont	FontBold;									// Шрифт обозначения жирный
-static	short	mThickH;									// толщина горизонтали
-static	short	mThickA;									// толщина наклонной
-static 	QColor TxtClr;									// Цвет надписи
-
-public:
-static	inline short GetThickH(){return mThickH;			 }
-static	inline void  SetThickH(short w) { mThickH = w;		 }
-static	inline short GetThickA(){return mThickA;			 }
-static	inline void  SetThickA(short w) { mThickA = w;		 }
-};
-*/
-

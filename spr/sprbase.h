@@ -186,7 +186,7 @@ public:
     bool Enabled() { return enabled; }                      // включен (не отключен)
     void Enable(bool s = true) { enabled = s; }             // включить
 
-    bool Locked() { return locked; }
+    bool Disabled() { return disabled; }
 
     BaseType GetBaseType() { return basetype; }             // тип объекта
     void SetBaseType(BaseType t) { basetype = t; }
@@ -208,7 +208,7 @@ protected:
     int     nostrl;                                         // номер СВТФ из БД или 0
     int     nosvtf;                                         // номер СТРЛ из БД или 0
 
-    bool   locked;                                          // объект заблокирован
+    bool   disabled;                                        // объект заблокирован
 
     QVector <class Ts*> tsList;                             // список всех ТС объекта
     QVector <class Tu*> tuList;                             // список всех ТУ объекта
