@@ -36,7 +36,14 @@ ShapeStrl::ShapeStrl(QString& src, ShapeSet* parent) : DShape (src, parent)
     sprRc   = nullptr;                                      // РЦ под стрелкой
     prop    = nullptr;                                      // описание актуального набора геометрии
 
-    Parse(src);
+    try
+    {
+        Parse(src);
+    }
+    catch(...)
+    {
+        set->logger()->log(QString("ShapeStrl. Исключение при разборе строки: %1").arg(src));
+    }
 }
 
 ShapeStrl::~ShapeStrl()

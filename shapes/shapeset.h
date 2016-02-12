@@ -8,6 +8,11 @@ extern void Log (QString msg);
 
 class ShapeSet
 {
+    friend class DShape;
+    friend class ShapeRc;
+    friend class ShapeSvtf;
+    friend class ShapeStrl;
+
 protected:
     QString filePath;										// указатель на буфер
     QString formname;                                       // имя
@@ -24,7 +29,8 @@ protected:
     float  xMax;											// Максимальная ккордината примитива по оси X
     float  yMax;											// Максимальная ккордината примитива по оси Y
 
-    int	   nDiameter;										// индивидуальная установка диаметра светофора
+    bool   сompactSvtf;                                     // компактное отображение светофоров
+    int	   nDiameter;										// индивидуальная установка диаметра светофора для формы
     int	   nThick;											// индивидуальная установка толщины линий
     Logger * plog;
 

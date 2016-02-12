@@ -22,7 +22,14 @@ ShapeRc::ShapeRc(QString& src, ShapeSet* parent) : DShape (src, parent)
     sprRc = nullptr;
     combined = false;
 
-    Parse(src);
+    try
+    {
+        Parse(src);
+    }
+    catch(...)
+    {
+        set->logger()->log(QString("ShapeRc. Исключение при разборе строки: %1").arg(src));
+    }
 }
 
 ShapeRc::~ShapeRc()

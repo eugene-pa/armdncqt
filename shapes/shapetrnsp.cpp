@@ -15,9 +15,11 @@ bool TrnspDescription::loaded = false;
 
 ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
-//    if (!TrnspDescription::loaded)
-//        TrnspDescription::readBd();
-
+    // обнуление массива формул
+    for (int i=0; i<maxStates; i++)
+    {
+        stsExpr[i] = stsPulseExpr[i] = nullptr;
+    }
     try
     {
         Parse(src);
@@ -27,7 +29,7 @@ ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
         set->logger()->log(QString("ShapeTrnsp. Исключение при разборе строки: %1").arg(src));
     }
 
-    setDimensions ();
+//  setDimensions ();
 }
 
 ShapeTrnsp::~ShapeTrnsp()
@@ -40,173 +42,177 @@ ShapeTrnsp::~ShapeTrnsp()
 // #  Ст  id    x    y      w    h
 // 20  2 50   1418  631     48   20    "!2УО&2НКП !2УО ~2УО"  1 2НСН "Смена направления"  0
 // 20  2  7     71   88     40   24       "ДСН  "             2 ДСН  "Включение двойного снижения напряжения" ОДСН "Отмена двойного снижения напряжения" 0
-//
-// 0 - код
-// 1 - станция
-// 2 - ID (тип транспаранта)
-// 3 - X1
-// 4 - Y1
-// 5 - W
-// 6 - H
-// Дальше все сложнее. Далее описываем выражения для разных состояний (до трех состояний)
+// Поля 0-6 - см.выше
+// Поля 7 и далее: описываем выражения для разных состояний (до трех состояний)
 // В общем случае так:  "Выражение1[,Мигание1] [[Выражение2] Выражение3]" [~] число ТУ [[ТУ1 "Описание ТУ1"] ТУ2 "Описание ТУ2"] ПРИЗНАК_ПРИВЯЗКИ
 
 void ShapeTrnsp::Parse(QString& src)
 {
     bool ok   = true,
          ret  = false;
-    int  indx = 0;
 
     // заменяю кавычки на кавычки с пробелом, чтобы отделить кавычки от лексем, и делаю разбор
     QStringList lexems = src.replace("\"", " \" ").split(' ',QString::SkipEmptyParts);
+    if (lexems.count() < 7)
+    {
+        log (QString("%1: %2").arg("Ошибка синтаксиса примитива ТРАНСПАРАНТ (ош.числа лексем)").arg(src));
+        return;
+    }
 
-    type = (ShapeType)lexems[indx++].toInt(&ret);    ok &= ret;
-    idst = lexems[indx++].toInt(&ret);               ok &= ret;
-    idObj= lexems[indx++].toInt(&ret);               ok &= ret;
+    // 0 - тип
+    type = (ShapeType)lexems[0].toInt(&ret);    ok &= ret;
+    // 1 - номер станции
+    idst = lexems[1].toInt(&ret);               ok &= ret;
+    // 2  - тип транспаранта
+    idObj= lexems[2].toInt(&ret);               ok &= ret;
     idObj++;                                                // приводим в соответствие нумерацию траспарантов в БД и SHAPE-файле
 
-    x1    = lexems[indx++].toFloat(&ret);            ok &= ret;
-    y1    = lexems[indx++].toFloat(&ret);            ok &= ret;
-    width = lexems[indx++].toFloat(&ret);            ok &= ret;
-    height= lexems[indx++].toFloat(&ret);            ok &= ret;
+    // 3-6 - геометрия (нач.точка, ширина, высота)
+    x1    = lexems[3].toFloat(&ret);            ok &= ret;
+    y1    = lexems[4].toFloat(&ret);            ok &= ret;
+    width = lexems[5].toFloat(&ret);            ok &= ret;
+    height= lexems[6].toFloat(&ret);            ok &= ret;
 
     if (idObj == TRNSP_BUTTON)
         height -= 3;                                        // для башиловских "кнопок" поджимаем размер на 3 пиксела
-
     x2 = x1 + width;
     y2 = y1 + height;
 
     // ищем описатель свойств и рассчитываем графику с учетом координат транспаранта
-    property = idObj>=0 && idObj<TrnspDescription::descriptions.count() ? TrnspDescription::descriptions[idObj] : nullptr;
-    if (property == nullptr)
+    prop = idObj>=0 && idObj<TrnspDescription::descriptions.count() ? TrnspDescription::descriptions[idObj] : nullptr;
+    if (prop == nullptr)
         set->logger()->log(QString("ShapeTrnsp. Не найдено описание транспаранта с типом #%1: '%2'").arg(idObj).arg(src));
     else
     {
-        if (property->geometry.length() > 0)
-            property->MakePath(QPointF(x1,y1), path, set->logger());
-        indicator = property->nameTsDefault == "Индикатор";
+        if (prop->geometry.length() > 0)
+            prop->MakePath(QPointF(x1,y1), path, set->logger());
+        indicator = prop->nameTsDefault == "Индикатор";
     }
+
     enableTu = false;
+
+    // объектная привязка
+    st      = Station::GetById(idst);                       // станция
 
     if (lexems.length() < 8)                                // если вообще нет спецификации ТС - выход
         return;
 
-    // сначала обработаем "частный случай" старого формата: всего 8 параметров, последний без кавычек)
-    if (lexems[indx++] != "\"")                             // 7 ТС1
+    // 7 - сначала обработаем "частный случай" старого формата: всего 8 параметров, последний без кавычек)
+    if (lexems[7] != "\"")                                  // 7 ТС1
     {
-/*
-        StsTsExpr[0] = new LogicalExpression(ar[indx - 1], st.GetVar,null);
-//    QString s("1+100");
-//    BoolExpression expr(s, parent->logger(),true);
-//    int n = expr.GetValue();
-
-        if (!StsTsExpr[0].Valid)
-            parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[0].Source, StsTsExpr[0].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
-*/
+        // поддерживаем старый стиль описания единственного ТС без кавычек
+        stsExpr[0] = new BoolExpression(lexems[7]);
+        if (stsExpr[0]->Valid())
+            QObject::connect(stsExpr[0], SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+        else
+            log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта: %1").arg(src));
         return;
     }
+
+    QString token;
+    // имеем актуальную лексему с кавычками: " Выражение1[,Мигание1] [[Выражение2] Выражение3] "
+    // ПРОБЛЕМА: Может быть и такое описание: " " - пробел внутри кавычек, надо уметь обработать
+    int index = 7;
+    int i = 0;
+    while ((token = lexems[index++]) != "\"")
+    {
+        if (i >= 3)
+        {
+            log(QString("ShapeTrnsp. Обнаружено более трех выражений в поле ТС: '%1'").arg(src));
+            return;
+        }
 /*
-                    string token;
-                    // имеем актуальную лексему с кавычками: " Выражение1[,Мигание1] [[Выражение2] Выражение3] "
-                    // ПРОБЛЕМА: Может быть и такое описание: " " - пробел внутри кавычек, надо уметь обработать
-                    int i = 0;
-                    while ((token = ar[indx++]) != "\"")
-                    {
-                        if (i >= 3)
-                        {
-                            parent.Log(string.Format("ShapeTrnsp. Обнаружено более трех выражений в поле ТС: '{0}'", str));
-                            return;
-                        }
-                        // ищем мигающее вражение
-                        string[] sPulse = token.Split(new char[] {',',});
-                        if (sPulse.Length > 1)
-                        {
-                            StsTsExpr   [i] = new LogicalExpression(sPulse[0], st.GetVar, null);
-                            StsPulseExpr[i] = new LogicalExpression(sPulse[1], st.GetVar, null);
-                            if (!StsTsExpr[i].Valid)
-                                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[i].Source, StsTsExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
-                            if (!StsPulseExpr[i].Valid)
-                                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsPulseExpr[i].Source, StsPulseExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
-                        }
-                        else
-                        {
-                            StsTsExpr[i] = new LogicalExpression(token, st.GetVar, null);
-                            if (!StsTsExpr[i].Valid)
-                                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[i].Source, StsTsExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
-                        }
-                        i++;
-                    }
+        // ищем мигающее вражение
+        QStringList sPulse = token.split(',');
+        if (sPulse.Length > 1)
+        {
+            StsTsExpr   [i] = new LogicalExpression(sPulse[0], st.GetVar, null);
+            StsPulseExpr[i] = new LogicalExpression(sPulse[1], st.GetVar, null);
+            if (!StsTsExpr[i].Valid)
+                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[i].Source, StsTsExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
+            if (!StsPulseExpr[i].Valid)
+                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsPulseExpr[i].Source, StsPulseExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
+        }
+        else
+        {
+            StsTsExpr[i] = new LogicalExpression(token, st.GetVar, null);
+            if (!StsTsExpr[i].Valid)
+                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[i].Source, StsTsExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
+        }
+        i++;
+*/
+    }
+/*
+    if (indx > ar.Length - 1)
+        return;
 
-                    if (indx > ar.Length - 1)
-                        return;
+    // [~] число ТУ [[ТУ1 "Описание ТУ1"] ТУ2 "Описание ТУ2"] ПРИЗНАК_ПРИВЯЗКИ
+    //
+    token = ar[indx++];
+    if (token == "~")
+    {
+        Pulsing = true;
+        if (indx > ar.Length - 1)
+            return; // нет ТУ
+        token = ar[indx++];
+    }
 
-                    // [~] число ТУ [[ТУ1 "Описание ТУ1"] ТУ2 "Описание ТУ2"] ПРИЗНАК_ПРИВЯЗКИ
-                    //
-                    token = ar[indx++];
-                    if (token == "~")
-                    {
-                        Pulsing = true;
-                        if (indx > ar.Length - 1)
-                            return; // нет ТУ
-                        token = ar[indx++];
-                    }
+    // число ТУ [[ТУ1 " Описание ТУ1 "] ТУ2 " Описание ТУ2 "] ПРИЗНАК_ПРИВЯЗКИ
+    int ntu = Convert.ToInt32(token);
+    if (ntu > 2)
+    {
+        parent.Log(
+            string.Format(
+                "Конструктор ShapeTrnsp. Некорректное число команд ТУ в описании примитива: {0}", ntu));
+        ntu = 2;
+    }
 
-                    // число ТУ [[ТУ1 " Описание ТУ1 "] ТУ2 " Описание ТУ2 "] ПРИЗНАК_ПРИВЯЗКИ
-                    int ntu = Convert.ToInt32(token);
-                    if (ntu > 2)
-                    {
-                        parent.Log(
-                            string.Format(
-                                "Конструктор ShapeTrnsp. Некорректное число команд ТУ в описании примитива: {0}", ntu));
-                        ntu = 2;
-                    }
+    for (i = 0; i < ntu; i++)
+    {
+        tuNames[i] = ar[indx++];
+        indx++;
 
-                    for (i = 0; i < ntu; i++)
-                    {
-                        tuNames[i] = ar[indx++];
-                        indx++;
-
-                        while ((token = ar[indx++]) != "\"")
-                        {
-                            tuTexts[i] += token + " ";
-                        }
-                        EnableTu = true;
-                    }
+        while ((token = ar[indx++]) != "\"")
+        {
+            tuTexts[i] += token + " ";
+        }
+        EnableTu = true;
+    }
 
 
-                    // далее может идти признак привязки транспаранта к следующему текстовому примитиву
-                    if (indx > ar.Length - 1)
-                        return; // закончился примитив
+    // далее может идти признак привязки транспаранта к следующему текстовому примитиву
+    if (indx > ar.Length - 1)
+        return; // закончился примитив
 
-                    bool bLink = Convert.ToInt32(ar[indx++]) != 0 ? true : false;
-                    if (indx > ar.Length - 1)
-                        return; // закончился примитив
+    bool bLink = Convert.ToInt32(ar[indx++]) != 0 ? true : false;
+    if (indx > ar.Length - 1)
+        return; // закончился примитив
 
-                    token = ar[indx++];
-                    // далее может идти либо комментарий, либо описание транспаранта в кавычках
-                    if (token == "\"")
-                    {
-                        // нашли кавычку, значит есть индивидуальное описание примитива
-                        ToolTipText = "";
-                        while ((ar[indx] != "\"") && indx < ar.Length - 1)
-                            ToolTipText += ar[indx++] + " ";
-                        if (indx < ar.Length)
-                            indx++;
-                        else
-                        {
-                            parent.Log(string.Format("ShapeTrnsp. Нет завершающих кавычек в описании примитива '{0}'", str));
-                        }
-                    }
-                    if (indx > ar.Length - 1)
-                        return; // закончился примитив
+    token = ar[indx++];
+    // далее может идти либо комментарий, либо описание транспаранта в кавычках
+    if (token == "\"")
+    {
+        // нашли кавычку, значит есть индивидуальное описание примитива
+        ToolTipText = "";
+        while ((ar[indx] != "\"") && indx < ar.Length - 1)
+            ToolTipText += ar[indx++] + " ";
+        if (indx < ar.Length)
+            indx++;
+        else
+        {
+            parent.Log(string.Format("ShapeTrnsp. Нет завершающих кавычек в описании примитива '{0}'", str));
+        }
+    }
+    if (indx > ar.Length - 1)
+        return; // закончился примитив
 
-                    // ищем комментарий
-                    Comment = "";
-                    if (ar[indx].IndexOf(';') == 0)
-                    {
-                        while (indx <= ar.Length - 1)
-                            Comment += ar[indx++] + " ";
-                    }
+    // ищем комментарий
+    Comment = "";
+    if (ar[indx].IndexOf(';') == 0)
+    {
+        while (indx <= ar.Length - 1)
+            Comment += ar[indx++] + " ";
+    }
 
 */
 }
@@ -278,7 +284,7 @@ void ShapeTrnsp::Draw(QPainter* painter)
         }
 
         QTextOption op(Qt::AlignCenter);
-        painter->drawText(rect, property->name, op);
+        painter->drawText(rect, prop->name, op);
     }
 
     Q_UNUSED(painter)

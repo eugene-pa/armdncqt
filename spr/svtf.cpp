@@ -84,10 +84,10 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     if (svtfmain && tname!="ПРС")
     {
         svtf->svtftypename = tname;
-        svtf->svtftype= tname == "ВХ"  ? SVTF_X   :         // входной
-                        tname == "ВЫХ" ? SVTF_IN  :         // выходной
+        svtf->svtftype= tname == "ВХ"  ? SVTF_IN  :         // входной
+                        tname == "ВЫХ" ? SVTF_OUT :         // выходной
                         tname == "МРШ" ? SVTF_OUT :         // маршрутный
-                        tname == "ПРХ" ? SVTF_PRH :         // проходной
+                        tname == "ПРХ" ? SVTF_MRSH :        // проходной
                         tname == "МНВ" ? SVTF_MNV :         // маневровый
                         tname == "ПРС" ? SVTF_PRLS:         // пригласительный
                                          SVTF_X;

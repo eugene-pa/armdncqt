@@ -20,6 +20,7 @@ ShapeSet::ShapeSet(QString path, Logger * logger, bool bTablo/*=false*/)
 
     filePath = path;                                        // путь к файлу формы
     formname = QFileInfo(path).baseName();                  // имя формы (основа имени файла без расширения)
+    сompactSvtf = true;
     nDiameter	= 0;										// индивидуальная установка диаметра светофора
     nThick		= 0;										// индивидуальная установка толщины линий
 

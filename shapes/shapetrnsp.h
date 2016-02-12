@@ -57,17 +57,18 @@ static bool readBd (QString& dbpath, Logger& logger);
 class ShapeTrnsp : public DShape
 {
 protected:
-    TrnspDescription * property;                           // указатель на описатель типа транспаранта
-    QString     tsName1;                                   // имя сигнала 1
-    QString     tsName2;                                   // имя сигнала 2
-    QString     tsName3;                                   // имя сигнала 3
-    QString     tsNamePulse;                               // выражение, определяющего мигание
+    TrnspDescription * prop;                                // указатель на описатель типа транспаранта
+    QString     tsName1;                                    // имя сигнала 1
+    QString     tsName2;                                    // имя сигнала 2
+    QString     tsName3;                                    // имя сигнала 3
+    QString     tsNamePulse;                                // выражение, определяющего мигание
 
     QString     tuNameOn ;                                  // имя ТУ включить
     QString     tuNameOff;                                  // имя ТУ отключить
     QString	    helperOn ;                                  // имя меню включить
     QString     helperOff;                                  // имя меню отключить
     QString     description;                                // Описание
+    QString     toolTipText;                                //
 
     bool        oneNameExpression;                          // логич. выражение - имя сигнала
     bool        otu;                                        // транспарант для ввода ОТУ
@@ -78,6 +79,12 @@ protected:
     bool        indicator;                                  // признак индикатора-лампочки ( имя ТС в БД == "Индикатор")
     QPainterPath path;                                      // сформированный путь (коллекция примитивов)
 
+    enum
+    {
+        maxStates = 3,
+    };
+    BoolExpression* stsExpr     [maxStates];                // формулы для определения активности 3-х состояний
+    BoolExpression* stsPulseExpr[maxStates];                // формулы для определения мигания    3-х состояний
 public:
     enum TrnspTypes
     {
@@ -160,14 +167,14 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 
-    inline QColor color1() { return property->foreColorOn;   }
-    inline QColor color2() { return property->foreColorOff;  }
-    inline QColor color3() { return property->foreColorExt;  }
-    inline QColor color4() { return property->foreColorExt2; }
-    inline QColor back1 () { return property->backColorOn;   }
-    inline QColor back2 () { return property->backColorOff;  }
-    inline QColor back3 () { return property->backColorExt;  }
-    inline QColor back4 () { return property->backColorExt2; }
+    inline QColor color1() { return prop->foreColorOn;   }
+    inline QColor color2() { return prop->foreColorOff;  }
+    inline QColor color3() { return prop->foreColorExt;  }
+    inline QColor color4() { return prop->foreColorExt2; }
+    inline QColor back1 () { return prop->backColorOn;   }
+    inline QColor back2 () { return prop->backColorOff;  }
+    inline QColor back3 () { return prop->backColorExt;  }
+    inline QColor back4 () { return prop->backColorExt2; }
 };
 
 #endif // SHAPETRNSP_H

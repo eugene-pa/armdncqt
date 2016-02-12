@@ -1,3 +1,4 @@
+#include "shapeset.h"
 #include "shapesvtf.h"
 
 int ShapeSvtf::diametr = 15;                                // диаметр
@@ -10,6 +11,7 @@ QPen * ShapeSvtf::MainPen2;                                 // перо двой
 QPen * ShapeSvtf::PenUndefined;                             // неопред.состояние
 QPen * ShapeSvtf::PenExpired;                               // устарели ТС
 QPen * ShapeSvtf::PenAlarm;                                 // авария светофора
+QPen * ShapeSvtf::PenText;                                  // надпись
 
 QBrush * ShapeSvtf::BrushPzdOn;                             // поездной открыт
 QBrush * ShapeSvtf::BrushYelllow;                           // желтый
@@ -22,6 +24,7 @@ QBrush * ShapeSvtf::BrushExpired;                           // устарели 
 QBrush * ShapeSvtf::BrushLockBackground;                    // фон при блокировке
 QBrush * ShapeSvtf::BrushAdBackground;                      // фон при автодействии
 QBrush * ShapeSvtf::BrushOmBackground;                      // фон при отмене маршрута
+QBrush * ShapeSvtf::BrushAlarmBackground;                   // фон при аварии
 
 QFont * ShapeSvtf::font;                                    // шрифт отрисовки названия
 
@@ -30,9 +33,16 @@ ShapeSvtf::ShapeSvtf(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     svtf  = nullptr;                                        // светофор поездной
     svtfM = nullptr;                                        // светофор совмещенный
-    prop  = nullptr;
+    prop  = nullptr;                                        // описатель геометрии
+    try
+    {
+        Parse(src);
+    }
+    catch(...)
+    {
+        set->logger()->log(QString("ShapeSvtf. Исключение при разборе строки: %1").arg(src));
+    }
 
-    Parse(src);
 }
 
 ShapeSvtf::~ShapeSvtf()
@@ -54,14 +64,17 @@ void ShapeSvtf::InitInstruments()
     BrushLockBackground= new QBrush(colorScheme->GetColor("SvtfLockBackground")); // фон при блокировке
     BrushAdBackground  = new QBrush(colorScheme->GetColor("SvtfAdBackground"  )); // фон при автодействии
     BrushOmBackground  = new QBrush(colorScheme->GetColor("SvtfOmBackground"  )); // фон при отмене маршрута
+    BrushAlarmBackground= new QBrush(Qt::red);                                    // фон при аварии colorScheme->GetColor("SvtfAlarmBackground"
 
     PenUndefined       = new QPen (*BrushUndefined, 1);                                 // одинарная линия отрисовки неопред. состояния светофора
     PenExpired         = new QPen (*BrushExpired, 1);                                   // одинарная линия отрисовки состояния светофора при устаревании ТС
     MainPen            = new QPen (QBrush(colorScheme->GetColor("SvtfLinesNormal")), 1);// одинарная линия отрисовки светофора
     MainPen2           = new QPen (QBrush(colorScheme->GetColor("SvtfLinesNormal")), 2);// двойная линия отрисовки светофора
     PenAlarm           = new QPen (QBrush(colorScheme->GetColor("SvtfAlarmCross")), 1);// авария светофора
+    PenText            = new QPen (Qt::darkBlue,1);                                 // надпись
 
     font = new QFont("Segoe UI",10);
+    //font = new QFont("Tahoma",10.5);
 }
 
 // разбор строки описания
@@ -109,27 +122,33 @@ void ShapeSvtf::Parse(QString& src)
         // 9 - имя
         name = lexems[9].replace("$","");                   // имя светофора
 
-
         // объектная привязка
         st      = Station::GetById(idst);                   // станция
         // поездной и маневровый светофоры
         Svtf * p;
-        if (idSvtf1 && (p=Svtf::GetById(idSvtf1)))
+        if (idSvtf1 && (p=Svtf::GetById(idSvtf1)))          // 1 светофор
         {
-            svtf  = !p->IsTypeMnv() ? p : nullptr;
-            svtfM = p->IsTypeMnv() ? p : nullptr;
+            if (!p->IsTypeMnv())    svtf  = p;
+            else                    svtfM = p;
         }
-        if (idSvtf2 && (p=Svtf::GetById(idSvtf2)))
+        if (idSvtf2 && (p=Svtf::GetById(idSvtf2)))          // 2 светофор
         {
-            svtf  = !p->IsTypeMnv() ? p : nullptr;
-            svtfM = p->IsTypeMnv() ? p : nullptr;
+            if (!p->IsTypeMnv())    svtf  = p;
+            else                    svtfM = p;
         }
+
+        // указатель на свойства (проверить допустимость!)
         prop = &svtfProp[subtype];
+
+        // геометрия отрисовки основания и ножки
+        base = QLineF(XY + QPointF(prop->bx1, prop->by1), XY + QPointF(prop->bx2, prop->by2));// основание
+        stand= QLineF(XY + QPointF(prop->hx1, prop->hy1), XY + QPointF(prop->hx2, prop->hy2));// ножка
 
         // геометрия отрисовки имени
         tSize = QSize(50,20);                               // макс.размер поля для номера
         bool left = (((int) subtype)%2) > 0;                // направление
-        xyText = XY + (left ? QPointF(23, 0) : QPointF(-2 - tSize.width(), 0));// точка написания номера
+        xyText = XY + (left ? QPointF(23, -2) : QPointF(-2 - tSize.width(), -2));// точка написания номера
+        boundRect = QRectF(xyText, tSize);
         // опции выравнивания текста
         option = new QTextOption((left ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignTop);
 
@@ -156,8 +175,6 @@ void ShapeSvtf::accept()
         state->set(Status::StsUndefined, true);             // неопред.состояние - нет справочников
     else
     {
-//        if (svtf ->IsOpen())
-//            int a = 99;
         state->set(Status::StsUndefined, false);
         state->set(Status::StsExpire, st->IsTsExpire());
 
@@ -174,7 +191,6 @@ void ShapeSvtf::accept()
 
         blinking = isAlarm() | isPrgls();
     }
-
 }
 
 // функция рисования
@@ -182,20 +198,126 @@ void ShapeSvtf::Draw(QPainter* painter)
 {
     accept();
 
-    // Кисть основная
+
+    QPen * pen1 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : MainPen;   // перо одинарной линии
+    QPen * pen2 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : MainPen2;  // перо двойной линии
+
+    bool compact = this->set->сompactSvtf;
+
+    // кисть основная
     QBrush * brush= state->isUndefined()                ? BrushUndefined:
-                    state->isExpire ()                  ? BrushExpired    :  // нет данных
+                    state->isExpire ()                  ? BrushExpired  :  // нет данных
                     isOpenPzd       ()                  ? BrushPzdOn    :
-                    isOpenMnv       ()                  ? BrushMnvOn    :   //   StsAct[StsOpenMnv] && (IsMnvrDraw || compact) ? BrushMnvOn :
+                    isOpenMnv() && (isMnv() || compact) ? BrushMnvOn    :  // маневровый открыт и светофор маневровый, либо режим совмещения при закрытом поездном
                     isPrgls         ()                  ? (DShape::globalPulse ? BrushMnvOn : BrushPzdOff) :
                     isYellow        ()                  ? BrushYelllow  :
                     svtf && svtf->IsTypeIn()            ? BrushPzdInOff :
                                                           BrushPzdOff;
+    // кисть маневровая
+    QBrush * brushM = svtfM==nullptr || state->isUndefined() ? BrushUndefined :
+                      isOpenMnv()                            ? BrushMnvOn     :
+                                                              BrushMnvOff;
 
+    // основание
+    //painter->setRenderHint(QPainter::Antialiasing, false);
+    painter->setPen(*pen2);
+    painter->drawLine(base);
+    painter->setPen(*pen1);
+    painter->drawLine(stand);
+
+    // эллипс с заливкой
+    // положит.эффект от включения Antialiasing особенно заметно при отрисовке окружностей в масштабе 2:1 и более
+    // в масштабе 1:1 имеем даже незначительные отрицательные артефакты
     painter->setRenderHint(QPainter::Antialiasing, true);
-    painter->setPen(*MainPen);
     painter->setBrush(*brush);
-    painter->drawEllipse(center, r, r);
+    switch (subtype)
+    {
+        // ножки - выходим
+        case Base_E :
+        case Base_NE:
+        case Base_N :
+        case Base_NW:
+        case Base_W :
+        case Base_SW:
+        case Base_S :
+        case Base_SE:
+            break;
+
+        // без ножки
+        case Pzdn:
+        case Mnvr:
+            painter->drawEllipse(center, r, r);
+            break;
+
+        // повторители TO DO !!!
+        case RepeteLR:
+        case RepeteRL:
+            painter->drawEllipse(center, r, r);
+
+        // совмещенный слева направо
+        case PzdnMnvrLR:
+            if (compact)
+                painter->drawEllipse(center, r, r);
+            else
+            {
+                painter->drawEllipse(QPointF(2*r,0) + center, r, r);
+                painter->setBrush(*brushM);
+                painter->drawEllipse(center, r, r);
+            }
+            break;
+
+        // совмещенный справа налево
+        case PzdnMnvrRL:
+            if (compact)
+                painter->drawEllipse(center, r, r);
+            else
+            {
+                painter->drawEllipse(QPointF(-2*r,0) + center, r, r);
+                painter->setBrush(*brushM);
+                painter->drawEllipse(center, r, r);
+            }
+            break;
+
+        // одинарные поездные и маневровые
+        case PzdnLR:
+        case MnvrLR:
+        case PzdnRL:
+        case MnvrRL:
+            painter->drawEllipse(center, r, r);
+            break;
+    }
+
+    // наименование
+    if (name.length())
+    {
+        // если не инициализировали подложку, инициализируем
+        if (backRect.width() < 1)
+            backRect = painter->boundingRect(boundRect, name, *option) + QMargins(2,0,3,2);
+
+
+        QBrush * backBrush = isAD   () ? BrushAdBackground   :  // автодействие светофора выделяем фоном
+                             isOM   () ? BrushOmBackground   :  // отмену маршрута выделяем фоном
+                             isBlock() ? BrushLockBackground :  // заблокирован
+                             isAlarm() ? BrushAlarmBackground:  // авария
+                                         nullptr;
+
+        if (backBrush)
+            painter->fillRect(backRect, *backBrush);
+
+        // текст
+        painter->setFont(*font);
+        painter->setPen(*PenText);
+        painter->drawText(boundRect, name, *option);
+    }
+
+    // мигание перекрестием
+    if (isAlarm() && DShape::globalPulse)
+    {
+        painter->setPen(*PenAlarm);
+        painter->drawLine(center + QPointF(-10, -10), center + QPointF(10, 10));
+        painter->drawLine(center + QPointF(-10, +10), center + QPointF(10, -10));
+    }
+
 }
 
 // вычисление замещаемого прямоугольника
@@ -232,14 +354,16 @@ QString  ShapeSvtf::ObjectInfo()
 // геометрия светофоров по типам
 ShapeSvtf::SvtfPropTag ShapeSvtf::svtfProp[MaxSvtfType] =
 {
-    { 0 ,1,0 ,16,	0 ,8,5 ,8,      13,8,17 } ,             // 0    |--  поездной       Left To Right
-    { 21,1,21,16,	16,8,21,8,	    8 ,8,17 } ,             // 1    --|  поездной       Right To Left
-    { 0 ,1,0 ,16,	0 ,8,5 ,8,      13,8,17 } ,             // 2    |--  маневровый     Left To Right
-    { 21,1,21,16,	16,8,21,8,	    8 ,8,17 } ,             // 3    --|  маневровый     Right To Left
-    { 0 ,1,0 ,16,	0 ,8,5 ,8,      13,8,17 } ,             // 4    |--  совмещенный    Left To Right
-    { 21,1,21,16,	16,8,21,8,	    8 ,8,17 } ,             // 5    --|  совмещенный    Right To Left
-    { 0 ,1,0 ,16,	0 ,8,6 ,8,      14,8,17 } ,             // 6    |--  повторитель    Left To Right
-    { 21,1,21,16,	16,8,21,8,	    8 ,8,17 } ,             // 7    --|  повторитель    Right To Left
+//    основание       ножка      центр и диаметр
+// было: 1    16
+    { 0 ,2,0 ,15,	0 ,8,5 ,8,      13,8,17 } ,             // 0    |--  поездной       Left To Right
+    { 21,2,21,15,	16,8,21,8,	    8 ,8,17 } ,             // 1    --|  поездной       Right To Left
+    { 0 ,2,0 ,15,	0 ,8,5 ,8,      13,8,17 } ,             // 2    |--  маневровый     Left To Right
+    { 21,2,21,15,	16,8,21,8,	    8 ,8,17 } ,             // 3    --|  маневровый     Right To Left
+    { 0 ,2,0 ,15,	0 ,8,5 ,8,      13,8,17 } ,             // 4    |--  совмещенный    Left To Right
+    { 21,2,21,15,	16,8,21,8,	    8 ,8,17 } ,             // 5    --|  совмещенный    Right To Left
+    { 0 ,2,0 ,15,	0 ,8,6 ,8,      14,8,17 } ,             // 6    |--  повторитель    Left To Right
+    { 21,2,21,15,	16,8,21,8,	    8 ,8,17 } ,             // 7    --|  повторитель    Right To Left
 
     { 0,0,0,0,	    0,0,0,0,        12,12,17 },             // 8 поездной без ножки
     { 0,0,0,0,	    0,0,0,0,        12,12,17 },             // 9 маневровый без ножки
