@@ -50,7 +50,7 @@ void ShapeChild::setCurrentFile(const QString &fileName)
 
 void ShapeChild::timerEvent(QTimerEvent *event)
 {
-    DShape::globalPulse = !DShape::globalPulse;
+    DShape::globalPulse = !DShape::globalPulse;             // в случае нескольких окон это делать нельзя, так как переменная DShape::globalPulse одна
     Q_UNUSED(event)
     scene->update();
 }

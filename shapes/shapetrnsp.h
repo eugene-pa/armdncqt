@@ -58,13 +58,7 @@ class ShapeTrnsp : public DShape
 {
 protected:
     TrnspDescription * prop;                                // указатель на описатель типа транспаранта
-    QString     tsName1;                                    // имя сигнала 1
-    QString     tsName2;                                    // имя сигнала 2
-    QString     tsName3;                                    // имя сигнала 3
-    QString     tsNamePulse;                                // выражение, определяющего мигание
 
-    QString     tuNameOn ;                                  // имя ТУ включить
-    QString     tuNameOff;                                  // имя ТУ отключить
     QString	    helperOn ;                                  // имя меню включить
     QString     helperOff;                                  // имя меню отключить
     QString     description;                                // Описание
@@ -73,7 +67,7 @@ protected:
     bool        oneNameExpression;                          // логич. выражение - имя сигнала
     bool        otu;                                        // транспарант для ввода ОТУ
     QString     comment;                                    //
-    bool        Pulsing;									// пульсирует при истине в основном выражениии
+    bool        pulsing;									// пульсирует при истине в основном выражениии (тильда после описания ТС)
     int         norc;                                       // номер РЦ (поле на перспективу)
     bool        enableTu;                                   // признак возможности ОТУ
     bool        indicator;                                  // признак индикатора-лампочки ( имя ТС в БД == "Индикатор")
@@ -85,6 +79,8 @@ protected:
     };
     BoolExpression* stsExpr     [maxStates];                // формулы для определения активности 3-х состояний
     BoolExpression* stsPulseExpr[maxStates];                // формулы для определения мигания    3-х состояний
+    QStringList tuNames;                                    // имена команд ТУ
+    QStringList tuTexts;                                    // расшифровка ТУ
 public:
     enum TrnspTypes
     {

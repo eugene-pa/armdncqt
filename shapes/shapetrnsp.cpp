@@ -112,73 +112,74 @@ void ShapeTrnsp::Parse(QString& src)
     QString token;
     // имеем актуальную лексему с кавычками: " Выражение1[,Мигание1] [[Выражение2] Выражение3] "
     // ПРОБЛЕМА: Может быть и такое описание: " " - пробел внутри кавычек, надо уметь обработать
-    int index = 7;
+    int index = 8;
     int i = 0;
     while ((token = lexems[index++]) != "\"")
     {
-        if (i >= 3)
+        if (i >= maxStates)
         {
-            log(QString("ShapeTrnsp. Обнаружено более трех выражений в поле ТС: '%1'").arg(src));
+            log(QString("ShapeTrnsp. Превышно допустимое число выражений(<=%1)в поле ТС: '%2'").arg(maxStates).arg(src));
             return;
         }
-/*
+
         // ищем мигающее вражение
         QStringList sPulse = token.split(',');
-        if (sPulse.Length > 1)
+        if (sPulse.length()> 0)
         {
-            StsTsExpr   [i] = new LogicalExpression(sPulse[0], st.GetVar, null);
-            StsPulseExpr[i] = new LogicalExpression(sPulse[1], st.GetVar, null);
-            if (!StsTsExpr[i].Valid)
-                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[i].Source, StsTsExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
-            if (!StsPulseExpr[i].Valid)
-                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsPulseExpr[i].Source, StsPulseExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
+            stsExpr[i] = new BoolExpression(sPulse[0]);
+            if (stsExpr[i]->Valid())
+                QObject::connect(stsExpr[i], SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+            else
+                log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта: %1").arg(src));
+
+            // если есть мигание - обработать
+            if (sPulse.length()> 1)
+            {
+                stsPulseExpr[i] = new BoolExpression(sPulse[1]);
+                if (stsPulseExpr[i]->Valid())
+                    QObject::connect(stsPulseExpr[i], SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+                else
+                    log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта: %1").arg(src));
+            }
         }
-        else
-        {
-            StsTsExpr[i] = new LogicalExpression(token, st.GetVar, null);
-            if (!StsTsExpr[i].Valid)
-                parent.Log(string.Format("ShapeTrnsp. Ошибка выражения в описании транспаранта '{0}': {1}. FILE {2}. LINE {3}: '{4}'", StsTsExpr[i].Source, StsTsExpr[i].ErrorText, Parent.SrcFile, Parent.LineNumber, str));
-        }
-        i++;
-*/
     }
-/*
-    if (indx > ar.Length - 1)
+
+    if (index > lexems.length() - 1)
         return;
 
-    // [~] число ТУ [[ТУ1 "Описание ТУ1"] ТУ2 "Описание ТУ2"] ПРИЗНАК_ПРИВЯЗКИ
-    //
-    token = ar[indx++];
-    if (token == "~")
+    // проверяем опциональное наличие тильды [~]
+    token = lexems[index++];
+    if (token == "~")                                       // тильда после описания ТС - признак мигания
     {
-        Pulsing = true;
-        if (indx > ar.Length - 1)
-            return; // нет ТУ
-        token = ar[indx++];
+        pulsing = true;
+        if (index > lexems.length() - 1)
+            return;                                         // нет ТУ
+        token = lexems[index++];
     }
 
     // число ТУ [[ТУ1 " Описание ТУ1 "] ТУ2 " Описание ТУ2 "] ПРИЗНАК_ПРИВЯЗКИ
-    int ntu = Convert.ToInt32(token);
+    int ntu = token.toInt(&ret);    ok &= ret;
     if (ntu > 2)
     {
-        parent.Log(
-            string.Format(
-                "Конструктор ShapeTrnsp. Некорректное число команд ТУ в описании примитива: {0}", ntu));
+        log (QString("ShapeTrnsp. Некорректное число команд ТУ (%1)в описании примитива: : %2").arg(ntu).arg(src));
         ntu = 2;
     }
 
+    //                                                                      0   1         2         3
+    // обрабатываем команды формата: ТУ " Описание команды ТУ ", например: 2НСН " Смена направления "
     for (i = 0; i < ntu; i++)
     {
-        tuNames[i] = ar[indx++];
-        indx++;
+        tuNames.append(lexems[index++]);                    // ТУ
+        index++;                                            // кавычка
 
-        while ((token = ar[indx++]) != "\"")
-        {
-            tuTexts[i] += token + " ";
-        }
-        EnableTu = true;
+        QString text;
+        while ((token = lexems[index++]) != "\"")           // конкатенация строк до кавычки
+            text += token + " ";
+        tuTexts.append(text);
+        enableTu = true;
     }
 
+/*
 
     // далее может идти признак привязки транспаранта к следующему текстовому примитиву
     if (indx > ar.Length - 1)
