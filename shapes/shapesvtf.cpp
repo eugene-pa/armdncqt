@@ -28,6 +28,24 @@ QBrush * ShapeSvtf::BrushAlarmBackground;                   // фон при а�
 
 QFont * ShapeSvtf::font;                                    // шрифт отрисовки названия
 
+#ifdef Q_OS_WIN
+int ShapeSvtf::fontsize = 10;                               // размер шрифта
+int ShapeSvtf::offset_x = -2,                               // смещение текста
+    ShapeSvtf::offset_y = -2;
+QString ShapeSvtf::fontname = "Segoe UI";                   // шрифт
+#endif
+#ifdef Q_OS_MAC
+int ShapeSvtf::fontsize = 14;                               // размер шрифта
+int ShapeSvtf::offset_x = -2,                               // смещение текста
+    ShapeSvtf::offset_y = 0;
+QString ShapeSvtf::fontname = "Segoe UI";                   // шрифт
+#endif
+#ifdef Q_OS_LINUX
+int ShapeSvtf::fontsize = 11;                               // размер шрифта
+int ShapeSvtf::offset_x = -2,                               // смещение текста
+    ShapeSvtf::offset_y = 0;
+QString ShapeSvtf::fontname = "Segoe UI";                   // шрифт
+#endif
 
 ShapeSvtf::ShapeSvtf(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
@@ -73,8 +91,7 @@ void ShapeSvtf::InitInstruments()
     PenAlarm           = new QPen (QBrush(colorScheme->GetColor("SvtfAlarmCross")), 1);// авария светофора
     PenText            = new QPen (Qt::darkBlue,1);                                 // надпись
 
-    font = new QFont("Segoe UI",10);
-    //font = new QFont("Tahoma",10.5);
+    font = new QFont(fontname,fontsize);
 }
 
 // разбор строки описания
@@ -147,7 +164,7 @@ void ShapeSvtf::Parse(QString& src)
         // геометрия отрисовки имени
         tSize = QSize(50,20);                               // макс.размер поля для номера
         bool left = (((int) subtype)%2) > 0;                // направление
-        xyText = XY + (left ? QPointF(23, -2) : QPointF(-2 - tSize.width(), -2));// точка написания номера
+        xyText = XY + (left ? QPointF(23, offset_y) : QPointF(offset_x - tSize.width(), offset_y));// точка написания номера
         boundRect = QRectF(xyText, tSize);
         // опции выравнивания текста
         option = new QTextOption((left ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignTop);
@@ -202,7 +219,7 @@ void ShapeSvtf::Draw(QPainter* painter)
     QPen * pen1 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : MainPen;   // перо одинарной линии
     QPen * pen2 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : MainPen2;  // перо двойной линии
 
-    bool compact = this->set->сompactSvtf;
+    bool compact = this->set->compactSvtf;
 
     // кисть основная
     QBrush * brush= state->isUndefined()                ? BrushUndefined:

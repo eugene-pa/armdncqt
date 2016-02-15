@@ -102,6 +102,11 @@ protected:
 
     static QFont * font;                                    // шрифт отрисовки названия
 
+    static int fontsize;                                    // размер шрифта
+    static int offset_x,                                    // смещение текста
+               offset_y;
+    static QString fontname;                                // шрифт
+
     struct   StrlShapeProp * prop;                          // описание актуального набора геометрии
     class   Strl* sprStrl;                                  // стрелка
     class   Rc  * sprRc;                                    // РЦ под стрелкой

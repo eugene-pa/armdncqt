@@ -24,6 +24,24 @@ QPen * ShapeStrl::PenExpired;                               // ТС устаре
 
 QFont * ShapeStrl::font;                                    // шрифт отрисовки названия
 
+#ifdef Q_OS_WIN
+int ShapeStrl::fontsize = 10;                               // размер шрифта
+int ShapeStrl::offset_x = 0,                                // смещение текста
+    ShapeStrl::offset_y = -2;
+QString ShapeStrl::fontname = "Segoe UI";                   // шрифт
+#endif
+#ifdef Q_OS_MAC
+int ShapeStrl::fontsize = 12;                               // размер шрифта
+int ShapeStrl::offset_x = 0,                                // смещение текста
+    ShapeStrl::offset_y = 0;
+QString ShapeStrl::fontname = "Segoe UI";                   // шрифт
+#endif
+#ifdef Q_OS_LINUX
+int ShapeStrl::fontsize = 11;                               // размер шрифта
+int ShapeStrl::offset_x = 0,                                // смещение текста
+    ShapeStrl::offset_y = 0;
+QString ShapeStrl::fontname = "Segoe UI";                   // шрифт
+#endif
 
 
 ShapeStrl::ShapeStrl(QString& src, ShapeSet* parent) : DShape (src, parent)
@@ -75,7 +93,8 @@ void ShapeStrl::InitInstruments()
 
     //font = new QFont("MS Sans Serif",14);
     //font = new QFont("Arial",11);       // можно читать из таблицы граф.конфигурации из БД
-    font = new QFont("Segoe UI",10);
+
+    font = new QFont(fontname,fontsize);
 }
 
 
@@ -157,7 +176,7 @@ void ShapeStrl::Parse(QString& src)
 
         // место отрисовки текста
         tSize = QSize(50,20);                               // размер поля для номера
-        xyText = XY + QPointF(prop->xt, prop->yt - 2);
+        xyText = XY + QPointF(prop->xt + offset_x, prop->yt + offset_y);
         if (prop->align == _TA_RIGHT)
             xyText -= QPoint(tSize.width(),0);
         // опции выравнивания текста

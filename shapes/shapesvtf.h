@@ -31,6 +31,11 @@ protected:
 
     static QFont * font;                                    // шрифт отрисовки названия
 
+    static int fontsize;                                    // размер шрифта
+    static int offset_x,                                    // смещение текста
+               offset_y;
+    static QString fontname;                                // шрифт
+
     // описание геометрии светофора
     struct SvtfPropTag
     {

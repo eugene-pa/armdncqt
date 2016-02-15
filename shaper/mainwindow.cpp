@@ -85,16 +85,20 @@ MainWindow::MainWindow(QWidget *parent) :
     Ts::ReadBd (dbname, krug, logger);                      // ТС
     Tu::ReadBd (dbname, krug, logger);                      // ТУ
     Rc::ReadRelations(dbname, logger);                      // связи РЦ
-    Route::ReadBd(dbname, krug, logger);                    // маршруты
-
+    Route::ReadBd(dbname, krug, logger);                    // маршруты   
     DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
+
+    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionNewForm, StationsCmb = new QComboBox);
 
     foreach (Station * st, Station::Stations.values())
     {
-        StationsCmb->addItem(st->Name(), qVariantFromValue((void *) st));
+        foreach (ShapeId * p, st->formList)
+          {
+              StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
+          }
     }
     StationsCmb->model()->sort(0);
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
@@ -126,7 +130,8 @@ void Log (QString msg)
 // новая форма
 void MainWindow::on_actionNewForm_triggered()
 {
-    ShapeChild * child = new ShapeChild(new ShapeSet(/*form*/formDir + StationsCmb->currentText() + ".shp", &logger));
+    ShapeId * set = (ShapeId *)StationsCmb->currentData().value<void*>();
+    ShapeChild * child = new ShapeChild(set->Set());
     mdiArea->addSubWindow(child);
     child->show();
     //ShapeChild

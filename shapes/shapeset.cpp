@@ -20,7 +20,7 @@ ShapeSet::ShapeSet(QString path, Logger * logger, bool bTablo/*=false*/)
 
     filePath = path;                                        // путь к файлу формы
     formname = QFileInfo(path).baseName();                  // имя формы (основа имени файла без расширения)
-    сompactSvtf = true;
+    compactSvtf = true;
     nDiameter	= 0;										// индивидуальная установка диаметра светофора
     nThick		= 0;										// индивидуальная установка толщины линий
 
@@ -89,4 +89,17 @@ void ShapeSet::MoveRel (float x0, float y0)
 {
     Q_UNUSED(x0)
     Q_UNUSED(y0)
+}
+
+
+// чтение форм
+void ShapeSet::ReadShapes(QString dir, Logger * logger)
+{
+    foreach (Station * st, Station::Stations)
+    {
+        foreach (ShapeId * p, st->formList)
+        {
+            p->set = new ShapeSet(dir + p->fileName, logger);
+        }
+    }
 }
