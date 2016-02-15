@@ -297,6 +297,7 @@ private:
 // чаще всего - одну форму, иногда - ни одной
 class ShapeId
 {
+    friend class ShapeSet;
 public:
     ShapeId(Station * st, QString& name, int radioid)
     {
@@ -304,12 +305,17 @@ public:
         this->radioid = radioid;
         this->name = name;
         fileName = name + ".shp";
+        set = nullptr;
     }
+    Station * St() { return st; }
+    QString Name() { return name; }
+    class ShapeSet * Set() { return set; }
 private:
-    Station * st;
-    int radioid;
-    QString name;
-    QString fileName;
+    Station * st;                                           // станция-собственник
+    int radioid;                                            // кнопка
+    QString name;                                           // наименование формы без расширения
+    QString fileName;                                       // наименование формы c расширением
+    class ShapeSet * set;                                   // контейнер примитивов
 };
 
 #endif // STATION_H
