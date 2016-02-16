@@ -25,14 +25,27 @@ static bool readBd (QString& dbpath, Logger& logger);
     bool		ownerDraw;   								// признак программной отрисовки
 
 //	bool		Pulse;										// признак использования мигающего сигнала
-    QColor      foreColorOn;								// Цвет символов в состоянии ON
-    QColor      backColorOn;								// Цвет фона     в состоянии ON
+    // FORE ОN
+    QColor      foreColorOn;								// Цвет переднего плана  в состоянии ON
+    QBrush      foreBrushOn;								// Кисть переднего плана состояния ON
+    QPen        forePenOn;                                  // Перо  переднего плана состояния ON
+    // BACK ОN
+    QColor      backColorOn;								// Цвет фона в состоянии ON
+    QBrush      backBrushOn;								// Кисть фона состояния ON
+    QPen        backPenOn;                                  // Перо фона состояния ON
+    // FORE ОFF
     QColor      foreColorOff;								// Цвет символов в состоянии OFF
+    // BACK ОFF
     QColor      backColorOff;								// Цвет фона     в состоянии OFF
+    // FORE EXT
     QColor      foreColorExt;								// Цвет символов третьего состояния или null
+    // BACK EXT
     QColor      backColorExt;								// Цвет фона     третьего состояния или null
+    // FORE EXT2
     QColor      foreColorExt2;								// Цвет символов 4-го состояния или null
+    // BACK EXT2
     QColor      backColorExt2;								// Цвет фона     4-го состояния или null
+
     bool        isThreeState;                               // признак наличия третьего состояния
 
     bool		drawOffState;								// флаг рисования при отсутствии сигнала
@@ -57,6 +70,13 @@ static bool readBd (QString& dbpath, Logger& logger);
 class ShapeTrnsp : public DShape
 {
 protected:
+    enum
+    {
+        StsOff = 2,                                         // пассивное состояние
+        StsOn ,                                             // активность состояния 1
+        StsExt,                                             // активность состояния 2
+    };
+
     TrnspDescription * prop;                                // указатель на описатель типа транспаранта
 
     QString	    helperOn ;                                  // имя меню включить
@@ -73,6 +93,40 @@ protected:
     bool        indicator;                                  // признак индикатора-лампочки ( имя ТС в БД == "Индикатор")
     QPainterPath path;                                      // сформированный путь (коллекция примитивов)
 
+    QPoint XY_titleOn;                                      // X1, Y1 для текста в состоянии ON
+    QPoint XY_titleOff;                                     // X1, Y1 для текста в состоянии OFF
+    QPoint XY_titleExt;                                     // X1, Y1 для текста в состоянии EXT
+
+    QColor * ForeColorOn() { return &prop->foreColorOn; }            // цвет FORE ON
+//    QBrush * ForeBrushOn() { return new QBrush(prop->foreColorOn);  // кисть
+//    QPen   * ForePenOn  () { return;                                     // перо
+    QColor * BackColorOn;                                   // цвет Back ON
+    QBrush * BackBrushOn;                                   // кисть
+    QPen   * BackPenOn;                                     // перо
+
+    QColor * ForeColorOff;                                  // цвет FORE OFF
+    QBrush * ForeBrushOff;                                  // кисть
+    QPen   * ForePenOff;                                    // перо
+    QColor * BackColorOff;                                  // цвет Back OFF
+    QBrush * BackBrushOff;                                  // кисть
+    QPen   * BackPenOff;                                    // перо
+
+    //LinearGradientBrush BackBrushOffGrad; // градиентная кисть фона
+
+    QColor * ForeColorExt;                                  // цвет FORE EXT
+    QBrush * ForeBrushExt;                                  // кисть
+    QPen   * ForePenExt;                                    // перо
+    QColor * BackColorExt;                                  // цвет Back EXT
+    QBrush * BackBrushExt;                                  // кисть
+    QPen   * BackPenExt;                                    // перо
+
+    QColor * ForeColorExt2;                                 // цвет FORE EXT2
+    QBrush * ForeBrushExt2;                                 // кисть
+    QPen   * ForePenExt2;                                   // перо
+    QColor * BackColorExt2;                                 // цвет Back EXT2
+    QBrush * BackBrushExt2;                                 // кисть
+    QPen   * BackPenExt2;                                   // перо
+
     enum
     {
         maxStates = 3,
@@ -81,7 +135,7 @@ protected:
     BoolExpression* stsPulseExpr[maxStates];                // формулы для определения мигания    3-х состояний
     QStringList tuNames;                                    // имена команд ТУ
     QStringList tuTexts;                                    // расшифровка ТУ
-public:
+
     enum TrnspTypes
     {
         TRNSP_A           = 1,
@@ -150,9 +204,12 @@ public:
         TRNSP_BUTTON      = 64,
     };
 
+public:
     ShapeTrnsp(QString& src, ShapeSet* parent);
     ~ShapeTrnsp();
+static void InitInstruments();                              // инициализация статических инструментов отрисовки
 
+protected:
     virtual void  Draw (QPainter*);                         // функция рисования
     virtual void  Parse(QString&);                          // разбор строки описания
     virtual bool  CheckIt();
@@ -160,6 +217,7 @@ public:
     virtual QString Dump();
     virtual QString ObjectInfo();
     virtual void  Prepare();
+    virtual void accept();                                  // вычисление состояния примитива
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 

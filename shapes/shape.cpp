@@ -43,6 +43,7 @@ void DShape::InitInstruments(QString bdpath, Logger& logger)
     ShapeRc  ::InitInstruments();                           // инициализация инструментов рисования РЦ
     ShapeStrl::InitInstruments();                           // инициализация инструментов рисования стрелок
     ShapeSvtf::InitInstruments();                           // инициализация инструментов рисования светофоров
+    ShapeTrnsp::InitInstruments();                          // инициализация инструментов рисования транспарантов
 }
 
 void DShape::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)

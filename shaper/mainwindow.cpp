@@ -100,9 +100,11 @@ MainWindow::MainWindow(QWidget *parent) :
               StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
           }
     }
-    StationsCmb->model()->sort(0);
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
+    StationsCmb->model()->sort(0);
+    StationsCmb->setCurrentIndex(0);
     g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
+
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");

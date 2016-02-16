@@ -50,6 +50,7 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     adkScb          = false;
     upokOtu         = false;
 
+    stsKpOk         = false;
     stsActual       = false;
     stsAu           = false;
     stsSu           = false;
@@ -764,6 +765,31 @@ void Station::ClearRcAndRouteInfo()
     }
 }
 
+
+// проверка наличия в матрице ТС сигналов, не описанных в БД
+bool Station::IsUndefinedTsPresrnt()
+{
+    bool ret = false;
+    for (int i = 0; i < TsMaxLengthBits; i++)
+    {
+        // если 1 или мигает и это не диагональ матрицы
+        if (tsStsRaw[i] || tsStsPulse[i] && !TsIndexed.contains(i))
+        {
+            if (Kp2000())
+            {
+                int row = (i/8)%8;
+                int col = i%8;
+                ret = row != col;
+            }
+            else
+                ret = true;
+            if (ret)
+                break;
+        }
+    }
+    return ret;
+}
+
 // ОПЦИИ:
 // БРОК
 // УПОК
@@ -983,6 +1009,7 @@ void Station::AcceptTS   ()
 
     alarmATU = this->Kp2007() ? IsRsrv() : GetTsStsByName("АТУ"); // ошибки АТУ
 
+    CheckKp     ();                                         // состояние КП
 
     Strl::AcceptTS (this);									// состояние стрелок
     Rc  ::AcceptTS (this);                                  // состояние РЦ
@@ -1010,6 +1037,33 @@ void Station::CheckMode	()
 {
 
 }
+
+
+// проверка работоспособности КП
+void Station::CheckKp()
+{
+    stsKpOk = true;
+//return !Kp2007 || Info == null
+//           ? true
+//           : // если не 2007 - истина
+//           !Info.ErrorMT() && // ош. МТУ/МТС
+
+//           !ErrAtuMain && // ош.АТУ    МВВ1 или МВВ2  основ
+//           !ErrKeyMain && // ош.ключа  МВВ1 или МВВ2  основ
+//           !ErrOutMain && // ош.выхода МВВ1 или МВВ2  основ
+//           !ErrAtuRsrv && // ош.АТУ    МВВ1 или МВВ2  резерв
+//           !ErrKeyRsrv && // ош.ключа  МВВ1 или МВВ2  резерв
+//           !ErrOutRsrv && // ош.выхода МВВ1 или МВВ2  резерв
+
+//           Info.IsNetOk() && // есть связь
+//           (
+//               (!Info.RsrvOn && Info.BitLineOnRsrv) // основной, резерв готов
+//               || (Info.RsrvOn && Info.IsNetOk()) // резерв, есть связь с основным
+//           )
+//    ;
+//}
+}
+
 
 // отследить состояние К7
 void Station::CheckK7     ()

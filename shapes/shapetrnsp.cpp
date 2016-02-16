@@ -78,6 +78,9 @@ void ShapeTrnsp::Parse(QString& src)
     x2 = x1 + width;
     y2 = y1 + height;
 
+    setDimensions ();
+
+
     // ищем описатель свойств и рассчитываем графику с учетом координат транспаранта
     prop = idObj>=0 && idObj<TrnspDescription::descriptions.count() ? TrnspDescription::descriptions[idObj] : nullptr;
     if (prop == nullptr)
@@ -144,16 +147,14 @@ void ShapeTrnsp::Parse(QString& src)
         }
     }
 
-    if (index > lexems.length() - 1)
-        return;
+    if (index > lexems.length() - 1)    return;
 
     // проверяем опциональное наличие тильды [~]
     token = lexems[index++];
     if (token == "~")                                       // тильда после описания ТС - признак мигания
     {
         pulsing = true;
-        if (index > lexems.length() - 1)
-            return;                                         // нет ТУ
+        if (index > lexems.length() - 1)    return;         // нет ТУ
         token = lexems[index++];
     }
 
@@ -179,43 +180,46 @@ void ShapeTrnsp::Parse(QString& src)
         enableTu = true;
     }
 
-/*
+    if (index > lexems.length() - 1)    return;             //
 
     // далее может идти признак привязки транспаранта к следующему текстовому примитиву
-    if (indx > ar.Length - 1)
-        return; // закончился примитив
+    bool bLink = lexems[index++].toInt(&ret) != 0 ? true : false;
+    if (index > lexems.length() - 1)    return;             //
 
-    bool bLink = Convert.ToInt32(ar[indx++]) != 0 ? true : false;
-    if (indx > ar.Length - 1)
-        return; // закончился примитив
-
-    token = ar[indx++];
     // далее может идти либо комментарий, либо описание транспаранта в кавычках
+    token = lexems[index++];
+
     if (token == "\"")
     {
         // нашли кавычку, значит есть индивидуальное описание примитива
-        ToolTipText = "";
-        while ((ar[indx] != "\"") && indx < ar.Length - 1)
-            ToolTipText += ar[indx++] + " ";
-        if (indx < ar.Length)
-            indx++;
+        while ((lexems[index] != "\"") && index < lexems.length()- 1)
+            toolTipText += lexems[index++] + " ";
+
+        if (index < lexems.length())
+            index++;
         else
-        {
-            parent.Log(string.Format("ShapeTrnsp. Нет завершающих кавычек в описании примитива '{0}'", str));
-        }
+            log (QString("ShapeTrnsp. нет завершающего символа \" в примитиве: %1").arg(src));
     }
-    if (indx > ar.Length - 1)
-        return; // закончился примитив
+    if (index > lexems.length() - 1)    return;             //
 
-    // ищем комментарий
-    Comment = "";
-    if (ar[indx].IndexOf(';') == 0)
+    // если след.лексема начинается с символа ";", это комментарий
+    if (lexems[index].indexOf(';') == 0)
     {
-        while (indx <= ar.Length - 1)
-            Comment += ar[indx++] + " ";
+        while (index <= lexems.length() - 1)
+            comment += lexems[index++] + " ";
     }
 
-*/
+    // Перья и кисти транспаратнтов назначаются для
+    //    XY_titleOn  = XY + new Vector((Width - TitleOn.Width)/2, (Height - TitleOn.Height)/2);
+    //    XY_titleOff = XY + new Vector((Width - TitleOff.Width)/2, (Height - TitleOff.Height)/2);
+    //    XY_titleExt = XY + new Vector((Width - TitleExt.Width)/2, (Height - TitleExt.Height)/2);
+
+}
+
+
+// инициализация статических инструментов отрисовки
+void ShapeTrnsp::InitInstruments()
+{
 }
 
 //// вычисление замещаемого прямоугольника
@@ -236,7 +240,6 @@ void ShapeTrnsp::FixUpUnsafe()
 
 void ShapeTrnsp::Prepare()
 {
-
 }
 
 QString ShapeTrnsp::Dump()
@@ -247,6 +250,97 @@ QString ShapeTrnsp::Dump()
 QString  ShapeTrnsp::ObjectInfo()
 {
     return "ТРАНСП";
+}
+
+// вычисление состояния примитива
+void ShapeTrnsp::accept()
+{
+    state->set(StsOn , false);
+    state->set(StsOff, false);
+    state->set(StsExt, false);
+    if (st == nullptr)
+        state->set(Status::StsUndefined, true);             // неопред.состояние - некореектная привязка к станции
+    else
+    {
+        state->set(Status::StsExpire, st->IsTsExpire());
+
+        switch (idObj)
+        {
+            case TRNSP_CHDK:                                // состояние транспарантов ЧДК определяется состоянием перегонов. ОБРАБОТАТЬ!
+                state->set(StsOff, true);
+                return;
+
+            case TRNSP_BLIND_L:                             // состояние траспарантов "слепой перегон" - всегда пассив
+            case TRNSP_BLIND_R:
+                state->set(StsOff, true);
+                return;
+
+            case TRNSP_TS:
+                // состояние траспаранта ТС определяется наличием неопред. сигналов, устареванием и т.д.
+                // надо уметь определять, есть ли в марице ненулевые сигналы на местах, не описанных в БД
+                state->set(StsOff, true);
+                if (st->IsUndefinedTsPresrnt())
+                    state->set(StsExt, true);
+                return;
+
+            case TRNSP_KP:                                  // состояние КП
+                // 1. Для МПЦ/РПЦ нужно корректно отработать ситуацию работоспособного КП и отсутствия связи с МПЦ/РПЦ
+                // 2. При использовании транспаратнта на общем виде он интегрирует в себе функции транспарантов ТС,ТУ,ОТУ,Осн/Рзрв
+                //    используя тртье состояние (желтый цвет)
+                state->set(StsOff,  st->IsKpOk());
+                state->set(StsOn , !st->IsKpOk());
+                return;
+
+            case TRNSP_MAIN_RSRV:                           // основной/резервный блок
+                state->set(StsOff, !st->IsRsrv());
+                state->set(StsOn ,  st->IsRsrv());
+                return;
+
+            case TRNSP_NGB:                                 // негабарит
+                state->set(StsOff, true);
+                return;
+
+        }
+
+//        Blinking = false;
+
+//        // 2016.02.15. Не реализовано мигание по выражениям StsPulseExpr
+//        StsAct[StsOn] = StsTsExpr[0] == null ? false : StsTsExpr[0].Value > 0;
+
+//        if (!StsAct[StsOn])
+//        {
+//            StsAct[StsOff] = StsTsExpr[1] == null ? true : StsTsExpr[1].Value > 0;
+//            if (!StsAct[StsOff])
+//                StsAct[StsExt] = StsTsExpr[2] == null ? true : StsTsExpr[2].Value > 0;
+//        }
+
+//        // отдельно обрабатываем транспарант режимов управления
+//        if (IsModeTransparant && SprSt != null)
+//        {
+//            StsAct[StsOn] = SprSt.Du; // состояние 1 - ДУ
+//            StsAct[StsOff] = SprSt.Ru; // состояние 0 - РУ
+//            StsAct[StsExt] = SprSt.Au || SprSt.Su; // состояние 2 - АУ или СУ
+//        }
+
+//        // реализация мигания с помощью расширения выражения через запятую, например: АДН,~АДН
+//        // ВАЖНО: мигает то соcтояние транспаранта, в котором обнаружено выполнение выражения мигания
+//        for (int i = 2; i >= 0; i--)
+//        {
+//            if (StsPulseExpr[i] != null && StsPulseExpr[i].Value > 0)
+//            {
+//                Blinking = true;
+//                StsAct[i == 0 ? StsOn : i == 1 ? StsOff : StsExt] = true;
+//            }
+//        }
+//        // Если транспарант должен пульсировать и StsAct[StsOn] - обеспечиваем пульсацию сменой состояния ON/OFF
+//        // Используемый алгоритм пытается мигать между активным и пассивным состоянием, что не очень удобно
+//        if (Pulsing && StsAct[StsOn] /*&& GlobalPulsingTrigger) || Blinking*/)
+//        {
+//            //StsAct[StsOn] = false;    // раньше перебрасывал состояния ОN/OFF
+//            //StsAct[StsOff] = true;
+//            Blinking = true;
+//        }
+    }
 }
 
 void ShapeTrnsp::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
@@ -277,6 +371,19 @@ void ShapeTrnsp::Draw(QPainter* painter)
     {
         if (path.length() != 0)
         {
+//            Brush brush = //StsAct.StsExpire == true                ? BrushExpired  :
+//                            StsAct[StsOn]                           ? BackBrushOn   :
+//                            StsAct[StsOff]                          ? BackBrushOff  :
+//                            StsAct[StsExt] && Property.IsThreeState ? BackBrushExt  :
+//                            StsAct.StsUndefined                     ? BrushUndefined : null;
+
+//            Pen pen = //StsAct.StsExpire == true                    ? PenExpired    :
+//                        StsAct[StsOn]                               ? ForePenOn     :
+//                        StsAct[StsOff]                              ? ForePenOff    :
+//                        StsAct[StsExt] && Property.IsThreeState     ? ForePenExt    :
+//                        StsAct.StsUndefined                         ? PenUndefined  : null;
+//            painter->setPen(pen);
+//            painter->setBrush(brush);
             painter->drawPath(path);
         }
         else
@@ -341,8 +448,14 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
                     d->width  = query.value("W").toInt(&ret);
                     d->height = query.value("H").toInt(&ret);
 
+                    // FORE ОN
                     d->foreColorOn  = QColor::fromRgb(query.value("On_ClrR").toInt(), query.value("On_ClrG").toInt(), query.value("On_ClrB").toInt());
+                    d->foreBrushOn  = QBrush(d->foreColorOn);               // Кисть состояния ON
+                    d->forePenOn    = QPen(d->foreColorOn);                 // ПЕро состояния ON
+                    // BACK ОN
                     d->backColorOn  = QColor::fromRgb(query.value("On_BckR").toInt(), query.value("On_BckG").toInt(), query.value("On_BckB").toInt());
+                    d->backBrushOn  = QBrush(d->backColorOn);				// Кисть переднего плана состояния ON
+                    d->backPenOn    = QPen  (d->backColorOn);               // Перо  переднего плана состояния ON
 
                     d->foreColorOff = QColor::fromRgb(query.value("Off_ClrR").toInt(), query.value("Off_ClrG").toInt(), query.value("Off_ClrB").toInt());
                     d->backColorOff = QColor::fromRgb(query.value("Off_BckR").toInt(), query.value("Off_BckG").toInt(), query.value("Off_BckB").toInt());
