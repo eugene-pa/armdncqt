@@ -86,6 +86,7 @@ public:
 
     void AcceptTS   ();                                     // обработка данных
 
+    bool IsDu       () { return !stsAu && !stsSu && !stsRu; } // ДУ
     bool IsAu       () { return stsAu;      }
     bool IsSu       () { return stsSu;      }
     bool IsRu       () { return stsRu;      }

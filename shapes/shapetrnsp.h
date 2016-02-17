@@ -25,6 +25,7 @@ static bool readBd (QString& dbpath, Logger& logger);
     bool		ownerDraw;   								// признак программной отрисовки
 
 //	bool		Pulse;										// признак использования мигающего сигнала
+    QFont       font;                                       // шрифт отрисовки текста примитива
     // FORE ОN
     QColor      foreColorOn;								// Цвет переднего плана  в состоянии ON
     QBrush      foreBrushOn;								// Кисть переднего плана состояния ON
@@ -35,16 +36,28 @@ static bool readBd (QString& dbpath, Logger& logger);
     QPen        backPenOn;                                  // Перо фона состояния ON
     // FORE ОFF
     QColor      foreColorOff;								// Цвет символов в состоянии OFF
+    QBrush      foreBrushOff;								// Кисть переднего плана состояния OFF
+    QPen        forePenOff;                                 // Перо  переднего плана состояния OFF
     // BACK ОFF
     QColor      backColorOff;								// Цвет фона     в состоянии OFF
+    QBrush      backBrushOff;								// Кисть фона состояния OFF
+    QPen        backPenOff;                                 // Перо фона состояния OFF
     // FORE EXT
     QColor      foreColorExt;								// Цвет символов третьего состояния или null
+    QBrush      foreBrushExt;								// Кисть переднего плана третьего состояния или null
+    QPen        forePenExt;                                 // Перо  переднего плана третьего состояния или null
     // BACK EXT
     QColor      backColorExt;								// Цвет фона     третьего состояния или null
+    QBrush      backBrushExt;								// Кисть фона состояния третьего состояния или null
+    QPen        backPenExt;                                 // Перо фона состояния третьего состояния или null
     // FORE EXT2
     QColor      foreColorExt2;								// Цвет символов 4-го состояния или null
+    QBrush      foreBrushExt2;								// Кисть переднего плана 4-го состояния или null
+    QPen        forePenExt2;                                // Перо  переднего плана 4-го состояния или null
     // BACK EXT2
     QColor      backColorExt2;								// Цвет фона     4-го состояния или null
+    QBrush      backBrushExt2;								// Кисть фона состояния 4-го состояния или null
+    QPen        backPenExt2;                                // Перо фона состояния 4-го состояния или null
 
     bool        isThreeState;                               // признак наличия третьего состояния
 
@@ -77,6 +90,10 @@ protected:
         StsExt,                                             // активность состояния 2
     };
 
+    static QBrush brushUndefined;
+    static QPen   penUndefined;
+    static QPen   whitePen;
+
     TrnspDescription * prop;                                // указатель на описатель типа транспаранта
 
     QString	    helperOn ;                                  // имя меню включить
@@ -97,35 +114,7 @@ protected:
     QPoint XY_titleOff;                                     // X1, Y1 для текста в состоянии OFF
     QPoint XY_titleExt;                                     // X1, Y1 для текста в состоянии EXT
 
-    QColor * ForeColorOn() { return &prop->foreColorOn; }            // цвет FORE ON
-//    QBrush * ForeBrushOn() { return new QBrush(prop->foreColorOn);  // кисть
-//    QPen   * ForePenOn  () { return;                                     // перо
-    QColor * BackColorOn;                                   // цвет Back ON
-    QBrush * BackBrushOn;                                   // кисть
-    QPen   * BackPenOn;                                     // перо
-
-    QColor * ForeColorOff;                                  // цвет FORE OFF
-    QBrush * ForeBrushOff;                                  // кисть
-    QPen   * ForePenOff;                                    // перо
-    QColor * BackColorOff;                                  // цвет Back OFF
-    QBrush * BackBrushOff;                                  // кисть
-    QPen   * BackPenOff;                                    // перо
-
-    //LinearGradientBrush BackBrushOffGrad; // градиентная кисть фона
-
-    QColor * ForeColorExt;                                  // цвет FORE EXT
-    QBrush * ForeBrushExt;                                  // кисть
-    QPen   * ForePenExt;                                    // перо
-    QColor * BackColorExt;                                  // цвет Back EXT
-    QBrush * BackBrushExt;                                  // кисть
-    QPen   * BackPenExt;                                    // перо
-
-    QColor * ForeColorExt2;                                 // цвет FORE EXT2
-    QBrush * ForeBrushExt2;                                 // кисть
-    QPen   * ForePenExt2;                                   // перо
-    QColor * BackColorExt2;                                 // цвет Back EXT2
-    QBrush * BackBrushExt2;                                 // кисть
-    QPen   * BackPenExt2;                                   // перо
+    QRectF roundedTuRect;                                   // окантовка
 
     enum
     {

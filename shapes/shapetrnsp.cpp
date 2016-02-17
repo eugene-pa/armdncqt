@@ -13,6 +13,10 @@
 QVector<TrnspDescription *> TrnspDescription::descriptions;            // массив описателей
 bool TrnspDescription::loaded = false;
 
+QBrush ShapeTrnsp::brushUndefined;
+QPen   ShapeTrnsp::penUndefined;
+QPen   ShapeTrnsp::whitePen;
+
 ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     // обнуление массива формул
@@ -79,7 +83,7 @@ void ShapeTrnsp::Parse(QString& src)
     y2 = y1 + height;
 
     setDimensions ();
-
+    roundedTuRect = QRectF(XY + QPointF(-3, -3), QSizeF(width+6, height + 6));
 
     // ищем описатель свойств и рассчитываем графику с учетом координат транспаранта
     prop = idObj>=0 && idObj<TrnspDescription::descriptions.count() ? TrnspDescription::descriptions[idObj] : nullptr;
@@ -100,6 +104,11 @@ void ShapeTrnsp::Parse(QString& src)
     if (lexems.length() < 8)                                // если вообще нет спецификации ТС - выход
         return;
 
+    if (idst==3)
+        int a = 99;
+
+    QString token = lexems[7];
+
     // 7 - сначала обработаем "частный случай" старого формата: всего 8 параметров, последний без кавычек)
     if (lexems[7] != "\"")                                  // 7 ТС1
     {
@@ -112,7 +121,6 @@ void ShapeTrnsp::Parse(QString& src)
         return;
     }
 
-    QString token;
     // имеем актуальную лексему с кавычками: " Выражение1[,Мигание1] [[Выражение2] Выражение3] "
     // ПРОБЛЕМА: Может быть и такое описание: " " - пробел внутри кавычек, надо уметь обработать
     int index = 8;
@@ -145,6 +153,7 @@ void ShapeTrnsp::Parse(QString& src)
                     log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта: %1").arg(src));
             }
         }
+        i++;
     }
 
     if (index > lexems.length() - 1)    return;
@@ -220,6 +229,9 @@ void ShapeTrnsp::Parse(QString& src)
 // инициализация статических инструментов отрисовки
 void ShapeTrnsp::InitInstruments()
 {
+    brushUndefined = QBrush(colorScheme->GetColor("Undefined"   ));       // неопред.состояние
+    penUndefined   = QPen  (colorScheme->GetColor("Undefined"   ));
+    whitePen       = QPen  (Qt::white,2);
 }
 
 //// вычисление замещаемого прямоугольника
@@ -258,6 +270,7 @@ void ShapeTrnsp::accept()
     state->set(StsOn , false);
     state->set(StsOff, false);
     state->set(StsExt, false);
+    state->set(Status::StsUndefined, false);
     if (st == nullptr)
         state->set(Status::StsUndefined, true);             // неопред.состояние - некореектная привязка к станции
     else
@@ -302,44 +315,45 @@ void ShapeTrnsp::accept()
 
         }
 
-//        Blinking = false;
+        blinking = false;
 
-//        // 2016.02.15. Не реализовано мигание по выражениям StsPulseExpr
-//        StsAct[StsOn] = StsTsExpr[0] == null ? false : StsTsExpr[0].Value > 0;
+        state->set(StsOn , stsExpr[0] == nullptr ? false : stsExpr[0]->ValueBool());
 
-//        if (!StsAct[StsOn])
-//        {
-//            StsAct[StsOff] = StsTsExpr[1] == null ? true : StsTsExpr[1].Value > 0;
-//            if (!StsAct[StsOff])
-//                StsAct[StsExt] = StsTsExpr[2] == null ? true : StsTsExpr[2].Value > 0;
-//        }
+        // если первое состояние == false, проверяем второе
+        if (!(*state)[StsOn])
+        {
+            state->set(StsOff , stsExpr[1] == nullptr ? true : stsExpr[1]->ValueBool());
+            if (!(*state)[StsOff])
+                state->set(StsExt , stsExpr[2] == nullptr ? true : stsExpr[2]->ValueBool());
+        }
 
-//        // отдельно обрабатываем транспарант режимов управления
-//        if (IsModeTransparant && SprSt != null)
-//        {
-//            StsAct[StsOn] = SprSt.Du; // состояние 1 - ДУ
-//            StsAct[StsOff] = SprSt.Ru; // состояние 0 - РУ
-//            StsAct[StsExt] = SprSt.Au || SprSt.Su; // состояние 2 - АУ или СУ
-//        }
+        // отдельно обрабатываем транспарант режимов управления
+        if (idObj==TRNSP_DU && st != nullptr)
+        {
+            state->set(StsOn , st->IsDu());                 // состояние 1 - ДУ
+            state->set(StsOff, st->IsRu());                 // состояние 0 - РУ
+            state->set(StsExt, st->IsAu() || st->IsSu());   // состояние 2 - АУ или СУ
+        }
 
-//        // реализация мигания с помощью расширения выражения через запятую, например: АДН,~АДН
-//        // ВАЖНО: мигает то соcтояние транспаранта, в котором обнаружено выполнение выражения мигания
-//        for (int i = 2; i >= 0; i--)
-//        {
-//            if (StsPulseExpr[i] != null && StsPulseExpr[i].Value > 0)
-//            {
-//                Blinking = true;
-//                StsAct[i == 0 ? StsOn : i == 1 ? StsOff : StsExt] = true;
-//            }
-//        }
-//        // Если транспарант должен пульсировать и StsAct[StsOn] - обеспечиваем пульсацию сменой состояния ON/OFF
-//        // Используемый алгоритм пытается мигать между активным и пассивным состоянием, что не очень удобно
-//        if (Pulsing && StsAct[StsOn] /*&& GlobalPulsingTrigger) || Blinking*/)
-//        {
-//            //StsAct[StsOn] = false;    // раньше перебрасывал состояния ОN/OFF
-//            //StsAct[StsOff] = true;
-//            Blinking = true;
-//        }
+        // реализация мигания с помощью расширения выражения через запятую, например: АДН,~АДН
+        // ВАЖНО: мигает то соcтояние транспаранта, в котором обнаружено выполнение выражения мигания
+        for (int i = 2; i >= 0; i--)
+        {
+            if (stsPulseExpr[i] != nullptr && stsPulseExpr[i]->ValueBool())
+            {
+                blinking = true;
+                state->set((i == 0 ? StsOn : i == 1 ? StsOff : StsExt),true);
+            }
+        }
+
+        // Если транспарант должен пульсировать и StsAct[StsOn] - обеспечиваем пульсацию сменой состояния ON/OFF
+        // Используемый алгоритм пытается мигать между активным и пассивным состоянием, что не очень удобно
+        if (pulsing && (*state)[StsOn] /*&& GlobalPulsingTrigger) || Blinking*/)
+        {
+            //StsAct[StsOn] = false;    // раньше перебрасывал состояния ОN/OFF
+            //StsAct[StsOff] = true;
+            blinking = true;
+        }
     }
 }
 
@@ -353,49 +367,82 @@ void ShapeTrnsp::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 // функция рисования
 void ShapeTrnsp::Draw(QPainter* painter)
 {
-    QPen pen(color1());
-    pen.setWidth(1);
-    pen.setCapStyle(Qt::FlatCap);
-    painter->setPen(pen);
+    accept();
 
-    QBrush brush(back1());
-    painter->setBrush(brush);
-
-    painter->setRenderHint(QPainter::Antialiasing);
-
-    if (indicator)
+    if ((*state)[StsOn] || (*state)[StsOff] | (*state)[StsExt])
     {
-        painter->drawEllipse(rect);
-    }
-    else
-    {
-        if (path.length() != 0)
+        bool on = (*state)[StsOn],
+             off = (*state)[StsOff],
+             ext = (*state)[StsExt];
+        painter->setRenderHint(QPainter::Antialiasing);
+
+        if (indicator)
         {
-//            Brush brush = //StsAct.StsExpire == true                ? BrushExpired  :
-//                            StsAct[StsOn]                           ? BackBrushOn   :
-//                            StsAct[StsOff]                          ? BackBrushOff  :
-//                            StsAct[StsExt] && Property.IsThreeState ? BackBrushExt  :
-//                            StsAct.StsUndefined                     ? BrushUndefined : null;
+            QBrush * brush = //StsAct.StsExpire == true             ? BrushExpired          :
+                            (*state)[StsOn]                         ? &prop->foreBrushOn    :
+                            (*state)[StsOff]                        ? &prop->foreBrushOff   :
+                            (*state)[StsExt] && prop->isThreeState  ? &prop->foreBrushExt   :
+                            (*state)[Status::StsUndefined]          ? &brushUndefined       : nullptr;
 
-//            Pen pen = //StsAct.StsExpire == true                    ? PenExpired    :
-//                        StsAct[StsOn]                               ? ForePenOn     :
-//                        StsAct[StsOff]                              ? ForePenOff    :
-//                        StsAct[StsExt] && Property.IsThreeState     ? ForePenExt    :
-//                        StsAct.StsUndefined                         ? PenUndefined  : null;
-//            painter->setPen(pen);
-//            painter->setBrush(brush);
-            painter->drawPath(path);
+            QPen * pen = //StsAct.StsExpire == true                 ? PenExpired            :
+                        (*state)[StsOn]                             ? &prop->backPenOn      :
+                        (*state)[StsOff]                            ? &prop->backPenOff     :
+                        (*state)[StsExt] && prop->isThreeState      ? &prop->backPenExt     :
+                        (*state)[Status::StsUndefined]              ? &penUndefined         : nullptr;
+
+            painter->setPen  (pen  ==nullptr ? Qt::NoPen   : *pen);
+            painter->setBrush(brush==nullptr ? Qt::NoBrush : *brush);
+
+            painter->drawEllipse(rect);
+
+            if (enableTu)
+            {
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen  (whitePen);
+                painter->drawEllipse(rect.center(), rect.width()/2 + 3, rect.height()/2 + 3);
+            }
         }
         else
         {
-            painter->drawRect(rect);
-        }
+            QBrush * brush = //StsAct.StsExpire == true             ? BrushExpired          :
+                            (*state)[StsOn]                         ? &prop->backBrushOn    :
+                            (*state)[StsOff]                        ? &prop->backBrushOff   :
+                            (*state)[StsExt] && prop->isThreeState  ? &prop->backBrushExt   :
+                            (*state)[Status::StsUndefined]          ? &brushUndefined       : nullptr;
 
-        QTextOption op(Qt::AlignCenter);
-        painter->drawText(rect, prop->name, op);
+            QPen * pen = //StsAct.StsExpire == true                 ? PenExpired            :
+                        (*state)[StsOn]                             ? &prop->forePenOn      :
+                        (*state)[StsOff]                            ? &prop->forePenOff     :
+                        (*state)[StsExt] && prop->isThreeState      ? &prop->forePenExt     :
+                        (*state)[Status::StsUndefined]              ? &penUndefined         : nullptr;
+
+            painter->setPen  (pen  ==nullptr ? Qt::NoPen   : *pen);
+            painter->setBrush(brush==nullptr ? Qt::NoBrush : *brush);
+            if (path.length() != 0)
+            {
+                painter->drawPath(path);
+            }
+            else
+            {
+                painter->drawRect(rect);
+            }
+
+            if (enableTu)
+            {
+                painter->setBrush(Qt::NoBrush);
+                painter->setPen  (whitePen);
+                painter->drawRect(roundedTuRect);
+            }
+
+            QString text = (*state)[StsOn ] ? prop->name :
+                           (*state)[StsOff] ? prop->name2 :
+                                              prop->name4;
+            painter->setFont(prop->font);
+            QTextOption op(Qt::AlignCenter);
+            painter->drawText(rect, text, op);
+        }
     }
 
-    Q_UNUSED(painter)
 }
 
 
@@ -435,7 +482,7 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
                     d->name = query.value("Text").toString().trimmed();
                     QStringList names = d->name.split(' ', QString::SkipEmptyParts);
                     if (names.length() > 0)
-                        d->name = names[0];
+                        d->name = d->name2 = d->name3 = names[0];
                     if (names.length() > 1)
                         d->name2 = names[1];
                     if (names.length() > 2)
@@ -447,23 +494,49 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
                     d->nameTsDefault = query.value("Ts").toString().trimmed();
                     d->width  = query.value("W").toInt(&ret);
                     d->height = query.value("H").toInt(&ret);
+#ifdef Q_OS_WIN
+                    d->font = QFont("Segoe UI",11,65);
+#endif
+#ifdef Q_OS_MAC
+                    d->font = QFont("Segoe UI",16);
+#endif
+#ifdef Q_OS_LINUX
+                    d->font = QFont("Segoe UI",12);
+#endif
 
+                    // создаем перья и кисти
                     // FORE ОN
                     d->foreColorOn  = QColor::fromRgb(query.value("On_ClrR").toInt(), query.value("On_ClrG").toInt(), query.value("On_ClrB").toInt());
                     d->foreBrushOn  = QBrush(d->foreColorOn);               // Кисть состояния ON
-                    d->forePenOn    = QPen(d->foreColorOn);                 // ПЕро состояния ON
+                    d->forePenOn    = QPen  (d->foreColorOn);                 // ПЕро состояния ON
                     // BACK ОN
                     d->backColorOn  = QColor::fromRgb(query.value("On_BckR").toInt(), query.value("On_BckG").toInt(), query.value("On_BckB").toInt());
                     d->backBrushOn  = QBrush(d->backColorOn);				// Кисть переднего плана состояния ON
                     d->backPenOn    = QPen  (d->backColorOn);               // Перо  переднего плана состояния ON
-
+                    // FORE OFF
                     d->foreColorOff = QColor::fromRgb(query.value("Off_ClrR").toInt(), query.value("Off_ClrG").toInt(), query.value("Off_ClrB").toInt());
+                    d->foreBrushOff  = QBrush(d->foreColorOff);               // Кисть состояния OFF
+                    d->forePenOff    = QPen(d->foreColorOff);                 // ПЕро состояния OFF
+                    // BACK OFF
                     d->backColorOff = QColor::fromRgb(query.value("Off_BckR").toInt(), query.value("Off_BckG").toInt(), query.value("Off_BckB").toInt());
-
-
-                    // третье состояние
+                    d->backBrushOff  = QBrush(d->backColorOff);				// Кисть переднего плана состояния OFF
+                    d->backPenOff    = QPen  (d->backColorOff);             // Перо  переднего плана состояния OFF
+                    // FORE EXT
                     d->foreColorExt = QColor::fromRgb(query.value("Ex_ClrR").toInt(), query.value("Ex_ClrG").toInt(), query.value("Ex_ClrB").toInt());
+                    d->foreBrushExt = QBrush(d->foreColorExt);              // Кисть состояния Ext
+                    d->forePenExt   = QPen(d->foreColorExt);                // ПЕро состояния Ext
+                    // BACK EXT
                     d->backColorExt = QColor::fromRgb(query.value("Ex_BckR").toInt(), query.value("Ex_BckG").toInt(), query.value("Ex_BckB").toInt());
+                    d->backBrushExt = QBrush(d->backColorExt);				// Кисть переднего плана состояния Ext2
+                    d->backPenExt   = QPen  (d->backColorExt);              // Перо  переднего плана состояния Ext2
+                    // FORE EXT2
+                    d->foreColorExt2= QColor::fromRgb(query.value("Ex_ClrR").toInt(), query.value("Ex_ClrG").toInt(), query.value("Ex_ClrB").toInt());
+                    d->foreBrushExt2= QBrush(d->foreColorExt2);             // Кисть состояния Ext
+                    d->forePenExt2  = QPen(d->foreColorExt2);               // ПЕро состояния Ext
+                    // BACK EXT2
+                    d->backColorExt2= QColor::fromRgb(query.value("Ex_BckR").toInt(), query.value("Ex_BckG").toInt(), query.value("Ex_BckB").toInt());
+                    d->backBrushExt2= QBrush(d->backColorExt2);				// Кисть переднего плана состояния Ext2
+                    d->backPenExt2  = QPen  (d->backColorExt2);             // Перо  переднего плана состояния Ext2
 
                     // если определено 4-е состояние в поле EX2RGB - разбор
                     // Формат: r1,g1,b1 r2,g2,b2 (1-цвет, 2-фон)

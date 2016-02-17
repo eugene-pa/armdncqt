@@ -103,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
     StationsCmb->model()->sort(0);
     StationsCmb->setCurrentIndex(0);
-    g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
+    g_actualStation = ((ShapeId *)StationsCmb->currentData().value<void *>())->St();
 
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
@@ -190,7 +190,7 @@ void MainWindow::rawdataready(ClientTcp *client)
 void MainWindow::stationSelected(int index)
 {
     Q_UNUSED(index)
-    g_actualStation = (Station *)StationsCmb->currentData().value<void *>();
+    g_actualStation = ((ShapeId *)StationsCmb->currentData().value<void *>())->St();
     emit changeStation(g_actualStation);
 }
 
