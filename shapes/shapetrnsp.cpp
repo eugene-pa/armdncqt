@@ -10,12 +10,13 @@
 #include "../common/boolexpression.h"
 #include "../spr/sprbase.h"
 
-QVector<TrnspDescription *> TrnspDescription::descriptions;            // массив описателей
+//QVector<TrnspDescription *> TrnspDescription::descriptions; // массив описателей
+QHash<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
 bool TrnspDescription::loaded = false;
 
-QBrush ShapeTrnsp::brushUndefined;
-QPen   ShapeTrnsp::penUndefined;
-QPen   ShapeTrnsp::whitePen;
+QBrush ShapeTrnsp::brushUndefined;                          // общая кисть неопределенного состояния
+QPen   ShapeTrnsp::penUndefined;                            // общее перо  неопределенного состояния
+QPen   ShapeTrnsp::whitePen;                                // общее белое перо
 
 ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
@@ -373,28 +374,29 @@ void ShapeTrnsp::Draw(QPainter* painter)
     {
         bool on = (*state)[StsOn],
              off = (*state)[StsOff],
-             ext = (*state)[StsExt];
+             ext = (*state)[StsExt],
+             expire = (*state)[Status::StsExpire],
+             undefined = (*state)[Status::StsUndefined];
         painter->setRenderHint(QPainter::Antialiasing);
 
-        if (indicator)
+        Palitra& palitra =  (*state)[Status::StsExpire]           ? prop->palitras[4] :
+                            (*state)[Status::StsUndefined]        ? prop->palitras[3] :
+                            (*state)[StsOn]                       ? prop->palitras[0] :
+                            (*state)[StsOff]                      ? prop->palitras[1] :
+                            (*state)[StsExt] && prop->isThreeState? prop->palitras[2] :
+                                                                    prop->palitras[4];
+
+        // описание fore и back для индикаторов в БД сделано через ж., можно поправить, чтобы избежать лишних проверок ниже
+        // для индикатора в качестве основной кисти заливки эллипса используется основной цвет,
+        // для прямоугольников основной цвет - надпись. а кисть - фон
+        QBrush * brush  = indicator ? &palitra.brushFore : &palitra.brushBack;
+        QPen   * pen    = indicator ? &palitra.penBack   : &palitra.penFore;
+        painter->setPen  (pen  ==nullptr ? Qt::NoPen   : *pen);
+        painter->setBrush(brush==nullptr ? Qt::NoBrush : *brush);
+
+        if (indicator)                                      // индикатор
         {
-            QBrush * brush = //StsAct.StsExpire == true             ? BrushExpired          :
-                            (*state)[StsOn]                         ? &prop->foreBrushOn    :
-                            (*state)[StsOff]                        ? &prop->foreBrushOff   :
-                            (*state)[StsExt] && prop->isThreeState  ? &prop->foreBrushExt   :
-                            (*state)[Status::StsUndefined]          ? &brushUndefined       : nullptr;
-
-            QPen * pen = //StsAct.StsExpire == true                 ? PenExpired            :
-                        (*state)[StsOn]                             ? &prop->backPenOn      :
-                        (*state)[StsOff]                            ? &prop->backPenOff     :
-                        (*state)[StsExt] && prop->isThreeState      ? &prop->backPenExt     :
-                        (*state)[Status::StsUndefined]              ? &penUndefined         : nullptr;
-
-            painter->setPen  (pen  ==nullptr ? Qt::NoPen   : *pen);
-            painter->setBrush(brush==nullptr ? Qt::NoBrush : *brush);
-
             painter->drawEllipse(rect);
-
             if (enableTu)
             {
                 painter->setBrush(Qt::NoBrush);
@@ -404,27 +406,28 @@ void ShapeTrnsp::Draw(QPainter* painter)
         }
         else
         {
-            QBrush * brush = //StsAct.StsExpire == true             ? BrushExpired          :
-                            (*state)[StsOn]                         ? &prop->backBrushOn    :
-                            (*state)[StsOff]                        ? &prop->backBrushOff   :
-                            (*state)[StsExt] && prop->isThreeState  ? &prop->backBrushExt   :
-                            (*state)[Status::StsUndefined]          ? &brushUndefined       : nullptr;
-
-            QPen * pen = //StsAct.StsExpire == true                 ? PenExpired            :
-                        (*state)[StsOn]                             ? &prop->forePenOn      :
-                        (*state)[StsOff]                            ? &prop->forePenOff     :
-                        (*state)[StsExt] && prop->isThreeState      ? &prop->forePenExt     :
-                        (*state)[Status::StsUndefined]              ? &penUndefined         : nullptr;
-
-            painter->setPen  (pen  ==nullptr ? Qt::NoPen   : *pen);
-            painter->setBrush(brush==nullptr ? Qt::NoBrush : *brush);
-            if (path.length() != 0)
+            if (path.length() != 0)                         // геометрия пути
             {
                 painter->drawPath(path);
             }
-            else
+            else                                            // окантовка с текстом
             {
                 painter->drawRect(rect);
+
+                painter->setFont(palitra.font);
+                QTextOption op(Qt::AlignCenter);
+
+                // особо обрабатываю транспарант 25 - TRNSP_TEXT, выводим имя сигнала вместо названия транспаранта
+                if (prop->id==TRNSP_TEXT)
+                {
+                    painter->drawText(rect, stsExpr[0]->Source(), op);
+                }
+                else
+                {
+                    if (!palitra.suited)
+                        suiteFont (painter, palitra);
+                    painter->drawText(rect, palitra.text, op);
+                }
             }
 
             if (enableTu)
@@ -433,26 +436,102 @@ void ShapeTrnsp::Draw(QPainter* painter)
                 painter->setPen  (whitePen);
                 painter->drawRect(roundedTuRect);
             }
-
-            QString text = (*state)[StsOn ] ? prop->name :
-                           (*state)[StsOff] ? prop->name2 :
-                                              prop->name4;
-            painter->setFont(prop->font);
-            QTextOption op(Qt::AlignCenter);
-            painter->drawText(rect, text, op);
         }
     }
 
 }
 
+// подгонка размера шрифта под размер обрамляющего прямоугольника
+void ShapeTrnsp::suiteFont (QPainter * painter, Palitra& palitra)
+{
+    QTextOption option(Qt::AlignCenter);
+    QRectF boundRect;
+    for (int i = palitra.font.pointSize(); i>6; i--)
+    {
+        palitra.font.setPointSize(i);
+        painter->setFont(palitra.font);
+        QRectF boundRect = painter->boundingRect(rect, palitra.text, option);
+        if (rect.width() - boundRect.width() >= 6)
+            break;
+        // уменьшаем не только размер, но и вес шрифта (до нормы = 50)
+        if (palitra.font.weight() > 55)
+            palitra.font.setWeight(palitra.font.weight() - 5);
+    }
+    palitra.suited = true;
+}
 
 
 // конструктор описаиеля транспаранта; добавляет указатель на класс в вектор описателей, при необходимости расширяя его размерность
-TrnspDescription::TrnspDescription(int _id)
+TrnspDescription::TrnspDescription(QSqlQuery& query, Logger& logger)
 {
-    id = _id;
-    if (descriptions.size() < id+1)
-        descriptions.resize(id+1);                          // увеличиваем размерность вектора
+    bool ret;
+    id = query.value("No").toInt(&ret);
+
+    // Даю возможность задать разные надписи для разных состояний транспаранта, например: ДУ;РУ;АУ;СУ
+    // Для этого в поле Text должны быть записаны лексемы в порядке следования состояний; всего 4 состояния
+    QString s = query.value("Text").toString().trimmed();
+    QStringList names = s.split(';', QString::SkipEmptyParts);
+    // по умолчанию имена совпадают
+    if (names.length() > 0)
+        for (int i=0; i<maxStates+1; i++)
+            palitras[i].text = names[0];
+    for (int i=1; i<names.length(); i++)
+        palitras[i].text = names[i];
+
+
+    nameTsDefault = query.value("Ts").toString().trimmed();
+    width  = query.value("W").toInt(&ret);
+    height = query.value("H").toInt(&ret);
+
+    // создаем перья и кисти
+    // ОN
+    palitras[0].init(QColor::fromRgb(query.value("On_ClrR").toInt(), query.value("On_ClrG").toInt(), query.value("On_ClrB").toInt()),
+                     QColor::fromRgb(query.value("On_BckR").toInt(), query.value("On_BckG").toInt(), query.value("On_BckB").toInt()));
+    // OFF
+    palitras[1].init(QColor::fromRgb(query.value("Off_ClrR").toInt(), query.value("Off_ClrG").toInt(), query.value("Off_ClrB").toInt()),
+                     QColor::fromRgb(query.value("Off_BckR").toInt(), query.value("Off_BckG").toInt(), query.value("Off_BckB").toInt()));
+    // EXT
+    palitras[2].init(QColor::fromRgb(query.value("Ex_ClrR").toInt(), query.value("Ex_ClrG").toInt(), query.value("Ex_ClrB").toInt()),
+                     QColor::fromRgb(query.value("Ex_BckR").toInt(), query.value("Ex_BckG").toInt(), query.value("Ex_BckB").toInt()));
+    // FORE EXT2
+    palitras[3].init(QColor::fromRgb(query.value("Ex_ClrR").toInt(), query.value("Ex_ClrG").toInt(), query.value("Ex_ClrB").toInt()),
+                     QColor::fromRgb(query.value("Ex_BckR").toInt(), query.value("Ex_BckG").toInt(), query.value("Ex_BckB").toInt()));
+
+    // если определено 4-е состояние в поле EX2RGB - разбор
+    // Формат: r1,g1,b1 r2,g2,b2 (1-цвет, 2-фон)
+    QString ext = query.value("EX2RGB").toString().trimmed();
+    if (ext.length() > 0)
+    {
+        QStringList rgbs = ext.split(' ', QString::SkipEmptyParts);
+        if (rgbs.length() == 2)
+        {
+            QStringList clr = rgbs[0].split(',', QString::SkipEmptyParts);
+            QStringList bck = rgbs[1].split(',', QString::SkipEmptyParts);
+            if (clr.length() == 3 && bck.length() == 3)
+            {
+                palitras[3].init(QColor::fromRgb(clr[0].toInt(), clr[1].toInt(), clr[2].toInt()),
+                                    QColor::fromRgb(bck[0].toInt(), bck[1].toInt(), bck[2].toInt()));
+            }
+            else
+            {
+                logger.log(QString("Ошибка формата поля EX2RGB: %1").arg(ext));
+            }
+
+        }
+        else
+        {
+            logger.log(QString("Ошибка формата поля EX2RGB: %2").arg(ext));
+        }
+    }
+
+    // признак наличия третьего состояния
+    isThreeState = palitras[2].valid;
+
+    // флаг рисования при отсутствии сигнала
+    drawOffState = query.value("DrawWhenTsOff").toBool();
+    description = query.value("Comment").toString().trimmed();
+    geometry = query.value("Geometry").toString().trimmed();
+
     descriptions[id] = this;
 }
 
@@ -472,119 +551,7 @@ bool TrnspDescription::readBd(QString& dbpath, Logger& logger)
             {
                 while (query.next())
                 {
-                    bool ret;
-                    // читаем имя параметра и RGBA  цвет для всех цветовых схем
-                    int id = query.value("No").toInt(&ret);
-                    TrnspDescription * d = new TrnspDescription(id);
-
-                    // Даю возможность задать разные надписи для разных состояний транспаранта, например: ДУ;РУ;АУ;СУ
-                    // Для этого в поле Text должны быть записаны лексемы в порядке следования состояний; всего 4 состояния
-                    d->name = query.value("Text").toString().trimmed();
-                    QStringList names = d->name.split(' ', QString::SkipEmptyParts);
-                    if (names.length() > 0)
-                        d->name = d->name2 = d->name3 = names[0];
-                    if (names.length() > 1)
-                        d->name2 = names[1];
-                    if (names.length() > 2)
-                        d->name3 = names[2];
-                    if (names.length() > 3)
-                        d->name4 = names[3];
-
-
-                    d->nameTsDefault = query.value("Ts").toString().trimmed();
-                    d->width  = query.value("W").toInt(&ret);
-                    d->height = query.value("H").toInt(&ret);
-#ifdef Q_OS_WIN
-                    d->font = QFont("Segoe UI",11,65);
-#endif
-#ifdef Q_OS_MAC
-                    d->font = QFont("Segoe UI",16);
-#endif
-#ifdef Q_OS_LINUX
-                    d->font = QFont("Segoe UI",12);
-#endif
-
-                    // создаем перья и кисти
-                    // FORE ОN
-                    d->foreColorOn  = QColor::fromRgb(query.value("On_ClrR").toInt(), query.value("On_ClrG").toInt(), query.value("On_ClrB").toInt());
-                    d->foreBrushOn  = QBrush(d->foreColorOn);               // Кисть состояния ON
-                    d->forePenOn    = QPen  (d->foreColorOn);                 // ПЕро состояния ON
-                    // BACK ОN
-                    d->backColorOn  = QColor::fromRgb(query.value("On_BckR").toInt(), query.value("On_BckG").toInt(), query.value("On_BckB").toInt());
-                    d->backBrushOn  = QBrush(d->backColorOn);				// Кисть переднего плана состояния ON
-                    d->backPenOn    = QPen  (d->backColorOn);               // Перо  переднего плана состояния ON
-                    // FORE OFF
-                    d->foreColorOff = QColor::fromRgb(query.value("Off_ClrR").toInt(), query.value("Off_ClrG").toInt(), query.value("Off_ClrB").toInt());
-                    d->foreBrushOff  = QBrush(d->foreColorOff);               // Кисть состояния OFF
-                    d->forePenOff    = QPen(d->foreColorOff);                 // ПЕро состояния OFF
-                    // BACK OFF
-                    d->backColorOff = QColor::fromRgb(query.value("Off_BckR").toInt(), query.value("Off_BckG").toInt(), query.value("Off_BckB").toInt());
-                    d->backBrushOff  = QBrush(d->backColorOff);				// Кисть переднего плана состояния OFF
-                    d->backPenOff    = QPen  (d->backColorOff);             // Перо  переднего плана состояния OFF
-                    // FORE EXT
-                    d->foreColorExt = QColor::fromRgb(query.value("Ex_ClrR").toInt(), query.value("Ex_ClrG").toInt(), query.value("Ex_ClrB").toInt());
-                    d->foreBrushExt = QBrush(d->foreColorExt);              // Кисть состояния Ext
-                    d->forePenExt   = QPen(d->foreColorExt);                // ПЕро состояния Ext
-                    // BACK EXT
-                    d->backColorExt = QColor::fromRgb(query.value("Ex_BckR").toInt(), query.value("Ex_BckG").toInt(), query.value("Ex_BckB").toInt());
-                    d->backBrushExt = QBrush(d->backColorExt);				// Кисть переднего плана состояния Ext2
-                    d->backPenExt   = QPen  (d->backColorExt);              // Перо  переднего плана состояния Ext2
-                    // FORE EXT2
-                    d->foreColorExt2= QColor::fromRgb(query.value("Ex_ClrR").toInt(), query.value("Ex_ClrG").toInt(), query.value("Ex_ClrB").toInt());
-                    d->foreBrushExt2= QBrush(d->foreColorExt2);             // Кисть состояния Ext
-                    d->forePenExt2  = QPen(d->foreColorExt2);               // ПЕро состояния Ext
-                    // BACK EXT2
-                    d->backColorExt2= QColor::fromRgb(query.value("Ex_BckR").toInt(), query.value("Ex_BckG").toInt(), query.value("Ex_BckB").toInt());
-                    d->backBrushExt2= QBrush(d->backColorExt2);				// Кисть переднего плана состояния Ext2
-                    d->backPenExt2  = QPen  (d->backColorExt2);             // Перо  переднего плана состояния Ext2
-
-                    // если определено 4-е состояние в поле EX2RGB - разбор
-                    // Формат: r1,g1,b1 r2,g2,b2 (1-цвет, 2-фон)
-                    QString ext = query.value("EX2RGB").toString().trimmed();
-                    if (ext.length() > 0)
-                    {
-                        QStringList rgbs = ext.split(' ', QString::SkipEmptyParts);
-                        if (rgbs.length() == 2)
-                        {
-                            QStringList clr = rgbs[0].split(',', QString::SkipEmptyParts);
-                            QStringList bck = rgbs[1].split(',', QString::SkipEmptyParts);
-                            if (clr.length() == 3 && bck.length() == 3)
-                            {
-                                d->foreColorExt2 = QColor::fromRgb(clr[0].toInt(), clr[1].toInt(), clr[2].toInt());
-                                d->backColorExt2 = QColor::fromRgb(bck[0].toInt(), bck[1].toInt(), bck[2].toInt());
-                            }
-                            else
-                            {
-                                logger.log(QString("Ошибка формата поля EX2RGB: %1").arg(ext));
-                            }
-
-                        }
-                        else
-                        {
-                            logger.log(QString("Ошибка формата поля EX2RGB: %2").arg(ext));
-                        }
-                    }
-
-                    // признак наличия третьего состояния
-                    d->isThreeState = (d->foreColorExt.red() | d->foreColorExt.green() | d->foreColorExt.blue() | d->backColorExt.red() | d->backColorExt.green() | d->backColorExt.blue()) >  0;
-
-
-                    // флаг рисования при отсутствии сигнала
-                    d->drawOffState = query.value("DrawWhenTsOff").toBool();
-                    d->description = query.value("Comment").toString().trimmed();
-                    d->geometry = query.value("Geometry").toString().trimmed();
-
-//                    d->bmpRedName = query.value("BitMapRed").toString().trimmed();
-//                    d->bmpGrnName = query.value("BitMapGrn").toString().trimmed();
-//                    d->bmpYelName = query.value("BitMapYel").toString().trimmed();
-//                    if (d->bmpRedName.length() > 0)
-//                        d->bmpRed = paResouces.GetBitmap(d.BmpRedName); //(Bitmap) rm.GetObject(d.BmpRedName));
-//                    if (d->bmpGrnName.Length > 0)
-//                        d->bmpGrn = paResouces.GetBitmap(d.BmpGrnName); //(Bitmap)rm.GetObject(d.BmpGrnName);
-//                    if (d->bmpYelName.Length > 0)
-//                        d->bmpYel = paResouces.GetBitmap(d.BmpYelName); //(Bitmap)rm.GetObject(d.BmpYelName);
-//                    d->ownerDraw = d->bmpRed == null && d->bmpGrn == null && d->bmpYel == null;
-
+                    TrnspDescription * d = new TrnspDescription(query, logger);
                 }
             }
             else

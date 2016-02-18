@@ -4,69 +4,89 @@
 #include "shape.h"
 #include "../common/logger.h"
 
+
+// класс описателя отдельного состояния транспаранта
+// (для состояний ON, OFF, EXT, EXT2)
+class Palitra
+{
+public:
+    Palitra()
+    {
+        QString family = "Segoe UI";
+#ifdef Q_OS_WIN
+        int size   = 11;
+        int weight = 65;
+#endif
+#ifdef Q_OS_MAC
+        family = "Segoe UI";
+        int size   = 16;
+        int weight = 50;
+#endif
+#ifdef Q_OS_LINUX
+        int size   = 12;
+        int weight = 50;
+#endif
+        font = QFont(family, size, weight);
+
+        colorFore = colorBack = Qt::darkGray;              // по умолчанию - серая палитра
+        brushFore = brushBack = Qt::lightGray;
+        penFore   = penBack   = QPen(Qt::gray);
+        suited = false;
+        valid  = false;
+    }
+
+    QFont   font;                                           // шрифт
+    QColor  colorFore;                                      // цвет переднего плана
+    QColor  colorBack;                                      // цвет фона
+    QBrush  brushFore;                                      // кисть переднего плана
+    QBrush  brushBack;                                      // кисть фона
+    QPen    penFore;                                        // перо переднего плана
+    QPen    penBack;                                        // перо фона
+    QString text;                                           // текст
+    bool    valid;
+    bool    suited;                                         // размер подогнан!
+
+    // инициализация
+    void init (QColor fore, QColor back)
+    {
+        valid = fore.red() | fore.green() | fore.blue() | back.red() | back.green() | back.blue();
+        colorFore = fore;
+        colorBack = back;
+        brushFore = QBrush(fore);
+        brushBack = QBrush(back);
+        penFore   = QPen(fore);
+        penBack   = QPen(back);
+    }
+};
+
+enum
+{
+    maxStates = 4,
+};
+
+
 //  класс описателя типа транспаранта; формируется путем чтения таблицы транспарантов из БД
 class TrnspDescription
 {
 public:
-static QVector<TrnspDescription *> descriptions;            // массив описателей
+//static QVector<TrnspDescription *> descriptions;            // массив описателей
+static QHash<int, TrnspDescription *> descriptions;            // массив описателей
 static bool loaded;
-    TrnspDescription(int _id);
+    TrnspDescription(QSqlQuery& query, Logger& logger);
     ~TrnspDescription();
 static bool readBd (QString& dbpath, Logger& logger);
     bool MakePath(QPointF xyBase, QPainterPath& path, Logger * logger);
 //private:
     int         id;
-    QString		name;										// имя транспаранта из БД
-    QString		name2;										// имя транспаранта из БД альтернативное (акт.состояния)
-    QString		name3;										// имя транспаранта из БД альтернативное (третьего состояния)
-    QString		name4;										// имя транспаранта из БД четвертого состояния
-
     QString		nameTsDefault;								// имя определяющего сигнала ТС
-    bool		ownerDraw;   								// признак программной отрисовки
-
-//	bool		Pulse;										// признак использования мигающего сигнала
-    QFont       font;                                       // шрифт отрисовки текста примитива
-    // FORE ОN
-    QColor      foreColorOn;								// Цвет переднего плана  в состоянии ON
-    QBrush      foreBrushOn;								// Кисть переднего плана состояния ON
-    QPen        forePenOn;                                  // Перо  переднего плана состояния ON
-    // BACK ОN
-    QColor      backColorOn;								// Цвет фона в состоянии ON
-    QBrush      backBrushOn;								// Кисть фона состояния ON
-    QPen        backPenOn;                                  // Перо фона состояния ON
-    // FORE ОFF
-    QColor      foreColorOff;								// Цвет символов в состоянии OFF
-    QBrush      foreBrushOff;								// Кисть переднего плана состояния OFF
-    QPen        forePenOff;                                 // Перо  переднего плана состояния OFF
-    // BACK ОFF
-    QColor      backColorOff;								// Цвет фона     в состоянии OFF
-    QBrush      backBrushOff;								// Кисть фона состояния OFF
-    QPen        backPenOff;                                 // Перо фона состояния OFF
-    // FORE EXT
-    QColor      foreColorExt;								// Цвет символов третьего состояния или null
-    QBrush      foreBrushExt;								// Кисть переднего плана третьего состояния или null
-    QPen        forePenExt;                                 // Перо  переднего плана третьего состояния или null
-    // BACK EXT
-    QColor      backColorExt;								// Цвет фона     третьего состояния или null
-    QBrush      backBrushExt;								// Кисть фона состояния третьего состояния или null
-    QPen        backPenExt;                                 // Перо фона состояния третьего состояния или null
-    // FORE EXT2
-    QColor      foreColorExt2;								// Цвет символов 4-го состояния или null
-    QBrush      foreBrushExt2;								// Кисть переднего плана 4-го состояния или null
-    QPen        forePenExt2;                                // Перо  переднего плана 4-го состояния или null
-    // BACK EXT2
-    QColor      backColorExt2;								// Цвет фона     4-го состояния или null
-    QBrush      backBrushExt2;								// Кисть фона состояния 4-го состояния или null
-    QPen        backPenExt2;                                // Перо фона состояния 4-го состояния или null
+    Palitra     palitras[maxStates+1];
 
     bool        isThreeState;                               // признак наличия третьего состояния
-
-    bool		drawOffState;								// флаг рисования при отсутствии сигнала
+    bool		drawOffState;								// флаг прорисовки пассивного состояния транспаранта; сейчас игнорируем и прорисовываем все
     int         width;										// ширина
     int 		height;										// высота
 
     QString     geometry;                                   // описание геометрии примитива
-    //QPainterPath path;                                      // сформированный путь (коллекция примитивов)
     QString     description;                                // описание (тултип запоминаем)
 
 //    QString     NameIcon;                                   // имя иконки
@@ -116,10 +136,6 @@ protected:
 
     QRectF roundedTuRect;                                   // окантовка
 
-    enum
-    {
-        maxStates = 3,
-    };
     BoolExpression* stsExpr     [maxStates];                // формулы для определения активности 3-х состояний
     BoolExpression* stsPulseExpr[maxStates];                // формулы для определения мигания    3-х состояний
     QStringList tuNames;                                    // имена команд ТУ
@@ -151,7 +167,9 @@ protected:
         TRNSP_TS          = 22,
         TRNSP_UKSPS       = 23,
         TRNSP_TRANSMIT    = 24,
-        TRNSP_SAUT        = 25,
+
+        TRNSP_TEXT        = 25,                                 // был TRNSP_SAUT - особый транспарант: выводим имя сигнала вместо имени транспаранта
+
         TRNSP_RF1         = 26,
         TRNSP_RF2         = 27,
         TRNSP_MAIN_RSRV   = 28,
@@ -207,17 +225,9 @@ protected:
     virtual QString ObjectInfo();
     virtual void  Prepare();
     virtual void accept();                                  // вычисление состояния примитива
-
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
 
-    inline QColor color1() { return prop->foreColorOn;   }
-    inline QColor color2() { return prop->foreColorOff;  }
-    inline QColor color3() { return prop->foreColorExt;  }
-    inline QColor color4() { return prop->foreColorExt2; }
-    inline QColor back1 () { return prop->backColorOn;   }
-    inline QColor back2 () { return prop->backColorOff;  }
-    inline QColor back3 () { return prop->backColorExt;  }
-    inline QColor back4 () { return prop->backColorExt2; }
+    void suiteFont (QPainter *, Palitra& palitra);          // подгонка размера шрифта под занимаемое место
 };
 
 #endif // SHAPETRNSP_H

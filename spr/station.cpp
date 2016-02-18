@@ -64,7 +64,7 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     alarmATU        = false;
 
     errorLockLogicCount = 0;
-    stsFrmMntrTsExpired = false;
+    stsFrmMntrTsExpired = true;
     offsetDk        = 0;
     lenDk           = 0;
 
