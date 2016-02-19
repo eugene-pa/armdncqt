@@ -61,7 +61,8 @@ SOURCES += main.cpp\
     ../forms/qled.cpp \
     ../spr/krug.cpp \
     ../forms/dlgroutes.cpp \
-    ../forms/dlgtuinfo.cpp
+    ../forms/dlgtuinfo.cpp \
+    ../shapes/trnspdescription.cpp
     ../common/boolexpression.cpp \
 
 
@@ -111,7 +112,9 @@ HEADERS  += mainwindow.h \
     ../forms/qled.h \
     ../spr/krug.h \
     ../forms/dlgroutes.h \
-    ../forms/dlgtuinfo.h
+    ../forms/dlgtuinfo.h \
+    ../shapes/palitra.h \
+    ../shapes/trnspdescription.h
     ../common/boolexpression.h \
 
 

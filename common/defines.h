@@ -17,6 +17,10 @@
 #include "QCloseEvent"
 #include "QDateTime"
 #include "QRegularExpression"
+#include <QFont>
+#include <QBrush>
+#include <QColor>
+#include <QPen>
 
 //#include <QWidget>
 //#include <QGraphicsView>

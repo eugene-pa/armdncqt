@@ -93,6 +93,8 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
         kpIdBase = query.value("GidUralKpId").toInt(&ret);  // ID КП, явно заданный в БД или 0
         enable  = query.value("OnOff").toBool();            // OnOff
         du      = query.value("DuAu").toBool();             // станция ДУ
+        stsAu = !du;
+
         bitmapIdRss = query.value("BitmapID").toInt(&ret);  //
         radioIdRss = query.value("RadioID").toInt(&ret);    //
         radioIdMnt = query.value("RadioMonitorID").toInt(&ret);//

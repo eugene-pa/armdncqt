@@ -109,5 +109,6 @@ void DlgTuInfo::on_tableTu_itemSelectionChanged()
 
 void DlgTuInfo::on_SliderDelay_valueChanged(int value)
 {
+    Q_UNUSED(value)
     ui->lineEditDelay->setText(QString("%1").arg(ui->SliderDelay->value()));
 }
