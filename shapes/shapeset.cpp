@@ -7,6 +7,8 @@
 #include "shapestrl.h"
 #include "shapesvtf.h"
 #include "shapetrnsp.h"
+#include "shapetext.h"
+#include "shapeprzd.h"
 
 float ShapeSet::X0 = 0.0,
       ShapeSet::Y0 = 0.0;										// общее смещение схем, задавыаемое опцией X0=, Н0=
@@ -69,7 +71,9 @@ void ShapeSet::ScanFile()
                     case STRL_COD:      shape = new ShapeStrl (str,this);   setStrl .append(shape); break;
                     case SVTF_COD:      shape = new ShapeSvtf (str,this);   setSvtf .append(shape); break;
                     case MODE_COD:      shape = new ShapeTrnsp(str,this);   setTrnsp.append(shape); break;
-//                  case PRZD_COD:      shape = new ShapePrzd (str,this);   setPrzd .append(shape); break;
+                    case PRZD_COD:      shape = new ShapePrzd (str,this);   /*setPrzd .append(shape);*/ break;
+                    case NAME_COD:      shape = new ShapeText (str,this);   /*setName .append(shape);*/ break;
+                    case TEXT_COD:      shape = new ShapeText (str,this);   /*setText .append(shape);*/ break;
                 }
                 if (shape != 0)
                 {

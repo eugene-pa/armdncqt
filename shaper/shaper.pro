@@ -62,7 +62,9 @@ SOURCES += main.cpp\
     ../spr/krug.cpp \
     ../forms/dlgroutes.cpp \
     ../forms/dlgtuinfo.cpp \
-    ../shapes/trnspdescription.cpp
+    ../shapes/trnspdescription.cpp \
+    ../shapes/shapetext.cpp \
+    ../shapes/shapeprzd.cpp
     ../common/boolexpression.cpp \
 
 
@@ -114,7 +116,9 @@ HEADERS  += mainwindow.h \
     ../forms/dlgroutes.h \
     ../forms/dlgtuinfo.h \
     ../shapes/palitra.h \
-    ../shapes/trnspdescription.h
+    ../shapes/trnspdescription.h \
+    ../shapes/shapetext.h \
+    ../shapes/shapeprzd.h
     ../common/boolexpression.h \
 
 
