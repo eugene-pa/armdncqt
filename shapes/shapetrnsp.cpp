@@ -376,10 +376,16 @@ void ShapeTrnsp::Draw(QPainter* painter)
 
         Palitra& palitra =  (*state)[Status::StsExpire]           ? prop->palitras[4] :
                             (*state)[Status::StsUndefined]        ? prop->palitras[3] :
-                            (*state)[StsOn]                       ? prop->palitras[0] :
-                            (*state)[StsOff]                      ? prop->palitras[1] :
-                            (*state)[StsExt] && prop->isThreeState? prop->palitras[2] :
+                            (*state)[StsOn]                       ? prop->palitras[0] :     // ON
+                            (*state)[StsOff]                      ? prop->palitras[1] :     // OFF
+                            (*state)[StsExt] && prop->isThreeState? prop->palitras[2] :     // EXT
                                                                     prop->palitras[4];
+
+        // отдельно обрабатываем транспарант режимов управления
+        if (idObj==TRNSP_DU && st != nullptr && st->IsSu())
+        {
+            palitra = prop->palitras[3];                                                    // EXT2
+        }
 
         // описание fore и back для индикаторов в БД сделано через ж., можно поправить, чтобы избежать лишних проверок ниже
         // для индикатора в качестве основной кисти заливки эллипса используется основной цвет,

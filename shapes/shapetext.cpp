@@ -8,6 +8,7 @@ ShapeText::ShapeText(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     if (FontIds.length() < 1)
         FontIds << "Arial" << "Courier New" << "Consolas" << "Times New Roman" << "MS Sans Serif" << "Consolas" << "Calibri" << "Tahoma" << "Verdana";
+    exprCondition = nullptr;
     try
     {
         Parse(src);
@@ -39,7 +40,7 @@ void ShapeText::Parse(QString& src)
     QStringList lexems = parts[0].split(' ',QString::SkipEmptyParts);   // лексемы
     QStringList texts  = parts[0].split('$' ,QString::SkipEmptyParts);  // текстовые строки
     text = texts.length() > 1 ? texts[1] : "";
-    condition = texts.length() > 2 ? texts[1] : "";
+    condition = texts.length() > 2 ? texts[2] : "";
     // 0- примитив
     type = (ShapeType)lexems[0].toInt(&ret);    ok &= ret;
     // 1- номер станции
@@ -49,12 +50,14 @@ void ShapeText::Parse(QString& src)
     x1    = lexems[2].toFloat(&ret);            ok &= ret;
     y1    = lexems[3].toFloat(&ret);            ok &= ret;
 
+    st      = Station::GetById(idst);                       // станция
+
     if (type == NAME_COD)
     {
         x1 -= 150;
-        height = 24;
+        height = 20;
         width = 9;
-        familyId = Arial;
+        familyId = Tahoma/*Arial*/;
         bold = true;
         italian = false;
         color = Qt::black;
@@ -68,17 +71,43 @@ void ShapeText::Parse(QString& src)
         bold     = lexems[7].toInt(&ret) > 0;     ok &= ret;
         italian  = lexems[8].toInt(&ret) > 0;     ok &= ret;
         int rgb  = lexems[9].toInt(&ret);         ok &= ret;
-        if (rgb > 0)
-            int a = 99;
-
-        color    = QColor::fromRgb(rgb);
+        color    = QColor::fromRgb(rgb&0xff, (rgb >> 8)&0xff, (rgb>>16)&0xff);
         option = QTextOption(Qt::AlignLeft);
+
+        // 2012.08.21. Танцы с бубном - для системных шрифтов делаем подстановки размера
+        // Так как размер и вид шрифтов не соответствуют
+        if (   familyId == System           // "System"   = Consolas
+            || familyId == Fixedsys         // "Fixedsys" = Consolas
+            )
+        {
+            height = 14;                    // фиксированный размер
+        }
+        else
+        {
+            height--;
+            if (familyId == Arial)
+            {
+                height--;
+//                if (!bold)
+//                    height--;
+//                if (height < 15)
+                    //y1 += 3;
+            }
+        }
+
+
+        // условие отображения
+        if (st != nullptr && condition.length())
+        {
+            exprCondition = new BoolExpression(condition);
+            QObject::connect(exprCondition, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+        }
     }
     x2    = x1 + 300;
     y2    = y1 + 24;
     setDimensions ();
 
-    font = QFont(FontIds[familyId],height/1.5, bold ? 60 : 50, italian);
+    font = QFont(FontIds[familyId],height/1.3, bold ? 60 : 50, italian);
     pen = QPen(color);
 }
 
@@ -101,6 +130,8 @@ void ShapeText::Draw(QPainter* painter)
 {
     accept();
 
+    if (exprCondition && !exprCondition->ValueBool())
+        return;
     painter->setFont(font);
     painter->setPen (pen);
     painter->drawText(rect, text, option);
