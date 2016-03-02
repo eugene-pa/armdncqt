@@ -26,7 +26,7 @@ public:
     //ShapeText();
     ShapeText (QString& src, class ShapeSet* parent);
     ~ShapeText();
-    static void InitInstruments();                          // инициализация статических инструментов отрисовки
+    //static void InitInstruments();                          // инициализация статических инструментов отрисовки
 
     virtual void  Draw (QPainter*);                         // функция рисования
     virtual void  Parse(QString&);                          // разбор строки описания

@@ -7,6 +7,7 @@
 #include "shapestrl.h"
 #include "shapesvtf.h"
 #include "shapetrnsp.h"
+#include "shapeprzd.h"
 
 ColorScheme * DShape::colorScheme;                          // цветовые схемы
 qreal	DShape::mThick = 4;                                 // толщина линий
@@ -44,6 +45,7 @@ void DShape::InitInstruments(QString bdpath, Logger& logger)
     ShapeStrl::InitInstruments();                           // инициализация инструментов рисования стрелок
     ShapeSvtf::InitInstruments();                           // инициализация инструментов рисования светофоров
     ShapeTrnsp::InitInstruments();                          // инициализация инструментов рисования транспарантов
+    ShapePrzd::InitInstruments();                           // инициализация инструментов рисования переездов
 }
 
 void DShape::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget)
