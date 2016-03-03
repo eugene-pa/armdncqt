@@ -13,6 +13,22 @@ QPen   ShapePrzd::PenExpired;                               // устарели 
 QBrush ShapePrzd::BackgroundAlarm;                          // фон транспаранта аларма
 QBrush ShapePrzd::ForeAlarm;                                // цвет транспаранта аларма
 
+QFont  ShapePrzd::font;                                     // шрифт отрисовки А, ЗГ
+#ifdef Q_OS_WIN
+int ShapePrzd::fontsize = 11;                               // размер шрифта
+QString ShapePrzd::fontname = "Segoe UI";                   // шрифт
+#endif
+#ifdef Q_OS_MAC
+int ShapePrzd::fontsize = 15;                               // размер шрифта
+QString ShapePrzd::fontname = "Segoe UI";                   // шрифт
+#endif
+#ifdef Q_OS_LINUX
+int ShapePrzd::fontsize = 12;                               // размер шрифта
+QString ShapePrzd::fontname = "Segoe UI";                   // шрифт
+#endif
+
+QTextOption ShapePrzd::option;                              // опции отрисовки номера (выравнивание)
+
 ShapePrzd::ShapePrzd(QString& src, class ShapeSet* parent) : DShape (src, parent)
 {
     for (int i=0; i<exprAll; i++)
@@ -44,11 +60,13 @@ void ShapePrzd::InitInstruments()
     BackgroundAlarm = QBrush(colorScheme->GetColor("PrzdAlarmBack"));
     ForeAlarm       =QBrush(colorScheme->GetColor("PrzdAlarmFore"));
 
-    PenOpen    = QPen(BrushOpen   .color().darker(), 1);
-    PenClose   = QPen(BrushClose  .color().darker(), 1);
-    PenUndef   = QPen(BrushUndef  .color().darker(), 1);
-    PenExpired = QPen(BrushExpired.color().darker(), 1);
+    PenOpen    = QPen(BrushOpen   .color().darker(150),2);
+    PenClose   = QPen(BrushClose  .color().darker(150),2);
+    PenUndef   = QPen(BrushUndef  .color().darker(150),2);
+    PenExpired = QPen(BrushExpired.color().darker(150),2);
 
+    font    =  QFont(fontname,fontsize,65);
+    option  = QTextOption(Qt::AlignCenter);
 }
 
 // разбор строки описания
@@ -73,8 +91,11 @@ void ShapePrzd::Parse(QString& src)
     y1    = lexems[3].toFloat(&ret);            ok &= ret;
     x2    = lexems[4].toFloat(&ret);            ok &= ret;
     y2    = lexems[5].toFloat(&ret);            ok &= ret;
-    x1 -=2;
-    x2 +=2;
+
+    rectText = QRectF(x1 - 50, y1- 30, 100, 24);
+
+    x1 -=3;
+    x2 +=3;
     setDimensions ();
 
     st      = Station::GetById(idst);                   // станция
@@ -128,19 +149,54 @@ void ShapePrzd::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 // функция рисования
+static int dx = 3,  // смещение усика по Х
+           dy = 6,  // смещение усика по Y
+           dxt = 8; // отступ текста в траспаранте
+
 void ShapePrzd::Draw (QPainter* painter)
 {
     accept();
 
-    QPen& pen = (*state)[StsOpen     ] ? PenOpen       :
+    QPen& pen = state->isExpire()      ? PenExpired    :
+                state->isUndefined()   ? PenUndef      :
+                (*state)[StsOpen     ] ? PenOpen       :
                 (*state)[StsClose    ] ? PenClose      :
                 (*state)[StsNotifying] ? PenClose      :
                                          PenUndef;
 
-    QBrush& brush = (*state)[StsOpen     ]                                  ? BrushOpen     :
-                    (*state)[StsClose    ] && formulas[exprOpen] != nullptr ? BrushClose :
-                                                                              BrushUndef;
+    QBrush& brush = state->isExpire()                                       ? BrushExpired  :
+                    state->isUndefined()                                    ? BrushUndef    :
+                    (*state)[StsOpen     ]                                  ? BrushOpen     :
+                    (*state)[StsClose    ] && formulas[exprOpen] != nullptr ? BrushClose    :
+                                                                              BrushUndef    ;
     painter->setPen(pen);
     painter->setBrush(brush);
-    painter->drawRect(rect);
+
+    //painter->drawRect(rect);                              // вариант отрисовки полностью окантованным прямоугольником
+    painter->fillRect(rect, brush);                         // вариант отрисовки заливкой и вертикальными линиями окантовки
+    painter->drawLine(rect.topLeft   (), rect.bottomLeft());
+    painter->drawLine(rect.topRight   (), rect.bottomRight());
+
+    // "усики"
+    painter->drawLine(rect.topRight   (), rect.topRight   () + QPoint( dx,-dy));
+    painter->drawLine(rect.topLeft    (), rect.topLeft    () + QPoint(-dx,-dy));
+    painter->drawLine(rect.bottomRight(), rect.bottomRight() + QPoint( dx, dy));
+    painter->drawLine(rect.bottomLeft (), rect.bottomLeft () + QPoint(-dx, dy));
+
+    // транспаранты А, ЗГ
+    if (!state->isExpire() && !state->isUndefined() && ((*state)[StsAlarm] || (*state)[StsBlock]))
+    {
+        QString s = (*state)[StsAlarm] && (*state)[StsBlock] ? "А  ЗГ" :
+                    (*state)[StsAlarm]                       ? "А" :
+                    (*state)[StsBlock]                       ? "ЗГ" : "";
+
+        if (DShape::globalPulse)
+        {
+            backRect = painter->boundingRect(rectText, s, option) + QMargins(8,2,8,2);
+            painter->fillRect(backRect, BackgroundAlarm);
+            painter->setFont(font);
+            painter->setPen(QPen(ForeAlarm.color()));
+            painter->drawText(rectText, s, option);
+        }
+    }
 }

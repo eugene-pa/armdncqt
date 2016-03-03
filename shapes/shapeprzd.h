@@ -25,7 +25,7 @@ protected:
         StsBlock       ,                                    // контроль заград.сигнализации
     };
 
-    class BoolExpression * formulas[exprAll-1];             // формулы
+    class BoolExpression * formulas[exprAll];               // формулы
 
     static QBrush BrushOpen;                                // открыт
     static QBrush BrushClose;                               // закрыт
@@ -37,7 +37,13 @@ protected:
     static QPen   PenExpired;                               // устарели ТС
     static QBrush BackgroundAlarm;                          // фон транспаранта аларма
     static QBrush ForeAlarm;                                // цвет транспаранта аларма
+    static QFont  font;                                     // шрифт отрисовки А, ЗГ
+    static int fontsize;                                    // размер шрифта
+    static QString fontname;                                // шрифт
+    static QTextOption option;                              // опции отрисовки номера (выравнивание)
 
+    QRectF rectText;                                        // место отрисовки текста
+    QRectF backRect;                                        // подложка текста
 
 public:
     ShapePrzd(QString& src, ShapeSet* parent);

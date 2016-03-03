@@ -216,8 +216,8 @@ void ShapeSvtf::Draw(QPainter* painter)
     accept();
 
 
-    QPen * pen1 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : MainPen;   // перо одинарной линии
-    QPen * pen2 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : MainPen2;  // перо двойной линии
+    QPen * pen1 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : state->isExpire() ? PenExpired : MainPen;   // перо одинарной линии
+    QPen * pen2 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : state->isExpire() ? PenExpired : MainPen2;  // перо двойной линии
 
     bool compact = this->set->compactSvtf;
 
@@ -312,7 +312,8 @@ void ShapeSvtf::Draw(QPainter* painter)
             backRect = painter->boundingRect(boundRect, name, *option) + QMargins(2,0,3,2);
 
 
-        QBrush * backBrush = isAD   () ? BrushAdBackground   :  // автодействие светофора выделяем фоном
+        QBrush * backBrush = state->isExpire() || state->isUndefined() ? nullptr :
+                             isAD   () ? BrushAdBackground   :  // автодействие светофора выделяем фоном
                              isOM   () ? BrushOmBackground   :  // отмену маршрута выделяем фоном
                              isBlock() ? BrushLockBackground :  // заблокирован
                              isAlarm() ? BrushAlarmBackground:  // авария
@@ -323,12 +324,13 @@ void ShapeSvtf::Draw(QPainter* painter)
 
         // текст
         painter->setFont(*font);
-        painter->setPen(*PenText);
+        if (!(state->isExpire() || state->isUndefined()))
+            painter->setPen(*PenText);
         painter->drawText(boundRect, name, *option);
     }
 
     // мигание перекрестием
-    if (isAlarm() && DShape::globalPulse)
+    if (isAlarm() && DShape::globalPulse && !state->isExpire() && !state->isUndefined())
     {
         painter->setPen(*PenAlarm);
         painter->drawLine(center + QPointF(-10, -10), center + QPointF(10, 10));

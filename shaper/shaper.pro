@@ -64,7 +64,8 @@ SOURCES += main.cpp\
     ../forms/dlgtuinfo.cpp \
     ../shapes/trnspdescription.cpp \
     ../shapes/shapetext.cpp \
-    ../shapes/shapeprzd.cpp
+    ../shapes/shapeprzd.cpp \
+    ../shapes/shapebox.cpp
     ../common/boolexpression.cpp \
 
 
@@ -118,7 +119,8 @@ HEADERS  += mainwindow.h \
     ../shapes/palitra.h \
     ../shapes/trnspdescription.h \
     ../shapes/shapetext.h \
-    ../shapes/shapeprzd.h
+    ../shapes/shapeprzd.h \
+    ../shapes/shapebox.h
     ../common/boolexpression.h \
 
 

@@ -9,6 +9,7 @@
 #include "shapetrnsp.h"
 #include "shapetext.h"
 #include "shapeprzd.h"
+#include "shapebox.h"
 
 float ShapeSet::X0 = 0.0,
       ShapeSet::Y0 = 0.0;										// общее смещение схем, задавыаемое опцией X0=, Н0=
@@ -60,12 +61,13 @@ void ShapeSet::ScanFile()
         while (!(str = in.readLine()).isNull())
         {
             DShape * shape = 0;
-            QStringList lexems = str.split(' ');
+            QStringList lexems = str.trimmed().split(' ');
             if (lexems.count())
             {
                 int type = lexems[0].toInt();
                 switch (type)
                 {
+                    case BOX_COD :      shape = new ShapeBox  (str,this);   /*setText .append(shape);*/ break;
                     case SEGMENT_COD:
                     case ANGLE_COD:     shape = new ShapeRc   (str,this);   setRc   .append(shape); break;
                     case STRL_COD:      shape = new ShapeStrl (str,this);   setStrl .append(shape); break;

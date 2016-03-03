@@ -2,6 +2,8 @@
 #include "shapetext.h"
 
 QStringList ShapeText::FontIds;
+QPen   ShapeText::PenExpired;                               // устарели ТС
+QPen   ShapeText::PenUndefined;                             // нет данных
 
 
 ShapeText::ShapeText(QString& src, ShapeSet* parent) : DShape (src, parent)
@@ -24,6 +26,12 @@ ShapeText::~ShapeText()
 
 }
 
+// инициализация статических инструментов отрисовки
+void ShapeText::InitInstruments()
+{
+    PenUndefined   = QPen(colorScheme->GetColor("PrzdUnknown"));
+    PenExpired     = QPen(colorScheme->GetColor("Expired"));
+}
 
 // разбор строки описания примитивов ИМЯ СТАНЦИИ(22) и ТЕКСТ (23)
 //  0   1    2    3    4   5   6     7     8     9     10             11        12
@@ -123,6 +131,13 @@ void ShapeText::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 // вычисление состояния примитива
 void ShapeText::accept()
 {
+    if (st == nullptr)
+        state->set(Status::StsUndefined, true);
+    else
+    {
+        state->set(Status::StsUndefined, false);
+        state->set(Status::StsExpire   , st->IsTsExpire());
+    }
 }
 
 // функция рисования
@@ -133,6 +148,6 @@ void ShapeText::Draw(QPainter* painter)
     if (exprCondition && !exprCondition->ValueBool())
         return;
     painter->setFont(font);
-    painter->setPen (pen);
+    painter->setPen (state->isExpire() ? PenExpired : state->isUndefined() ? PenUndefined : pen);
     painter->drawText(rect, text, option);
 }
