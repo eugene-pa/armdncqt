@@ -333,6 +333,11 @@ void ShapeTrnsp::accept()
             state->set(StsExt, st->IsAu() || st->IsSu());   // состояние 2 - АУ или СУ
         }
 
+        // "Особый" транспарант TRNSP_TEXT=25 не имеет описания активного состояния, но в старой версии отображается в пассивном состоянии
+        // обеспечиваем совместимость, устанавливая StsOff = true
+        if (idObj==TRNSP_TEXT && st != nullptr && !(*state)[StsOn])
+           state->set(StsOff, true);
+
         // реализация мигания с помощью расширения выражения через запятую, например: АДН,~АДН
         // ВАЖНО: мигает то соcтояние транспаранта, в котором обнаружено выполнение выражения мигания
         for (int i = 2; i >= 0; i--)
@@ -361,6 +366,9 @@ void ShapeTrnsp::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 void ShapeTrnsp::Draw(QPainter* painter)
 {
     accept();
+
+    if (stsExpr[0] && stsExpr[0]->Source()=="ЗПД")
+        int a = 99;
 
     if (blinking && DShape::globalPulse)
         return;

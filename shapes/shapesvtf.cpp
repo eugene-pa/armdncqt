@@ -316,7 +316,7 @@ void ShapeSvtf::Draw(QPainter* painter)
                              isAD   () ? BrushAdBackground   :  // автодействие светофора выделяем фоном
                              isOM   () ? BrushOmBackground   :  // отмену маршрута выделяем фоном
                              isBlock() ? BrushLockBackground :  // заблокирован
-                             isAlarm() ? BrushAlarmBackground:  // авария
+                             isAlarm() ? BrushAlarmBackground:  // авария выделяется фоном подложки
                                          nullptr;
 
         if (backBrush)
