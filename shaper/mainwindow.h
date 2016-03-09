@@ -87,6 +87,7 @@ private:
     class DlgStrlInfo * dlgStrl;                            // состояние стрелок
     class DlgKPinfo * dlgKp;                                // состояние  КП
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
+    class DlgTrains * dlgTrains;                            // поезда
 
 };
 

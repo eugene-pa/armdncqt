@@ -14,22 +14,29 @@ public:
 
     // открытые статические функции
     static Train * GetBySysNo(int sno, class KrugInfo * krug = nullptr);// получить справочник по номеру поезда
-    static Train * AddTrain(int sno, int no=0);             // добавить поезд
-
+    static Train * AddTrain(int sno, int no=0, class KrugInfo * krug = nullptr);   // добавить поезд
+    static Train * restore(int sno, int no, class KrugInfo * krug);
+    static void ClearAllRc();
     static void AcceptTS (class Station *);                 // обработка объектов по станции
 
     Train();
+    Train(int sno, int no=0, class KrugInfo * krug = nullptr);
     ~Train();
+
+    void update(int sno, int no, class KrugInfo * krug);
+
+    void AddRc(class Rc * rc);                              // добавить занятую РЦ
+    void ClearRc();                                         // очистить список РЦ
 
 private:
     // учитывая динамический характер объекта "поезд" можно было бы организовать пул справочников поездов таким образом,
     // чтобы не возвращать однажды выделеннную память, а повторно использовать ее после удаления поезда
     // ВАРИАНТ: сохранять удаленные справочники в отдельном списке и брать по возможности их оттуда.
     //          Можно было бы просто помечать справочник как "пустой", но тогда нельзя организовать хэш-таблицу по ключу sno
-    static QHash <int, Train *> Trains;                     // поезда , индексированные по системному номеру
-    static QStack <Train> FreeTrains;                       // пул удаленных справочников для повторного использования
+    static QHash <int, Train *> Trains;                     // поезда , индексированные по ключу: круг + системный номер
+    static QStack <Train *> FreeTrains;                     // пул удаленных справочников для повторного использования
 
-    int     sno;                                            // системный номер
+    int     sno;                                            // ключ: krug + системный номер
     int     no;                                             // номер
     short   Ind1;                                           // индекс
     short   Ind2;
@@ -43,9 +50,14 @@ private:
     int	    RcMin;										    // РЦ с миним.абсциссой
     int	    RcMax;										    // РЦ с максим.абсциссой
 
-    class Station * st; 								    // вычисленная станция нахождения поезда
-    QTime	tmdt;                                           // Время последней операции
+    // нужно иметь список РЦ под поездом;
+    // дилемма: использовать динамические массивы или статический под максимальное число
 
+    class Station * st; 								    // вычисленная станция нахождения поезда
+    QDateTime tmdt;                                         // Время последней операции
+
+    int     nrc;                                            // число занятых поездом РЦ
+    QVector <class Rc *> Rc;                                // массив указателей на справочники занятых РЦ (не используемые обнуляются)
 // хочу сделать более осмысленной модель
 //	short	NoRc;										    // номер последней занятой РЦ
 //	BOOL	EraseMark;									    // Пометка для удаления

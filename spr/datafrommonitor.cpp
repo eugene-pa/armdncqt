@@ -1,5 +1,6 @@
 #include "streamts.h"
 #include "krug.h"
+#include "train.h"
 
 // Класс DDataFromMonitor вместе со вспомогательными классами DStDataFromMonitor,DOptionsDataFromMonitor,DRcDataFromMonitor,DTrainsDataFromMonitor
 // инкапсулируют содержательную частьпротокола обмена по сети между MONITOR и его клиентами (TABLO, АРМ ШНЦ и т.д.)
@@ -29,8 +30,9 @@ void DDataFromMonitor::Extract(UINT length, KrugInfo * krug)
                 ExtractStInfo(krug);                        // 2. Информация по станциям
                 if (!(IsArmTools() && g_QuickSearching))    // Если не включен режим ускорееного просмотра АРМ ШН - обрабатываем РЦ и поезда
                 {
-                    ExtractRcInfo	 (krug);                // 3. информация по РЦ
-                    ExtractTrainsInfo(krug);                // 4. информация по поездам
+                    Train::ClearAllRc();                    // 3. очистить списки РЦ
+                    ExtractRcInfo	 (krug);                // 4. информация по РЦ
+                    ExtractTrainsInfo(krug);                // 5. информация по поездам
                 }
             }
         }
@@ -146,6 +148,9 @@ void DDataFromMonitor::ExtractRcInfo(KrugInfo * krug)
                 else
                     rc->actualRoute->sts = Route::WAIT_RZMK;
             }
+
+            if (rc->StsBusy() && rc->actualtrain)
+                rc->actualtrain->AddRc(rc);
         }
     }
     else
@@ -157,6 +162,13 @@ void DDataFromMonitor::ExtractRcInfo(KrugInfo * krug)
 void DDataFromMonitor::ExtractTrainsInfo(KrugInfo * krug)
 {
     Q_UNUSED(krug)
-    //DListTrains::AllTrains.Extract((DTrainsDataFromMonitor *)GetPtrTrainsInfo(),GetLenTrainsInfo(), BridgeNo);
+
+    DTrainsDataFromMonitor * trains = (DTrainsDataFromMonitor *) GetPtrTrainsInfo();
+    COneTrain * train = (COneTrain *)(GetPtrTrainsInfo() + sizeof(trains->m_nTrains));
+    for (int i=0; i<trains->m_nTrains; i++)
+    {
+        Train::AddTrain(train->SNo, train->No);
+        train++;
+    }
 }
 

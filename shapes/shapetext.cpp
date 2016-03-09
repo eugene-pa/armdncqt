@@ -115,7 +115,18 @@ void ShapeText::Parse(QString& src)
     y2    = y1 + 24;
     setDimensions ();
 
-    font = QFont(FontIds[familyId],height/1.3, bold ? 60 : 50, italian);
+#ifdef Q_OS_WIN
+  qreal k = 1.3;
+#endif
+#ifdef Q_OS_MAC
+  qreal k = 1;
+#endif
+#ifdef Q_OS_LINUX
+  qreal k = 1.1;
+#endif
+
+
+    font = QFont(FontIds[familyId],height/k, bold ? 60 : 50, italian);
     pen = QPen(color);
 }
 

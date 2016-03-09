@@ -367,9 +367,6 @@ void ShapeTrnsp::Draw(QPainter* painter)
 {
     accept();
 
-    if (stsExpr[0] && stsExpr[0]->Source()=="ЗПД")
-        int a = 99;
-
     if (blinking && DShape::globalPulse)
         return;
 

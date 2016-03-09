@@ -14,6 +14,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = shaper
 TEMPLATE = app
 
+INCLUDEPATH += ../forms/
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -65,7 +66,8 @@ SOURCES += main.cpp\
     ../shapes/trnspdescription.cpp \
     ../shapes/shapetext.cpp \
     ../shapes/shapeprzd.cpp \
-    ../shapes/shapebox.cpp
+    ../shapes/shapebox.cpp \
+    ../forms/dlgtrains.cpp
     ../common/boolexpression.cpp \
 
 
@@ -120,7 +122,8 @@ HEADERS  += mainwindow.h \
     ../shapes/trnspdescription.h \
     ../shapes/shapetext.h \
     ../shapes/shapeprzd.h \
-    ../shapes/shapebox.h
+    ../shapes/shapebox.h \
+    ../forms/dlgtrains.h
     ../common/boolexpression.h \
 
 
@@ -132,7 +135,8 @@ FORMS    += mainwindow.ui \
     ../forms/dlgkpinfo.ui \
     ../forms/bminfoframe.ui \
     ../forms/dlgroutes.ui \
-    ../forms/dlgtuinfo.ui
+    ../forms/dlgtuinfo.ui \
+    ../forms/dlgtrains.ui
 
 RESOURCES += \
     images.qrc

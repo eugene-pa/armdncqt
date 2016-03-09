@@ -9,6 +9,7 @@
 #include "../forms/dlgtuinfo.h"
 #include "../forms/dlgkpinfo.h"
 #include "../forms/dlgroutes.h"
+#include "../forms/dlgtrains.h"
 #include "../spr/krug.h"
 
 //Logger logger("Log/shaper.txt", true, true);
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgStrl = nullptr;
     dlgKp = nullptr;                                                    // диалог КП
     dlgRoutes = nullptr;                                                // диалог маршрутов
+    dlgTrains = nullptr;                                                // поезда
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
@@ -278,6 +280,18 @@ void MainWindow::on_action_StrlInfo_triggered()
         dlgStrl->setVisible(!dlgStrl->isVisible());
 }
 
+// обработчик меню информация по поездам
+void MainWindow::on_action_trainsInfo_triggered()
+{
+    if (dlgTrains == nullptr)
+    {
+        dlgTrains = new DlgTrains(this);
+        dlgTrains->show();
+    }
+    else
+        dlgTrains->setVisible(!dlgTrains->isVisible());
+}
+
 // обработчик меню информация по светофорам
 void MainWindow::on_action_SvtfInfo_triggered()
 {
@@ -298,11 +312,6 @@ void MainWindow::on_action_prgInfo_triggered()
 
 }
 
-// обработчик меню информация по поездам
-void MainWindow::on_action_trainsInfo_triggered()
-{
-
-}
 
 // обработчик меню информация по синалам ОТУ
 void MainWindow::on_action_OtuInfo_triggered()
