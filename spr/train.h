@@ -9,7 +9,7 @@ class Train : public SprBase
 {
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
     friend class DDataFromMonitor;
-
+    friend class DlgTrains;
 public:
 
     // открытые статические функции

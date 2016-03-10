@@ -15,9 +15,12 @@ public:
     explicit DlgTrains(QWidget *parent = 0);
     ~DlgTrains();
 
+private slots:
+    void on_checkBox_toggled(bool checked);
+
 private:
     Ui::DlgTrains *ui;
-    void fill();
+    void fill(bool all=true);
 };
 
 #endif // DLGTRAINS_H
