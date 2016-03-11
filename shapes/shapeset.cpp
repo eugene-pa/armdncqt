@@ -10,6 +10,7 @@
 #include "shapetext.h"
 #include "shapeprzd.h"
 #include "shapebox.h"
+#include "shapetrain.h"
 
 float ShapeSet::X0 = 0.0,
       ShapeSet::Y0 = 0.0;										// общее смещение схем, задавыаемое опцией X0=, Н0=
@@ -83,6 +84,7 @@ void ShapeSet::ScanFile()
                 }
             }
         }
+        set.append(new ShapeTrain(this));
     }
     else
     {

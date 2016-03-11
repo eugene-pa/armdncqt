@@ -175,6 +175,7 @@ public:
     void  ClearRcAndRouteInfo();                            // очистка информации о состоянии РЦ и маршрутов перед приемом данных из потока
     bool  IsUndefinedTsPresrnt();                           // проверка наличия в матрице ТС сигналов, не описанных в БД
     bool  IsKpOk() { return stsKpOk; }                      // проверка работоспособности КП
+    bool IsOrientEvnOdd() { return orient.indexOf("ЧН") >= 0; }
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

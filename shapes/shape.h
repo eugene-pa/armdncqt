@@ -79,6 +79,7 @@ public:
     inline  QColor    GetColor () { return color; }
     inline  ShapeType GetType  () { return type; }
     inline short   GetNoSt() { return idst; }				// номер станции
+    inline class Station * St() { return st; }              // станция
     inline bool    IsVisible () { return visible; }         // видимый
     inline bool	   IsBlinking() { return blinking; }        // мигает
     inline bool	   IsSelected() { return selected; }        // выделен

@@ -104,7 +104,7 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
         T[3] = query.value("T4").toInt(&ret);               //
         forms = query.value("NumOfView").toInt(&ret);       // число форм
 
-        orient = query.value("Orient").toString();          // ориентация
+        orient = query.value("Orient").toString().toUpper();// ориентация
         bybylogic = query.value("ByByLogic").toBool();      // логика удалений (У1,У2)
         esr       = Esr::EsrByDcName(name);                 // код ЕСР из БД по имени станции
         gidUralId = kpIdBase ? kpIdBase : esr * 10 + 1;     // идентификация в ГИД УРАЛ

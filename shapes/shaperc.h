@@ -7,6 +7,7 @@ class LinkedRc;
 
 class ShapeRc : public DShape
 {
+    friend class ShapeTrain;
 protected:
     class Rc * sprRc;                                       // указатель на справочник РЦ
     QVector<class LinkedStrl*> strl;                        // определяющие стрелки
