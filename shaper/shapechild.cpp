@@ -7,6 +7,7 @@
 ShapeChild::ShapeChild(ShapeSet * set)
 {
     shapeSet = set;
+    set->Activate();
 
     setAttribute(Qt::WA_DeleteOnClose);
     setAlignment(Qt::AlignLeft|Qt::AlignTop);

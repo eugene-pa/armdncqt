@@ -109,6 +109,10 @@ void ShapeRc::Parse(QString& src)
         st      = Station::GetById(idst);                   // станция
         sprRc   = Rc::GetById(idObj);                       // РЦ
 
+        // не при чтении, а при актиыизации формы
+        // if (sprRc)
+        //  sprRc->AddShape (this);
+
         if (!ok)
         {
             log (QString("Ошибка синтаксиса примитива: %1").arg(src));
@@ -303,4 +307,10 @@ QString ShapeRc::Dump()
 QString  ShapeRc::ObjectInfo()
 {
     return "РЦ";
+}
+
+void ShapeRc::AddAndMerge()
+{
+    if (this->sprRc)
+        sprRc->shapes.append(this);
 }

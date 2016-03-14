@@ -42,6 +42,7 @@ public:
     static void ReadShapes(QString dir, Logger * logger);                // чтение форм
 
     int  Show (QPainter * painter, bool bBlinking=false);   // Вывод видеоформы
+    void Activate();
 
     void MoveRel (float,float);				    // перемещение на заданное расстояние
     void Prepare ();

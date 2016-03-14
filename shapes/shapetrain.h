@@ -16,6 +16,7 @@ public:
     static bool bShowTrains;
     static bool bShowNonregTrains;
 
+
 };
 
 #endif // SHAPETRAIN_H

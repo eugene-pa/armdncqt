@@ -71,6 +71,8 @@ public:
     virtual QString ObjectInfo();
     virtual void  Prepare();
 
+    void AddAndMerge();
+
 protected:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);

@@ -56,6 +56,7 @@ public:
 
     static bool ReadRelations(QString& dbpath, Logger& );   // чтение таблицы связей РЦ и формирование дерева связей
     static void AcceptTS (class Station *);                 // обработка объектов по станции
+    static void ClearShapes();                              // очистка списка примитивов РЦ
 
     // открытые функции
     Rc(SprBase * tuts, Logger& logger);                     // конструктор по ТС/ТУ
@@ -90,6 +91,8 @@ public:
     QList <class QGraphicsItem *> shapes;                   // динамически создаваемый список примитивов, отображающих эту РЦ; нужен для обработки стыков
                                                             // используется для улучшения отрисовки стыков РЦ путем отрисовки полилиний
                                                             // кроме того, используется для отрисовки номера поезда на РЦ
+
+    void AddShape (class QGraphicsItem * shape) { shapes.append(shape); }
 
 private:
     static QHash <int, Rc *> rchash;                        // РЦ полигона, индексированные по ID

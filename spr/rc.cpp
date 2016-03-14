@@ -304,6 +304,16 @@ void Rc::AcceptTS (Station *st)
     }
 }
 
+// очистка списка примитивов РЦ
+void Rc::ClearShapes()
+{
+    foreach(Rc * rc, Rc::AllRc().values())
+    {
+        rc->shapes.clear();
+    }
+
+}
+
 // обработка ТС
 void Rc::Accept()
 {

@@ -85,9 +85,9 @@ void ShapeTrain::Draw(QPainter* painter)
                 int flags = Qt::AlignLeft|Qt::AlignTop;
                 if ((train->IsEvn() && !orient) || (!train->IsEvn() && orient))
                 {
-                    //flags = Qt::AlignRight|Qt::AlignTop;
                     pText = &pRht;  //  - new Vector(extrax/2 + text.Width, text.Height + extray + 3);  // базовая точка текста
                     boundRect = painter->boundingRect(pText->x(), pText->y()-22,40,24, flags, s) + QMargins(2,0,2,0);  //
+                    // ориентация по правому краю выполняем "вручную" смещая надпись влево на ширину номера
                     int w = boundRect.width();
                     boundRect.setLeft(boundRect.x() - w);
                     boundRect.setRight(boundRect.x() + w);

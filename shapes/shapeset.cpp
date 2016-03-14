@@ -111,3 +111,15 @@ void ShapeSet::ReadShapes(QString dir, Logger * logger)
         }
     }
 }
+
+// активация формы
+// - очистка списков примитивов РЦ
+// - заполнение спсиска примитивов РЦ
+void ShapeSet::Activate()
+{
+    Rc::ClearShapes();
+    foreach (DShape * shape, setRc)
+    {
+        ((ShapeRc *)shape)->AddAndMerge();
+    }
+}
