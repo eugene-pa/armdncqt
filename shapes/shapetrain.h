@@ -16,7 +16,7 @@ public:
     static bool bShowTrains;
     static bool bShowNonregTrains;
 
-
+    static QBrush GetBrush(int no);
 };
 
 #endif // SHAPETRAIN_H

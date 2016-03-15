@@ -68,7 +68,8 @@ SOURCES += main.cpp\
     ../shapes/shapeprzd.cpp \
     ../shapes/shapebox.cpp \
     ../forms/dlgtrains.cpp \
-    ../shapes/shapetrain.cpp
+    ../shapes/shapetrain.cpp \
+    ../common/inireader.cpp
     ../common/boolexpression.cpp \
 
 
@@ -125,7 +126,8 @@ HEADERS  += mainwindow.h \
     ../shapes/shapeprzd.h \
     ../shapes/shapebox.h \
     ../forms/dlgtrains.h \
-    ../shapes/shapetrain.h
+    ../shapes/shapetrain.h \
+    ../common/inireader.h
     ../common/boolexpression.h \
 
 
