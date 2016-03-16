@@ -11,6 +11,7 @@
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
 #include "../spr/krug.h"
+#include "../common/inireader.h"
 
 //Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
@@ -62,6 +63,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
+
+    IniReader rdr("c:/armdncqt/shaper/shaper.ini");
+    QString s;
+    rdr.GetText("DBPATH", s, 0);
+    rdr.GetText("DBPATH", s, 1);
+    rdr.GetText("DBPATH", s, 2);
+
+    bool b;
+    rdr.GetBool("MONITORING", b);
+
+    int n;
+    rdr.GetInt("ALLRAS", n);
+
 
     ui->setupUi(this);
 
