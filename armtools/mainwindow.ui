@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1099</width>
+    <height>633</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ДЦ ЮГ. АРМ ШН</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1099</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string> КП </string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string> ТС </string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string> ТУ </string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>Объекты</string>
+    </property>
+    <addaction name="action_2"/>
+    <addaction name="action_3"/>
+    <addaction name="action_4"/>
+    <addaction name="action_7"/>
+    <addaction name="separator"/>
+    <addaction name="action_6"/>
+    <addaction name="action_8"/>
+   </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>Марруты</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_6">
+    <property name="title">
+     <string>Протокол</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_7">
+    <property name="title">
+     <string>Загрузка архива</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_8">
+    <property name="title">
+     <string>Загрузить обновления</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_9">
+    <property name="title">
+     <string>Вид</string>
+    </property>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
+   <addaction name="menu_5"/>
+   <addaction name="menu_6"/>
+   <addaction name="menu_7"/>
+   <addaction name="menu_8"/>
+   <addaction name="menu_9"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionBlackbox"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionBlackbox">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>     Архив    </string>
+   </property>
+   <property name="toolTip">
+    <string>Просмотр &quot;черного ящика&quot;</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>РЦ</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>Стрелки</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>Светофоры</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>Станции</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>Переезды</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>Перегоны</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

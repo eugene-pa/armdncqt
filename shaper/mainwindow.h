@@ -10,6 +10,10 @@
 #include <QGraphicsScene>
 #include <QLabel>
 #include <QComboBox>
+#include <QDateEdit>
+#include <QTimeEdit>
+#include <QCalendarWidget>
+#include <QCheckBox>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -67,6 +71,8 @@ private slots:
 
     void on_action_KPinfo_triggered();
 
+    void on_actionBlackBox_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -75,6 +81,10 @@ private:
     class QMdiArea *mdiArea;                                // виджет MDI
 
     QComboBox* StationsCmb;                                 // станции
+    QCheckBox* checkBox;
+    QDateEdit* dateEdit;
+    QTimeEdit* timeEdit;
+    QCalendarWidget* calendar;
 
     QLabel hostStatus;
 

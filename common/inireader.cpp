@@ -40,6 +40,8 @@ bool IniReader::readIniFile (QString& spath, bool bUnicode)
     return ret;
 }
 
+
+// ВАЖНО: выходное значение не меняется в случае отсутствия опции
 // получить текстовое значение i-ой опции option
 bool IniReader::GetText(QString option, QString& value, int indx)
 {
@@ -61,7 +63,6 @@ bool IniReader::GetText(QString option, QString& value, int indx)
 // получить целое значение i-ой опции option
 bool IniReader::GetInt (QString option, int& value, int indx)
 {
-    value = 0;
     bool ret = false;
     QString s;
     if (GetText(option, s, indx))
@@ -72,13 +73,13 @@ bool IniReader::GetInt (QString option, int& value, int indx)
 // получить догическое значение i-ой опции option
 bool IniReader::GetBool(QString option, bool   & value, int indx)
 {
-    value = 0;
     bool ret = false;
     QString s;
     if (GetText(option, s, indx))
     {
         s = s.toUpper();
         value = s=="ON" || s=="TRUE";
+        ret = true;
     }
     return ret;
 }

@@ -13,11 +13,13 @@
 #include "../spr/krug.h"
 #include "../common/inireader.h"
 
+
 //Logger logger("Log/shaper.txt", true, true);
 QVector<ShapeSet *> sets;                                           // массив форм
 
 //QString server_ipport = "192.168.0.101:1010";                       // подключение к потоку ТС из настроечного файла
 QString server_ipport = "192.168.0.100:1013";                       // подключение к потоку ТС из настроечного файла
+QString baseDir;
 
 #ifdef Q_OS_WIN
     Logger logger("Log/shaper.txt", true, true);
@@ -26,6 +28,7 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
     QString formDir("C:/armdncqt/pictures/");
     QString images(":/status/images/");                                   // путь к образам
+    QString iniFile = "c:/armdncqt/shaper/shaper.ini";
 #endif
 #ifdef Q_OS_MAC
     Logger logger("/Users/evgenyshmelev/armdncqt/Log/shaper.txt", true, true);
@@ -34,6 +37,7 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
     QString formDir("/Users/evgenyshmelev/armdncqt/Pictures/");
     QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
+    QString iniFile = "/Users/evgenyshmelev/armdncqt/shaper/shaper.ini";
 #endif
 #ifdef Q_OS_LINUX
     Logger logger("/home/eugene/QTProjects/armdncqt/Log/shaper.txt", true, true);
@@ -42,7 +46,9 @@ QString server_ipport = "192.168.0.100:1013";                       // подк�
     QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
     QString formDir  ("/home/eugene/QTProjects/armdncqt/pictures/");
     QString images("../images/");                                   // путь к образам
+    QString iniFile = "/home/eugene/QTProjects/armdncqt/shaper/shaper.ini";
 #endif
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -64,11 +70,11 @@ MainWindow::MainWindow(QWidget *parent) :
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
-    IniReader rdr("c:/armdncqt/shaper/shaper.ini");
+    IniReader rdr(iniFile);
     QString s;
-    rdr.GetText("DBPATH", s, 0);
-    rdr.GetText("DBPATH", s, 1);
-    rdr.GetText("DBPATH", s, 2);
+    rdr.GetText("BASEDIR", baseDir);
+    rdr.GetText("DBPATH", s);
+
 
     bool b;
     rdr.GetBool("MONITORING", b);
@@ -107,7 +113,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
-    ui->mainToolBar->insertWidget(ui->actionNewForm, StationsCmb = new QComboBox);
+    ui->mainToolBar->insertWidget(ui->actionBlackBox, StationsCmb = new QComboBox);
+    ui->mainToolBar->insertWidget(ui->actionNewForm, dateEdit = new QDateEdit(QDate::currentDate()));
+    dateEdit->setCalendarWidget(calendar = new QCalendarWidget());
+    dateEdit->setCalendarPopup(true);
+    ui->mainToolBar->insertWidget(ui->actionNewForm, timeEdit = new QTimeEdit(QTime::currentTime()));
+    dateEdit->setEnabled(false);
+    timeEdit->setEnabled(false);
+
+
+    calendar->hide();
+    timeEdit->setDisplayFormat("hh:mm:ss");
+
 
     foreach (Station * st, Station::Stations.values())
     {
@@ -358,4 +375,10 @@ void MainWindow::loadResources()
     g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
     g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
 
+}
+
+void MainWindow::on_actionBlackBox_triggered()
+{
+    dateEdit->setEnabled(ui->actionBlackBox->isChecked());
+    timeEdit->setEnabled(ui->actionBlackBox->isChecked());
 }

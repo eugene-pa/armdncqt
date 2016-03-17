@@ -107,6 +107,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionBlackBox"/>
    <addaction name="actionNewForm"/>
    <addaction name="actionOpenForm"/>
    <addaction name="actionSaveForm"/>
@@ -441,6 +442,22 @@
   <action name="action_KPinfo">
    <property name="text">
     <string>КП</string>
+   </property>
+  </action>
+  <action name="actionBlackBox">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>  Архив  </string>
+   </property>
+   <property name="toolTip">
+    <string>Просмотр архива</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>9</pointsize>
+    </font>
    </property>
   </action>
  </widget>
