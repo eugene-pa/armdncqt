@@ -316,12 +316,14 @@ public:
     Station * St() { return st; }
     QString Name() { return name; }
     class ShapeSet * Set() { return set; }
+
 private:
     Station * st;                                           // станция-собственник
     int radioid;                                            // кнопка
     QString name;                                           // наименование формы без расширения
     QString fileName;                                       // наименование формы c расширением
     class ShapeSet * set;                                   // контейнер примитивов
+    class ShapeChild * widget;                              // окно отображения
 };
 
 #endif // STATION_H

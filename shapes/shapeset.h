@@ -14,7 +14,7 @@ class ShapeSet
     friend class ShapeStrl;
 
 protected:
-    QString filePath;					    // полный пкть к файлу формы
+    QString filePath;                                       // полный пкть к файлу формы
     QString formname;                                       // имя
     QVector<class DShape *> set;                            // массив примитивов
     QVector<class DShape *> setRc;                          // массив отрезков
@@ -24,14 +24,14 @@ protected:
     QVector<class DShape *> setPrzd;                        // массив переездов
 
     bool   bTabloShape;                                     // Обзорный кадр
-    float  xMin;					    // Минимальная ккордината примитива по оси X
-    float  yMin;					    // Минимальная ккордината примитива по оси Y
-    float  xMax;					    // Максимальная ккордината примитива по оси X
-    float  yMax;					    // Максимальная ккордината примитива по оси Y
+    float  xMin;                                            // Минимальная ккордината примитива по оси X
+    float  yMin;					                        // Минимальная ккордината примитива по оси Y
+    float  xMax;					                        // Максимальная ккордината примитива по оси X
+    float  yMax;					                        // Максимальная ккордината примитива по оси Y
 
     bool   compactSvtf;                                     // компактное отображение светофоров
-    int	   nDiameter;					    // индивидуальная установка диаметра светофора для формы
-    int	   nThick;					    // индивидуальная установка толщины линий
+    int	   nDiameter;					                    // индивидуальная установка диаметра светофора для формы
+    int	   nThick;                                          // индивидуальная установка толщины линий
     Logger * plog;
 
     void ScanFile();                                        // Сканирование/загрузка файла

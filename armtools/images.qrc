@@ -1,0 +1,50 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>../images/find.png</file>
+        <file>../images/new.png</file>
+        <file>../images/newfile.png</file>
+        <file>../images/open.png</file>
+        <file>../images/quit.png</file>
+        <file>../images/save.png</file>
+        <file>../images/saveas.png</file>
+        <file>../images/stop!.png</file>
+        <file>../images/stop.png</file>
+        <file>../images/icon-283.png</file>
+        <file>../images/Recycle Bin Empty.png</file>
+        <file>../images/scissors_256.png</file>
+        <file>../images/star_grey.png</file>
+        <file>../images/star_yellow.png</file>
+        <file>../images/undo.png</file>
+        <file>../images/star_yellow_new.png</file>
+        <file>../images/star_red.png</file>
+        <file>../images/index_add.png</file>
+        <file>../images/index_down.png</file>
+    </qresource>
+    <qresource prefix="/status">
+        <file>../images/box_blue.ico</file>
+        <file>../images/box_grn.ico</file>
+        <file>../images/box_grn_dark.ico</file>
+        <file>../images/box_grn_tu.ico</file>
+        <file>../images/box_gry.ico</file>
+        <file>../images/box_red.ico</file>
+        <file>../images/box_red_dark.ico</file>
+        <file>../images/box_wht.ico</file>
+        <file>../images/box_yel.ico</file>
+        <file>../images/box_yel_dark.ico</file>
+        <file>../images/box_yel_tu.ico</file>
+        <file>../images/icon_cyn.ico</file>
+        <file>../images/icon_grn.ico</file>
+        <file>../images/icon_grn_dark.ico</file>
+        <file>../images/icon_gry.ico</file>
+        <file>../images/icon_non.ico</file>
+        <file>../images/icon_red.ico</file>
+        <file>../images/icon_red_dark.ico</file>
+        <file>../images/icon_wht.ico</file>
+        <file>../images/icon_yel.ico</file>
+        <file>../images/icon_yel_dark.ico</file>
+        <file>../images/box_grn_blink.ico</file>
+        <file>../images/box_red_tu.ico</file>
+        <file>../images/strl_minus.ico</file>
+        <file>../images/strl_plus.ico</file>
+    </qresource>
+</RCC>
