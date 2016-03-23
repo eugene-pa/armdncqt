@@ -98,14 +98,10 @@ MainWindow::MainWindow(QWidget *parent) :
     dateEdit->setCalendarWidget(calendar = new QCalendarWidget());
     dateEdit->setCalendarPopup(true);
     ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));
-    ui->mainToolBar->addWidget(new QLabel("Шаг, мин:"));
+    ui->mainToolBar->addWidget(labelStep = new QLabel("Шаг, мин: "));
+    ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
 
-    dateEdit         ->setEnabled(false);
-    timeEdit         ->setEnabled(false);
-    ui->actionPrev   ->setEnabled(false);
-    ui->actionReverce->setEnabled(false);
-    ui->actionPlay   ->setEnabled(false);
-    ui->actionNext   ->setEnabled(false);
+    on_actionBlackbox_triggered();
 
     ui->mainToolBar->setBaseSize(800,36);
 
@@ -132,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
     QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
     clientTcp->start();
-
+    scale = 1;
 }
 
 MainWindow::~MainWindow()
@@ -169,12 +165,14 @@ void MainWindow::loadResources()
 void MainWindow::on_actionBlackbox_triggered()
 {
     bool blackbox = ui->actionBlackbox->isChecked();
-    dateEdit->setEnabled(blackbox);
-    timeEdit->setEnabled(blackbox);
-    ui->actionPrev->setEnabled(blackbox);
+    dateEdit         ->setEnabled(blackbox);
+    timeEdit         ->setEnabled(blackbox);
+    ui->actionPrev   ->setEnabled(blackbox);
     ui->actionReverce->setEnabled(blackbox);
-    ui->actionPlay->setEnabled(blackbox);
-    ui->actionNext->setEnabled(blackbox);
+    ui->actionPlay   ->setEnabled(blackbox);
+    ui->actionNext   ->setEnabled(blackbox);
+    stepValue        ->setEnabled(blackbox);
+    labelStep        ->setEnabled(blackbox);
 }
 
 
@@ -231,3 +229,112 @@ void MainWindow::rawdataready(ClientTcp *client)
 }
 
 
+
+void MainWindow::on_action_TS_triggered()
+{
+    if (dlgTs==nullptr)
+    {
+        dlgTs = new DlgTsInfo(this, g_actualStation);
+        dlgTs->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgTs, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgTs->setVisible(!dlgTs->isVisible());
+}
+
+
+void MainWindow::on_action_TU_triggered()
+{
+    if (dlgTu==nullptr)
+    {
+        dlgTu = new DlgTuInfo(this, g_actualStation);
+        dlgTu->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgTu, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgTu->setVisible(!dlgTu->isVisible());
+}
+
+void MainWindow::on_action_OTU_triggered()
+{
+
+}
+
+void MainWindow::on_action_Routes_triggered()
+{
+    if (dlgRoutes==nullptr)
+    {
+        dlgRoutes = new DlgRoutes(g_actualStation, this);
+        dlgRoutes->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgRoutes, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgRoutes->setVisible(!dlgRoutes->isVisible());
+}
+
+void MainWindow::on_action_KP_triggered()
+{
+    if (dlgKp==nullptr)
+    {
+        dlgKp = new DlgKPinfo(g_actualStation, this);
+        dlgKp->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgKp, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgKp->setVisible(!dlgKp->isVisible());
+}
+
+void MainWindow::on_action_RC_triggered()
+{
+    if (dlgRc==nullptr)
+    {
+        dlgRc = new DlgRcInfo(g_actualStation, this);
+        dlgRc->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgRc, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgRc->setVisible(!dlgRc->isVisible());
+}
+
+void MainWindow::on_action_STRL_triggered()
+{
+    if (dlgStrl == nullptr)
+    {
+        dlgStrl = new DlgStrlInfo(g_actualStation, this);
+        dlgStrl->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgStrl, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgStrl->setVisible(!dlgStrl->isVisible());
+}
+
+void MainWindow::on_action_SVTF_triggered()
+{
+
+}
+
+void MainWindow::on_action_Stations_triggered()
+{
+
+}
+
+void MainWindow::on_action_More_triggered()
+{
+    scale = scale + 0.2;
+    child->scale(scale,scale);                          // масштабирование всего представления
+    child->update();
+}
+
+void MainWindow::on_action_Less_triggered()
+{
+    scale = scale - 0.2;
+    child->scale(scale,scale);                          // масштабирование всего представления
+    child->update();
+}
+
+void MainWindow::on_action_ZoomOff_triggered()
+{
+    scale = 1;
+    child->scale(scale,scale);                          // масштабирование всего представления
+    child->update();
+}

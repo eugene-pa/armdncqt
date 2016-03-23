@@ -13,6 +13,7 @@
 #include <QTimeEdit>
 #include <QCalendarWidget>
 #include <QCheckBox>
+#include <QSpinBox>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -49,18 +50,46 @@ private slots:
     void dataready   (ClientTcp *);                         // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
 
+
+    void on_action_TS_triggered();
+
+    void on_action_TU_triggered();
+
+    void on_action_OTU_triggered();
+
+    void on_action_Routes_triggered();
+
+    void on_action_KP_triggered();
+
+    void on_action_RC_triggered();
+
+    void on_action_STRL_triggered();
+
+    void on_action_SVTF_triggered();
+
+    void on_action_Stations_triggered();
+
+    void on_action_More_triggered();
+
+    void on_action_Less_triggered();
+
+    void on_action_ZoomOff_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
 private:
     Ui::MainWindow *ui;
     class ShapeChild * child;
+    qreal scale;                                            // масштаб
 
     QComboBox* StationsCmb;                                 // станции
-    QCheckBox* checkBox;
-    QDateEdit* dateEdit;
-    QTimeEdit* timeEdit;
-    QCalendarWidget* calendar;
+//    QCheckBox* checkBox;
+    QDateEdit* dateEdit;                                    // задание даты
+    QTimeEdit* timeEdit;                                    // задание вресени
+    QCalendarWidget* calendar;                              // пристегиваемый календарь выбора даты
+    QSpinBox * stepValue;                                   // задание шага смещений в архиве, мин
+    QLabel   * labelStep;
 
     QLabel hostStatus;
 
