@@ -69,6 +69,8 @@
     </property>
     <addaction name="action_19"/>
     <addaction name="separator"/>
+    <addaction name="action_ToolBar2"/>
+    <addaction name="separator"/>
     <addaction name="action_More"/>
     <addaction name="action_Less"/>
     <addaction name="action_ZoomOff"/>
@@ -104,6 +106,17 @@
    <addaction name="actionNext"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar2">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>true</bool>
+   </attribute>
+  </widget>
   <action name="action_RC">
    <property name="checkable">
     <bool>true</bool>
@@ -301,7 +314,7 @@
     <string>Масштаб +</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+=</string>
+    <string>Ctrl++</string>
    </property>
   </action>
   <action name="action_Less">
@@ -315,6 +328,14 @@
   <action name="action_ZoomOff">
    <property name="text">
     <string>Масштаб 1:1</string>
+   </property>
+  </action>
+  <action name="action_ToolBar2">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Панель масштабирования</string>
    </property>
   </action>
  </widget>

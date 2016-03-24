@@ -14,6 +14,7 @@
 #include <QCalendarWidget>
 #include <QCheckBox>
 #include <QSpinBox>
+#include <QtMath>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -75,13 +76,17 @@ private slots:
 
     void on_action_ZoomOff_triggered();
 
+    void on_action_ToolBar2_triggered();
+
+    void scaleView();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
 private:
     Ui::MainWindow *ui;
     class ShapeChild * child;
-    qreal scale;                                            // масштаб
+//    qreal scale;                                            // масштаб
 
     QComboBox* StationsCmb;                                 // станции
 //    QCheckBox* checkBox;
@@ -90,6 +95,9 @@ private:
     QCalendarWidget* calendar;                              // пристегиваемый календарь выбора даты
     QSpinBox * stepValue;                                   // задание шага смещений в архиве, мин
     QLabel   * labelStep;
+    QLabel   * labelTemp;
+    QSlider  * sliderTemp;                                  // слайдер темпа воспроизведения
+    QSlider  * sliderScale;                                 // слайдер масштабирования
 
     QLabel hostStatus;
 

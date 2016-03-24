@@ -98,8 +98,18 @@ MainWindow::MainWindow(QWidget *parent) :
     dateEdit->setCalendarWidget(calendar = new QCalendarWidget());
     dateEdit->setCalendarPopup(true);
     ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));
+
     ui->mainToolBar->addWidget(labelStep = new QLabel("Шаг, мин: "));
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
+
+    ui->mainToolBar->addWidget(labelTemp = new QLabel("Темп,X:  1:1 "));
+    ui->mainToolBar->addWidget(sliderTemp = new QSlider(Qt::Horizontal));
+    ui->mainToolBar->addWidget(labelTemp = new QLabel(" 10:1"));
+    sliderTemp->setTickPosition(QSlider::TicksAbove);
+    sliderTemp->setFixedWidth(180);
+    sliderTemp->setRange(1,10);
+    sliderTemp->setValue(1);
+    sliderTemp->setTickInterval(1);
 
     on_actionBlackbox_triggered();
 
@@ -128,7 +138,20 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
     QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
     clientTcp->start();
-    scale = 1;
+//    scale = 1;
+
+    ui->toolBar2->addWidget(new QLabel("Масштаб:  ", ui->toolBar2));
+    ui->toolBar2->addWidget(sliderScale = new QSlider(Qt::Horizontal, ui->toolBar2));
+    sliderScale->setMinimum(-50);
+    sliderScale->setMaximum(100);
+    sliderScale->setValue(0);
+    sliderScale->setTickPosition(QSlider::TicksAbove);
+    sliderScale->setFixedWidth(180);
+
+    connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
+
+    ui->toolBar2->setVisible(false);
+
 }
 
 MainWindow::~MainWindow()
@@ -318,23 +341,35 @@ void MainWindow::on_action_Stations_triggered()
 
 }
 
+
 void MainWindow::on_action_More_triggered()
 {
-    scale = scale + 0.2;
-    child->scale(scale,scale);                          // масштабирование всего представления
-    child->update();
+    sliderScale->setValue(sliderScale->value() + 1);
+    scaleView();                                    // масштабирование всего представления
 }
-
 void MainWindow::on_action_Less_triggered()
 {
-    scale = scale - 0.2;
-    child->scale(scale,scale);                          // масштабирование всего представления
-    child->update();
+    sliderScale->setValue(sliderScale->value() - 1);
+    scaleView();
 }
 
 void MainWindow::on_action_ZoomOff_triggered()
 {
-    scale = 1;
-    child->scale(scale,scale);                          // масштабирование всего представления
-    child->update();
+    sliderScale->setValue(0);
+    scaleView();
+}
+
+// масштабирование всего представления
+void MainWindow::scaleView()
+{
+    qreal scale = qPow(qreal(2), (sliderScale->value()) / qreal(50));
+    QMatrix matrix;
+    matrix.scale(scale, scale);
+    child->setMatrix(matrix);
+}
+
+// вкл/откл панели масштабирования
+void MainWindow::on_action_ToolBar2_triggered()
+{
+    ui->toolBar2->setVisible(ui->action_ToolBar2->isChecked());
 }
