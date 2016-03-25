@@ -104,6 +104,7 @@
    <addaction name="actionReverce"/>
    <addaction name="actionPlay"/>
    <addaction name="actionNext"/>
+   <addaction name="action_Stop"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar2">
@@ -336,6 +337,17 @@
    </property>
    <property name="text">
     <string>Панель масштабирования</string>
+   </property>
+  </action>
+  <action name="action_Stop">
+   <property name="text">
+    <string>||</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Consolas</family>
+     <pointsize>12</pointsize>
+    </font>
    </property>
   </action>
  </widget>

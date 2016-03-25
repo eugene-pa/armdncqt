@@ -99,10 +99,10 @@ MainWindow::MainWindow(QWidget *parent) :
     dateEdit->setCalendarPopup(true);
     ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));
 
-    ui->mainToolBar->addWidget(labelStep = new QLabel("Шаг, мин: "));
+    ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
 
-    ui->mainToolBar->addWidget(labelTemp = new QLabel("Темп,X:  1:1 "));
+    ui->mainToolBar->addWidget(labelTemp = new QLabel("     Темп,X:  1:1 "));
     ui->mainToolBar->addWidget(sliderTemp = new QSlider(Qt::Horizontal));
     ui->mainToolBar->addWidget(labelTemp = new QLabel(" 10:1"));
     sliderTemp->setTickPosition(QSlider::TicksAbove);
@@ -194,8 +194,10 @@ void MainWindow::on_actionBlackbox_triggered()
     ui->actionReverce->setEnabled(blackbox);
     ui->actionPlay   ->setEnabled(blackbox);
     ui->actionNext   ->setEnabled(blackbox);
+    ui->action_Stop  ->setEnabled(blackbox);
     stepValue        ->setEnabled(blackbox);
     labelStep        ->setEnabled(blackbox);
+    sliderTemp       ->setEnabled(blackbox);
 }
 
 
