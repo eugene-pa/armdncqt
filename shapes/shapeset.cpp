@@ -84,7 +84,10 @@ void ShapeSet::ScanFile()
                 }
             }
         }
+
+        // проблема: номера поездов не отрисовываются при масштабе > 1:1
         set.append(new ShapeTrain(this));
+        //set.append(new ShapeTrain(this));
     }
     else
     {

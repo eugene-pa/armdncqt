@@ -53,17 +53,13 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 
     ui->baudRateBox->setInsertPolicy(QComboBox::NoInsert);
 
-    connect(ui->applyButton, SIGNAL(clicked()),
-            this, SLOT(apply()));
-    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(showPortInfo(int)));
-    connect(ui->baudRateBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomBaudRatePolicy(int)));
-    connect(ui->serialPortInfoListBox, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(checkCustomDevicePathPolicy(int)));
+    connect(ui->applyButton,            SIGNAL(clicked()),                  this, SLOT(apply()));
+    connect(ui->serialPortInfoListBox,  SIGNAL(currentIndexChanged(int)),   this, SLOT(showPortInfo(int)));
+    connect(ui->baudRateBox,            SIGNAL(currentIndexChanged(int)),   this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->serialPortInfoListBox,  SIGNAL(currentIndexChanged(int)),   this, SLOT(checkCustomDevicePathPolicy(int)));
 
-    fillPortsParameters();
-    fillPortsInfo();
+    fillPortsParameters();                                  // заполнить контролы изменения параметров порта
+    fillPortsInfo();                                        // получить список доступных портов
 
     updateSettings();
 }
@@ -74,18 +70,20 @@ SettingsDialog::~SettingsDialog()
 }
 
 
+// отображение информации о выбранном интерфейсе
 void SettingsDialog::showPortInfo(int idx)
 {
     if (idx == -1)
         return;
 
     QStringList list = ui->serialPortInfoListBox->itemData(idx).toStringList();
-    ui->descriptionLabel->setText(tr("Description: %1").arg(list.count() > 1 ? list.at(1) : tr(blankString)));
-    ui->manufacturerLabel->setText(tr("Manufacturer: %1").arg(list.count() > 2 ? list.at(2) : tr(blankString)));
-    ui->serialNumberLabel->setText(tr("Serial number: %1").arg(list.count() > 3 ? list.at(3) : tr(blankString)));
-    ui->locationLabel->setText(tr("Location: %1").arg(list.count() > 4 ? list.at(4) : tr(blankString)));
-    ui->vidLabel->setText(tr("Vendor Identifier: %1").arg(list.count() > 5 ? list.at(5) : tr(blankString)));
-    ui->pidLabel->setText(tr("Product Identifier: %1").arg(list.count() > 6 ? list.at(6) : tr(blankString)));
+
+    ui->descriptionLabel ->setText(tr("Description: %1"       ).arg(list.count() > 1 ? list.at(1) : tr(blankString)));
+    ui->manufacturerLabel->setText(tr("Manufacturer: %1"      ).arg(list.count() > 2 ? list.at(2) : tr(blankString)));
+    ui->serialNumberLabel->setText(tr("Serial number: %1"     ).arg(list.count() > 3 ? list.at(3) : tr(blankString)));
+    ui->locationLabel    ->setText(tr("Location: %1"          ).arg(list.count() > 4 ? list.at(4) : tr(blankString)));
+    ui->vidLabel         ->setText(tr("Vendor Identifier: %1" ).arg(list.count() > 5 ? list.at(5) : tr(blankString)));
+    ui->pidLabel         ->setText(tr("Product Identifier: %1").arg(list.count() > 6 ? list.at(6) : tr(blankString)));
 }
 
 void SettingsDialog::apply()
@@ -145,23 +143,33 @@ void SettingsDialog::fillPortsParameters()
     ui->flowControlBox->addItem(tr("XON/XOFF"), QSerialPort::SoftwareControl);
 }
 
+
+// для каждого порта создается список параметров QStringList:
+// 0 - имя порта
+// 1 - описание
+// 2 - производитель
+// 3 - номер
+// 4 - обозначение в ОС
+// 5 - ID производителя
+// 5 - ID устройства
 void SettingsDialog::fillPortsInfo()
 {
     ui->serialPortInfoListBox->clear();
     QString description;
     QString manufacturer;
     QString serialNumber;
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
+    {
         QStringList list;
         description = info.description();
         manufacturer = info.manufacturer();
         serialNumber = info.serialNumber();
         list << info.portName()
-             << (!description.isEmpty() ? description : blankString)
+             << (!description .isEmpty() ? description  : blankString)
              << (!manufacturer.isEmpty() ? manufacturer : blankString)
              << (!serialNumber.isEmpty() ? serialNumber : blankString)
              << info.systemLocation()
-             << (info.vendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : blankString)
+             << (info.vendorIdentifier () ? QString::number(info.vendorIdentifier (), 16) : blankString)
              << (info.productIdentifier() ? QString::number(info.productIdentifier(), 16) : blankString);
 
         ui->serialPortInfoListBox->addItem(list.first(), list);
@@ -204,7 +212,7 @@ void SettingsDialog::updateSettings()
 // формирование строки вида: COM3,9600,N,8,1 - порт, четность, данных, стоп-бит
 QString SettingsDialog::description()
 {
-    return QString("%1,%2,%3,%4").arg(settings().name).arg(settings().parity==QSerialPort::OddParity ? "O" : settings().parity==QSerialPort::EvenParity ? "E" : "N").arg(settings().dataBits).arg(settings().stopBits);
+    return QString("%1,%2,%3,%4,%5").arg(settings().name).arg(settings().baudRate).arg(settings().parity==QSerialPort::OddParity ? "O" : settings().parity==QSerialPort::EvenParity ? "E" : "N").arg(settings().dataBits).arg(settings().stopBits);
 
 }
 

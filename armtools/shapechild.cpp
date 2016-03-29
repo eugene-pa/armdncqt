@@ -64,5 +64,11 @@ void ShapeChild::timerEvent(QTimerEvent *event)
     DShape::globalPulse = !DShape::globalPulse;             // в случае нескольких окон это делать нельзя, так как переменная DShape::globalPulse одна
     Q_UNUSED(event)
     scene->update();
+
+    // пробовал принудительно отрисовывать поезда при масштабировании - бесполезно!
+//    QPainter p;
+//    p.begin(this);
+//    shapeSet->GetSet()[shapeSet->GetSet().count()-1]->Draw(&p);
+//    p.end();
 }
 

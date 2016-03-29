@@ -1,53 +1,54 @@
 #ifndef RSBASE_H
 #define RSBASE_H
 
+#include <QObject>
 #include <QByteArray>
-
-
-class RsReader : public QObject
-{
-    Q_OBJECT
-public slots:
-    virtual int readData(class RsBase*);
-
-signals:
-    void resultReady(const QByteArray);
-};
+#include <QSerialPort>
+#include <QMutex>
+#include <QWaitCondition>
 
 
 class RsBase : public QSerialPort
 {
-    struct Settings
-    {
-        QString name;
-        qint32 baudRate;
-        QString stringBaudRate;
-        QSerialPort::DataBits dataBits;
-        QString stringDataBits;
-        QSerialPort::Parity parity;
-        QString stringParity;
-        QSerialPort::StopBits stopBits;
-        QString stringStopBits;
-        QSerialPort::FlowControl flowControl;
-        QString stringFlowControl;
-        bool localEchoEnabled;
-    };
+    Q_OBJECT
 public:
-    RsBase(Settings settings);
+    RsBase(QString settings);
     ~RsBase();
 
-    virtual bool getData();                                 // прием форматных данных   (определяется протоколом)
-    virtual QDyteAttay prepareData(QByteArray);             // оформление пакета        (определяется протоколом)
+    //virtual bool getData();                                 // прием форматных данных   (определяется протоколом)
+    virtual QByteArray prepareData(QByteArray);             // оформление пакета        (определяется протоколом)
     bool send (QByteArray);                                 // передача данных пачкой
+
+    char GetChar(int ms);                                   // получить очередной байт, ожидая не более ms миллисекуд
 
 signals:
     void DataReady(QByteArray);
     void Error(int error);
 
+private slots:
+    void handleError(QSerialPort::SerialPortError error);
+    void ReadData();
 
 private:
-    Settings settings;                                      // настройки
+    QString settings;                                       // настройки,например: COM1,9600,N,8,1
+    QString name;                                           // имя порта
+    qint32 baudRate;                                        // скорость
+    QSerialPort::Parity parity;                             // четность
+    QSerialPort::DataBits dataBits;                         // бит данных
+    QSerialPort::StopBits stopBits;                         // число стоп-бит
 
+    bool parse(QString);                                    // разбор строки типа "COM1,9600,N,8,1"
+    bool parsed;                                            // опсание порта корректно
+
+    QByteArray buf;                                         // кольцевой буфер данных
+    int indx_get;                                           // смещение для чтения данных
+    int indx_put;                                           // смещение для записи данных
+    int count;                                              // число считанных байт данных
+    QMutex mutex;                                           // блокировка очереди
+    QWaitCondition water;                                   // условие ожидания данных
+    QMutex watermutex;                                      // блокировка условия ожидания
+    uint overload;                                          // счетчик переполнения
+    uint allread;                                           // всего принято за время работы
 };
 
 #endif // RSBASE_H
