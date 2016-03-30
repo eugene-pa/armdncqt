@@ -42,3 +42,4 @@ QPixmap * g_green,
         * g_strl_minus,                                     // -
         * g_strl_plus;                                      // +
 
+//  COMMTIMEOUTS tm = { 10,0,400,1,500};

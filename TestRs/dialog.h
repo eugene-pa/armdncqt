@@ -5,6 +5,7 @@
 #include <QThread>
 #include "settingsdialog.h"
 #include "rsbase.h"
+#include "blockingrs.h"
 
 namespace Ui {
 class Dialog;
@@ -19,19 +20,21 @@ public:
     ~Dialog();
 
 private slots:
+    void applysettings();
     void on_pushButton_clicked();
     void on_pushButton_Open_clicked();
-    void applysettings();
 
 signals:
-    void operate(class RsBase*);
+    void operate(/*class RsBase* */QString );
 
 private:
     Ui::Dialog *ui;
     SettingsDialog * settingdlg;
-    class RsBase *serial;
+//  class RsBase *serial;
     QThread readerThread;
     class MdmAgentReader * worker;
+
+    class BlockingRs * rs;
 };
 
 
@@ -39,10 +42,12 @@ class MdmAgentReader : public QObject
 {
     Q_OBJECT
 public slots:
-    int readData(class RsBase*);
+    int readData(/*class RsBase* */QString settings);
 signals:
     void resultReady(const QString &result);
     void error(int error);
+private:
+    class RsBase *serial;
 };
 
 #endif // DIALOG_H

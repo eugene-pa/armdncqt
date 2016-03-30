@@ -5,12 +5,12 @@
 #-------------------------------------------------
 
 greaterThan(QT_MAJOR_VERSION, 4) {
-    QT       += widgets serialport
+    QT       += widgets serialport sql
 } else {
     include($$QTSERIALPORT_PROJECT_ROOT/src/serialport/qt4support/serialport.prf)
 }
 
-QT       += core gui
+QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,11 +21,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         dialog.cpp \
     settingsdialog.cpp \
-    rsbase.cpp
+    rsbase.cpp \
+    blockingrs.cpp
 
 HEADERS  += dialog.h \
     settingsdialog.h \
-    rsbase.h
+    rsbase.h \
+    blockingrs.h
 
 FORMS    += dialog.ui \
     settingsdialog.ui

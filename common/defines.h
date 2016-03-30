@@ -156,5 +156,14 @@ extern QPixmap  * g_green,
                 * g_strl_minus,                             // -
                 * g_strl_plus;                              // +
 
+#ifndef _WINBASE_
+typedef struct _COMMTIMEOUTS {
+    DWORD ReadIntervalTimeout;          /* Maximum time between read chars. */
+    DWORD ReadTotalTimeoutMultiplier;   /* Multiplier of characters.        */
+    DWORD ReadTotalTimeoutConstant;     /* Constant in milliseconds.        */
+    DWORD WriteTotalTimeoutMultiplier;  /* Multiplier of characters.        */
+    DWORD WriteTotalTimeoutConstant;    /* Constant in milliseconds.        */
+} COMMTIMEOUTS,*LPCOMMTIMEOUTS;
+#endif // #ifndef _COMMTIMEOUTS
 
 #endif // DEFINES_H

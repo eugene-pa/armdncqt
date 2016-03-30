@@ -10,7 +10,7 @@ RsBase::RsBase(QString settings)
     count = 0;
     overload = 0;
 
-    name = "COM1";
+    _name = "COM1";
     baudRate = 9600;
     parity   = QSerialPort::NoParity;
     dataBits = QSerialPort::Data8;
@@ -24,23 +24,6 @@ RsBase::~RsBase()
 
 }
 
-// прием форматных данных   (определяется протоколом)
-//bool RsBase::getData()
-//{
-//    return true;
-//}
-// чтение данных в соответствии с протоколом
-//int RsReader::readData(class RsBase* rs)
-//{
-//    //rs->
-//    return 0;
-//}
-
-// оформление пакета        (определяется протоколом)
-QByteArray RsBase::prepareData(QByteArray data)
-{
-    return data;
-}
 
 // разбор строки типа "COM1,9600,N,8,1"
 bool RsBase::parse(QString str)
@@ -50,7 +33,7 @@ bool RsBase::parse(QString str)
     if (options.length() > 0)
     {
         parsed = true;
-        name   = options[0];
+        _name   = options[0];
         if (options.length() > 0)
             baudRate = options[1].toInt(&parsed);
         if (options.length() > 1)
@@ -63,7 +46,7 @@ bool RsBase::parse(QString str)
     }
 
     // устанавливаем параметры порта
-    setPortName(name);
+    setPortName(_name);
     setBaudRate(baudRate);
     setDataBits(dataBits);
     setParity  (parity);
@@ -75,8 +58,6 @@ bool RsBase::parse(QString str)
     connect(this, SIGNAL(readyRead()), this, SLOT(ReadData()));
 
     open(QIODevice::ReadWrite);
-    QByteArray array("12345");
-    this->write(array);
 
     return parsed;
 }
@@ -109,7 +90,7 @@ void RsBase::ReadData()
 void RsBase::handleError(QSerialPort::SerialPortError error)
 {
     if (error)
-        qDebug() << "Ошибка открытия порта " << name << ": " << error;
+        qDebug() << "Ошибка открытия порта " << _name << ": " << error;
 }
 
 // получить очередной байт, ожидая не более ms миллисекуд
@@ -135,3 +116,25 @@ char RsBase::GetChar(int ms)
     mutex.unlock();
     return ch;
 }
+
+
+// передача данных пачкой
+bool RsBase::send (QByteArray array)
+{
+    return write(array) == array.length();
+}
+
+
+//// получить очередной байт, ожидая не более ms миллисекуд
+//// метод не работает, так как при получении готовности надо считывать все доступные данные
+//char RsBase::GetCharEx(int ms)
+//{
+//    char ch;
+//    if (waitForReadyRead(ms))
+//    {
+//        readData(&ch, 1);
+//        return ch;
+//    }
+//    else
+//        return -1;
+//}

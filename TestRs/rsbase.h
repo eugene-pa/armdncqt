@@ -15,11 +15,9 @@ public:
     RsBase(QString settings);
     ~RsBase();
 
-    //virtual bool getData();                                 // прием форматных данных   (определяется протоколом)
-    virtual QByteArray prepareData(QByteArray);             // оформление пакета        (определяется протоколом)
     bool send (QByteArray);                                 // передача данных пачкой
-
     char GetChar(int ms);                                   // получить очередной байт, ожидая не более ms миллисекуд
+    QString name() { return _name; }
 
 signals:
     void DataReady(QByteArray);
@@ -31,7 +29,7 @@ private slots:
 
 private:
     QString settings;                                       // настройки,например: COM1,9600,N,8,1
-    QString name;                                           // имя порта
+    QString _name;                                           // имя порта
     qint32 baudRate;                                        // скорость
     QSerialPort::Parity parity;                             // четность
     QSerialPort::DataBits dataBits;                         // бит данных
