@@ -23,9 +23,15 @@ private slots:
     void applysettings();
     void on_pushButton_clicked();
     void on_pushButton_Open_clicked();
+    void dataready(QByteArray);                             // сигнал-уведомление о готовности данных
+    void timeout();
+    void error  (int);
+
+    void on_Dialog_finished(int result);
 
 signals:
     void operate(/*class RsBase* */QString );
+    void exit();
 
 private:
     Ui::Dialog *ui;

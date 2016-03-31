@@ -38,14 +38,37 @@ void Dialog::applysettings()
     ui->label->setText(settingdlg->description());
 }
 
+// слот-обработчик уведомлений о готовности данных
+void Dialog::dataready(QByteArray data)
+{
+    if (data.length())
+        ui->textEdit->setPlainText(ui->textEdit->toPlainText() + QString(data) + "\n");
+}
+
+// слот-обработчик уведомлений о неготовности данных
+void Dialog::timeout()
+{
+    ui->textEdit->setPlainText(ui->textEdit->toPlainText() + "Нет данных...\n");
+}
+
+void Dialog::error  (int error)
+{
+    ui->textEdit->setPlainText(ui->textEdit->toPlainText() + BlockingRs::errorText((BlockingRs::DataError)error));
+}
 
 // соединить
 void Dialog::on_pushButton_Open_clicked()
 {
     if (ui->pushButton_Open->isChecked())
     {
-        rs = new BlockingRs(this);
-        COMMTIMEOUTS tm = { 5000,0, 5000, 1, 500 };
+        rs = new BlockingRs(this, '1', 1024);
+        connect(rs, SIGNAL(dataready(QByteArray)), this, SLOT(dataready(QByteArray)));
+        connect(rs, SIGNAL(timeout()), this, SLOT(timeout()));
+        connect(rs, SIGNAL(error(int)), this, SLOT(error(int)));
+        connect(this, SIGNAL(exit()), rs, SLOT(exit()));
+
+        // определяем задержки и стартуем поток
+        COMMTIMEOUTS tm = { 100, 1, 3000, 1, 250 };
         rs->startRs(settingdlg->description(), tm);
 
 /*
@@ -93,3 +116,7 @@ int MdmAgentReader::readData(QString settings/*class RsBase* serial*/)
 }
 
 
+void Dialog::on_Dialog_finished(int result)
+{
+    emit (exit());
+}

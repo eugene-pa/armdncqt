@@ -22,12 +22,14 @@ SOURCES += main.cpp\
         dialog.cpp \
     settingsdialog.cpp \
     rsbase.cpp \
-    blockingrs.cpp
+    blockingrs.cpp \
+    ../common/defines.cpp
 
 HEADERS  += dialog.h \
     settingsdialog.h \
     rsbase.h \
-    blockingrs.h
+    blockingrs.h \
+    ../common/defines.h
 
 FORMS    += dialog.ui \
     settingsdialog.ui
