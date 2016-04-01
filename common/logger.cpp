@@ -104,3 +104,12 @@ QString Logger::GetHex(char * data, int length)
     return tmp;
 }
 
+QString Logger::GetHex(QByteArray& array, int maxlength)
+{
+    QString tmp;
+    for (int i=0; i<array.length() && i<maxlength; i++)
+    {
+        tmp += QString("%1 ").arg((BYTE)array[i],2,16,QChar('0')).toUpper();
+    }
+    return tmp;
+}

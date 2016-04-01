@@ -5,7 +5,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
-#include "../common/defines.h"
+#include "defines.h"
 
 // Класс BlockingRs реализует блокирующие методы работы с асинхронным последовательным интерфейсом
 // Класс может быть унаследован от
@@ -33,7 +33,7 @@ public:
     static QString errorText (DataError error);
 
     // виртуальные функции
-    virtual void mainLoop(QSerialPort& serial);             // основной цикл
+    virtual void mainLoop();                                // основной цикл
     virtual QByteArray readData(QSerialPort& serial);       // прием пакета данных с заданными таймаутами, маркером и максимальной длиной
     virtual void doData(QByteArray&);                       // можно перекрыть
 
@@ -45,7 +45,7 @@ signals:
     void error    (int);                                    // сигнал-уведомление об ошибке
     void timeout  ();                                       // сигнал-уведомление о таймауте
 
-private:
+protected:
     bool parse(QString);                                    // разбор строки типа "COM1,9600,N,8,1"
 
     QString settings;                                       // настройки,например: COM1,9600,N,8,1
@@ -55,6 +55,7 @@ private:
     QSerialPort::DataBits dataBits;                         // бит данных
     QSerialPort::StopBits stopBits;                         // число стоп-бит
 
+    QSerialPort * pSerial;
     QMutex mutex;
     bool quit;
     COMMTIMEOUTS tm;

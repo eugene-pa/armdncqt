@@ -5,7 +5,7 @@
 #include <QThread>
 #include "settingsdialog.h"
 #include "rsbase.h"
-#include "blockingrs.h"
+#include "../common/blockingrs.h"
 
 namespace Ui {
 class Dialog;
@@ -28,9 +28,10 @@ private slots:
     void error  (int);
 
     void on_Dialog_finished(int result);
-
+    void rsStarted();
+    void rsFinished();
 signals:
-    void operate(/*class RsBase* */QString );
+    //void operate(/*class RsBase* */QString );
     void exit();
 
 private:

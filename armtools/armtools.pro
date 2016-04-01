@@ -17,20 +17,19 @@ INCLUDEPATH += ../forms/
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    ../shapes/shape.cpp \
-    ../shapes/shapeset.cpp \
+        shapechild.cpp \
+    ../common/boolexpression.cpp \
+    ../common/defines.cpp \
+    ../common/archiver.cpp \
+    ../common/clienttcp.cpp \
+    ../common/tcpheader.cpp \
     ../common/logger.cpp \
-    ../shapes/shaperc.cpp \
-    ../shapes/shapestrl.cpp \
-    ../shapes/shapesvtf.cpp \
-    ../shapes/shapetrnsp.cpp \
-    ../shapes/colorscheme.cpp \
+    ../common/inireader.cpp \
     ../spr/esr.cpp \
     ../spr/rc.cpp \
     ../spr/sprbase.cpp \
     ../spr/station.cpp \
     ../spr/ts.cpp \
-    ../common/boolexpression.cpp \
     ../spr/properties.cpp \
     ../spr/strl.cpp \
     ../spr/svtf.cpp \
@@ -39,14 +38,26 @@ SOURCES += main.cpp\
     ../spr/streamts.cpp \
     ../spr/dstdatafromfonitor.cpp \
     ../spr/dras.cpp \
-    ../common/defines.cpp \
-    ../common/archiver.cpp \
-    ../common/clienttcp.cpp \
-    ../common/tcpheader.cpp \
     ../spr/datafrommonitor.cpp \
     ../spr/peregon.cpp \
     ../spr/train.cpp \
     ../spr/route.cpp \
+    ../spr/abtcminfo.cpp \
+    ../spr/rpcdialoginfo.cpp \
+    ../spr/ecmpkinfo.cpp \
+    ../spr/krug.cpp \
+    ../shapes/shape.cpp \
+    ../shapes/shapeset.cpp \
+    ../shapes/shaperc.cpp \
+    ../shapes/shapestrl.cpp \
+    ../shapes/shapesvtf.cpp \
+    ../shapes/shapetrnsp.cpp \
+    ../shapes/colorscheme.cpp \
+    ../shapes/trnspdescription.cpp \
+    ../shapes/shapetext.cpp \
+    ../shapes/shapeprzd.cpp \
+    ../shapes/shapebox.cpp \
+    ../shapes/shapetrain.cpp \
     ../forms/dlgrcinfo.cpp \
     ../forms/dlgstrlinfo.cpp \
     ../forms/dlgstationsinfo.cpp \
@@ -54,41 +65,27 @@ SOURCES += main.cpp\
     ../forms/tsstatuswidget.cpp \
     ../forms/dlgkpinfo.cpp \
     ../forms/bminfoframe.cpp \
-    ../spr/abtcminfo.cpp \
-    ../spr/rpcdialoginfo.cpp \
-    ../spr/ecmpkinfo.cpp \
     ../forms/qled.cpp \
-    ../spr/krug.cpp \
     ../forms/dlgroutes.cpp \
     ../forms/dlgtuinfo.cpp \
-    ../shapes/trnspdescription.cpp \
-    ../shapes/shapetext.cpp \
-    ../shapes/shapeprzd.cpp \
-    ../shapes/shapebox.cpp \
-    ../forms/dlgtrains.cpp \
-    ../shapes/shapetrain.cpp \
-    ../common/inireader.cpp \
-    shapechild.cpp
-    ../common/boolexpression.cpp \
+    ../forms/dlgtrains.cpp
 
 
 HEADERS  += mainwindow.h \
-    ../shapes/shape.h \
+    shapechild.h \
+    ../common/boolexpression.h \
+    ../common/inireader.h \
     ../common/defines.h \
-    ../shapes/shapeset.h \
     ../common/logger.h \
-    ../shapes/shaperc.h \
-    ../shapes/shapestrl.h \
-    ../shapes/shapesvtf.h \
-    ../shapes/shapetrnsp.h \
-    ../shapes/colorscheme.h \
+    ../common/archiver.h \
+    ../common/clienttcp.h \
+    ../common/tcpheader.h \
     ../spr/enums.h \
     ../spr/esr.h \
     ../spr/rc.h \
     ../spr/sprbase.h \
     ../spr/station.h \
     ../spr/ts.h \
-    ../common/boolexpression.h \
     ../spr/properties.h \
     ../spr/strl.h \
     ../spr/svtf.h \
@@ -97,27 +94,21 @@ HEADERS  += mainwindow.h \
     ../spr/streamts.h \
     ../spr/dstdatafromfonitor.h \
     ../spr/dras.h \
-    ../common/archiver.h \
-    ../common/clienttcp.h \
-    ../common/tcpheader.h \
     ../spr/datafrommonitor.h \
     ../spr/peregon.h \
     ../spr/train.h \
     ../spr/route.h \
-    ../forms/dlgrcinfo.h \
-    ../forms/dlgstrlinfo.h \
-    ../forms/dlgstationsinfo.h \
-    ../forms/dlgtsinfo.h \
-    ../forms/tsstatuswidget.h \
-    ../forms/dlgkpinfo.h \
-    ../forms/bminfoframe.h \
     ../spr/abtcminfo.h \
     ../spr/rpcdialoginfo.h \
     ../spr/ecmpkinfo.h \
-    ../forms/qled.h \
     ../spr/krug.h \
-    ../forms/dlgroutes.h \
-    ../forms/dlgtuinfo.h \
+    ../shapes/shape.h \
+    ../shapes/shapeset.h \
+    ../shapes/shaperc.h \
+    ../shapes/shapestrl.h \
+    ../shapes/shapesvtf.h \
+    ../shapes/shapetrnsp.h \
+    ../shapes/colorscheme.h \
     ../shapes/palitra.h \
     ../shapes/trnspdescription.h \
     ../shapes/shapetext.h \
@@ -125,9 +116,16 @@ HEADERS  += mainwindow.h \
     ../shapes/shapebox.h \
     ../forms/dlgtrains.h \
     ../shapes/shapetrain.h \
-    ../common/inireader.h \
-    shapechild.h
-    ../common/boolexpression.h \
+    ../forms/dlgroutes.h \
+    ../forms/dlgtuinfo.h \
+    ../forms/dlgrcinfo.h \
+    ../forms/dlgstrlinfo.h \
+    ../forms/dlgstationsinfo.h \
+    ../forms/dlgtsinfo.h \
+    ../forms/tsstatuswidget.h \
+    ../forms/dlgkpinfo.h \
+    ../forms/bminfoframe.h \
+    ../forms/qled.h
 
 
 FORMS    += mainwindow.ui \

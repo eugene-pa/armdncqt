@@ -10,8 +10,8 @@
 #include <time.h>
 #include <QHash>
 #include <QList>
-#include <QSqlDatabase>
-#include <QSqlQuery>
+//#include <QSqlDatabase>
+//#include <QSqlQuery>
 #include <QBitArray>
 #include <QVariant>
 #include "QCloseEvent"

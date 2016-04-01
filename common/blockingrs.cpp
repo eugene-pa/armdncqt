@@ -1,9 +1,14 @@
 #include "blockingrs.h"
 
+// Конструктор
+// QObject *parent      - родитель
+// BYTE marker          - маркер начала пакета или 0
+// int maxlength        - максимальный размер пакета
 BlockingRs::BlockingRs(QObject *parent, BYTE marker, int maxlength) : QThread(parent)
 {
-    tm = { 100,0, 400, 1, 500 };
+    tm = { 100,0, 400, 1, 500 };                            // по умолчанию
     quit = false;
+
     this->parent = parent;                                  // родитель
     this->marker = marker;                                  // маркер или 0
     this->maxlength = maxlength;                            // максимальная длина
@@ -30,6 +35,7 @@ void BlockingRs::startRs(const QString& settings, COMMTIMEOUTS tm)
 void BlockingRs::run()
 {
     QSerialPort serial;
+    pSerial = &serial;
 
     // устанавливаем параметры порта
     serial.setPortName(_name);
@@ -43,34 +49,39 @@ void BlockingRs::run()
         return;
     }
 
-    mainLoop(serial);
+    mainLoop();
+    if (serial.isOpen())
+        serial.close();
+    //emit(finished());
 }
 
 // основной цикл приема/передачи данных
 // эту функцию следует переопределять в производных классаъ для реализации логики и последовательности полудуплексного обмена
-void BlockingRs::mainLoop(QSerialPort& serial)
+void BlockingRs::mainLoop()
 {
     while (!quit)
     {
         // 1. Прием данных
-        QByteArray data = readData(serial);
+        QByteArray data = readData(*pSerial);
         // 2. разбор пакета
         doData(data);
-        // 3. Передача ответв/запроса
 
-        if (quit)
-            break;
+        // тайм-ауты
+        if (quit)   break;
+        wait(500);        // msleep(500);
+        if (quit)   break;
+
+        // 3. Передача ответв/запроса
         QByteArray array("ACK!  ");
-        serial.write(array);
+        pSerial->write(array);
     }
-    if (serial.isOpen())
-        serial.close();
 }
 
 void BlockingRs::exit()
 {
     QMutexLocker locker(&mutex);
     quit = true;
+    //QThread::exit(0);
 }
 
 // поиск маркера в байтовом массиве, при необходимости усекание массива вплоть до маркера
@@ -89,8 +100,6 @@ bool BlockingRs::FindMarker (QByteArray& data, BYTE marker)
 // виртуальная функция приема данных
 // если определен маркер - принимает и накапливает данные начиная с маркера
 // QSerialPort& serial  - порт,
-// BYTE marker          - маркер начала пакета или 0
-// int maxlength        - максимальный размер пакета
 QByteArray BlockingRs::readData(QSerialPort& serial)
 {
     QByteArray data;

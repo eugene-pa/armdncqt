@@ -67,35 +67,28 @@ void Dialog::on_pushButton_Open_clicked()
         connect(rs, SIGNAL(error(int)), this, SLOT(error(int)));
         connect(this, SIGNAL(exit()), rs, SLOT(exit()));
 
+        connect(rs, SIGNAL(finished()), this, SLOT(rsFinished));
+        connect(rs, SIGNAL(started() ), this, SLOT(rsStarted()));
+
         // определяем задержки и стартуем поток
         COMMTIMEOUTS tm = { 100, 1, 3000, 1, 250 };
         rs->startRs(settingdlg->description(), tm);
-
-/*
-//        serial = new RsBase(settingdlg->description());
-//        if (serial->isOpen())
-        {
-            worker = new MdmAgentReader();
-            worker->moveToThread(&readerThread);
-            connect(this, &Dialog::operate, worker, &MdmAgentReader::readData);
-            readerThread.start();
-            emit (operate(settingdlg->description()));  //serial
-
-//            QByteArray array("12345-");
-//            int n = serial->send(array);
-    //        serial->write(array);
-        }
-//        else
-//        {
-//            QMessageBox::critical(this, tr("Ошибка ") + serial->name(), serial->errorString());
-//        }
-*/
     }
-//    else
-//    if (serial != nullptr)
-//    {
-//        serial->close();
-//    }
+    else
+    {
+        emit(exit());
+        delete rs;
+    }
+}
+
+void Dialog::rsStarted()
+{
+    ui->textEdit->setPlainText(ui->textEdit->toPlainText() + "Старт потока" + "\n");
+}
+
+void Dialog::rsFinished()
+{
+    ui->textEdit->setPlainText(ui->textEdit->toPlainText() + "Завершение потока" + "\n");
 }
 
 
@@ -118,5 +111,6 @@ int MdmAgentReader::readData(QString settings/*class RsBase* serial*/)
 
 void Dialog::on_Dialog_finished(int result)
 {
-    emit (exit());
+    emit(exit());
+    delete rs;
 }
