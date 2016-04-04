@@ -18,7 +18,7 @@ public:
     explicit BmInfoFrame(QWidget *parent = 0);
     ~BmInfoFrame();
 
-    void setObj(class Station * p, bool s = false);         // назначить объект
+    void setObj(class Station * p, bool rsrv = false);         // назначить объект
 
 protected:
     virtual void timerEvent(QTimerEvent *event);

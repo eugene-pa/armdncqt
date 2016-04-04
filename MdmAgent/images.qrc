@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>../images/icon_cyn.ico</file>
+        <file>../images/icon_grn.ico</file>
+        <file>../images/icon_grn_dark.ico</file>
+        <file>../images/icon_gry.ico</file>
+        <file>../images/icon_non.ico</file>
+        <file>../images/icon_red.ico</file>
+        <file>../images/icon_red_dark.ico</file>
+        <file>../images/icon_wht.ico</file>
+        <file>../images/icon_yel.ico</file>
+        <file>../images/icon_yel_dark.ico</file>
+        <file>../images/icon1.ico</file>
+        <file>../images/icon2.ico</file>
+        <file>../images/icon3.ico</file>
+        <file>../images/icon4.ico</file>
+    </qresource>
+</RCC>

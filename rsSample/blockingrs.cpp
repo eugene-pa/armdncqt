@@ -6,7 +6,11 @@
 // int maxlength        - максимальный размер пакета
 BlockingRs::BlockingRs(QObject *parent, BYTE marker, int maxlength) : QThread(parent)
 {
-    tm = { 100,0, 400, 1, 500 };                            // по умолчанию
+    // таймауты по умолчанию
+    tm = { 100,                                             // максимальный межбайтовый интервал
+           0,
+           400,                                             // максимальное время ожидания начала приема данных
+           1, 500 };
     quit = false;
 
     this->parent = parent;                                  // родитель
@@ -23,6 +27,13 @@ BlockingRs::~BlockingRs()
     wait();
 }
 
+// запуск рабочего потока приема/передачи
+// QString& settings - строка типа: "COM1,38400,N,8,1"
+// - порт
+// - скорость
+// - четность
+// - бит данных
+// - стоп-бит
 void BlockingRs::startRs(const QString& settings, COMMTIMEOUTS tm)
 {
     QMutexLocker locker(&mutex);
@@ -32,24 +43,25 @@ void BlockingRs::startRs(const QString& settings, COMMTIMEOUTS tm)
         start();
 }
 
+// рабочая функция потока
 void BlockingRs::run()
 {
-    QSerialPort serial;
+    QSerialPort serial;                                     // создаем порт на стеке рабочей функции
     pSerial = &serial;
 
-    // устанавливаем параметры порта
-    serial.setPortName(_name);
+    serial.setPortName(_name);                              // устанавливаем параметры порта
     serial.setBaudRate(baudRate);
     serial.setDataBits(dataBits);
     serial.setParity  (parity);
     serial.setStopBits(stopBits);
-    if (!serial.open(QIODevice::ReadWrite))
+    if (!serial.open(QIODevice::ReadWrite))                 // открываем порт
     {
         emit (error(UNAVAILABLE));
         return;
     }
 
-    mainLoop();
+    mainLoop();                                             // вызов вирт.функции реализации протокола приема/передачи вплоть до завешения
+
     if (serial.isOpen())
         serial.close();
     //emit(finished());
@@ -63,12 +75,13 @@ void BlockingRs::mainLoop()
     {
         // 1. Прием данных
         QByteArray data = readData(*pSerial);
+        if (quit)   break;
+
         // 2. разбор пакета
         doData(data);
 
-        // тайм-ауты
-        if (quit)   break;
-        wait(500);        // msleep(500);
+        // тайм-ауты, например:
+        wait(500);                                          // или msleep(500);
         if (quit)   break;
 
         // 3. Передача ответв/запроса
@@ -159,12 +172,12 @@ QString BlockingRs::errorText (DataError error)
     QString ret = "?";
     switch (error)
     {
-        case TIMEOUT:     ret = "Нет данных в канале...";           break;
-        case CRC:         ret = "Ошибка CRC";                       break;
+        case TIMEOUT:     ret = "Нет данных в канале...";             break;
+        case CRC:         ret = "Ошибка CRC";                         break;
         case L_OVER:      ret = "Слишком большая длина блока данных"; break;
-        case FORMAT:      ret = "Нет данных в канале...";           break;
-        case TRASH:       ret = "'Мусор' в канале...";              break;
-        case UNAVAILABLE: ret = "Ошибка открытия порта";            break;
+        case FORMAT:      ret = "Нет данных в канале...";             break;
+        case TRASH:       ret = "'Мусор' в канале...";                break;
+        case UNAVAILABLE: ret = "Ошибка открытия порта";              break;
     }
     return ret;
 }

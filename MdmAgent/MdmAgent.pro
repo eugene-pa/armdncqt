@@ -10,8 +10,9 @@ QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MdmAgent
+TARGET = mdmagent
 TEMPLATE = app
+INCLUDEPATH += ../forms/
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -44,7 +45,10 @@ SOURCES += main.cpp\
     ../spr/ecmpkinfo.cpp \
     ../spr/krug.cpp \
     ../common/blockingrs.cpp \
-    rasrs.cpp
+    rasrs.cpp \
+    kpframe.cpp \
+    ../forms/qled.cpp \
+    ../common/qled.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -77,7 +81,14 @@ HEADERS  += mainwindow.h \
     ../spr/ecmpkinfo.h \
     ../spr/krug.h \
     ../common/blockingrs.h \
-    rasrs.h
+    rasrs.h \
+    kpframe.h \
+    ../forms/qled.h \
+    ../common/qled.h
 
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    kpframe.ui
+
+RESOURCES += \
+    images.qrc

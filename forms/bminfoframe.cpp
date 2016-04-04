@@ -52,12 +52,12 @@ BmInfoFrame::~BmInfoFrame()
 
 
 // назначить объект
-void BmInfoFrame::setObj(class Station * p, bool s)
+void BmInfoFrame::setObj(class Station * p, bool rsrv)
 {
-    rsrv = s;
+    this->rsrv = rsrv;
     st = p;
     sysinfo = st->GetSysInfo (rsrv);
-    if (s)
+    if (rsrv)
         ui->label_MainRsrv->setText("Резервный");
 
     redraw();

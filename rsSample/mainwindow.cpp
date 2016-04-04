@@ -60,8 +60,12 @@ void MainWindow::on_action_Stop_triggered()
     ui->action_Start->setEnabled(true);
     ui->action_Stop->setEnabled(false);
 
-    emit (exit());
-    delete rasRs;
+    if (rasRs)
+    {
+        emit (exit());
+        delete rasRs;
+        rasRs = nullptr;
+    }
 
     ui->label->setText("Closed");
 

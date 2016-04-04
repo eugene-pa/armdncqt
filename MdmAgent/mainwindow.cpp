@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "kpframe.h"
 
 #include "rasrs.h"
 
@@ -8,6 +9,30 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    kpframe * kp = new kpframe(this);
+    ui->gridLayout_kp->addWidget(kp,0,0);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,1);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,2);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,3);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,4);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,5);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,6);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,7);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,8);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,9);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,10);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,11);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,12);
+
+    ui->gridLayout_kp->addWidget(new kpframe(this),1,0);
+    ui->gridLayout_kp->addWidget(new kpframe(this),1,1);
+    ui->gridLayout_kp->addWidget(new kpframe(this),1,2);
+//    ui->gridLayout_kp->addWidget(new kpframe(this),1,3);
+//    ui->gridLayout_kp->addWidget(new kpframe(this),1,4);
+//    ui->gridLayout_kp->addWidget(new kpframe(this),1,5);
+//    ui->gridLayout_kp->addWidget(new kpframe(this),1,6);
+
     rasRs = nullptr;
 }
 
@@ -46,26 +71,79 @@ void MainWindow::timeout()
 }
 
 // обработка сигнала-уведомления об ошибке
-void MainWindow::error  (int)
+void MainWindow::error  (int error)
 {
-    int a = 99;
+    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
 }
 
 // обработка сигнала-уведомления от старте потока RS
 void MainWindow::rsStarted()
 {
-    int a = 99;
+    qDebug() << "Старт рабочего потока " << rasRs->name();
 }
 
-// завершение потока RS
-//void MainWindow::rsFinished()
-//{
-//    int a = 99;
-//}
 
-void MainWindow::on_MainWindow_destroyed()
+void MainWindow::closeEvent(QCloseEvent *)
 {
-    emit (exit());
-    if (rasRs != nullptr)
+    if (rasRs)
+    {
+        emit (exit());
         delete rasRs;
+        rasRs = nullptr;
+    }
+}
+
+void MainWindow::on_pushButtonMainOff_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonRsrvOff_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonToMain_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonToRsrv_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonTest_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonATU_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonReset_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonGetReconnect_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonResetMain_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonResetRsrv_clicked()
+{
+
+}
+
+void MainWindow::on_pushButtonWatchdog_clicked()
+{
+
 }
