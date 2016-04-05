@@ -12,7 +12,7 @@ protected:
     class Rc * sprRc;                                       // указатель на справочник РЦ
     QVector<class LinkedStrl*> strl;                        // определяющие стрелки
     //QPainterPath path;                                    // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
-    QPolygonF path;                                         // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
+    QPolygonF poly;                                         // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
 
     bool combined;                                          // признак того, что РЦ объединена в составе пути этого или сопряженного отрезка
 
@@ -95,6 +95,9 @@ protected:
 //static	inline short GetThick(){return mThick;									}
 //static	void  SetThick(short w, bool bUpdateDefault = true);
 
+    static bool compareXY(QPointF p1, QPointF p2, qreal delta);
+    int compareXY(ShapeRc* shape, qreal  delta);
+    bool сompareStrl(ShapeRc *);
 };
 
 #endif // SHAPERC_H

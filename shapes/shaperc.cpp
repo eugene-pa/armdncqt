@@ -1,5 +1,7 @@
+#include <QtMath>
 #include "shapeset.h"
 #include "shaperc.h"
+
 
 QPen *ShapeRc::PenFree;                                     // свободная РЦ
 QPen *ShapeRc::PenBusy;                                     // занятая РЦ (если занятая РЦ замкнута - контур замыкания вокруг)
@@ -109,7 +111,7 @@ void ShapeRc::Parse(QString& src)
         st      = Station::GetById(idst);                   // станция
         sprRc   = Rc::GetById(idObj);                       // РЦ
 
-        // не при чтении, а при актиыизации формы
+        // не при чтении, а при активизации формы
         // if (sprRc)
         //  sprRc->AddShape (this);
 
@@ -309,8 +311,81 @@ QString  ShapeRc::ObjectInfo()
     return "РЦ";
 }
 
+
+// добавление примитива в список примитивов РЦ. Для каждой РЦ, имеющей представление в актуальной схеме, имеем список всех отрезков-представлений
+// вопрос: когда и как лучше "сливать" отрезки в полилинии: на лету, или после заполнения списка в целом
 void ShapeRc::AddAndMerge()
 {
-    if (this->sprRc)
-        sprRc->shapes.append(this);
+    if (sprRc)
+    {
+        for (int i=0; i<sprRc->shapes.length(); i++)
+        {
+            ShapeRc * prv = (ShapeRc *)sprRc->shapes[i];
+            if (prv->combined)
+                continue;
+            switch (compareXY(prv, 3))
+            {
+                case 0:
+                        break;
+                case 1:
+                        break;
+                case 2:
+                        break;
+                case 3:
+                        break;
+            }
+        }
+        sprRc->AddShape(this);
+    }
+}
+
+
+
+
+bool ShapeRc::compareXY(QPointF p1, QPointF p2, qreal delta)
+{
+    return qFabs(p1.x() - p2.x()) <= delta && qFabs(p1.y() - p2.y()) <= delta;
+}
+
+// проверка отрезков на смежность по координатам и совпадение по направляющим стрелкам
+// Возможные совпадения:                           Итоговые точки полилинии:
+// Начало 1 = Начало 2:  x1y1[1]  == x1y1[2]   -   x2y2[1],x1y1[1],x2y2[2]
+// Начало 1 = Конец  2:  x1y1[1]  == x2y2[2]   -   x2y2[1],x1y1[1],x1y1[2]
+// Конец 1  = Начало 2:  x2y2[1]  == x1y1[2]   -   x1y1[1],x2y2[1],x2y2[2]
+// Конец 1  = Конец  2:  x2y2[1]  == x2y2[2]   -   x1y1[1],x2y2[1],x1y1[2]
+int ShapeRc::compareXY(ShapeRc* shape, qreal  delta)
+{
+    if (сompareStrl(shape))
+    {
+        if (compareXY(shape->xy(), xy(), delta))
+            return 0;
+        if (compareXY(shape->xy(), x2y2(), delta)    )
+            return 1;
+        if (compareXY(shape->x2y2(), xy(), delta))
+            return 2;
+        if (compareXY(shape->x2y2(), x2y2(), delta)  )
+            return 3;
+    }
+    return -1;
+}
+
+// проверка полного соответствия направляющих стрелок в описании отрезков РЦ
+bool ShapeRc::сompareStrl(ShapeRc *shape)
+{
+    if (strl.count() == shape->strl.count())
+    {
+        foreach (LinkedStrl* link, strl)
+        {
+            bool found = false;
+            foreach (LinkedStrl* link2, shape->strl)
+            {
+                if (link->no == link2->no)
+                    found = true;
+            }
+            if (!found)
+                return false;
+        }
+        return true;
+    }
+    return false;
 }
