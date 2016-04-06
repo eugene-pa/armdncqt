@@ -40,7 +40,7 @@ private:
 class ArhReader
 {
 public:
-    ArhReader(QString& filename);                           // конструктор для чтения
+    ArhReader(QString filename);                            // конструктор для чтения
     ~ArhReader();
     int Next ();                                            // чтение записи от текущего положения указателя
     int First();                                            // чтение первой записи

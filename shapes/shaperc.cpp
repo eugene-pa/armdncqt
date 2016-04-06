@@ -1,4 +1,5 @@
 #include <QtMath>
+#include <QtGlobal>
 #include "shapeset.h"
 #include "shaperc.h"
 
@@ -261,7 +262,12 @@ void ShapeRc::Draw(QPainter* painter)
     pen->setCapStyle(Qt::FlatCap);
     painter->setRenderHint(QPainter::Antialiasing, y1 != y2);
     painter->setPen(*pen);
-    painter->drawLine(rect.topLeft(), rect.bottomRight());
+    if (!combined)
+        painter->drawLine(rect.topLeft(), rect.bottomRight());
+    else
+    if (poly.count())
+        painter->drawPolyline(poly);
+
 
     // если замыкание и занятость, дать окантовку замыкания
     if (!state->isExpire() && isBusy() &&  (isZmk() || isPzdRoute() || isMnvRoute()))
@@ -316,6 +322,9 @@ QString  ShapeRc::ObjectInfo()
 // вопрос: когда и как лучше "сливать" отрезки в полилинии: на лету, или после заполнения списка в целом
 void ShapeRc::AddAndMerge()
 {
+    poly.clear();
+    combined = false;
+
     if (sprRc)
     {
         for (int i=0; i<sprRc->shapes.length(); i++)
@@ -323,23 +332,49 @@ void ShapeRc::AddAndMerge()
             ShapeRc * prv = (ShapeRc *)sprRc->shapes[i];
             if (prv->combined)
                 continue;
+
             switch (compareXY(prv, 3))
             {
+                // Начало 1 = Начало 2:  x1y1[1]  == x1y1[2]   -   x2y2[1],x1y1[1],x2y2[2]
                 case 0:
+                        if (qFuzzyCompare(y1, y2))
+                            makePolygon(x2y2(), xy(), prv->x2y2(), prv);        // Merge(X2Y2, XY, shapeRc.X2Y2, shapeRc);
+                        else
+                            makePolygon(prv->x2y2(), prv->xy(), x2y2(), prv);   // Merge(shapeRc.X2Y2, shapeRc.XY, X2Y2, shapeRc);
+                        combined = prv->combined = true;
                         break;
+
+                // Начало 1 = Конец  2:  x1y1[1]  == x2y2[2]   -   x2y2[1],x1y1[1],x1y1[2]
                 case 1:
+                        if (qFuzzyCompare(y1, y2))
+                            makePolygon(xy(), x2y2(), prv->x2y2(), prv);        // Merge(XY, X2Y2, shapeRc.X2Y2, shapeRc);
+                        else
+                            makePolygon(prv->x2y2(), prv->xy(), xy(), prv);     // Merge(shapeRc.X2Y2, shapeRc.XY, XY, shapeRc);
+                        combined = prv->combined = true;
                         break;
+
+                // Конец 1  = Начало 2:  x2y2[1]  == x1y1[2]   -   x1y1[1],x2y2[1],x2y2[2]
                 case 2:
+                        if (qFuzzyCompare(y1, y2))
+                            makePolygon(x2y2(), xy(), prv->xy(), prv);        // Merge(X2Y2, XY, shapeRc.XY, shapeRc);
+                        else
+                            makePolygon(prv->xy(), prv->x2y2(), x2y2(), prv); // Merge(shapeRc.XY, shapeRc.X2Y2, X2Y2, shapeRc);
+                        combined = prv->combined = true;
                         break;
+
+                // Конец 1  = Конец  2:  x2y2[1]  == x2y2[2]   -   x1y1[1],x2y2[1],x1y1[2]
                 case 3:
+                        if (qFuzzyCompare(y1, y2))
+                            makePolygon(xy(), x2y2(), prv->xy(), prv);        // Merge(XY, X2Y2, shapeRc.XY, shapeRc);
+                        else
+                            makePolygon(prv->xy(), prv->x2y2(), xy(), prv); // Merge(shapeRc.XY, shapeRc.X2Y2, XY, shapeRc);
+                        combined = prv->combined = true;
                         break;
             }
         }
         sprRc->AddShape(this);
     }
 }
-
-
 
 
 bool ShapeRc::compareXY(QPointF p1, QPointF p2, qreal delta)
@@ -372,6 +407,9 @@ int ShapeRc::compareXY(ShapeRc* shape, qreal  delta)
 // проверка полного соответствия направляющих стрелок в описании отрезков РЦ
 bool ShapeRc::сompareStrl(ShapeRc *shape)
 {
+    if (sprRc->No()==18)
+        int a = 99;
+
     if (strl.count() == shape->strl.count())
     {
         foreach (LinkedStrl* link, strl)
@@ -389,3 +427,11 @@ bool ShapeRc::сompareStrl(ShapeRc *shape)
     }
     return false;
 }
+
+
+void ShapeRc::makePolygon(QPointF p1, QPointF p2, QPointF p3, ShapeRc * shapeTo)
+{
+    poly << p1 << p2 << p3;
+    combined = shapeTo->combined = true;
+}
+

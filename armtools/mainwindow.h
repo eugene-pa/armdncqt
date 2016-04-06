@@ -40,6 +40,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void timerEvent(QTimerEvent *event);
 
 private slots:
     void on_actionBlackbox_triggered();
@@ -80,6 +81,10 @@ private slots:
 
     void scaleView();
 
+    void on_actionPlay_triggered();
+
+    void on_action_Stop_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -112,6 +117,13 @@ private:
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
     class DlgTrains * dlgTrains;                            // поезда
 
+    // работа с архивом
+    ArhReader * reader;
+    bool bPlay;                                             // воспроизведение вперед
+    bool bPlayBack;                                         // воспроизведение назад
+    int  idTimer;                                           // таймер воспроизведения
+    void readNext();                                        // прочитать и отобразить след.запись в архиве
+    void readPrev();                                        // прочитать и отобразить пред.запись в архиве
 };
 
 #endif // MAINWINDOW_H

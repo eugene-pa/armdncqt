@@ -26,7 +26,6 @@
 //#include <QWidget>
 //#include <QGraphicsView>
 
-
 #define nullptr 0
 
 // определения, облегчающие перенос кода с MSVC&MFC в QT
@@ -42,6 +41,7 @@ typedef const char *    LPCTSTR;
 #define DUBL 2
 #define MAX_TRAINS_ON_PER 5
 #define TRACE(param) qDebug() << param
+// #define TRACE(x) qDebug() << QString::fromWCharArray(x)  - для явно определенного юникода
 
 #define COLORREF QColor
 #define BOOL bool

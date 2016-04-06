@@ -11,7 +11,7 @@
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
 #include "../common/inireader.h"
-
+#include "../spr/streamts.h"
 
 //QVector<ShapeSet *> sets;                                           // массив форм
 
@@ -67,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgKp = nullptr;                                                    // диалог КП
     dlgRoutes = nullptr;                                                // диалог маршрутов
     dlgTrains = nullptr;                                                // поезда
+
+    reader = nullptr;
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
@@ -374,4 +376,63 @@ void MainWindow::scaleView()
 void MainWindow::on_action_ToolBar2_triggered()
 {
     ui->toolBar2->setVisible(ui->action_ToolBar2->isChecked());
+}
+
+
+// --------------------------------------------- Работа с архивом ----------------------------
+
+// нажатие кнопки "Воспроизведение" (">")
+void MainWindow::on_actionPlay_triggered()
+{
+    bPlay = ui->actionPlay->isChecked();
+    if (bPlay)
+    {
+        reader = new ArhReader("c:/armdncqt/bd/temp/@_0.arh");
+        bPlayBack = false;
+        ui->actionNext->setEnabled(false);
+        ui->actionPrev->setEnabled(false);
+        ui->actionReverce->setEnabled(false);
+        ui->action_Stop->setEnabled(true);
+        idTimer = startTimer(500);
+    }
+}
+
+// нажатие кнопки "СТОП" ("||")
+void MainWindow::on_action_Stop_triggered()
+{
+    bPlay = bPlayBack = false;
+    ui->actionNext->setEnabled(true);
+    ui->actionPrev->setEnabled(true);
+    ui->actionReverce->setEnabled(true);
+    ui->action_Stop->setEnabled(false);
+    killTimer(idTimer);
+}
+
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    qDebug() << "Таймер" << event->timerId();
+    if (bPlay)
+        readNext();
+    else
+    if (bPlayBack)
+        readPrev();
+}
+
+// прочитать и отобразить след.запись в архиве
+void MainWindow::readNext()
+{
+    qDebug() << "Следующая запись";
+    if (reader != nullptr)
+    {
+        reader->Next();
+        // обработать данные
+        DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
+        data->Extract(reader->Length());
+    }
+}
+
+// прочитать и отобразить пред.запись в архиве
+void MainWindow::readPrev()
+{
+    qDebug() << "Предыдущая запись";
 }

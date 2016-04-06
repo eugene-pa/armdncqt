@@ -30,7 +30,7 @@ ArhReader::~ArhReader()
 }
 
 // конструктор ридера
-ArhReader::ArhReader(QString& filename)
+ArhReader::ArhReader(QString filename)
 {
     this->filename = filename;
     dir = QFileInfo(filename).absoluteDir();
