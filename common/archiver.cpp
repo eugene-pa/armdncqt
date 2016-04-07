@@ -32,14 +32,22 @@ ArhReader::~ArhReader()
 // конструктор ридера
 ArhReader::ArhReader(QString filename)
 {
-    this->filename = filename;
     dir = QFileInfo(filename).absoluteDir();
     ext = QFileInfo(filename).suffix();
     QRegularExpressionMatch match = QRegularExpression(".+\\D+(?=\\d+\\..+)").match(filename);
     if (match.hasMatch())
         prefix = match.captured();
+    this->filename = filename;
     file.setFileName(filename);
     file.open(QIODevice::ReadOnly);
+}
+
+// конструктор для чтения
+ArhReader::ArhReader(QString dir, QString prefix)
+{
+    this->dir = dir;
+    this->prefix = prefix;
+    ext = "arh";
 }
 
 // чтение записи от текущего положения указателя
@@ -52,7 +60,19 @@ int ArhReader::Next()
         if (header.offset != *((int *)(data+length-4)))     // проверяем соответствие смещения записи указателю на начало записи за данными
             qDebug() << "Нарушение формата архива";
     }
-    return length == Length() ? length : -1;
+    return length - 4 == Length() ? length : -1;
+}
+
+// чтение записи по дате >= заданной
+int ArhReader::Read (QDateTime t)
+{
+    do
+    {
+        if (Next() < 0)
+            return -1;
+
+    }
+    while (header.time < t.toTime_t());
 }
 
 // чтение записи от текущего положения указателя
@@ -77,4 +97,13 @@ int ArhReader::Prev()
     file.read((char *)&pos, 4);
     file.seek(pos);
     return Next();
+}
+
+// получить архивное имя по дате и времени
+QString ArhReader::getArhName(QDateTime t)
+{
+    filename = QString("%1/%2%3.arh").arg(dir.path()).arg(prefix).arg(t.time().hour());
+    file.setFileName(filename);
+    file.open(QIODevice::ReadOnly);
+    return filename;
 }

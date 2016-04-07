@@ -41,16 +41,22 @@ class ArhReader
 {
 public:
     ArhReader(QString filename);                            // конструктор для чтения
+    ArhReader(QString dir, QString prefix);                 // конструктор для чтения
     ~ArhReader();
     int Next ();                                            // чтение записи от текущего положения указателя
     int First();                                            // чтение первой записи
     int Last ();                                            // чтение последней записи
     int Prev ();                                            // чтение предыдущей записи
     int Read (UINT);                                        // чтение записи по дате >= заданной
+    int Read (QDateTime);                                   // чтение записи по дате >= заданной
     int Read (int);                                         // чтение записи по индексу (номеру-1)
 
     char * Data() { return data; }
     int  Length() { return header.Length(); }
+    UINT time()   { return header.time; }                   // временная метка записи
+
+    QString getArhName(QDateTime);                          // получить имя архива по дате
+
 private:
     ArchiveHeader header;                                   // заголовок
     QDir    dir;                                            // папка для чтения

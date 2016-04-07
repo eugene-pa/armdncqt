@@ -23,6 +23,7 @@ QString baseDir;
     Logger logger("Log/shaper.txt", true, true);
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
+    QString pathTemp ("c:/armdncqt/bd/temp/");
     QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
     QString formDir("C:/armdncqt/pictures/");
     QString images(":/status/images/");                                   // путь к образам
@@ -32,6 +33,7 @@ QString baseDir;
     Logger logger("/Users/evgenyshmelev/armdncqt/Log/shaper.txt", true, true);
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
     QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
+    QString pathTemp ("/Users/evgenyshmelev/armdncqt/bd/temp/");
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
     QString formDir("/Users/evgenyshmelev/armdncqt/Pictures/");
     QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
@@ -41,6 +43,7 @@ QString baseDir;
     Logger logger("/home/eugene/QTProjects/armdncqt/Log/shaper.txt", true, true);
     QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
     QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
+    QString pathTemp ("home/eugene/QTProjects/armdncqt/bd/temp/");
     QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
     QString formDir  ("/home/eugene/QTProjects/armdncqt/pictures/");
     QString images("../images/");                                   // путь к образам
@@ -382,18 +385,29 @@ void MainWindow::on_action_ToolBar2_triggered()
 // --------------------------------------------- Работа с архивом ----------------------------
 
 // нажатие кнопки "Воспроизведение" (">")
+// надо воспроизводить архив с заданного времени
 void MainWindow::on_actionPlay_triggered()
 {
     bPlay = ui->actionPlay->isChecked();
     if (bPlay)
     {
-        reader = new ArhReader("c:/armdncqt/bd/temp/@_0.arh");
+        //reader = new ArhReader("c:/armdncqt/bd/temp/@_0.arh");
+        QDate d = dateEdit->date();
+        QTime t = timeEdit->time();
+        QDateTime dt (QDateTime(d,t));
+        reader = new ArhReader(pathTemp,"@_");
+        QString filename = reader->getArhName(dt);
+        reader->Read(dt);
+
+        idTimer = startTimer(1000);
+
         bPlayBack = false;
         ui->actionNext->setEnabled(false);
         ui->actionPrev->setEnabled(false);
         ui->actionReverce->setEnabled(false);
         ui->action_Stop->setEnabled(true);
-        idTimer = startTimer(500);
+        dateEdit->setEnabled(false);
+        timeEdit->setEnabled(false);
     }
 }
 
@@ -406,6 +420,8 @@ void MainWindow::on_action_Stop_triggered()
     ui->actionReverce->setEnabled(true);
     ui->action_Stop->setEnabled(false);
     killTimer(idTimer);
+    dateEdit->setEnabled(true);
+    timeEdit->setEnabled(true);
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
@@ -427,6 +443,9 @@ void MainWindow::readNext()
         reader->Next();
         // обработать данные
         DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
+        QDateTime t = QDateTime::fromTime_t(reader->time());
+        dateEdit->setDate(t.date());
+        timeEdit->setTime(t.time());
         data->Extract(reader->Length());
     }
 }
