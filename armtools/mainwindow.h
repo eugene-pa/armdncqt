@@ -15,6 +15,7 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QtMath>
+#include <QLayout>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -42,9 +43,14 @@ public:
     ~MainWindow();
     void timerEvent(QTimerEvent *event);
 
+    static bool blackBoxMode;                               // включен режима просмотра архива
+
 private slots:
     void on_actionBlackbox_triggered();
-    void stationSelected(int index);
+    void stationSelected(int index);                        // выбор станции
+    void tsToggled(bool);                                   // щелчок флажка поиск изменений ТС
+    void tsSelected();                                      // выбор ТС
+    void linkToggled(bool);                                 // щелчок флажка поиск изменений ТС
 
     void connected   (ClientTcp *);                         // установлено соединение
     void disconnected(ClientTcp *);                         // разорвано соединение
@@ -85,6 +91,8 @@ private slots:
 
     void on_action_Stop_triggered();
 
+    void on_action_Toolbar_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -100,9 +108,14 @@ private:
     QCalendarWidget* calendar;                              // пристегиваемый календарь выбора даты
     QSpinBox * stepValue;                                   // задание шага смещений в архиве, мин
     QLabel   * labelStep;
-    QLabel   * labelTemp;
+    QLabel   * labelTemp;                                   // Темп и диапазон
+    QLabel   * labelTemp2;
     QSlider  * sliderTemp;                                  // слайдер темпа воспроизведения
     QSlider  * sliderScale;                                 // слайдер масштабирования
+
+    QCheckBox* checkFindTs;                                 // флажок Поиск изменений ТС
+    QComboBox* cmbTs;                                       // комбо-бокс выбора ТС
+    QCheckBox* checkFindLink;                               // флажок Поиск изменений состояния связи
 
     QLabel hostStatus;
 
@@ -116,14 +129,19 @@ private:
     class DlgKPinfo * dlgKp;                                // состояние  КП
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
     class DlgTrains * dlgTrains;                            // поезда
+    class DlgStationsInfo * dlgStations;                    // станции
 
     // работа с архивом
+    QDateTime arhDateTime;                                  // дата/время архивного файла
     ArhReader * reader;
     bool bPlay;                                             // воспроизведение вперед
     bool bPlayBack;                                         // воспроизведение назад
     int  idTimer;                                           // таймер воспроизведения
     void readNext();                                        // прочитать и отобразить след.запись в архиве
     void readPrev();                                        // прочитать и отобразить пред.запись в архиве
+
+    bool isFindTsChanges() { return checkFindTs->isChecked(); }     // режим поиска ТС ?
+    bool isFindLinkErrors(){ return checkFindLink->isChecked(); }   // режим поиска ошибок связи ?
 };
 
 #endif // MAINWINDOW_H

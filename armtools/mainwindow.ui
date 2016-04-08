@@ -67,8 +67,7 @@
     <property name="title">
      <string>Вид</string>
     </property>
-    <addaction name="action_19"/>
-    <addaction name="separator"/>
+    <addaction name="action_Toolbar"/>
     <addaction name="action_ToolBar2"/>
     <addaction name="separator"/>
     <addaction name="action_More"/>
@@ -302,8 +301,11 @@
     <string>Откат к предыдущей версии</string>
    </property>
   </action>
-  <action name="action_19">
+  <action name="action_Toolbar">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
@@ -336,7 +338,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Панель масштабирования</string>
+    <string>Расширенная панель управления</string>
    </property>
   </action>
   <action name="action_Stop">

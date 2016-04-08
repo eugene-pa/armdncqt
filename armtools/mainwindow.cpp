@@ -13,20 +13,22 @@
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
 
-//QVector<ShapeSet *> sets;                                           // массив форм
+//QVector<ShapeSet *> sets;                                 // массив форм
 
-//QString server_ipport = "192.168.0.101:1010";                       // подключение к потоку ТС из настроечного файла
-QString server_ipport = "192.168.0.100:1013";                       // подключение к потоку ТС из настроечного файла
+//QString server_ipport = "192.168.0.101:1010";             // подключение к потоку ТС из настроечного файла
+QString server_ipport = "192.168.0.100:1013";               // подключение к потоку ТС из настроечного файла
 QString baseDir;
+
+bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
     Logger logger("Log/shaper.txt", true, true);
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString pathTemp ("c:/armdncqt/bd/temp/");
-    QString form  ("C:/armdncqt/pictures/Назаровский.shp");         // Табло1
+    QString form  ("C:/armdncqt/pictures/Назаровский.shp"); // Табло1
     QString formDir("C:/armdncqt/pictures/");
-    QString images(":/status/images/");                                   // путь к образам
+    QString images(":/status/images/");                     // путь к образам
     QString iniFile = "c:/armdncqt/shaper/shaper.ini";
 #endif
 #ifdef Q_OS_MAC
@@ -66,10 +68,11 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgTs = nullptr;                                                    // состояние ТС
     dlgTu = nullptr;                                                    // состояние ТУ
     dlgRc = nullptr;                                                    // состояние РЦ
-    dlgStrl = nullptr;
+    dlgStrl = nullptr;                                                  // состояние стрелок
     dlgKp = nullptr;                                                    // диалог КП
     dlgRoutes = nullptr;                                                // диалог маршрутов
     dlgTrains = nullptr;                                                // поезда
+    dlgStations = nullptr;                                              // станции
 
     reader = nullptr;
 
@@ -97,43 +100,34 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
+    // динамическое формирование элементов тулбара
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
-    ui->mainToolBar->insertWidget(ui->actionBlackbox, StationsCmb = new QComboBox);
-    ui->mainToolBar->insertWidget(ui->actionPrev, dateEdit = new QDateEdit(QDate::currentDate()));
-    dateEdit->setCalendarWidget(calendar = new QCalendarWidget());
+    ui->mainToolBar->insertWidget(ui->actionBlackbox, StationsCmb = new QComboBox);                 // "Черный ящик"
+    ui->mainToolBar->insertWidget(ui->actionPrev, dateEdit = new QDateEdit(QDate::currentDate()));  // Дата
+    dateEdit->setCalendarWidget(calendar = new QCalendarWidget());                                  // Календарь
     dateEdit->setCalendarPopup(true);
-    ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));
+    ui->mainToolBar->insertWidget(ui->actionPrev,new QLabel(" "));                                  // Пробнл
+    ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));  // Время
 
-    ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));
+
+
+    ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));                             // Шаг по минутам
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
 
-    ui->mainToolBar->addWidget(labelTemp = new QLabel("     Темп,X:  1:1 "));
-    ui->mainToolBar->addWidget(sliderTemp = new QSlider(Qt::Horizontal));
-    ui->mainToolBar->addWidget(labelTemp = new QLabel(" 10:1"));
+    ui->mainToolBar->addWidget(labelTemp = new QLabel("     Темп,X:  1:1 "));                       // Темп
+    ui->mainToolBar->addWidget(sliderTemp = new QSlider(Qt::Horizontal));                           // Задатчик-слайдер
+    ui->mainToolBar->addWidget(labelTemp2 = new QLabel(" 10:1"));
     sliderTemp->setTickPosition(QSlider::TicksAbove);
     sliderTemp->setFixedWidth(180);
     sliderTemp->setRange(1,10);
     sliderTemp->setValue(1);
     sliderTemp->setTickInterval(1);
 
-    on_actionBlackbox_triggered();
-
     ui->mainToolBar->setBaseSize(800,36);
 
     calendar->hide();
     timeEdit->setDisplayFormat("hh:mm:ss");
 
-
-    foreach (Station * st, Station::Stations.values())
-    {
-        foreach (ShapeId * p, st->formList)
-          {
-              StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
-          }
-    }
-    QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
-    StationsCmb->model()->sort(0);
-    StationsCmb->setCurrentIndex(0);
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
@@ -145,6 +139,11 @@ MainWindow::MainWindow(QWidget *parent) :
     clientTcp->start();
 //    scale = 1;
 
+
+    // динамическое формирование расширенного тулбара
+    // 1 - масштабирование
+    // 2 - поиск изменений ТС
+    // 3 - поиск ошибок связи
     ui->toolBar2->addWidget(new QLabel("Масштаб:  ", ui->toolBar2));
     ui->toolBar2->addWidget(sliderScale = new QSlider(Qt::Horizontal, ui->toolBar2));
     sliderScale->setMinimum(-50);
@@ -152,11 +151,43 @@ MainWindow::MainWindow(QWidget *parent) :
     sliderScale->setValue(0);
     sliderScale->setTickPosition(QSlider::TicksAbove);
     sliderScale->setFixedWidth(180);
-
     connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
+
+    // 2
+    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
+    ui->toolBar2->addWidget(checkFindTs = new QCheckBox(" Изменение ТС", ui->toolBar2));
+    checkFindTs->setLayoutDirection(Qt::RightToLeft);
+    QObject::connect(checkFindTs, SIGNAL(toggled(bool)), SLOT(tsToggled(bool)));        // флажок ТС
+
+    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
+    ui->toolBar2->addWidget(cmbTs = new QComboBox);
+    QObject::connect(cmbTs, SIGNAL(currentIndexChanged(int)), SLOT(tsSelected(int)));   // выбор ТС
+    cmbTs->setMaxVisibleItems(30);
+    cmbTs->setEnabled(false);
+
+    // 3
+    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
+    ui->toolBar2->addWidget(checkFindLink = new QCheckBox(" Ош.связи", ui->toolBar2));
+    checkFindLink->setLayoutDirection(Qt::RightToLeft);
+    QObject::connect(checkFindLink, SIGNAL(toggled(bool)), SLOT(linkToggled(bool)));    // флажок ТС
 
     ui->toolBar2->setVisible(false);
 
+    on_actionBlackbox_triggered();
+
+    foreach (Station * st, Station::Stations.values())
+    {
+        foreach (ShapeId * p, st->formList)
+          {
+              StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
+          }
+    }
+    QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
+    StationsCmb->model()->sort(0);
+    StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
+
+    idTimer = startTimer(1000);
+    arhDateTime = QDateTime::currentDateTime();
 }
 
 MainWindow::~MainWindow()
@@ -190,21 +221,6 @@ void MainWindow::loadResources()
 
 }
 
-void MainWindow::on_actionBlackbox_triggered()
-{
-    bool blackbox = ui->actionBlackbox->isChecked();
-    dateEdit         ->setEnabled(blackbox);
-    timeEdit         ->setEnabled(blackbox);
-    ui->actionPrev   ->setEnabled(blackbox);
-    ui->actionReverce->setEnabled(blackbox);
-    ui->actionPlay   ->setEnabled(blackbox);
-    ui->actionNext   ->setEnabled(blackbox);
-    ui->action_Stop  ->setEnabled(blackbox);
-    stepValue        ->setEnabled(blackbox);
-    labelStep        ->setEnabled(blackbox);
-    sliderTemp       ->setEnabled(blackbox);
-}
-
 
 // выбор станции в списке
 void MainWindow::stationSelected(int index)
@@ -213,6 +229,11 @@ void MainWindow::stationSelected(int index)
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
     g_actualStation = shapeId->St();
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
+
+    cmbTs->clear();
+    foreach (Ts *ts, g_actualStation->TsSorted)
+        cmbTs->addItem(ts->Name());
+    cmbTs->setCurrentIndex(-1);
 
     emit changeStation(g_actualStation);
 }
@@ -248,8 +269,11 @@ void MainWindow::dataready   (ClientTcp * client)
     client->SendAck();                                      // квитирование
 
     // обработка данных
-    DDataFromMonitor * pDtMntr = (DDataFromMonitor *)client->RawData();
-    pDtMntr->Extract(client->RawLength());
+    if (!blackBoxMode)
+    {
+        DDataFromMonitor * pDtMntr = (DDataFromMonitor *)client->RawData();
+        pDtMntr->Extract(client->RawLength());
+    }
 }
 
 // получены необрамленные данные - отдельный сигнал
@@ -345,7 +369,13 @@ void MainWindow::on_action_SVTF_triggered()
 
 void MainWindow::on_action_Stations_triggered()
 {
-
+    if (dlgStations == nullptr)
+    {
+        dlgStations = new DlgStationsInfo(this);
+        dlgStations->show();
+    }
+    else
+        dlgStations->setVisible(!dlgStations->isVisible());
 }
 
 
@@ -375,6 +405,12 @@ void MainWindow::scaleView()
     child->setMatrix(matrix);
 }
 
+// вкл/откл тулбар
+void MainWindow::on_action_Toolbar_triggered()
+{
+    ui->mainToolBar->setVisible(ui->action_Toolbar->isChecked());
+}
+
 // вкл/откл панели масштабирования
 void MainWindow::on_action_ToolBar2_triggered()
 {
@@ -383,6 +419,52 @@ void MainWindow::on_action_ToolBar2_triggered()
 
 
 // --------------------------------------------- Работа с архивом ----------------------------
+// щелчок флажка поиск изменений ТС
+void MainWindow::tsToggled(bool checked)
+{
+    cmbTs->setEnabled(checked);
+    if (!checked)
+        cmbTs->setCurrentIndex(-1);
+}
+
+// выбор ТС
+void MainWindow::tsSelected()
+{
+    if (isFindTsChanges())
+        cmbTs->showPopup();
+}
+
+// щелчок флажка поиск изменений ТС
+void MainWindow::linkToggled(bool)
+{
+
+}
+
+
+void MainWindow::on_actionBlackbox_triggered()
+{
+    blackBoxMode = ui->actionBlackbox->isChecked();
+    dateEdit         ->setEnabled(blackBoxMode);
+    timeEdit         ->setEnabled(blackBoxMode);
+    ui->actionPrev   ->setEnabled(blackBoxMode);
+    ui->actionReverce->setEnabled(blackBoxMode);
+    ui->actionPlay   ->setEnabled(blackBoxMode);
+    ui->actionNext   ->setEnabled(blackBoxMode);
+    ui->action_Stop  ->setEnabled(blackBoxMode);
+    stepValue        ->setEnabled(blackBoxMode);
+    labelStep        ->setEnabled(blackBoxMode);
+    labelTemp        ->setEnabled(blackBoxMode);
+    labelTemp2       ->setEnabled(blackBoxMode);
+    sliderTemp       ->setEnabled(blackBoxMode);
+    checkFindTs      ->setEnabled(blackBoxMode);
+    cmbTs            ->setEnabled(blackBoxMode && checkFindTs->isChecked());
+    checkFindLink    ->setEnabled(blackBoxMode);
+    if (blackBoxMode)
+    {
+        dateEdit->setDate(arhDateTime.date());
+        timeEdit->setTime(arhDateTime.time());
+    }
+}
 
 // нажатие кнопки "Воспроизведение" (">")
 // надо воспроизводить архив с заданного времени
@@ -394,12 +476,14 @@ void MainWindow::on_actionPlay_triggered()
         //reader = new ArhReader("c:/armdncqt/bd/temp/@_0.arh");
         QDate d = dateEdit->date();
         QTime t = timeEdit->time();
-        QDateTime dt (QDateTime(d,t));
+        arhDateTime = QDateTime(d,t);
         reader = new ArhReader(pathTemp,"@_");
-        QString filename = reader->getArhName(dt);
-        reader->Read(dt);
 
-        idTimer = startTimer(1000);
+        QString filename = reader->getArhName(arhDateTime);
+        // где-то здесь надо сделать анализ наличия файла данных и реальной даты ,
+        // и, в случае несовпадения - поиск и разархивирование сжатого архива, и, при необходимости, -
+        // предварительную подкачку архивного файла с сервера
+        reader->Read(arhDateTime);
 
         bPlayBack = false;
         ui->actionNext->setEnabled(false);
@@ -409,29 +493,41 @@ void MainWindow::on_actionPlay_triggered()
         dateEdit->setEnabled(false);
         timeEdit->setEnabled(false);
     }
+    else
+        on_action_Stop_triggered();
 }
 
 // нажатие кнопки "СТОП" ("||")
 void MainWindow::on_action_Stop_triggered()
 {
+    ui->actionPlay->setChecked(false);
     bPlay = bPlayBack = false;
     ui->actionNext->setEnabled(true);
     ui->actionPrev->setEnabled(true);
     ui->actionReverce->setEnabled(true);
     ui->action_Stop->setEnabled(false);
-    killTimer(idTimer);
+
+    // killTimer(idTimer);
     dateEdit->setEnabled(true);
     timeEdit->setEnabled(true);
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
 {
-    qDebug() << "Таймер" << event->timerId();
-    if (bPlay)
-        readNext();
+    //qDebug() << "Таймер" << event->timerId();
+    if (blackBoxMode)
+    {
+        if (bPlay)
+            readNext();
+        else
+        if (bPlayBack)
+            readPrev();
+    }
     else
-    if (bPlayBack)
-        readPrev();
+    {
+        dateEdit->setDate(QDate::currentDate());
+        timeEdit->setTime(QTime::currentTime());
+    }
 }
 
 // прочитать и отобразить след.запись в архиве
@@ -455,3 +551,5 @@ void MainWindow::readPrev()
 {
     qDebug() << "Предыдущая запись";
 }
+
+
