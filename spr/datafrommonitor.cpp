@@ -81,6 +81,8 @@ void DDataFromMonitor::ExtractStInfo (KrugInfo * krug)
             }
 
             pSt = pStData->Extract(pSt, this, NULL);        // извлекакем данные
+
+            // если находимя в режиме поиска событий в архиве - можно не обрабатывать данные
             if (pSt)
                 pSt->AcceptTS();                            // обрабатываем станцию
 

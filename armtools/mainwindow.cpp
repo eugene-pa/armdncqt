@@ -531,18 +531,34 @@ void MainWindow::timerEvent(QTimerEvent *event)
 }
 
 // прочитать и отобразить след.запись в архиве
-void MainWindow::readNext()
+// если задан шаг - смещение на заданное время
+// если не заданы условия поиска - смещаемся вплоть до любого изменения состояния ТС или связи на станции
+// если задано условие поиска (ТС или связь) - ищем изменение конкретного ТС или состояния связи
+void MainWindow::readNext(bool findChanges)     // =false
 {
     qDebug() << "Следующая запись";
     if (reader != nullptr)
     {
-        reader->Next();
-        // обработать данные
-        DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
-        QDateTime t = QDateTime::fromTime_t(reader->time());
-        dateEdit->setDate(t.date());
-        timeEdit->setTime(t.time());
-        data->Extract(reader->Length());
+        Station::FastScanArchive = isExtFind();
+        while (true)
+        {
+            // если задан шаг - смещение на заданное время
+            int dt = stepValue->value();
+            if (dt > 0)
+                reader->Read(QDateTime::fromTime_t(reader->time() + dt*60));
+            else
+                reader->Next();
+            // обработать данные
+            DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
+            QDateTime t = QDateTime::fromTime_t(reader->time());
+            dateEdit->setDate(t.date());
+            timeEdit->setTime(t.time());
+            data->Extract(reader->Length());
+
+            // если шаг по времени или не ищем изменения или изменения есть - выход из цикла
+            if (dt || !findChanges || (!isExtFind() && g_actualStation->IsTsChanged()))
+                break;                                      // нашли измененные ТС
+        }
     }
 }
 
@@ -553,3 +569,14 @@ void MainWindow::readPrev()
 }
 
 
+// обработка кнопки шаг вперед
+void MainWindow::on_actionNext_triggered()
+{
+    readNext(true);
+}
+
+// обработка кнопки шаг назад
+void MainWindow::on_actionPrev_triggered()
+{
+
+}

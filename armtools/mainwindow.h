@@ -93,6 +93,10 @@ private slots:
 
     void on_action_Toolbar_triggered();
 
+    void on_actionNext_triggered();
+
+    void on_actionPrev_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -137,9 +141,10 @@ private:
     bool bPlay;                                             // воспроизведение вперед
     bool bPlayBack;                                         // воспроизведение назад
     int  idTimer;                                           // таймер воспроизведения
-    void readNext();                                        // прочитать и отобразить след.запись в архиве
+    void readNext(bool findChanges=false);                  // прочитать и отобразить след.запись в архиве
     void readPrev();                                        // прочитать и отобразить пред.запись в архиве
 
+    bool isExtFind() { return isFindTsChanges() || isFindLinkErrors(); }
     bool isFindTsChanges() { return checkFindTs->isChecked(); }     // режим поиска ТС ?
     bool isFindLinkErrors(){ return checkFindLink->isChecked(); }   // режим поиска ошибок связи ?
 };

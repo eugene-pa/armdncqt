@@ -22,6 +22,7 @@
 #include "dras.h"
 #include "datafrommonitor.h"
 #include "dstdatafromfonitor.h"
+#include "sysinfo.h"
 
 
 class Station : public QObject
@@ -38,6 +39,8 @@ public:
     static bool InputStreamRss;                             // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
     static short	MainLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
     static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
+
+    static bool FastScanArchive;                            // быстрый просмотр архива - данные по объектам не обрабатываются
 
     // открытые статические функции
     //static Station * GetById(int no);                       // получить справочник по номеру станции
@@ -177,6 +180,10 @@ public:
     bool  IsKpOk() { return stsKpOk; }                      // проверка работоспособности КП
     bool IsOrientEvnOdd() { return orient.indexOf("ЧН") >= 0; }
 
+    bool IsTsChanged();                                     // проверка были ли изменения ТС с прошлого цикла опроса
+    bool IsLinkOk();                                        // состояние связи в последнем циклн опроса ОК
+    bool IsLinkStatusChanged();                             // проверка изменения состояния связи со станцией с пред.цикла опроса
+
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
@@ -241,6 +248,7 @@ private:
     QBitArray tsSts;                                        // обработанный массив ТС
 
     bool stsKpOk;                                           // состояние КП = ОК
+    bool stsLinkOkPrv;                                      // связь ОК в пред.цикле опроса
 
     // динамические переменные состояния объекта
     bool    stsActual;                                      // станция выбрана ДНЦ для работы

@@ -7,6 +7,7 @@ static DStDataFromMonitor ActualStData;                     // статичес�
 // сформировать данные
 int DStDataFromMonitor::Prepare(Station * pSt)
 {
+    pSt->stsLinkOkPrv = pSt->IsLinkOk();
     memset(this, 0, sizeof(DStDataFromMonitor));
 
     // т.к.класс Station имееем friend class DStDataFromMonitor, имеем доступ к закрытым членам

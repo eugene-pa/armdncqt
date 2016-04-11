@@ -23,6 +23,7 @@ bool    Station::InputStreamRss = false;                    // тип входн
 
 short	Station::MainLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
 short	Station::RsrvLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
+bool    Station::FastScanArchive;                           // быстрый просмотр архива - данные по объектам не обрабатываются
 
 // конструктор принимает на входе запись из таблицы Stations
 Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
@@ -583,6 +584,25 @@ bool Station::GetTsStsByName (QString name)
     return Ts.contains(name) ? Ts[name]->Sts() : false;
 }
 
+
+// проверка состояния связи в последнем цикле опроса
+bool Station::IsLinkOk()
+{
+    return GetSysInfo(stsRsrv)->linestatus==0;
+}
+
+// проверка изменения состояния связи со станцией с пред.цикла опроса
+bool Station::IsLinkStatusChanged()
+{
+    return IsLinkOk() == stsLinkOkPrv;
+}
+
+// проверка были ли изменения ТС с прошлого цикла опроса
+bool Station::IsTsChanged()
+{
+    return !(tsStsRaw == tsStsRawPrv && tsStsPulse == tsStsPulsePrv);
+}
+
 // поддерживается ли расширенный блок диагностики
 bool Station::IsSupportKpExt (bool rsrv)
 {
@@ -989,8 +1009,11 @@ bool Station::IsTsExpire()
 // Надо уметь различать первичную обработку потока данных от станции связи (модуль Управление или аналоги)
 // и вторичную обработку уже обработанного потока двнных (модуль АРМ ШН, Табло и др)
 // Вместо использования определений препроцессора "MONITOR" и т.п. использую статическую переменную режиа опроса bRawData;
+// если находимя в режиме поиска событий в архиве - можно не обрабатывать данные
 void Station::AcceptTS   ()
 {
+    if (FastScanArchive)
+        return;
     lastAcceptedTsTime = QDateTime::currentDateTime();      // засечка времени опроса
     errorLockLogicCount = 0;                                // сброс ошибок лог.контроля (посчитаем заново)
 
