@@ -153,6 +153,8 @@ public:
     bool GetTsStsRawByIndex  (int indx);                    // получить оригинальное состояние сигнала в марице ТС
 
     bool GetTsStsByName      (QString name);                // получить состояние сигнала по имени
+    bool GetTsPulseStsByName (QString name);                // получить состояние мигания сигнала по имени
+    int  GetTsStsByNameEx    (QString name);                // d0 - состояние, d1 - мигание
 
     // таблицы ТС по станции (перенести в protected)
     QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС

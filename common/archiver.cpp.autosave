@@ -74,7 +74,7 @@ int ArhReader::Read (QDateTime t)
         // если разница более 1 часа - не найдем
         UINT trq = t.toTime_t();
         int dt = trq - time();
-        if (qFabs(t.toTime_t() - time()) > 3600)
+        if (qAbs(t.toTime_t() - time()) > 3600)
             return -1;
     }
     while (header.time < t.toTime_t());

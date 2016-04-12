@@ -584,6 +584,18 @@ bool Station::GetTsStsByName (QString name)
     return Ts.contains(name) ? Ts[name]->Sts() : false;
 }
 
+// получить состояние мигания сигнала по имени
+bool Station::GetTsPulseStsByName (QString name)
+{
+    return Ts.contains(name) ? Ts[name]->StsPulse() : false;
+}
+
+// d0 - состояние, d1 - мигание
+int Station::GetTsStsByNameEx (QString name)
+{
+   return  GetTsStsByName (name) | (GetTsPulseStsByName (name) << 1);
+}
+
 
 // проверка состояния связи в последнем цикле опроса
 bool Station::IsLinkOk()

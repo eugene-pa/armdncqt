@@ -188,6 +188,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     idTimer = startTimer(1000);
     arhDateTime = QDateTime::currentDateTime();
+    reader = new ArhReader(pathTemp,"@_");
 }
 
 MainWindow::~MainWindow()
@@ -473,17 +474,20 @@ void MainWindow::on_actionPlay_triggered()
     bPlay = ui->actionPlay->isChecked();
     if (bPlay)
     {
-        //reader = new ArhReader("c:/armdncqt/bd/temp/@_0.arh");
-        QDate d = dateEdit->date();
-        QTime t = timeEdit->time();
-        arhDateTime = QDateTime(d,t);
-        reader = new ArhReader(pathTemp,"@_");
-
-        QString filename = reader->getArhName(arhDateTime);
         // где-то здесь надо сделать анализ наличия файла данных и реальной даты ,
         // и, в случае несовпадения - поиск и разархивирование сжатого архива, и, при необходимости, -
         // предварительную подкачку архивного файла с сервера
-        reader->Read(arhDateTime);
+
+        arhDateTime = QDateTime(dateEdit->date(),timeEdit->time());
+        reader->getArhName(arhDateTime);                    // определение файла для чтения и инициализация
+        int ret = reader->Read(arhDateTime);
+        if (ret == -1)
+        {
+            // не нашли; проблема с датой, нужна подкачка нужного файла
+            ui->actionPlay->setChecked(false);
+            bPlay = false;
+            return;
+        }
 
         bPlayBack = false;
         ui->actionNext->setEnabled(false);
@@ -534,8 +538,14 @@ void MainWindow::timerEvent(QTimerEvent *event)
 // если задан шаг - смещение на заданное время
 // если не заданы условия поиска - смещаемся вплоть до любого изменения состояния ТС или связи на станции
 // если задано условие поиска (ТС или связь) - ищем изменение конкретного ТС или состояния связи
-void MainWindow::readNext(bool findChanges)     // =false
+bool MainWindow::readNext(bool findChanges)     // =false
 {
+    int sts;
+    int ret;
+
+    if (findChanges && isFindTsChanges())
+        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText());
+
     qDebug() << "Следующая запись";
     if (reader != nullptr)
     {
@@ -545,21 +555,40 @@ void MainWindow::readNext(bool findChanges)     // =false
             // если задан шаг - смещение на заданное время
             int dt = stepValue->value();
             if (dt > 0)
-                reader->Read(QDateTime::fromTime_t(reader->time() + dt*60));
+                ret = reader->Read(QDateTime::fromTime_t(reader->time() + dt*60));
             else
-                reader->Next();
+                ret = reader->Next();
+            if (ret==-1)
+            {
+                // переход на след.файл/сутки/подкачка
+                break;
+            }
+
             // обработать данные
             DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
             QDateTime t = QDateTime::fromTime_t(reader->time());
             dateEdit->setDate(t.date());
             timeEdit->setTime(t.time());
             data->Extract(reader->Length());
+            QApplication::processEvents();
 
             // если шаг по времени или не ищем изменения или изменения есть - выход из цикла
             if (dt || !findChanges || (!isExtFind() && g_actualStation->IsTsChanged()))
                 break;                                      // нашли измененные ТС
+            // поиск изменения статуса связи
+            if (findChanges && isFindLinkErrors() && g_actualStation->IsLinkStatusChanged())
+                break;
+            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText()))
+                 break;
+        }
+
+        if (Station::FastScanArchive)
+        {
+            Station::FastScanArchive = false;
+            g_actualStation->AcceptTS();
         }
     }
+    return ret > 0;
 }
 
 // прочитать и отобразить пред.запись в архиве
@@ -572,7 +601,10 @@ void MainWindow::readPrev()
 // обработка кнопки шаг вперед
 void MainWindow::on_actionNext_triggered()
 {
-    readNext(true);
+    if (readNext(true) < 0)
+    {
+        // не согли найти очередной архив
+    }
 }
 
 // обработка кнопки шаг назад
