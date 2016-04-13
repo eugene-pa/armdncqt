@@ -30,6 +30,8 @@ bool MainWindow::blackBoxMode;                              // включен р
     QString formDir("C:/armdncqt/pictures/");
     QString images(":/status/images/");                     // путь к образам
     QString iniFile = "c:/armdncqt/shaper/shaper.ini";
+    QString compressor = "c:/bin/zip.exe";                  // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "c:/bin/unzip.exe";              // утилита для распаковки архивов
 #endif
 #ifdef Q_OS_MAC
     Logger logger("/Users/evgenyshmelev/armdncqt/Log/shaper.txt", true, true);
@@ -420,6 +422,7 @@ void MainWindow::on_action_ToolBar2_triggered()
 
 
 // --------------------------------------------- Работа с архивом ----------------------------
+//                                           можно вынести в отд.файл
 // щелчок флажка поиск изменений ТС
 void MainWindow::tsToggled(bool checked)
 {
@@ -518,6 +521,8 @@ void MainWindow::on_action_Stop_triggered()
 
 void MainWindow::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event)
+
     //qDebug() << "Таймер" << event->timerId();
     if (blackBoxMode)
     {
@@ -560,7 +565,15 @@ bool MainWindow::readNext(bool findChanges)     // =false
                 ret = reader->Next();
             if (ret==-1)
             {
-                // переход на след.файл/сутки/подкачка
+                // if (нет след файла)
+                // {
+                //     if (нет архива)
+                //        подкачка (если нет возможности подкачки - уведомление о фатальной ошибке)
+                //     разархивирование (если нет возможности разархивирования - уведомление о фатальной ошибке))
+                // }
+                // читаем первую запись
+                // if (ошибка)
+                //     уведомление о невозможности
                 break;
             }
 
@@ -601,7 +614,7 @@ void MainWindow::readPrev()
 // обработка кнопки шаг вперед
 void MainWindow::on_actionNext_triggered()
 {
-    if (readNext(true) < 0)
+    if (!readNext(true))
     {
         // не согли найти очередной архив
     }
