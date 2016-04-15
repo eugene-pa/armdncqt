@@ -26,32 +26,39 @@ bool MainWindow::blackBoxMode;                              // включен р
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString pathTemp ("c:/armdncqt/bd/temp/");
+    QString pathSave ("c:/armdncqt/bd/save/");
     QString form  ("C:/armdncqt/pictures/Назаровский.shp"); // Табло1
     QString formDir("C:/armdncqt/pictures/");
     QString images(":/status/images/");                     // путь к образам
     QString iniFile = "c:/armdncqt/shaper/shaper.ini";
-    QString compressor = "c:/bin/zip.exe";                  // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
-    QString decompressor = "c:/bin/unzip.exe";              // утилита для распаковки архивов
+    QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
 #endif
 #ifdef Q_OS_MAC
     Logger logger("/Users/evgenyshmelev/armdncqt/Log/shaper.txt", true, true);
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
     QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
     QString pathTemp ("/Users/evgenyshmelev/armdncqt/bd/temp/");
+    QString pathSave ("/Users/evgenyshmelev/armdncqt/bd/save/");
     QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
     QString formDir("/Users/evgenyshmelev/armdncqt/Pictures/");
     QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
     QString iniFile = "/Users/evgenyshmelev/armdncqt/shaper/shaper.ini";
+    QString compressor = "zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "unzip.exe";     // утилита для распаковки архивов
 #endif
 #ifdef Q_OS_LINUX
     Logger logger("/home/eugene/QTProjects/armdncqt/Log/shaper.txt", true, true);
     QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
     QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
-    QString pathTemp ("home/eugene/QTProjects/armdncqt/bd/temp/");
+    QString pathTemp ("/home/eugene/QTProjects/armdncqt/bd/temp/");
+    QString pathSave ("/home/eugene/QTProjects/armdncqt/bd/save/");
     QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
     QString formDir  ("/home/eugene/QTProjects/armdncqt/pictures/");
     QString images("../images/");                                   // путь к образам
     QString iniFile = "/home/eugene/QTProjects/armdncqt/shaper/shaper.ini";
+    QString compressor = "zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "unzip.exe";     // утилита для распаковки архивов
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -482,8 +489,9 @@ void MainWindow::on_actionPlay_triggered()
         // предварительную подкачку архивного файла с сервера
 
         arhDateTime = QDateTime(dateEdit->date(),timeEdit->time());
-        reader->getArhName(arhDateTime);                    // определение файла для чтения и инициализация
-        int ret = reader->Read(arhDateTime);
+        reader->setArhName(arhDateTime);                    // определение файла для чтения и инициализация
+        //int ret = reader->Read(arhDateTime);
+        int ret = readNext();
         if (ret == -1)
         {
             // не нашли; проблема с датой, нужна подкачка нужного файла
@@ -563,8 +571,45 @@ bool MainWindow::readNext(bool findChanges)     // =false
                 ret = reader->Read(QDateTime::fromTime_t(reader->time() + dt*60));
             else
                 ret = reader->Next();
+            // не нашли в текущем файле нужного времени
             if (ret==-1)
             {
+                // надо переместить время на начало следующего часа в случае окончания предыдущего
+                // можно проверить dt на допустимое значение
+                if (reader->isExist() && reader->isEndOfFile())
+                {
+                    if (reader->setNextHour(QDateTime::fromTime_t(reader->time())))
+                        ret = reader->First();
+                }
+                else
+                {
+                    QString zipFile = pathSave + reader->getZipName(reader->rqt());
+                    if (QFile::exists(zipFile))
+                    {
+                        reader->close();
+                        QProcess process;
+                        QStringList params;
+                        params << "-o" << zipFile << reader->getFileName() << "-d" << pathTemp;
+                        process.start(decompressor, params);
+                        if (process.waitForFinished())
+                        {
+                            reader->setArhName(reader->rqt());
+                            if ((ret =reader->First()) ==-1)
+                            {
+                                // чужое время, лажа; запросить архив снова
+                            }
+                        }
+                        else
+                        {
+                            // проблемы завершения процесса разархивирования
+                        }
+                    }
+                    else
+                    {
+                        // подкачка
+                        break;
+                    }
+                }
                 // if (нет след файла)
                 // {
                 //     if (нет архива)

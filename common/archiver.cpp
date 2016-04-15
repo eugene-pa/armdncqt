@@ -61,6 +61,8 @@ int ArhReader::Next()
         if (header.offset != *((int *)(data+length-4)))     // проверяем соответствие смещения записи указателю на начало записи за данными
             qDebug() << "Нарушение формата архива";
     }
+    if (qAbs((long)_rqt.toTime_t() - (long)time()) > 3600)
+        return -1;
     return length - 4 == Length() ? length : -1;
 }
 
@@ -72,9 +74,7 @@ int ArhReader::Read (QDateTime t)
         if (Next() < 0)
             return -1;
         // если разница более 1 часа - не найдем
-        UINT trq = t.toTime_t();
-        int dt = trq - time();
-        if (qAbs(t.toTime_t() - time()) > 3600)
+        if (qAbs((long)t.toTime_t() - (long)time()) > 3600)
             return -1;
     }
     while (header.time < t.toTime_t());
@@ -106,10 +106,24 @@ int ArhReader::Prev()
 }
 
 // получить архивное имя по дате и времени
-QString ArhReader::getArhName(QDateTime t)
+bool ArhReader::setArhName(QDateTime t)
 {
-    filename = QString("%1/%2%3.arh").arg(dir.path()).arg(prefix).arg(t.time().hour());
-    file.setFileName(filename);
-    file.open(QIODevice::ReadOnly);
-    return filename;
+    _rqt = t;
+    filename = QString("%1%2.arh").arg(prefix).arg(t.time().hour());
+    file.setFileName(dir.path() + "/" + filename);
+    return file.open(QIODevice::ReadOnly);
+}
+
+// получить имя суточного ZIP-архива по дате
+QString ArhReader::getZipName(QDateTime t)
+{
+    _rqt = t;
+    return QString("%1%2%3.zip").arg(t.date().year()).arg(t.date().month(),2,10,QChar('0')).arg(t.date().day(),2,10,QChar('0'));
+}
+
+// перейти на начало следующего часа и установить новое имя часового архива по дате
+bool ArhReader::setNextHour(QDateTime t)
+{
+    int dt = 59 - t.time().minute() + 60 - t.time().second();
+    return setArhName(QDateTime::fromTime_t(t.toTime_t() + dt));
 }

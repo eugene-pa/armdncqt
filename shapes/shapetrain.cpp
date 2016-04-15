@@ -8,7 +8,8 @@ bool ShapeTrain::bShowNonregTrains  = true;
 
 // "виртуальный" объект ShapeTrain генерится при создании формы последним примитивом
 // его функци рисования paint отрисовывает все поезда на РЦ и на слепых перегонах
-ShapeTrain::ShapeTrain(ShapeSet* parent) : DShape (QString("Поезда"), parent)
+QString pzd("Поезда");
+ShapeTrain::ShapeTrain(ShapeSet* parent) : DShape (pzd, parent)
 {
     //int a = 99;
 }
@@ -41,6 +42,8 @@ void ShapeTrain::Draw(QPainter* painter)
             bool orientLft = true, orientRht = true;
             bool found = false;
 
+            // вылетаем в LINUXE в этой функции - бардак в Rc: nrc не соответствует Rc, Rc.count()==2, но RC[0]=0, Rc[1] !=0
+            //
             for (int i=0; i<train->nrc; i++)
             {
                 Rc * rc = train->Rc[i];

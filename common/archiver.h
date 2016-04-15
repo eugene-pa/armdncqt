@@ -55,8 +55,14 @@ public:
     int  Length() { return header.Length(); }
     UINT time()   { return header.time; }                   // временная метка записи
 
-    QString getArhName(QDateTime);                          // получить имя архива по дате
-
+    bool setArhName(QDateTime);                             // установить новое имя часового архива по дате
+    bool setNextHour(QDateTime);                            // перейти на начало следующего часа и установить новое имя часового архива по дате
+    QString getZipName(QDateTime);                          // получить имя суточного ZIP-архива по дате
+    QDateTime rqt() { return _rqt; }                        // запрашиваемое время архива
+    QString getFileName() { return filename; }              // получить имя арх.файла
+    bool isExist() { return file.isOpen(); }
+    bool isEndOfFile() { return file.atEnd(); }
+    void close() { file.close(); }
 private:
     ArchiveHeader header;                                   // заголовок
     QDir    dir;                                            // папка для чтения
@@ -64,7 +70,7 @@ private:
     QString prefix;                                         // префикс при формировании имени файла для записи (пример @_)
     QString ext;                                            // расширение имени
     QFile   file;                                           // актуальный открытый файд
-
+    QDateTime _rqt;                                          // запрашиваемое время архива
     char    data[65535];                                    // буфер под максимальный размер данных
 };
 

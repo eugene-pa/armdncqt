@@ -102,7 +102,7 @@ void ShapeRc::Parse(QString& src)
         // направляющие стрелки
         for (int i=8; i<11; i++)
         {
-            int nostrl = nostrl = lexems[i].toInt(&ret);
+            int nostrl = lexems[i].toInt(&ret);
             if (nostrl && ret)
                 strl.append(new LinkedStrl(nostrl));
             ok &= ret;

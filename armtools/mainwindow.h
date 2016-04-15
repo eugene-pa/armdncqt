@@ -16,6 +16,7 @@
 #include <QSpinBox>
 #include <QtMath>
 #include <QLayout>
+#include <QProcess>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
