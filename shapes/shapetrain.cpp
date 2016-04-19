@@ -47,6 +47,8 @@ void ShapeTrain::Draw(QPainter* painter)
             for (int i=0; i<train->nrc; i++)
             {
                 Rc * rc = train->Rc[i];
+                if (rc==nullptr)
+                    continue;
                 foreach (QGraphicsItem *shape, rc->shapes)
                 {
                     ShapeRc * shaperc = (ShapeRc *)shape;

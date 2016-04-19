@@ -8,11 +8,12 @@ QStack <Train*> Train::FreeTrains;                          // пул удале
 
 Train::Train()
 {
-
+    nrc = 0;
 }
 
 Train::Train(int sno, int no, class KrugInfo * krug)
 {
+    nrc = 0;
     update(sno, no, krug);
     Train::Trains[key(sno)] = this;
 }
@@ -32,6 +33,7 @@ void Train::update(int sno, int no, class KrugInfo * krug)
     this->krug = krug;
     krugno = krug==nullptr ? 0 : krug->no();
     tmdt = QDateTime::currentDateTime();
+    ClearRc();
 }
 
 Train::~Train()
@@ -54,12 +56,15 @@ Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 }
 
 // добавить занятую РЦ
+// механизм повторного использования места в массие QVector Rc не срабатывает (по крайне мере в эмуляторе LINUX, имеем первый элемент = 0, потом значащий)
+// причем nrc не соответствкет размерности Rc
 void Train::AddRc(class Rc* rc)
 {
-    if (nrc < Rc.length()-1)
-        Rc[nrc++] = rc;
+    if (nrc < Rc.length())
+        Rc[nrc] = rc;
     else
         Rc.append(rc);
+    nrc++;
 }
 
 // очистить список РЦ
