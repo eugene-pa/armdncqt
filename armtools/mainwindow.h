@@ -142,7 +142,7 @@ private:
     bool bPlay;                                             // воспроизведение вперед
     bool bPlayBack;                                         // воспроизведение назад
     int  idTimer;                                           // таймер воспроизведения
-    bool readNext(bool findChanges=false);                  // прочитать и отобразить след.запись в архиве
+    bool readNext(QDateTime* dt=nullptr, bool findChanges=false);// прочитать и отобразить след.запись в архиве
     void readPrev();                                        // прочитать и отобразить пред.запись в архиве
 
     bool isExtFind() { return isFindTsChanges() || isFindLinkErrors(); }

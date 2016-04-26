@@ -491,7 +491,7 @@ void MainWindow::on_actionPlay_triggered()
         arhDateTime = QDateTime(dateEdit->date(),timeEdit->time());
         reader->setArhName(arhDateTime);                    // определение файла для чтения и инициализация
         //int ret = reader->Read(arhDateTime);
-        int ret = readNext();
+        int ret = readNext(&arhDateTime);
         if (ret == -1)
         {
             // не нашли; проблема с датой, нужна подкачка нужного файла
@@ -551,7 +551,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 // если задан шаг - смещение на заданное время
 // если не заданы условия поиска - смещаемся вплоть до любого изменения состояния ТС или связи на станции
 // если задано условие поиска (ТС или связь) - ищем изменение конкретного ТС или состояния связи
-bool MainWindow::readNext(bool findChanges)     // =false
+bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 {
     int sts;
     int ret;
@@ -565,12 +565,18 @@ bool MainWindow::readNext(bool findChanges)     // =false
         Station::FastScanArchive = isExtFind();
         while (true)
         {
-            // если задан шаг - смещение на заданное время
+            // если задан шаг смещения - смещение на заданное задатчиком время dt
             int dt = stepValue->value();
             if (dt > 0)
-                ret = reader->Read(QDateTime::fromTime_t(reader->time() + dt*60));
+                ret = reader->Read(QDateTime::fromTime_t(reader->time() + dt*60));  // время с учетом задатчика
             else
-                ret = reader->Next();
+            // если не задан шаг задатчиком dt, но в функцию передано конкретное требуемое время rqDate - пытаемся позиционируовать на это время
+            if (rqDate != nullptr)
+                ret = reader->Read(*rqDate);                                        // явно заданное время
+            // если время не задано и шаг не задан - просто читаем след.запись
+            else
+                ret = reader->Next();                                               // след.запись
+
             // не нашли в текущем файле нужного времени
             if (ret==-1)
             {
@@ -619,7 +625,10 @@ bool MainWindow::readNext(bool findChanges)     // =false
                 // читаем первую запись
                 // if (ошибка)
                 //     уведомление о невозможности
-                break;
+
+                // если ничего никак не нашли (ret=-1) и это не поиск изменений - выход
+                if (ret < 0 || !findChanges)
+                    break;
             }
 
             // обработать данные
@@ -659,7 +668,7 @@ void MainWindow::readPrev()
 // обработка кнопки шаг вперед
 void MainWindow::on_actionNext_triggered()
 {
-    if (!readNext(true))
+    if (!readNext(nullptr, true))
     {
         // не согли найти очередной архив
     }
