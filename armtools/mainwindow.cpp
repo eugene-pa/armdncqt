@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent) :
     sliderScale->setFixedWidth(180);
     connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
 
-    // 2
+    // 2 - флажок "Изменения ТС" и список ТС
     ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
     ui->toolBar2->addWidget(checkFindTs = new QCheckBox(" Изменение ТС", ui->toolBar2));
     checkFindTs->setLayoutDirection(Qt::RightToLeft);
@@ -170,15 +170,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
     ui->toolBar2->addWidget(cmbTs = new QComboBox);
-    QObject::connect(cmbTs, SIGNAL(currentIndexChanged(int)), SLOT(tsSelected(int)));   // выбор ТС
     cmbTs->setMaxVisibleItems(30);
     cmbTs->setEnabled(false);
 
-    // 3
+    // 3 - флажок "Ош.связи"
     ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
     ui->toolBar2->addWidget(checkFindLink = new QCheckBox(" Ош.связи", ui->toolBar2));
     checkFindLink->setLayoutDirection(Qt::RightToLeft);
-    QObject::connect(checkFindLink, SIGNAL(toggled(bool)), SLOT(linkToggled(bool)));    // флажок ТС
 
     ui->toolBar2->setVisible(false);
 
@@ -430,25 +428,14 @@ void MainWindow::on_action_ToolBar2_triggered()
 
 // --------------------------------------------- Работа с архивом ----------------------------
 //                                           можно вынести в отд.файл
-// щелчок флажка поиск изменений ТС
+// щелчок флажка поиск изменений ТС; если сняли флажок - очистить поле выбора искомого ТС в списке
 void MainWindow::tsToggled(bool checked)
 {
     cmbTs->setEnabled(checked);
     if (!checked)
         cmbTs->setCurrentIndex(-1);
-}
-
-// выбор ТС
-void MainWindow::tsSelected()
-{
-    if (isFindTsChanges())
+    else
         cmbTs->showPopup();
-}
-
-// щелчок флажка поиск изменений ТС
-void MainWindow::linkToggled(bool)
-{
-
 }
 
 
@@ -585,13 +572,17 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
                 if (reader->isExist() && reader->isEndOfFile())
                 {
                     if (reader->setNextHour(QDateTime::fromTime_t(reader->time())))
+                    {
+                        qDebug() << reader->getFileName();
                         ret = reader->First();
+                    }
                 }
                 else
                 {
                     QString zipFile = pathSave + reader->getZipName(reader->rqt());
                     if (QFile::exists(zipFile))
                     {
+                        qDebug() << "Извлекаем файл из архива " << zipFile;
                         reader->close();
                         QProcess process;
                         QStringList params;

@@ -50,8 +50,6 @@ private slots:
     void on_actionBlackbox_triggered();
     void stationSelected(int index);                        // выбор станции
     void tsToggled(bool);                                   // щелчок флажка поиск изменений ТС
-    void tsSelected();                                      // выбор ТС
-    void linkToggled(bool);                                 // щелчок флажка поиск изменений ТС
 
     void connected   (ClientTcp *);                         // установлено соединение
     void disconnected(ClientTcp *);                         // разорвано соединение
