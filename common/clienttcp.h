@@ -57,7 +57,7 @@ private:
     QString     idtype;                                     // идентификатор типа клиента
     QTcpSocket  * sock;                                     // сокет
     QString     bindIP;                                     // IP привязки или пустая строка
-    char        * data;                                     // указатель на данные
+    char        * data;                                     // указатель на данные (выделяем new char[65536 + 8];)
     bool        run;                                        // старт/стоп
     QString     msg;                                        // строка для формирования сообщений
     Logger      * logger;                                   // логгер для протоколирования
@@ -72,6 +72,8 @@ private:
 
     void init ();
     void log (QString&);
+    void uncompress();                                      // если данные упакованы - распаковать
+    bool isCompressed();                                    // проверка префикса сжатых данных
 };
 
 #endif // CLIENTTCP_H

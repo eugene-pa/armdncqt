@@ -63,12 +63,18 @@ void ClientTcp::stop()
         sock->disconnectFromHost();
 }
 
-// прияем данных
+// прием данных
+// форматные данные:
+// - WORD -  сигнатуры: 0xAA55
+// - WORD -  длина пакета, включая заголовок
+// - данные
+//
+// toRead - требуемая длина; если toRead==длине заголовка, принимаем заголовок, определяем длину пакета, и toRead = длине пакета
 void ClientTcp::slotReadyRead      ()
 {
     while (true)
     {
-        length += sock->read(data+length, toRead-length);
+        length += sock->read(data+length, toRead-length);   // читаем в буфер со смещением length
         if (length < toRead)
         {
             qDebug() << "Недобор до" << toRead << ". Прочитано: " << length;
@@ -76,13 +82,16 @@ void ClientTcp::slotReadyRead      ()
         }
         if (length==sizeof(TcpHeader))
         {
+            // анализ первых 4-х байтов
             if (((TcpHeader *)data)->Signatured())
             {
+                // приняли заголовок пакета
                 qDebug() << "Сигнатура";
                 toRead = ((TcpHeader *)data)->Length();     // общая длина пакета (загловок + данные)
             }
             else
             {
+                // первые 4 - байта - не заголовок, значит, неформатные данные
                 qDebug() << "Неформатные данные";
                 // читаем все, что есть
                 length += sock->read(data+length, 65536-length);
@@ -94,13 +103,46 @@ void ClientTcp::slotReadyRead      ()
         }
         else
         {
+            // получили требуемую пачку данных (length >= toRead)
             rcvd[0]++; rcvd[1] += length;                   // инкремент
+
+            uncompress();
+
             emit dataready (this);                          // обращение к подключенным слотам; они должны гарантированно забрать данные
 
             length = 0;
             toRead = sizeof(TcpHeader);
         }
     }
+}
+
+// если данные упакованы - распаковать
+// функции qCompress/qUncompress совместимы с используемым в С++/C# проектах форматом ZLIB с особенностями:
+// - сжатые данные включают 6-байтный префикс:
+// - 4 байта оригинальной длины (похоже, не используются, можно проставить нули)
+// - 2 байта сигнатуры ZIP 0x78,0x9C, совпадающие с сигнатурой библиотеки ZLIB
+//   С учетом того, что в сжатых пакетах длина заголовка пакета составляет 4 байта, за которым идет сигнатура ZIP 0x78,0x9C,
+//   заголовок пакета используется как префикс
+void ClientTcp::uncompress()
+{
+    if (isCompressed())
+    {
+        QByteArray zip(data, length);
+//        zip[2] = 0;                                         // необязательные действия
+//        zip[3] = 0;                                         // необязательные действия
+        QByteArray unzip = qUncompress(zip);
+        length = unzip.length();                            // оригинальная длина
+        data[2] = (BYTE)length;
+        data[3] = (BYTE)(length >> 8);
+        for (int i=0; i< length; i++)                       // копируем данные
+            data[4+i] = unzip[i];
+    }
+}
+
+// проверка префикса сжатых данных
+bool ClientTcp::isCompressed()
+{
+    return length > sizeof(TcpHeader) + 2 && (BYTE)data[4] == 0x78 && (BYTE)data[5] == 0x9C;
 }
 
 // установлено соединение

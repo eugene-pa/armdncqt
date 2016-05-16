@@ -85,6 +85,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     reader = nullptr;
 
+//    QByteArray src(10,0x55);
+//    QByteArray dst = qCompress(src);
+//    dst[3] = 0x0;
+//    QByteArray src2 = qUncompress(dst);
+
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
