@@ -31,7 +31,7 @@ bool IniReader::readIniFile (QString& spath, bool bUnicode)
             if (QRegularExpression("\\A[^;/=]*=").match(str).hasMatch())
             {
                 QString name  = QRegularExpression("[^=^ ]+").match(str).captured();
-                QString value = QRegularExpression("(?<=[^;^/]=)[^ ]+").match(str).captured();
+                QString value = QRegularExpression("(?<=[^;^/]=).+").match(str).captured();
                 options.insert(name, value);
             }
         }
