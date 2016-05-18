@@ -50,6 +50,8 @@ public:
     void   SendAck();                                       // квитанция
     UINT   Rcvd(int i) { return rcvd[i?1:0]; }              // счетчик: 0-пакетов, 1-байтов
     UINT   Sent(int i) { return sent[i?1:0]; }              // счетчик: 0-пакетов, 1-байтов
+    void * GetUserPtr(){ return userPtr; }                  // получить пользовательский указатель
+    void   SetUserPtr(void *p) { userPtr = p; }             // запомнить пользовательский указатель
 
 private:
     QString     ip;
@@ -63,6 +65,7 @@ private:
     Logger      * logger;                                   // логгер для протоколирования
     bool        compress;                                   // сжатие на лету
     QAbstractSocket::SocketError _lasterror;                // ошибка
+    void        * userPtr;                                  // указатель на данные пользователя
 
     // состояние приема пакета
     int         toRead;                                     // требуемый объем данных

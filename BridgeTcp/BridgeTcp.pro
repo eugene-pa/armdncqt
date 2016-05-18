@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     ../common/defines.cpp \
     ../common/logger.cpp \
     ../common/tcpheader.cpp \
-    ../common/inireader.cpp
+    ../common/inireader.cpp \
+    ../common/servertcp.cpp
 
 HEADERS  += bridgetcp.h \
     ../forms/qled.h \
@@ -27,7 +28,8 @@ HEADERS  += bridgetcp.h \
     ../common/defines.h \
     ../common/logger.h \
     ../common/tcpheader.h \
-    ../common/inireader.h
+    ../common/inireader.h \
+    ../common/servertcp.h
 
 FORMS    += bridgetcp.ui
 

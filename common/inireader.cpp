@@ -13,10 +13,23 @@ IniReader::~IniReader()
 
 
 // чтение опций из файла
-bool IniReader::readIniFile (QString& spath, bool bUnicode)
+bool IniReader::readIniFile (QString& _spath, bool bUnicode)
 {
     //QString root = QDir::currentPath();
     bool ret = true;
+
+    QString spath = _spath;
+    QFileInfo fi(_spath);
+    if (!fi.isAbsolute())
+    {
+        // создаем папку лога
+        QString sdir = QString("%1/%2").arg(QDir::current().absolutePath()).arg(fi.path());
+        fi.dir().mkdir(sdir);
+
+        // формируем полное имя файла
+        spath = QString("%1/%2").arg(sdir).arg(fi.fileName());
+    }
+
     QFile file (spath);
     if (file.open(QFile::ReadOnly))
     {
