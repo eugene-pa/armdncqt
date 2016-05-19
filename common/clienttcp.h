@@ -2,10 +2,13 @@
 #define CLIENTTCP_H
 
 #include "tcpheader.h"
+#include "servertcp.h"
 #include "logger.h"
 
 
-// класс для работы с форматированными пакетами межсетевого протокола ДЦ "ЮГ"
+// класс ClientTcp представляет собой обертку класса QTcpSocket, который участвует в TCP-соединении как на стороне клиента, так и на стороне сервера
+// функция isServerConn() возвращает истину для серверного соединения
+
 class ClientTcp : public QObject
 {
     Q_OBJECT
@@ -26,13 +29,14 @@ signals:
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
 
 public:
+    ClientTcp(class ServerTcp *, QTcpSocket  *, Logger *);  // конструктор, используемый сервером
     ClientTcp(QString& ipport, Logger * = nullptr, bool compress=false, QString idtype = "");
-    ClientTcp(QString& ip, int port, Logger * = nullptr, bool compress=false, QString idtype = "");
+    ClientTcp(QString& remoteIp, int remotePort, Logger * = nullptr, bool compress=false, QString idtype = "");
     ~ClientTcp();
 
     void start ();                                          // старт работы сокета
     void stop  ();                                          // останов сокета
-    void bind (QString& ip);
+    void bind (QString& remoteIp);
     void compressMode(bool s);
     void setlogger(Logger * p) { logger = p; }
     void setid(QString id) { idtype = id; }
@@ -40,7 +44,7 @@ public:
     QAbstractSocket::SocketError lasterror() { return _lasterror; }
 
     QString Name()                                          // имя в формате IP:порт
-        { return QString("%1:%2").arg(ip).arg(port); }
+        { return QString("%1:%2").arg(remoteIp).arg(remotePort); }
     char * RawData()    { return data; }                    // "сырые данные" - полный пакет с заголовком
     int    RawLength()  { return length; }                  // длина пакета с заголовком
     char * Data()       { return data + sizeof(TcpHeader); }// пользовательские данные
@@ -52,10 +56,12 @@ public:
     UINT   Sent(int i) { return sent[i?1:0]; }              // счетчик: 0-пакетов, 1-байтов
     void * GetUserPtr(){ return userPtr; }                  // получить пользовательский указатель
     void   SetUserPtr(void *p) { userPtr = p; }             // запомнить пользовательский указатель
+    bool   isServer() { return server != nullptr; }
 
 private:
-    QString     ip;
-    int         port;
+    ServerTcp   * server;                                   // владелец - сервер
+    QString     remoteIp;
+    int         remotePort;
     QString     idtype;                                     // идентификатор типа клиента
     QTcpSocket  * sock;                                     // сокет
     QString     bindIP;                                     // IP привязки или пустая строка

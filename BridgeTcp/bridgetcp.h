@@ -6,6 +6,7 @@
 #include <QStatusBar>
 #include "../common/logger.h"
 #include "../common/clienttcp.h"
+#include "../common/servertcp.h"
 #include "../common/defines.h"
 #include "../common/inireader.h"
 
@@ -39,6 +40,7 @@ private:
     class QLabel * msg;
     ClientTcp * mainConnection;
     ClientTcp * rsrvConnection;
+    ServerTcp * server;
 };
 
 #endif // BRIDGETCP_H

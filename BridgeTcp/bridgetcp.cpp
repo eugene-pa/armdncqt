@@ -16,8 +16,10 @@ QString iniFile = "/home/eugene/QTProjects//bridgetcp/bridgetcp.ini";       // �
 bool compressEnabled = true;                                // сжатие на летк
 QString     mainServerConnectStr;                           // ip:порт основного сервера
 QString     rsrvServerConnectStr;                           // ip:порт резервного сервера или ""
-QHostAddress *ipMain;                                        //
+QHostAddress *ipMain;                                       //
 QHostAddress *ipRsrv;
+
+int      portBridge = 1010;                                 // порт шлюза
 
 BridgeTcp::BridgeTcp(QWidget *parent) :
     QDialog(parent),
@@ -33,6 +35,7 @@ BridgeTcp::BridgeTcp(QWidget *parent) :
 
     IniReader rdr(iniFile);
     QString s;
+    rdr.GetInt("BRIDGEPORT", portBridge);
     rdr.GetText("SERVER", s);
     QStringList addrs = s.split(QRegExp("[ ,;]+"));
     ui->lineEdit_main->setText(mainServerConnectStr = addrs.length() > 0 ? addrs[0] : "");
@@ -67,6 +70,8 @@ BridgeTcp::BridgeTcp(QWidget *parent) :
     }
     else
         ui->label_rsrv->set(QLed::round, QLed::off);
+
+    server = new ServerTcp(portBridge, QHostAddress::Any, &logger);
 
     QTableWidget * t = ui->tableWidget;
     t->setSortingEnabled(false);                             // запрещаем сортировку
@@ -132,6 +137,9 @@ void BridgeTcp::dataready   (ClientTcp * conn)
 {
     msg->setText(QString("%1. Получены форматные данные: %2 байт").arg(QTime::currentTime().toString()).arg(conn->RawLength()));
     conn->SendAck();                                      // квитирование
+
+    if (server != nullptr)
+        server->sendToAll(conn->Data(), conn->Length());
 }
 
 // получены необрамленные данные - отдельный сигнал

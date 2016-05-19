@@ -2,28 +2,48 @@
 #include "clienttcp.h"
 
 
+ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)  // конструктор, используемый сервером
+{
+    this->server = server;
+    this->sock = sock;
+    this->logger = logger;
+
+    remoteIp = "";
+    remotePort = 0;
+
+    init();
+}
+
 ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress, QString idtype)
 {
-    this->ip = ip;
-    this->port = port;
+    server = nullptr;
+    this->remoteIp = ip;
+    this->remotePort = port;
     logger = p;
     this->compress = compress;
     this->idtype = idtype;
+    sock = new QTcpSocket();
+    log(msg = QString("Конструктор ClientTcp %1:%2").arg(remoteIp).arg(remotePort));
+
     init();
 }
 
 ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
 {
-    TcpHeader::ParseIpPort(ipport, ip, port);
+    server = nullptr;
+    TcpHeader::ParseIpPort(ipport, remoteIp, remotePort);
     logger = p;
     this->compress = compress;
     this->idtype = idtype;
+    sock = new QTcpSocket();
+    log(msg = QString("Конструктор ClientTcp %1:%2").arg(remoteIp).arg(remotePort));
+
     init();
 }
 
 void ClientTcp::init()
 {
-    sock = new QTcpSocket();
+    userPtr = nullptr;
     run = false;
     data = new char[65536 + 8];
     toRead = sizeof(TcpHeader);                             // 4 байта - чтение заголовка
@@ -35,13 +55,11 @@ void ClientTcp::init()
     QObject::connect(sock, SIGNAL(readyRead   ()), this, SLOT(slotReadyRead()));
     QObject::connect(sock, SIGNAL(disconnected()), this, SLOT(slotDisconnected()));
     QObject::connect(sock, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(slotError(QAbstractSocket::SocketError)));
-
-    log(msg = QString("Конструктор ClientTcp %1:%2").arg(ip).arg(port));
 }
 
 ClientTcp::~ClientTcp()
 {
-    log(msg = QString("Деструктор ClientTcp: %1:%2").arg(ip).arg(port));
+    log(msg = QString("Деструктор ClientTcp: %1:%2").arg(remoteIp).arg(remotePort));
     sock->abort();
     sock->close();
     delete data;
@@ -52,7 +70,8 @@ void ClientTcp::start()
     if (!run)
     {
         run = true;
-        sock->connectToHost(ip,port);
+        if (!isServer())
+            sock->connectToHost(remoteIp,remotePort);
     }
 }
 
@@ -148,7 +167,7 @@ bool ClientTcp::isCompressed()
 // установлено соединение
 void ClientTcp::slotConnected ()
 {
-    log (msg=QString("Установлено соединения c хостом %1:%2").arg(ip).arg(port));
+    log (msg=QString("Установлено соединения c хостом %1:%2").arg(remoteIp).arg(remotePort));
 
     // если определен тип, отправляет тип удаленному серверу, преобразовав в кодировку Windows-1251
     if (idtype.length())
@@ -166,7 +185,7 @@ void ClientTcp::slotDisconnected ()
     log (msg=QString("Разрыв соединения c хостом %1").arg(Name()));
     emit disconnected (this);
     if (run)
-        sock->connectToHost(ip,port);
+        sock->connectToHost(remoteIp,remotePort);
 }
 
 // ошибка
@@ -176,7 +195,7 @@ void ClientTcp::slotError (QAbstractSocket::SocketError er)
     log (msg=QString("Клиент %1. Ошибка: %2").arg(Name()).arg(TcpHeader::ErrorInfo(er)));
     emit error (this);
     if (run && !connected())
-        sock->connectToHost(ip,port);
+        sock->connectToHost(remoteIp,remotePort);
 }
 
 void ClientTcp::log (QString& msg)
