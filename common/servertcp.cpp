@@ -47,7 +47,7 @@ void ServerTcp::log (QString& msg)
 // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
 void ServerTcp::dataready (ClientTcp * client)
 {
-    client->SendAck();                                      // квитирование
+//  client->SendAck();                                      // квитирование
     qDebug() << Logger::GetHex(client->Data(), client->Length());
 }
 

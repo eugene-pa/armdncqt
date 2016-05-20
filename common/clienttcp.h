@@ -56,7 +56,8 @@ public:
     UINT   Sent(int i) { return sent[i?1:0]; }              // счетчик: 0-пакетов, 1-байтов
     void * GetUserPtr(){ return userPtr; }                  // получить пользовательский указатель
     void   SetUserPtr(void *p) { userPtr = p; }             // запомнить пользовательский указатель
-    bool   isServer() { return server != nullptr; }
+    bool   isServer() { return server != nullptr; }         // это серверное соединение ?
+    bool   isAcked () { return acked; }                     // квитировано ?
 
 private:
     ServerTcp   * server;                                   // владелец - сервер
@@ -72,6 +73,7 @@ private:
     bool        compress;                                   // сжатие на лету
     QAbstractSocket::SocketError _lasterror;                // ошибка
     void        * userPtr;                                  // указатель на данные пользователя
+    bool        acked;                                      // квитировано!
 
     // состояние приема пакета
     int         toRead;                                     // требуемый объем данных

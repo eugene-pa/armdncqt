@@ -96,7 +96,8 @@ void ClientTcp::slotReadyRead      ()
         length += sock->read(data+length, toRead-length);   // читаем в буфер со смещением length
         if (length < toRead)
         {
-            qDebug() << "Недобор до" << toRead << ". Прочитано: " << length;
+            if (length)
+                qDebug() << "Недобор до" << toRead << ". Прочитано: " << length;
             return;
         }
         if (length==sizeof(TcpHeader))
@@ -105,8 +106,14 @@ void ClientTcp::slotReadyRead      ()
             if (((TcpHeader *)data)->Signatured())
             {
                 // приняли заголовок пакета
-                qDebug() << "Сигнатура";
+                qDebug() << "Заголовок";
                 toRead = ((TcpHeader *)data)->Length();     // общая длина пакета (загловок + данные)
+                if (toRead==4)
+                {
+                    qDebug() << "Квитанция";
+                    acked = true;
+                    return;
+                }
             }
             else
             {
@@ -117,6 +124,10 @@ void ClientTcp::slotReadyRead      ()
                 rcvd[1] += length;                          // инкремент
 
                 emit rawdataready(this);
+
+                length = 0;
+                toRead = sizeof(TcpHeader);
+
                 return;
             }
         }
@@ -213,6 +224,7 @@ void ClientTcp::Send(void * p, int length)
     {
         sock->write((char*)p,length);
         sent[0]++; sent[1] += length;
+        acked = false;
     }
     else
         log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
@@ -225,6 +237,7 @@ void ClientTcp::Send(QByteArray& array)
     {
         sock->write(array);
         sent[0]++; sent[1] += array.length();
+        acked = false;
     }
     else
         log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
