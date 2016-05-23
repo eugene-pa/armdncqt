@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QHostAddress>
 #include <QStatusBar>
+#include "../common/defines.h"
 #include "../common/logger.h"
 #include "../common/clienttcp.h"
 #include "../common/servertcp.h"
@@ -28,13 +29,23 @@ public:
     ~BridgeTcp();
 
 private slots:
+    // уведомления от клиентов, подключающихся к удаленным серверам
     void connected   (ClientTcp *);                         // установлено соединение
     void disconnected(ClientTcp *);                         // разорвано соединение
     void error       (ClientTcp *);                         // ошибка сокета
     void dataready   (ClientTcp *);                         // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
 
+    // уведомления сервера
+    void slotAcceptError(QAbstractSocket::SocketError socketError);
+    void slotSvrNewConnection (ClientTcp *);
+    void slotSvrDataready     (ClientTcp *);
+    void slotSvrDisconnected  (ClientTcp *);
+
 private:
+    virtual void timerEvent(QTimerEvent *event);                // таймер
+    void loadResources();
+
     Ui::BridgeTcp *ui;
     QStatusBar * bar;
     class QLabel * msg;

@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/status">
+        <file>../images/icon_grn.ico</file>
+        <file>../images/icon_gry.ico</file>
+        <file>../images/icon_non.ico</file>
+        <file>../images/icon_red.ico</file>
+        <file>../images/icon_yel.ico</file>
+    </qresource>
+</RCC>

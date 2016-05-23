@@ -35,3 +35,6 @@ FORMS    += bridgetcp.ui
 
 DISTFILES += \
     BridgeTcp.ini
+
+RESOURCES += \
+    images.qrc

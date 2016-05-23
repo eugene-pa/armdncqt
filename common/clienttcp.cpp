@@ -8,8 +8,9 @@ ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)  // 
     this->sock = sock;
     this->logger = logger;
 
-    remoteIp = "";
-    remotePort = 0;
+    // прописываем IP адрес клиента и локальный порт
+    remoteIp = sock->peerAddress().toString();
+    remotePort = sock->localPort();
 
     init();
 }
@@ -43,11 +44,13 @@ ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
 
 void ClientTcp::init()
 {
-    userPtr = nullptr;
+    _userPtr = nullptr;
     run = false;
-    data = new char[65536 + 8];
+    _data = new char[maxSize];
+    clear();
+
     toRead = sizeof(TcpHeader);                             // 4 байта - чтение заголовка
-    length = 0;
+    _length = 0;
     rcvd[0] = rcvd[1] = sent[0] = sent[1] = 0;
 
     // привязка своих слотов к сигналам QTcpSocket
@@ -62,7 +65,7 @@ ClientTcp::~ClientTcp()
     log(msg = QString("Деструктор ClientTcp: %1:%2").arg(remoteIp).arg(remotePort));
     sock->abort();
     sock->close();
-    delete data;
+    delete _data;
 }
 
 void ClientTcp::start()
@@ -78,7 +81,7 @@ void ClientTcp::start()
 void ClientTcp::stop()
 {
     run = false;
-    if (connected())
+    if (isConnected())
         sock->disconnectFromHost();
 }
 
@@ -93,23 +96,24 @@ void ClientTcp::slotReadyRead      ()
 {
     while (true)
     {
-        length += sock->read(data+length, toRead-length);   // читаем в буфер со смещением length
-        if (length < toRead)
+        _length += sock->read(_data+_length, toRead-_length);   // читаем в буфер со смещением length
+        if (_length < toRead)
         {
-            if (length)
-                qDebug() << "Недобор до" << toRead << ". Прочитано: " << length;
+            if (_length)
+                qDebug() << "Недобор до" << toRead << ". Прочитано: " << _length;
             return;
         }
-        if (length==sizeof(TcpHeader))
+        if (_length==sizeof(TcpHeader))
         {
             // анализ первых 4-х байтов
-            if (((TcpHeader *)data)->Signatured())
+            if (((TcpHeader *)_data)->Signatured())
             {
                 // приняли заголовок пакета
                 qDebug() << "Заголовок";
-                toRead = ((TcpHeader *)data)->Length();     // общая длина пакета (загловок + данные)
+                toRead = ((TcpHeader *)_data)->Length();     // общая длина пакета (загловок + данные)
                 if (toRead==4)
                 {
+                    rcvd[0]++; rcvd[1] += toRead;           // инкремент
                     qDebug() << "Квитанция";
                     acked = true;
                     return;
@@ -120,12 +124,12 @@ void ClientTcp::slotReadyRead      ()
                 // первые 4 - байта - не заголовок, значит, неформатные данные
                 qDebug() << "Неформатные данные";
                 // читаем все, что есть
-                length += sock->read(data+length, 65536-length);
-                rcvd[1] += length;                          // инкремент
+                _length += sock->read(_data+_length, 65536-_length);
+                rcvd[1] += _length;                          // инкремент
 
                 emit rawdataready(this);
 
-                length = 0;
+                _length = 0;
                 toRead = sizeof(TcpHeader);
 
                 return;
@@ -134,13 +138,14 @@ void ClientTcp::slotReadyRead      ()
         else
         {
             // получили требуемую пачку данных (length >= toRead)
-            rcvd[0]++; rcvd[1] += length;                   // инкремент
+            rcvd[0]++; rcvd[1] += _length;                   // инкремент
 
+            // распаковку делать не всегда, если это ретрансляция - можно не распаковывать, а передавать как есть
             uncompress();
 
             emit dataready (this);                          // обращение к подключенным слотам; они должны гарантированно забрать данные
 
-            length = 0;
+            _length = 0;
             toRead = sizeof(TcpHeader);
         }
     }
@@ -157,22 +162,22 @@ void ClientTcp::uncompress()
 {
     if (isCompressed())
     {
-        QByteArray zip(data, length);
+        QByteArray zip(_data, _length);
 //        zip[2] = 0;                                         // необязательные действия
 //        zip[3] = 0;                                         // необязательные действия
         QByteArray unzip = qUncompress(zip);
-        length = unzip.length();                            // оригинальная длина
-        data[2] = (BYTE)length;
-        data[3] = (BYTE)(length >> 8);
-        for (int i=0; i< length; i++)                       // копируем данные
-            data[4+i] = unzip[i];
+        _length = unzip.length();                            // оригинальная длина
+        _data[2] = (BYTE)_length;
+        _data[3] = (BYTE)(_length >> 8);
+        for (int i=0; i< _length; i++)                       // копируем данные
+            _data[4+i] = unzip[i];
     }
 }
 
 // проверка префикса сжатых данных
 bool ClientTcp::isCompressed()
 {
-    return length > sizeof(TcpHeader) + 2 && (BYTE)data[4] == 0x78 && (BYTE)data[5] == 0x9C;
+    return _length > sizeof(TcpHeader) + 2 && (BYTE)_data[4] == 0x78 && (BYTE)_data[5] == 0x9C;
 }
 
 // установлено соединение
@@ -185,7 +190,7 @@ void ClientTcp::slotConnected ()
     {
         QByteArray id = QTextCodec::codecForName("Windows-1251")->fromUnicode(idtype);
         id[id.length()] = 0;
-        Send(id);
+        send(id);
     }
     emit connected (this);
 }
@@ -193,7 +198,7 @@ void ClientTcp::slotConnected ()
 // разорвано соединение
 void ClientTcp::slotDisconnected ()
 {
-    log (msg=QString("Разрыв соединения c хостом %1").arg(Name()));
+    log (msg=QString("Разрыв соединения c хостом %1").arg(name()));
     emit disconnected (this);
     if (run)
         sock->connectToHost(remoteIp,remotePort);
@@ -203,9 +208,9 @@ void ClientTcp::slotDisconnected ()
 void ClientTcp::slotError (QAbstractSocket::SocketError er)
 {
     _lasterror = er;
-    log (msg=QString("Клиент %1. Ошибка: %2").arg(Name()).arg(TcpHeader::ErrorInfo(er)));
+    log (msg=QString("Клиент %1. Ошибка: %2").arg(name()).arg(TcpHeader::ErrorInfo(er)));
     emit error (this);
-    if (run && !connected())
+    if (run && !isConnected())
         sock->connectToHost(remoteIp,remotePort);
 }
 
@@ -218,33 +223,33 @@ void ClientTcp::log (QString& msg)
 }
 
 // передача блока данных
-void ClientTcp::Send(void * p, int length)
+void ClientTcp::send(void * p, int length)
 {
-    if (connected())
+    if (isConnected())
     {
         sock->write((char*)p,length);
         sent[0]++; sent[1] += length;
         acked = false;
     }
     else
-        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
+        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(name()));
 }
 
 // передача массива
-void ClientTcp::Send(QByteArray& array)
+void ClientTcp::send(QByteArray& array)
 {
-    if (connected())
+    if (isConnected())
     {
         sock->write(array);
         sent[0]++; sent[1] += array.length();
         acked = false;
     }
     else
-        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(Name()));
+        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(name()));
 }
 
-void ClientTcp::SendAck()
+void ClientTcp::sendAck()
 {
     TcpHeader ack;
-    Send (&ack, sizeof(ack));
+    send (&ack, sizeof(ack));
 }

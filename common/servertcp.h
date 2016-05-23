@@ -2,6 +2,7 @@
 #define SERVERTCP_H
 
 #include <QTcpServer>
+#include <QTextCodec>
 #include "clienttcp.h"
 #include "logger.h"
 
@@ -12,16 +13,24 @@ public:
     ServerTcp(quint16 port, QHostAddress bind=QHostAddress::Any, Logger * = nullptr); // конструктор получает порт и, возможно, интерфейс привязки
     ~ServerTcp();
 
+    QList <class ClientTcp*> clients() { return _clients; }
     void sendToAll(char * data, quint16 length);
 
+signals:
+    void	newConnection(class ClientTcp *);               // подключение нового клиента
+    void    dataready   (class ClientTcp *);                // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
+    void	acceptError (QAbstractSocket::SocketError socketError); // ошибка на сокете
+    void    disconnected (class ClientTcp *);               // разрыв соединения
+
 private slots:
-    void	acceptError(QAbstractSocket::SocketError socketError);
-    void	newConnection();
-    void dataready   (class ClientTcp *);                   // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
-    void rawdataready(class ClientTcp *);                   // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
+    void	slotAcceptError(QAbstractSocket::SocketError socketError);
+    void	slotNewConnection();
+    void    slotDataready    (class ClientTcp *);           // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
+    void    slotRawdataready (class ClientTcp *);           // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
+    void    slotDisconnected (class ClientTcp *);           // разрыв соединения
 
 private:
-    QList <class ClientTcp*> clients;
+    QList <class ClientTcp*> _clients;
     QTcpServer *tcpServer;
     quint16 port;
     QHostAddress bind;

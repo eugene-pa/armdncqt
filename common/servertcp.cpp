@@ -8,7 +8,7 @@ ServerTcp::ServerTcp(quint16 port, QHostAddress bind, Logger * logger)       // 
     this->logger = logger;
 
     tcpServer = new QTcpServer();
-    QObject::connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
+    QObject::connect(tcpServer, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
 
     tcpServer->listen(bind, port);
 
@@ -21,19 +21,22 @@ ServerTcp::~ServerTcp()
 }
 
 // уведомление об ошибке сервера
-void ServerTcp::acceptError(QAbstractSocket::SocketError socketError)
+void ServerTcp::slotAcceptError(QAbstractSocket::SocketError socketError)
 {
-
+    emit acceptError (socketError);                         // ошибка на сокете
 }
 
 // уведомление о подключении нового клиента
-void ServerTcp::newConnection()
+void ServerTcp::slotNewConnection()
 {
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
     ClientTcp * client = new ClientTcp(this, clientConnection, logger);
-    clients.append(client);                                 // добавить подключенного клиента в список
-    QObject::connect(client, SIGNAL(dataready (ClientTcp*)), this, SLOT(dataready (ClientTcp*)));
-    QObject::connect(client, SIGNAL(rawdataready (ClientTcp*)), this, SLOT(rawdataready (ClientTcp*)));
+    _clients.append(client);                                 // добавить подключенного клиента в список
+    QObject::connect(client, SIGNAL(dataready (ClientTcp*)), this, SLOT(slotDataready (ClientTcp*)));
+    QObject::connect(client, SIGNAL(rawdataready (ClientTcp*)), this, SLOT(slotRawdataready (ClientTcp*)));
+    QObject::connect(client, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotDisconnected(ClientTcp*)));
+
+    emit newConnection(client);
 }
 
 void ServerTcp::log (QString& msg)
@@ -45,28 +48,45 @@ void ServerTcp::log (QString& msg)
 }
 
 // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
-void ServerTcp::dataready (ClientTcp * client)
+void ServerTcp::slotDataready (ClientTcp * client)
 {
 //  client->SendAck();                                      // квитирование
-    qDebug() << Logger::GetHex(client->Data(), client->Length());
+    qDebug() << Logger::GetHex(client->data(), client->length());
+
+    emit dataready(client);
+
+    client->clear();
 }
 
 // приняты неформатные данные - идентификация клиента
 // сервер должен решить, разрешено ли обслуживание клиента
-void ServerTcp::rawdataready (ClientTcp * client)
+void ServerTcp::slotRawdataready (ClientTcp * client)
 {
-    //client->SendAck();                                      // квитирование
-    // обработка данных
-    qDebug() << Logger::GetHex(client->RawData(), client->RawLength());
+    // прием символьногого идентификатора типа клиента (Шлюз СПД, ГИД УРАЛ и т.д.)
+    // сейчас используется кодировка "Windows-1251", поэтому используем декодер
+    QByteArray msg(client->rawData());
+    QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+    client->setid(codec->toUnicode(msg));
+    client->clear();
+    qDebug() << QString("Идентификация клиента: %1").arg(client->getid());
+}
+
+// разрыв соединения
+void ServerTcp::slotDisconnected (class ClientTcp * client)
+{
+    qDebug() << QString("Отключение клиента: %1").arg(client->getid());
+    emit disconnected(client);
+    _clients.removeOne(client);
 }
 
 void ServerTcp::sendToAll(char * data, quint16 length)
 {
-    foreach (ClientTcp * client, clients)
+    foreach (ClientTcp * client, _clients)
     {
         try
         {
-            client->Send(data, length);
+            if (client->isConnected())
+                client->send(data, length);
         }
         catch (...)
         {

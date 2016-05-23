@@ -258,14 +258,14 @@ void MainWindow::stationSelected(int index)
 void MainWindow::connected   (ClientTcp *client)
 {
     hostStatus.setPixmap(*g_green);
-    ui->statusBar->showMessage(QString("Соединение c хостом %1").arg(client->Name()), 60000);
+    ui->statusBar->showMessage(QString("Соединение c хостом %1").arg(client->name()), 60000);
 }
 
 // разорвано соединение
 void MainWindow::disconnected(ClientTcp *client)
 {
     hostStatus.setPixmap(*g_yellow);
-    ui->statusBar->showMessage(QString("%1. Разрыв соединения c клиентом %2").arg(QTime::currentTime().toString()).arg(client->Name()), 60000);
+    ui->statusBar->showMessage(QString("%1. Разрыв соединения c клиентом %2").arg(QTime::currentTime().toString()).arg(client->name()), 60000);
 }
 
 // ошибка сокета
@@ -278,21 +278,21 @@ void MainWindow::error (ClientTcp *client)
 // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
 void MainWindow::dataready   (ClientTcp * client)
 {
-    ui->statusBar->showMessage(QString("%1. Получены форматные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()), 10000);
-    client->SendAck();                                      // квитирование
+    ui->statusBar->showMessage(QString("%1. Получены форматные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->rawLength()), 10000);
+    client->sendAck();                                      // квитирование
 
     // обработка данных
     if (!blackBoxMode)
     {
-        DDataFromMonitor * pDtMntr = (DDataFromMonitor *)client->RawData();
-        pDtMntr->Extract(client->RawLength());
+        DDataFromMonitor * pDtMntr = (DDataFromMonitor *)client->rawData();
+        pDtMntr->Extract(client->rawLength());
     }
 }
 
 // получены необрамленные данные - отдельный сигнал
 void MainWindow::rawdataready(ClientTcp *client)
 {
-    ui->statusBar->showMessage(QString("%1. Получены неформатные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->RawLength()), 10000);
+    ui->statusBar->showMessage(QString("%1. Получены неформатные данные: %2 байт").arg(QTime::currentTime().toString()).arg(client->rawLength()), 10000);
 }
 
 
