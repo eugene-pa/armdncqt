@@ -11,31 +11,34 @@ ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)  // 
     // прописываем IP адрес клиента и локальный порт
     remoteIp = sock->peerAddress().toString();
     remotePort = sock->localPort();
+    nodecompress = false;
 
     init();
 }
 
-ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress, QString idtype)
+ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool nodecompress, QString idtype)
 {
     server = nullptr;
     this->remoteIp = ip;
     this->remotePort = port;
     logger = p;
-    this->compress = compress;
+    this->nodecompress = nodecompress;
     this->idtype = idtype;
+
     sock = new QTcpSocket();
     log(msg = QString("Конструктор ClientTcp %1:%2").arg(remoteIp).arg(remotePort));
 
     init();
 }
 
-ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
+ClientTcp::ClientTcp(QString& ipport, Logger * p, bool nodecompress, QString idtype)
 {
     server = nullptr;
     TcpHeader::ParseIpPort(ipport, remoteIp, remotePort);
     logger = p;
-    this->compress = compress;
+    this->nodecompress = nodecompress;
     this->idtype = idtype;
+
     sock = new QTcpSocket();
     log(msg = QString("Конструктор ClientTcp %1:%2").arg(remoteIp).arg(remotePort));
 
@@ -103,20 +106,34 @@ void ClientTcp::slotReadyRead      ()
                 qDebug() << "Недобор до" << toRead << ". Прочитано: " << _length;
             return;
         }
-        if (_length==sizeof(TcpHeader))
+        if (_length==sizeof(TcpHeaderExt))                  // расширенный 8-ми байтный заголовок
+        {
+            qDebug() << "Расширенный заголовок";
+            toRead = ((TcpHeaderExt *)_data)->Length();     // общая длина пакета (загловок + данные)
+        }
+        else
+        if (_length==sizeof(TcpHeader))                     // стандартный 4-х байтный заголовок
         {
             // анализ первых 4-х байтов
             if (((TcpHeader *)_data)->Signatured())
             {
                 // приняли заголовок пакета
-                qDebug() << "Заголовок";
                 toRead = ((TcpHeader *)_data)->Length();     // общая длина пакета (загловок + данные)
-                if (toRead==4)
+                if ((WORD)toRead == 0xffff)
                 {
-                    rcvd[0]++; rcvd[1] += toRead;           // инкремент
-                    qDebug() << "Квитанция";
-                    acked = true;
-                    return;
+                    toRead = sizeof(TcpHeaderExt);
+                    _length += sock->read(_data +_length, toRead-_length);   // читаем в буфер со смещением length
+                }
+                else
+                {
+                    qDebug() << "Заголовок";
+                    if (toRead==4)
+                    {
+                        rcvd[0]++; rcvd[1] += toRead;           // инкремент
+                        qDebug() << "Квитанция";
+                        acked = true;
+                        return;
+                    }
                 }
             }
             else
@@ -151,6 +168,7 @@ void ClientTcp::slotReadyRead      ()
     }
 }
 
+
 // если данные упакованы - распаковать
 // функции qCompress/qUncompress совместимы с используемым в С++/C# проектах форматом ZLIB с особенностями:
 // - сжатые данные включают 6-байтный префикс:
@@ -160,7 +178,7 @@ void ClientTcp::slotReadyRead      ()
 //   заголовок пакета используется как префикс
 void ClientTcp::uncompress()
 {
-    if (isCompressed())
+    if (!nodecompress && isCompressed())
     {
         QByteArray zip(_data, _length);
 //        zip[2] = 0;                                         // необязательные действия
@@ -222,11 +240,34 @@ void ClientTcp::log (QString& msg)
         qDebug() << msg;
 }
 
-// передача блока данных
+// упаковка и передача
+void ClientTcp::packsend(void *data, int length, bool compress)
+{
+    SignaturedPack pack((char*)data, length, compress);
+    send ((char*)&pack, pack.length);
+}
+
+// упаковка и передача
+void ClientTcp::packsend(QByteArray& array, bool compress)
+{
+    SignaturedPack pack(array, compress);
+    send ((char*)&pack, pack.length);
+}
+
+// передача подготовленного блока данных "как есть"
 void ClientTcp::send(void * p, int length)
 {
     if (isConnected())
     {
+/*
+        В общем случае - примерно так, но нужно учесть и изменить заголовок
+        if (length > 16 && _compress)
+        {
+            QByteArray data = compress((char*)p, length);
+            p = data.data();
+            length = data.length();
+        }
+*/
         sock->write((char*)p,length);
         sent[0]++; sent[1] += length;
         acked = false;
@@ -238,14 +279,7 @@ void ClientTcp::send(void * p, int length)
 // передача массива
 void ClientTcp::send(QByteArray& array)
 {
-    if (isConnected())
-    {
-        sock->write(array);
-        sent[0]++; sent[1] += array.length();
-        acked = false;
-    }
-    else
-        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(name()));
+    send (array.data(), array.length());
 }
 
 void ClientTcp::sendAck()

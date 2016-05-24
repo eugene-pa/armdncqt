@@ -8,6 +8,74 @@ TcpHeader::TcpHeader()
     length = 4;
 }
 
+TcpHeaderExt::TcpHeaderExt()
+{
+    signature = SIGNATURE;
+    signature2 = 0xffff;
+    length = 8;
+}
+
+// функции qCompress/qUncompress совместимы с используемым в С++/C# проектах форматом ZLIB с особенностями:
+// - сжатые данные включают 6-байтный префикс:
+// - 4 байта оригинальной длины (похоже, не используются, можно проставить нули)
+// - 2 байта сигнатуры ZIP 0x78,0x9C, совпадающие с сигнатурой библиотеки ZLIB
+SignaturedPack::SignaturedPack(char * src, int length, bool compress)
+{
+    pack(src, length, compress);
+}
+
+SignaturedPack::SignaturedPack(QByteArray& array, bool compress)
+{
+    pack(array.data(), array.length(), compress);
+}
+
+void SignaturedPack::pack(char * src, int srclength, bool compress)
+{
+    memset(data, 0, sizeof(data));
+    if (compress)
+    {
+        QByteArray srcarr(srclength, 0);
+        for (int i=0; i<srclength; i++)
+            srcarr[i] = src[i];
+        QByteArray zipped = qCompress(srcarr);
+        memcpy(data, zipped.data() + 4, srclength = zipped.length()-4);
+    }
+    else
+        memcpy(data, src, srclength);
+    signature = SIGNATURE;
+    length = sizeof(TcpHeader) + srclength;
+}
+
+
+SignaturedPackExt::SignaturedPackExt(char * src, int length, bool compress)
+{
+    pack(src, length, compress);
+}
+
+SignaturedPackExt::SignaturedPackExt(QByteArray& array, bool compress)
+{
+    pack(array.data(), array.length(), compress);
+}
+
+void SignaturedPackExt::pack(char * src, int srclength, bool compress)
+{
+    memset(data, 0, sizeof(data));
+    if (compress)
+    {
+        QByteArray srcarr(srclength, 0);
+        for (int i=0; i<srclength; i++)
+            srcarr[i] = src[i];
+        QByteArray zipped = qCompress(srcarr);
+        memcpy(data, zipped.data() + 4, srclength = zipped.length()-4);
+    }
+    else
+        memcpy(data, src, srclength);
+    signature = SIGNATURE;
+    signature2 = 0xffff;
+    length = sizeof(TcpHeaderExt) + srclength;
+}
+
+
 QString TcpHeader::ErrorInfo (QAbstractSocket::SocketError error)
 {
     switch (error)

@@ -48,41 +48,39 @@ BridgeTcp::BridgeTcp(QWidget *parent) :
     ui->lineEdit_main->setText(mainServerConnectStr = addrs.length() > 0 ? addrs[0] : "");
     ui->lineEdit_rsrv->setText(rsrvServerConnectStr = addrs.length() > 1 ? addrs[1] : "");
 
+    rdr.GetBool("COMPRESSDATA",compressEnabled);
+    ui->checkBox->setChecked(compressEnabled);
+
     QString ip = "";
     int port = 0;
 
     TcpHeader::ParseIpPort(mainServerConnectStr, ip, port); // основной сервер разбор строки IP:порт
     ipMain = mainServerConnectStr.length() ? new QHostAddress(mainServerConnectStr) : nullptr;
-    mainConnection = new ClientTcp(mainServerConnectStr, &logger, false, "Шлюз СПД");
+    mainConnection = new ClientTcp(mainServerConnectStr, &logger, compressEnabled, "Шлюз СПД");
+    connections.append(mainConnection);
+
     QObject::connect(mainConnection, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
     QObject::connect(mainConnection, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
     QObject::connect(mainConnection, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
     QObject::connect(mainConnection, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
     QObject::connect(mainConnection, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
     ui->label_main->set(QLed::round, QLed::on, Qt::yellow);
-    mainConnection->start();
 
     TcpHeader::ParseIpPort(rsrvServerConnectStr, ip, port); // основной сервер разбор строки IP:порт
     ipRsrv = rsrvServerConnectStr.length() ? new QHostAddress(rsrvServerConnectStr) : nullptr;
     if (ipRsrv != nullptr)
     {
-        rsrvConnection = new ClientTcp(rsrvServerConnectStr, &logger, false, "Шлюз СПД");
+        rsrvConnection = new ClientTcp(rsrvServerConnectStr, &logger, compressEnabled, "Шлюз СПД");
+        connections.append(rsrvConnection);
         QObject::connect(rsrvConnection, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
         QObject::connect(rsrvConnection, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
         QObject::connect(rsrvConnection, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
         QObject::connect(rsrvConnection, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
         QObject::connect(rsrvConnection, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
         ui->label_rsrv->set(QLed::round, QLed::on, Qt::yellow);
-        rsrvConnection->start();
     }
     else
         ui->label_rsrv->set(QLed::round, QLed::off);
-
-    server = new ServerTcp(portBridge, QHostAddress::Any, &logger);
-    QObject::connect(server, SIGNAL(acceptError(ClientTcp*)), this, SLOT(slotAcceptError(ClientTcp*)));
-    QObject::connect(server, SIGNAL(newConnection(ClientTcp*)), this, SLOT(slotSvrNewConnection(ClientTcp*)));
-    QObject::connect(server, SIGNAL(dataready(ClientTcp*)), this, SLOT(slotSvrDataready(ClientTcp*)));
-    QObject::connect(server, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotSvrDisconnected(ClientTcp*)));
 
     QTableWidget * t = ui->tableWidget;
     t->setColumnCount(4);
@@ -90,6 +88,28 @@ BridgeTcp::BridgeTcp(QWidget *parent) :
     t->setColumnWidth(0,150);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "Хост" << "Тип" << "Передано" << "Принято");
+    t->setSortingEnabled(false);
+    t->setRowCount(connections.count());
+    for (int i=0; i<connections.count(); i++)
+    {
+        ClientTcp *conn = connections[i];
+        QTableWidgetItem * item = new QTableWidgetItem (conn->name());
+        t->setItem(i,0, item);
+        t->setItem(i,1, new QTableWidgetItem ("Сервер"));
+        t->item(i,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));    // запомним клиента
+    }
+
+    // старт подключений после заполнения таблицы
+    for (int i=0; i<connections.count(); i++)
+    {
+        connections[i]->start();
+    }
+
+    server = new ServerTcp(portBridge, QHostAddress::Any, &logger);
+    QObject::connect(server, SIGNAL(acceptError(ClientTcp*)), this, SLOT(slotAcceptError(ClientTcp*)));
+    QObject::connect(server, SIGNAL(newConnection(ClientTcp*)), this, SLOT(slotSvrNewConnection(ClientTcp*)));
+    QObject::connect(server, SIGNAL(dataready(ClientTcp*)), this, SLOT(slotSvrDataready(ClientTcp*)));
+    QObject::connect(server, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotSvrDisconnected(ClientTcp*)));
 
     startTimer(1000);
 }
@@ -143,11 +163,17 @@ void BridgeTcp::error       (ClientTcp *conn)
 // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
 void BridgeTcp::dataready   (ClientTcp * conn)
 {
-    msg->setText(QString("%1. Получены форматные данные от сервера: %2 байт").arg(QTime::currentTime().toString()).arg(conn->rawLength()));
+    msg->setText(QString("%1. Ретранслируем данные от сервера %2: %3 байт").arg(QTime::currentTime().toString()).arg(conn->name()).arg(conn->rawLength()));
     conn->sendAck();                                      // квитирование
 
     if (server != nullptr)
-        server->sendToAll(conn->rawData(), conn->rawLength());
+    {
+        // если сжатие разрешено и данные уже сжаты, отправляем их без доп.обработки
+        if (compressEnabled && conn->isCompressed())
+            server->sendToAll(conn->rawData(), conn->rawLength());
+        else
+            server->packsendToAll(conn->data(), conn->length(), compressEnabled);
+    }
 }
 
 // получены необрамленные данные - отдельный сигнал
@@ -172,19 +198,14 @@ void BridgeTcp::slotSvrNewConnection (ClientTcp *conn)
     logger.log(s);
 
     QTableWidget * t = ui->tableWidget;
-    t->setSortingEnabled(false);                             // запрещаем сортировку
-    t->setRowCount(server->clients().count());
+    t->setRowCount(connections.count() + server->clients().count());
     int row = t->rowCount()-1;
     QString name = conn->name();
-    QTableWidgetItem * item = new QTableWidgetItem (conn->name());
     t->setItem(row,0, new QTableWidgetItem (conn->name()));
     t->setItem(row,1, new QTableWidgetItem (conn->getid()));
     t->setItem(row,2, new QTableWidgetItem (QString("%1/%2").arg(conn->getsent(0)).arg(conn->getsent(1))));
     t->setItem(row,3, new QTableWidgetItem (QString("%1/%2").arg(conn->getrcvd(0)).arg(conn->getrcvd(1))));
     t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));    // запомним клиента
-
-    t->setSortingEnabled(true);                             // разрешаем сортировку
-    t->sortByColumn(0, Qt::AscendingOrder);                 // сортировка по умолчанию
 }
 
 void BridgeTcp::slotSvrDisconnected  (ClientTcp * conn)
@@ -206,7 +227,6 @@ void BridgeTcp::slotSvrDataready     (ClientTcp * conn)
 void BridgeTcp::timerEvent(QTimerEvent *event)
 {
     QTableWidget * t = ui->tableWidget;
-    t->setSortingEnabled(false);
     for (int i=0; i<ui->tableWidget->rowCount(); i++)
     {
         QTableWidgetItem * item = ui->tableWidget->item(i,0);
@@ -216,29 +236,23 @@ void BridgeTcp::timerEvent(QTimerEvent *event)
 
             if (conn != nullptr)
             {
-                t->setItem(i,1, new QTableWidgetItem (conn->getid()));
+                if (i >= connections.count())
+                    t->setItem(i,1, new QTableWidgetItem (conn->getid()));
                 QIcon icon = QIcon(conn->isConnected() ? *g_green : *g_yellow);
                 t->item(i,0)->setIcon(QIcon(conn->isConnected() ? *g_green : *g_yellow));
                 t->setItem(i,2, new QTableWidgetItem (QString("%1/%2").arg(conn->getsent(0)).arg(conn->getsent(1))));
                 t->setItem(i,3, new QTableWidgetItem (QString("%1/%2").arg(conn->getrcvd(0)).arg(conn->getrcvd(1))));
 
-                // отключенные объекты удаляем из списка, можно из списка сервера
-                if (!conn->isConnected())
+                // отключенные клиенты удаляем из списка; удаляем объект ClientTcp
+                if (i >= connections.count() && !conn->isConnected())
                 {
                     t->removeRow(i);
+                    delete conn;
                     break;
                 }
             }
-            else
-            {
-
-            }
-        }
-        else
-        {
         }
     }
-    t->setSortingEnabled(true);
 }
 
 void BridgeTcp::loadResources()

@@ -29,16 +29,15 @@ signals:
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
 
 public:
-    const int maxSize = 65536 + 8;
     ClientTcp(class ServerTcp *, QTcpSocket  *, Logger *);  // конструктор, используемый сервером
-    ClientTcp(QString& ipport, Logger * = nullptr, bool compress=false, QString idtype = "");
+    ClientTcp(QString& ipport, Logger * = nullptr, bool nodecompress=false, QString idtype = "");
     ClientTcp(QString& remoteIp, int remotePort, Logger * = nullptr, bool compress=false, QString idtype = "");
     ~ClientTcp();
 
     void start ();                                          // старт работы сокета
     void stop  ();                                          // останов сокета
     void bind (QString& remoteIp);
-    void compressMode(bool s);
+    //void compressMode(bool s);
     void setlogger(Logger * p) { logger = p; }
     void setid(QString id) { idtype = id; }
     QString getid() { return idtype; }
@@ -47,13 +46,25 @@ public:
 
     QString name()                                          // имя в формате IP:порт
         { return QString("%1:%2").arg(remoteIp).arg(remotePort); }
+
     char * rawData()    { return _data; }                    // "сырые данные" - полный пакет с заголовком
     int    rawLength()  { return _length; }                  // длина пакета с заголовком
-    char * data()       { return _data + sizeof(TcpHeader); }// пользовательские данные
-    int    length()     { return _length - sizeof(TcpHeader); } // длина пользовательских данных
-    void   send(void *_data, int _length);                    // передача
+
+    // МОЖНО СРАЗУ ПРОВЕРЯТЬ ТИП ЗАГОЛОВКА (обычный/расширенный) и возвращать нужную длину
+    char * data()       { return _data   + (isSignaturedExt() ? sizeof(TcpHeaderExt) : sizeof(TcpHeader)); }// пользовательские данные
+    int    length()     { return _length - (isSignaturedExt() ? sizeof(TcpHeaderExt) : sizeof(TcpHeader)); }// длина пользовательских данных
+
+    bool isCompressed();                                    // проверка префикса сжатых данных
+
+    bool isSignatured   () { return ((TcpHeader    *)_data)->Signatured(); }
+    bool isSignaturedExt() { return ((TcpHeaderExt *)_data)->Signatured(); }
+
+    void   packsend(void *, int , bool compress=false);     // упаковка и передача
+    void   packsend(QByteArray&, bool compress=false);      // упаковка и передача
+    void   send(void *, int );                              // передача
     void   send(QByteArray&);                               // передача
     void   sendAck();                                       // квитанция
+
     UINT   getrcvd(int i) { return rcvd[i?1:0]; }           // счетчик: 0-пакетов, 1-байтов
     UINT   getsent(int i) { return sent[i?1:0]; }           // счетчик: 0-пакетов, 1-байтов
     void * userPtr(){ return _userPtr; }                    // получить пользовательский указатель
@@ -73,7 +84,8 @@ private:
     bool        run;                                        // старт/стоп
     QString     msg;                                        // строка для формирования сообщений
     Logger      * logger;                                   // логгер для протоколирования
-    bool        compress;                                   // сжатие на лету
+    bool        nodecompress;                               // не распаковывать уже сжатые данные
+//  bool        _transparentMode;                           // прием "как есть" без распаковки - используется в шлюзе СПД для ретрансляции
     QAbstractSocket::SocketError _lasterror;                // ошибка
     void        * _userPtr;                                  // указатель на данные пользователя
     bool        acked;                                      // квитировано!
@@ -87,7 +99,7 @@ private:
     void init ();
     void log (QString&);
     void uncompress();                                      // если данные упакованы - распаковать
-    bool isCompressed();                                    // проверка префикса сжатых данных
+
 };
 
 #endif // CLIENTTCP_H

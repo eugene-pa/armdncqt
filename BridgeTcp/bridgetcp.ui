@@ -57,7 +57,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>:/status/images/icon_grn.ico</pixmap>
+        <pixmap resource="images.qrc">:/status/images/icon_grn.ico</pixmap>
        </property>
       </widget>
      </item>
@@ -89,7 +89,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap>:/status/images/icon_grn.ico</pixmap>
+        <pixmap resource="images.qrc">:/status/images/icon_grn.ico</pixmap>
        </property>
       </widget>
      </item>
@@ -101,13 +101,16 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>13</width>
-         <height>20</height>
+         <height>17</height>
         </size>
        </property>
       </spacer>
      </item>
      <item>
       <widget class="QCheckBox" name="checkBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Сжатие на лету</string>
        </property>
@@ -181,6 +184,8 @@
    <header>qled.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -43,8 +43,10 @@ private slots:
     void slotSvrDisconnected  (ClientTcp *);
 
 private:
-    virtual void timerEvent(QTimerEvent *event);                // таймер
+    virtual void timerEvent(QTimerEvent *event);            // таймер
     void loadResources();
+
+    QVector <class ClientTcp*> connections;                 // соединения
 
     Ui::BridgeTcp *ui;
     QStatusBar * bar;

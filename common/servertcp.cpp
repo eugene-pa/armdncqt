@@ -79,6 +79,7 @@ void ServerTcp::slotDisconnected (class ClientTcp * client)
     _clients.removeOne(client);
 }
 
+// отправка данных "как есть" всем клиентам
 void ServerTcp::sendToAll(char * data, quint16 length)
 {
     foreach (ClientTcp * client, _clients)
@@ -93,4 +94,10 @@ void ServerTcp::sendToAll(char * data, quint16 length)
 
         }
     }
+}
+
+void ServerTcp::packsendToAll(char * data, quint16 length, bool compress)
+{
+    SignaturedPack pack((char*)data, length, compress);
+    sendToAll((char*)&pack, pack.length);
 }

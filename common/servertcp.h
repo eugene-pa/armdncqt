@@ -15,6 +15,7 @@ public:
 
     QList <class ClientTcp*> clients() { return _clients; }
     void sendToAll(char * data, quint16 length);
+    void packsendToAll(char * data, quint16 length, bool compress=false);
 
 signals:
     void	newConnection(class ClientTcp *);               // подключение нового клиента
