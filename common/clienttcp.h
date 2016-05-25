@@ -72,6 +72,7 @@ public:
     bool   isServer() { return server != nullptr; }         // это серверное соединение ?
     bool   isAcked () { return acked; }                     // квитировано ?
     void   clear() { memset(_data, 0, maxSize); }
+    void   setTransparent(bool s) { _transparentMode = s; } // вкл/откл режим ретрансляции сжатых данных без распаковки
 
 private:
     ServerTcp   * server;                                   // владелец - сервер
@@ -84,8 +85,10 @@ private:
     bool        run;                                        // старт/стоп
     QString     msg;                                        // строка для формирования сообщений
     Logger      * logger;                                   // логгер для протоколирования
-    bool        nodecompress;                               // не распаковывать уже сжатые данные
-//  bool        _transparentMode;                           // прием "как есть" без распаковки - используется в шлюзе СПД для ретрансляции
+//  bool        nodecompress;                               // не распаковывать уже сжатые данные
+    bool        _compress;                                  // не распаковывать уже сжатые данные
+    bool        _transparentMode;                           // прием "как есть" без распаковки - используется в шлюзе СПД для ретрансляции
+
     QAbstractSocket::SocketError _lasterror;                // ошибка
     void        * _userPtr;                                  // указатель на данные пользователя
     bool        acked;                                      // квитировано!

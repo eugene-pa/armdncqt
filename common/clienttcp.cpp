@@ -11,18 +11,21 @@ ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)  // 
     // прописываем IP адрес клиента и локальный порт
     remoteIp = sock->peerAddress().toString();
     remotePort = sock->localPort();
-    nodecompress = false;
+    _compress = false;
+    _transparentMode = false;
 
     init();
 }
 
-ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool nodecompress, QString idtype)
+ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress, QString idtype)
 {
     server = nullptr;
     this->remoteIp = ip;
     this->remotePort = port;
     logger = p;
-    this->nodecompress = nodecompress;
+    _compress = compress;
+    _transparentMode = false;
+
     this->idtype = idtype;
 
     sock = new QTcpSocket();
@@ -31,12 +34,14 @@ ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool nodecompress, QStri
     init();
 }
 
-ClientTcp::ClientTcp(QString& ipport, Logger * p, bool nodecompress, QString idtype)
+ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
 {
     server = nullptr;
     TcpHeader::ParseIpPort(ipport, remoteIp, remotePort);
     logger = p;
-    this->nodecompress = nodecompress;
+    _compress = compress;
+    _transparentMode = false;
+
     this->idtype = idtype;
 
     sock = new QTcpSocket();
@@ -126,11 +131,11 @@ void ClientTcp::slotReadyRead      ()
                 }
                 else
                 {
-                    qDebug() << "Заголовок";
+                    //qDebug() << "Заголовок";
                     if (toRead==4)
                     {
                         rcvd[0]++; rcvd[1] += toRead;           // инкремент
-                        qDebug() << "Квитанция";
+                        //qDebug() << "Квитанция";
                         acked = true;
                         return;
                     }
@@ -178,7 +183,7 @@ void ClientTcp::slotReadyRead      ()
 //   заголовок пакета используется как префикс
 void ClientTcp::uncompress()
 {
-    if (!nodecompress && isCompressed())
+    if (!_transparentMode && isCompressed())
     {
         QByteArray zip(_data, _length);
 //        zip[2] = 0;                                         // необязательные действия
@@ -195,13 +200,14 @@ void ClientTcp::uncompress()
 // проверка префикса сжатых данных
 bool ClientTcp::isCompressed()
 {
-    return _length > sizeof(TcpHeader) + 2 && (BYTE)_data[4] == 0x78 && (BYTE)_data[5] == 0x9C;
+    int lengthheader = isSignaturedExt() ? sizeof(TcpHeaderExt) : sizeof(TcpHeader);    // учитываем расширенный заголовок
+    return _length > lengthheader + 2 && (BYTE)_data[lengthheader] == 0x78 && (BYTE)_data[lengthheader +1 ] == 0x9C;
 }
 
 // установлено соединение
 void ClientTcp::slotConnected ()
 {
-    log (msg=QString("Установлено соединения c хостом %1:%2").arg(remoteIp).arg(remotePort));
+    log (msg=QString("ClientTcp. Установлено соединение c хостом %1:%2").arg(remoteIp).arg(remotePort));
 
     // если определен тип, отправляет тип удаленному серверу, преобразовав в кодировку Windows-1251
     if (idtype.length())
@@ -216,7 +222,7 @@ void ClientTcp::slotConnected ()
 // разорвано соединение
 void ClientTcp::slotDisconnected ()
 {
-    log (msg=QString("Разрыв соединения c хостом %1").arg(name()));
+    log (msg=QString("ClientTcp. Разрыв соединения c хостом %1").arg(name()));
     emit disconnected (this);
     if (run)
         sock->connectToHost(remoteIp,remotePort);
@@ -226,7 +232,7 @@ void ClientTcp::slotDisconnected ()
 void ClientTcp::slotError (QAbstractSocket::SocketError er)
 {
     _lasterror = er;
-    log (msg=QString("Клиент %1. Ошибка: %2").arg(name()).arg(TcpHeader::ErrorInfo(er)));
+    log (msg=QString("ClientTcp. Клиент %1. Ошибка: %2").arg(name()).arg(TcpHeader::ErrorInfo(er)));
     emit error (this);
     if (run && !isConnected())
         sock->connectToHost(remoteIp,remotePort);
@@ -259,21 +265,12 @@ void ClientTcp::send(void * p, int length)
 {
     if (isConnected())
     {
-/*
-        В общем случае - примерно так, но нужно учесть и изменить заголовок
-        if (length > 16 && _compress)
-        {
-            QByteArray data = compress((char*)p, length);
-            p = data.data();
-            length = data.length();
-        }
-*/
         sock->write((char*)p,length);
         sent[0]++; sent[1] += length;
         acked = false;
     }
     else
-        log (msg=QString("Игнорируем отправку данных в разорванное соединение %1").arg(name()));
+        log (msg=QString("ClientTcp. Игнорируем отправку данных в разорванное соединение %1").arg(name()));
 }
 
 // передача массива

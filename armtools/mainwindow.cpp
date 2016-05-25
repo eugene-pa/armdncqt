@@ -22,7 +22,7 @@ QString baseDir;
 bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
-    Logger logger("Log/shaper.txt", true, true);
+    Logger logger("Log/armtools.log", true, true);
     QString dbname("C:/armdncqt/bd/arm.db");
     QString extDb ("C:/armdncqt/bd/armext.db");
     QString pathTemp ("c:/armdncqt/bd/temp/");
@@ -33,9 +33,10 @@ bool MainWindow::blackBoxMode;                              // включен р
     QString iniFile = "c:/armdncqt/shaper/shaper.ini";
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
+    QString editor = "notepad.exe";     // блокнот
 #endif
 #ifdef Q_OS_MAC
-    Logger logger("/Users/evgenyshmelev/armdncqt/Log/shaper.txt", true, true);
+    Logger logger("/Users/evgenyshmelev/armdncqt/Log/armtools.log", true, true);
     QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
     QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
     QString pathTemp ("/Users/evgenyshmelev/armdncqt/bd/temp/");
@@ -46,9 +47,11 @@ bool MainWindow::blackBoxMode;                              // включен р
     QString iniFile = "/Users/evgenyshmelev/armdncqt/shaper/shaper.ini";
     QString compressor = "zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip.exe";     // утилита для распаковки архивов
+    QString editor = "TextEdit";                             // блокнот
+
 #endif
 #ifdef Q_OS_LINUX
-    Logger logger("/home/eugene/QTProjects/armdncqt/Log/shaper.txt", true, true);
+    Logger logger("/home/eugene/QTProjects/armdncqt/Log/armtools.log", true, true);
     QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
     QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
     QString pathTemp ("/home/eugene/QTProjects/armdncqt/bd/temp/");
@@ -59,6 +62,7 @@ bool MainWindow::blackBoxMode;                              // включен р
     QString iniFile = "/home/eugene/QTProjects/armdncqt/shaper/shaper.ini";
     QString compressor = "zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip.exe";     // утилита для распаковки архивов
+    QString editor = "gedit";                             // блокнот
 #endif
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -428,6 +432,16 @@ void MainWindow::on_action_Toolbar_triggered()
 void MainWindow::on_action_ToolBar2_triggered()
 {
     ui->toolBar2->setVisible(ui->action_ToolBar2->isChecked());
+}
+
+QProcess process;
+// протокол работы модуля
+void MainWindow::on_action_15_triggered()
+{
+    QStringList params;
+    params << logger.GetActualFile();
+    process.start(editor, params);
+//    process.waitForFinished(-1);
 }
 
 

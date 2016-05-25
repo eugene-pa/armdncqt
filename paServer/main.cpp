@@ -1,15 +1,11 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-
-    //BridgeTcp w;
-    MainWindow w(nullptr);
+    MainWindow w;
     w.show();
-
 
     return a.exec();
 }

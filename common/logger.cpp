@@ -68,10 +68,15 @@ void Logger::log (QString str)
 
     if (file.open(QFile::Append))
     {
+#ifdef Q_OS_WIN
+        QTextCodec::setCodecForLocale( QTextCodec::codecForName("Windows-1251"));
+#endif
         QTextStream out (&file);
         QString msg = QString("%1%2").arg(bLogTime?QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss  "):"").arg(str);
         out << msg <<"\r\n";
-
+#ifdef Q_OS_WIN
+        QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
+#endif
         qDebug() << msg.toStdString().c_str();                    // дублируем отладочном окне
     }
 

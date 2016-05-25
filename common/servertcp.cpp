@@ -36,6 +36,9 @@ void ServerTcp::slotNewConnection()
     QObject::connect(client, SIGNAL(rawdataready (ClientTcp*)), this, SLOT(slotRawdataready (ClientTcp*)));
     QObject::connect(client, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotDisconnected(ClientTcp*)));
 
+    QString s = QString("ServerTcp [порт %1]. Подключен клиент %2").arg(port).arg(client->name());
+    log(s);
+
     emit newConnection(client);
 }
 
@@ -74,7 +77,10 @@ void ServerTcp::slotRawdataready (ClientTcp * client)
 // разрыв соединения
 void ServerTcp::slotDisconnected (class ClientTcp * client)
 {
-    qDebug() << QString("Отключение клиента: %1").arg(client->getid());
+    QString s = QString("ServerTcp [порт %1]. Отключен клиент %2").arg(port).arg(client->name());
+    log(s);
+
+//  qDebug() << QString("Отключение клиента: %1").arg(client->getid());
     emit disconnected(client);
     _clients.removeOne(client);
 }

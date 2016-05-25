@@ -96,6 +96,8 @@ private slots:
 
     void on_actionPrev_triggered();
 
+    void on_action_15_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 

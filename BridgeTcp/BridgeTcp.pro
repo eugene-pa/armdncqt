@@ -13,25 +13,27 @@ TEMPLATE = app
 INCLUDEPATH += ../forms/
 
 SOURCES += main.cpp\
-        bridgetcp.cpp \
     ../forms/qled.cpp \
     ../common/clienttcp.cpp \
     ../common/defines.cpp \
     ../common/logger.cpp \
     ../common/tcpheader.cpp \
     ../common/inireader.cpp \
-    ../common/servertcp.cpp
+    ../common/servertcp.cpp \
+    mainwindow.cpp
 
-HEADERS  += bridgetcp.h \
+HEADERS  += \
     ../forms/qled.h \
     ../common/clienttcp.h \
     ../common/defines.h \
     ../common/logger.h \
     ../common/tcpheader.h \
     ../common/inireader.h \
-    ../common/servertcp.h
+    ../common/servertcp.h \
+    mainwindow.h
 
-FORMS    += bridgetcp.ui
+FORMS    += \
+    mainwindow.ui
 
 DISTFILES += \
     BridgeTcp.ini

@@ -43,7 +43,7 @@ void SignaturedPack::pack(char * src, int srclength, bool compress)
     else
         memcpy(data, src, srclength);
     signature = SIGNATURE;
-    length = sizeof(TcpHeader) + srclength;
+    length = (WORD)(sizeof(TcpHeader) + srclength);
 }
 
 
