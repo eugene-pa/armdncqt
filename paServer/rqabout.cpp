@@ -2,7 +2,7 @@
 
 RqAbout::RqAbout()
 {
-
+    rq = rqAbout;
 }
 
 RqAbout::~RqAbout()

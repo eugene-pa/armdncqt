@@ -2,7 +2,10 @@
 
 RemoteRq::RemoteRq()
 {
-
+    rq = rqEmpty;
+    host = "";
+    reserv1 = "";
+    reserv2 = 0;
 }
 
 RemoteRq::~RemoteRq()
