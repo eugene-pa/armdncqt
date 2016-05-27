@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QHostInfo>
 
 namespace Ui {
 class MainWindow;

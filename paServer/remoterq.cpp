@@ -28,3 +28,12 @@ BriefFileInfo::BriefFileInfo (QFileInfo& fi)
     if (!fi.isExecutable()) _attrib += "B";
 
 }
+
+Responce::Responce()
+{
+
+}
+Responce::~Responce()
+{
+
+}
