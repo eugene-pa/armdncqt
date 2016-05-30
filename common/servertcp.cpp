@@ -10,7 +10,7 @@ ServerTcp::ServerTcp(quint16 port, QHostAddress bind, Logger * logger)       // 
     tcpServer = new QTcpServer();
     QObject::connect(tcpServer, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
 
-    tcpServer->listen(bind, port);
+//  tcpServer->listen(bind, port);
 
     log(msg = QString("Конструктор ServerTcp %1:%2").arg(bind.toString()).arg(port));
 }
@@ -18,6 +18,12 @@ ServerTcp::ServerTcp(quint16 port, QHostAddress bind, Logger * logger)       // 
 ServerTcp::~ServerTcp()
 {
 
+}
+
+void ServerTcp::start()
+{
+    tcpServer->listen(bind, port);
+    log(msg = QString("Старт сервера ServerTcp %1:%2").arg(bind.toString()).arg(port));
 }
 
 // уведомление об ошибке сервера

@@ -40,7 +40,9 @@ public:
 
 protected:
     RemoteRqType rq;                                        // запрос
-    QString      host;                                      // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост  tcp://10.52.19.71/tcp://192.168.1.1
+    QHostAddress src;                                       // IP источника запроса
+    QHostAddress dst;                                       // IP назначение запроса
+    QString      remotePath;                                // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост  tcp://10.52.19.71/tcp://192.168.1.1
     QString      reserv1;                                   // резерв
     int          reserv2;                                   // резерв
 };
@@ -50,6 +52,7 @@ class BriefFileInfo
 public:
     BriefFileInfo() { }
     BriefFileInfo (QFileInfo& fi);                          // конструктор
+    void fill(QFileInfo& fi);
 protected:
     QString     _name;                                      // имя файла локальное
     QDateTime   _lastChanged;                               // дата изменения
@@ -68,9 +71,9 @@ public:
     virtual QByteArray data() { return QByteArray((const char*)this, sizeof(RemoteRq)); }
 protected:
     RemoteRqType rq;                                        // запрос
-    QHostAddress src;                                       // IP источника запроса
-    QHostAddress dst;                                       // IP удаленной стороны
-    QString      remotePath;                                // IP удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост  tcp://10.52.19.71/tcp://192.168.1.1
+    QHostAddress src;                                       // IP источника лответа
+    QHostAddress dst;                                       // IP назначение ответа
+//  QString      remotePath;                                // IP удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост  tcp://10.52.19.71/tcp://192.168.1.1
     QString      reserv1;                                   // резерв
     int          reserv2;                                   // резерв
 };

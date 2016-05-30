@@ -3,6 +3,16 @@
 
 #include <QMainWindow>
 #include <QHostInfo>
+#include <QSysInfo>
+#include <QTextCodec>
+#include <QLabel>
+
+#include "../common/defines.h"
+#include "../common/logger.h"
+#include "../common/clienttcp.h"
+#include "../common/servertcp.h"
+#include "../common/defines.h"
+#include "../common/inireader.h"
 
 namespace Ui {
 class MainWindow;
@@ -16,8 +26,19 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    // уведомления сервера
+    void slotAcceptError(QAbstractSocket::SocketError socketError);
+    void slotSvrNewConnection (ClientTcp *);
+    void slotSvrDataready     (ClientTcp *);
+    void slotSvrDisconnected  (ClientTcp *);
+
 private:
     Ui::MainWindow *ui;
+    class QLabel * msg;
+    ServerTcp * server;
+
+    void MainWindow::loadResources();
 };
 
 #endif // MAINWINDOW_H

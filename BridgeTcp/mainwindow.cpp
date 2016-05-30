@@ -42,10 +42,11 @@ MainWindow::MainWindow(QWidget *parent) :
     logger.log("Запуск");
 
     IniReader rdr(iniFile);
-    QString s;
+
     rdr.GetInt("BRIDGEPORT", portBridge);
     ui->lineEdit_BridgePort_3->setText(QString::number(portBridge));
 
+    QString s;
     rdr.GetText("SERVER", s);
     QStringList addrs = s.split(QRegExp("[ ,;]+"));
     ui->lineEdit_main_3->setText(mainServerConnectStr = addrs.length() > 0 ? addrs[0] : "");
@@ -117,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(server, SIGNAL(newConnection(ClientTcp*)), this, SLOT(slotSvrNewConnection(ClientTcp*)));
     QObject::connect(server, SIGNAL(dataready(ClientTcp*)), this, SLOT(slotSvrDataready(ClientTcp*)));
     QObject::connect(server, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotSvrDisconnected(ClientTcp*)));
+    server->start();
 
     startTimer(1000);
 
@@ -273,24 +275,7 @@ void MainWindow::loadResources()
     g_red               = new QPixmap(images + "icon_red.ico");
     g_yellow            = new QPixmap(images + "icon_yel.ico");
     g_gray              = new QPixmap(images + "icon_gry.ico");
-    g_white             = new QPixmap(images + "icon_wht.ico");
-    g_cyan              = new QPixmap(images + "icon_cyn.ico");
-
-    g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
-    g_green_box         = new QPixmap(images + "box_grn.ico");
-    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");           // МТУ ок
-    g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
-    g_red_box           = new QPixmap(images + "box_red.ico");
-    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");           // МТУ error
-    g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
-    g_yellow_box        = new QPixmap(images + "box_yel.ico");
-    g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");
-    g_gray_box          = new QPixmap(images + "box_gry.ico");
-    g_white_box         = new QPixmap(images + "box_wht.ico");
-
-    g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
-    g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
-
+    g_white             = new QPixmap(images + "icon_non.ico");
 }
 
 // просмотр настроек

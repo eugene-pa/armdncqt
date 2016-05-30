@@ -118,6 +118,7 @@ extern bool IsMonitor  ();
 extern bool IsArmTools ();
 extern bool IsRss      ();
 extern bool IsTablo    ();
+extern bool loadResources(QString dir);
 
 // глобальные переменные
 extern bool g_ShowStrlText  ;                               // отображение надписей на стрелках

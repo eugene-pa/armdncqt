@@ -1,24 +1,37 @@
 #ifndef RQABOUT_H
 #define RQABOUT_H
 
+#include <QCoreApplication>
+#include <QTextCodec>
 #include "remoterq.h"
 
 class RqAbout : public RemoteRq
 {
 public:
-    RqAbout() ;
+    RqAbout();
     ~RqAbout();
-
+    QByteArray Serialize();
 protected:
+};
 
 
-    QString         filedName;                               // 1 - исполняемый файл сервера
-    BriefFileInfo   fileInfo;                                // 2 - информация об исполняемом файле
-    QString         hostName;                                // 4 - имя ПК
-    QString         osVersion;                               // 5 - информация об ОС
-    QString         userName;                                // 7 - учетная запись (системная)
+class ResponceAbout
+{
+public:
+    ResponceAbout();
+    QByteArray Serialize();
+protected:
+    QString         fileName;                               // - исполняемый файл сервера
+    BriefFileInfo   fileInfo;                               // - информация об исполняемом файле
+    QString         hostName;                               // - имя ПК
+    QString         cpu;                                    // - тип процессора
+    QString         kernel;                                 // - тип ядра ОС
+    QString         version;                                // - версия ядра ОС
+    QString         userName;                               // - учетная запись (системная)
     QString         reserv3;
     int             reserv4;
 };
 
 #endif // RQABOUT_H
+
+

@@ -66,3 +66,49 @@ void addCRC (QByteArray& data)
     data.append(crc & 0x00ff);
     data.append((crc >> 8) & 0x00ff);
 }
+
+// загрузка типовых ресурсов
+bool loadResources(QString dir)
+{
+    g_green             = new QPixmap(dir + "icon_grn.ico");
+    g_red               = new QPixmap(dir + "icon_red.ico");
+    g_yellow            = new QPixmap(dir + "icon_yel.ico");
+    g_gray              = new QPixmap(dir + "icon_gry.ico");
+    g_white             = new QPixmap(dir + "icon_wht.ico");
+    g_cyan              = new QPixmap(dir + "icon_cyn.ico");
+
+    g_green_box_blink   = new QPixmap(dir + "box_grn_blink.ico");
+    g_green_box         = new QPixmap(dir + "box_grn.ico");
+    g_green_box_tu      = new QPixmap(dir + "box_grn_tu.ico");           // МТУ ок
+    g_green_dark_box    = new QPixmap(dir + "box_grn_dark.ico");
+    g_red_box           = new QPixmap(dir + "box_red.ico");
+    g_red_box_tu        = new QPixmap(dir + "box_red_tu.ico");           // МТУ error
+    g_red_dark_box      = new QPixmap(dir + "box_red_dark.ico");
+    g_yellow_box        = new QPixmap(dir + "box_yel.ico");
+    g_yellow_dark_box   = new QPixmap(dir + "box_yel_dark.ico");
+    g_gray_box          = new QPixmap(dir + "box_gry.ico");
+    g_white_box         = new QPixmap(dir + "box_wht.ico");
+
+    g_strl_minus        = new QPixmap(dir + "strl_minus.ico");           // -
+    g_strl_plus         = new QPixmap(dir + "strl_plus.ico");            // +
+
+    return !(g_green          ->isNull() ||
+            g_red            ->isNull() ||
+            g_yellow         ->isNull() ||
+            g_gray           ->isNull() ||
+            g_white          ->isNull() ||
+            g_cyan           ->isNull() ||
+            g_green_box_blink->isNull() ||
+            g_green_box      ->isNull() ||
+            g_green_box_tu   ->isNull() ||
+            g_green_dark_box ->isNull() ||
+            g_red_box        ->isNull() ||
+            g_red_box_tu     ->isNull() ||
+            g_red_dark_box   ->isNull() ||
+            g_yellow_box     ->isNull() ||
+            g_yellow_dark_box->isNull() ||
+            g_gray_box       ->isNull() ||
+            g_white_box      ->isNull() ||
+            g_strl_minus     ->isNull() ||
+            g_strl_plus      ->isNull());
+}
