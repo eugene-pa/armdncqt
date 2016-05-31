@@ -5,8 +5,14 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
+
 #include <QGraphicsItem>
 #include <QColor>
+#include "QCloseEvent"
+#include <QFont>
+#include <QBrush>
+#include <QPen>
+
 #include <time.h>
 #include <QHash>
 #include <QList>
@@ -14,13 +20,8 @@
 #include <QSqlQuery>
 #include <QBitArray>
 #include <QVariant>
-#include "QCloseEvent"
 #include "QDateTime"
 #include "QRegularExpression"
-#include <QFont>
-#include <QBrush>
-#include <QColor>
-#include <QPen>
 #include <QByteArray>
 
 //#include <QWidget>

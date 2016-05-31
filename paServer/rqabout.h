@@ -10,6 +10,9 @@ class RqAbout : public RemoteRq
 public:
     RqAbout();
     ~RqAbout();
+
+    virtual QByteArray prepare();                           // сформировать ответ
+
     QByteArray Serialize();
 protected:
 };
@@ -20,6 +23,7 @@ class ResponceAbout
 public:
     ResponceAbout();
     QByteArray Serialize();
+    void Deserialize(QByteArray& data);
 protected:
     QString         fileName;                               // - исполняемый файл сервера
     BriefFileInfo   fileInfo;                               // - информация об исполняемом файле

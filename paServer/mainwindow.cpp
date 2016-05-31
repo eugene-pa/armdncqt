@@ -21,6 +21,11 @@ QString editor = "gedit";                                   // блокнот
 
 int port = 28080;
 
+void log(QString& msg)                                      // глобальная функция лога
+{
+    logger.log(msg);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -84,12 +89,26 @@ void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
     msg->setText(s);
 }
 
-// получены данные
+// получен запрос
+// если запрос локальный - выясняем тип и обрабатываем
+// если запрос удаленный - создаем клиента и привязываем обработчики;
+//                         - при подключении - транслировать запрос
+//                         - при приеме - транслировать ответ заказчику и отключиться
 void MainWindow::slotSvrDataready     (ClientTcp * conn)
 {
     QString name(conn->name());
-    QString s("Приняты данные от клиента " + conn->name());
+    QString s("Приняты запрос от клиента " + conn->name());
     msg->setText(s);
+
+    RemoteRq * rq = (RemoteRq *)conn->data();
+    if (rq->isRemote())
+    {
+
+    }
+    else
+    {
+
+    }
 }
 
 // ошибка на сокете

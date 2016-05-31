@@ -1,5 +1,9 @@
 #include "remoterq.h"
 
+const quint32 RemoteRq::streamHeader = 0x55aa55aa;                 // заголовок
+const quint16 RemoteRq::paServerVersion = 1;                       // версия paServer
+
+
 RemoteRq::RemoteRq()
 {
     rq = rqEmpty;
@@ -13,6 +17,12 @@ RemoteRq::~RemoteRq()
 
 }
 
+// сформировать пустой ответ
+// виртуальная функция должна быть переопределена в наследуемых классах
+QByteArray RemoteRq::prepare()
+{
+    return QByteArray();
+}
 
 // конструктор
 BriefFileInfo::BriefFileInfo (QFileInfo& fi)
@@ -33,11 +43,22 @@ void BriefFileInfo::fill(QFileInfo& fi)
     if (!fi.isExecutable()) _attrib += "B";
 }
 
-Responce::Responce()
+/*
+void BriefFileInfo::Serialize(QDataStream& stream)
 {
-
+    stream << _name;                                        // имя файла локальное
+    stream << _lastChanged;                                 // дата изменения
+    stream << _created;                                     // дата создания
+    stream << _length;                                      // длина
+    stream << _attrib;                                      // атрибуты
 }
-Responce::~Responce()
+
+void BriefFileInfo::Deserialize(QDataStream& stream)
 {
-
+    stream >> _name;                                        // имя файла локальное
+    stream >> _lastChanged;                                 // дата изменения
+    stream >> _created;                                     // дата создания
+    stream >> _length;                                      // длина
+    stream >> _attrib;                                      // атрибуты
 }
+*/

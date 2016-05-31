@@ -1,6 +1,7 @@
 #include "rqabout.h"
 #include <QSysInfo>
 
+
 RqAbout::RqAbout()
 {
     rq = rqAbout;
@@ -11,12 +12,24 @@ RqAbout::~RqAbout()
 
 }
 
-QByteArray RqAbout::Serialize()
+// ответить
+QByteArray RqAbout::prepare()
 {
-    return QByteArray((const char*)this, sizeof(QByteArray));
+    ResponceAbout responce;
+    return responce.Serialize();
 }
 
 
+QByteArray RqAbout::Serialize()
+{
+    QBuffer buf;
+    buf.open(QBuffer::WriteOnly);
+    QDataStream out(&buf);
+    return buf.buffer();
+    //return QByteArray((const char*)this, sizeof(QByteArray));
+}
+
+// конструктор фрмирует отклик
 ResponceAbout::ResponceAbout()
 {
     QFileInfo info( QCoreApplication::applicationFilePath() );
@@ -45,5 +58,66 @@ ResponceAbout::ResponceAbout()
 
 QByteArray ResponceAbout::Serialize()
 {
-    return QByteArray((const char*)this, sizeof(QByteArray));
+    QBuffer buf;
+    buf.open(QBuffer::WriteOnly);
+
+    QDataStream out(&buf);
+    out << RemoteRq::streamHeader;
+    out << RemoteRq::paServerVersion;
+    out << fileName;
+    out << fileInfo;
+    out << hostName;
+    out << cpu;
+    out << kernel;
+    out << version;
+    out << userName;
+    out << reserv3;
+    out << reserv4;
+    return buf.buffer();
+}
+
+void ResponceAbout::Deserialize(QByteArray& data)
+{
+    quint32 header;                                          // заголовок
+    quint16 version;                                         // версия paServer
+
+    QBuffer buf(&data, nullptr);
+    buf.open(QIODevice::ReadOnly);
+
+    QDataStream stream(&buf);
+    stream >> header;
+    stream >> version;
+    if (header == RemoteRq::streamHeader)
+    {
+        if (version <= RemoteRq::streamHeader)
+        {
+            if (version >= 1)
+            {
+                stream >> fileName;
+                stream >> fileInfo;
+                stream >> hostName;
+                stream >> cpu;
+                stream >> kernel;
+                stream >> version;
+                stream >> userName;
+                stream >> reserv3;
+                stream >> reserv4;
+            }
+            if (version >= 2)
+            {
+
+            }
+        }
+        else
+        {
+            QString msg = QString("Клиент версии {1} не поддерживает работу с сервером версии {2}. Требуется обновление ПО клиента").arg(RemoteRq::streamHeader).arg(version);
+            log(msg);
+        }
+    }
+    else
+    {
+        QString msg = QString("Нет сигнатуры сериализации в потоке данных");
+        log(msg);
+    }
+
 }

@@ -4,15 +4,18 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QHostInfo>
+#include <QBuffer>
 
 // удаленный запрос
+
+extern void log(QString&);                              // глобальная функция лога
 
 enum RemoteRqType
 {
     rqEmpty     = 0,
     rqAbout     = 1,                                    // информация о версии сервиса и хосте
-    rqDirInfo   = 2,                                    // информация о каталоге: дата создания, число файлов, число папок, размер
-    rqDirSize   = 3,                                    // размер каталога в байтах
+//  rqDirInfo   = 2,                                    // информация о каталоге: дата создания, число файлов, число папок, размер
+//  rqDirSize   = 3,                                    // размер каталога в байтах
     rqDirs      = 4,                                    // запрос списка каталогов
     rqFileInfo  = 5,                                    // запрос информации о файле, в том числе версии
     rqFilesInfo = 6,                                    // запрос информации о всех файлах каталога
@@ -36,7 +39,13 @@ public:
     RemoteRq();
     ~RemoteRq();
 
+    static const quint32 streamHeader;                      // заголовок
+    static const quint16 paServerVersion;                   // версия paServer
+
     virtual QByteArray data() { return QByteArray((const char*)this, sizeof(RemoteRq)); }
+    virtual QByteArray prepare();                            // сформировать ответ
+
+    bool isRemote() { return remotePath.length() == 0; }
 
 protected:
     RemoteRqType rq;                                        // запрос
@@ -53,6 +62,29 @@ public:
     BriefFileInfo() { }
     BriefFileInfo (QFileInfo& fi);                          // конструктор
     void fill(QFileInfo& fi);
+//    void Serialize  (QDataStream& stream);
+//    void Deserialize(QDataStream& stream);
+
+    friend QDataStream &operator <<(QDataStream &stream, BriefFileInfo info)
+    {
+        stream << info._name;
+        stream << info._lastChanged;
+        stream << info._created;
+        stream << info._length;
+        stream << info._attrib;
+        return stream;
+    }
+    friend QDataStream &operator >> (QDataStream &stream, BriefFileInfo info)
+    {
+        stream >> info._name;
+        stream >> info._lastChanged;
+        stream >> info._created;
+        stream >> info._length;
+        stream >> info._attrib;
+        return stream;
+    }
+
+
 protected:
     QString     _name;                                      // имя файла локальное
     QDateTime   _lastChanged;                               // дата изменения
@@ -66,8 +98,8 @@ class Responce
 {
 public:
 
-    Responce();
-    ~Responce();
+    Responce()  {}
+    ~Responce() {}
     virtual QByteArray data() { return QByteArray((const char*)this, sizeof(RemoteRq)); }
 protected:
     RemoteRqType rq;                                        // запрос
