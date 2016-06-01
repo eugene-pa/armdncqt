@@ -1,9 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QMainWindow>
 #include <QHostInfo>
 #include <QSysInfo>
 #include <QTextCodec>
+#include <QLabel>
 
 #include "../common/defines.h"
 #include "../common/logger.h"
@@ -12,6 +14,7 @@
 #include "../common/defines.h"
 #include "../common/inireader.h"
 #include "remoterq.h"
+#include "responceabout.h"
 
 namespace Ui {
 class MainWindow;

@@ -100,14 +100,57 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     QString s("Приняты запрос от клиента " + conn->name());
     msg->setText(s);
 
-    RemoteRq * rq = (RemoteRq *)conn->data();
-    if (rq->isRemote())
-    {
+    QByteArray data(conn->data(), conn->length());
+    QBuffer buf(&data, nullptr);
+    buf.open(QIODevice::ReadOnly);
+    QDataStream stream(&buf);
 
+    RemoteRq rq;
+    rq.DeserializeBase(stream);
+    if (rq.isRemote())
+    {
+        // переадресация дальше по сети
+        int a = 99;
     }
     else
     {
-
+        int a = 99;
+        // разбор типа запроса
+        switch (rq.Rq())
+        {
+            case rqAbout:
+                    {
+                        ResponceAbout responce;
+                        conn->packsend(responce.Serialize());
+                        break;
+                    }
+            case rqDirs:
+                        break;
+            case rqFileInfo:
+                        break;
+            case rqFilesInfo:
+                        break;
+            case rqFilesSize:
+                        break;
+            case rqDrives:
+                        break;
+            case rqProcesses:
+                        break;
+            case rqProcesseInfo:
+                        break;
+            case rqTempFile:
+                        break;
+            case rqTempFilesZip:
+                        break;
+            case rqTempDirZip:
+                        break;
+            case rqDeleteTemp:
+                        break;
+            case rqRead:
+                        break;
+            default:
+                break;
+        }
     }
 }
 

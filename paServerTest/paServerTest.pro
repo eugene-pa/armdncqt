@@ -1,45 +1,45 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-05-25T15:35:51
+# Project created by QtCreator 2016-06-01T09:28:40
 #
 #-------------------------------------------------
 
-QT       += core gui network sql
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = paServer
+TARGET = paServerTest
 TEMPLATE = app
 
+INCLUDEPATH += ../forms/
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    remoterq.cpp \
-    rqabout.cpp  \
+        mainwindow.cpp\
+    ../forms/qled.cpp \
     ../common/clienttcp.cpp \
     ../common/defines.cpp \
     ../common/logger.cpp \
     ../common/tcpheader.cpp \
     ../common/inireader.cpp \
     ../common/servertcp.cpp \
-    brieffileinfo.cpp \
-    headerresponce.cpp \
-    responceabout.cpp
+    ../paServer/remoterq.cpp \
+    ../paServer/rqabout.cpp \
+    ../paServer/brieffileinfo.cpp \
+    ../paServer/headerresponce.cpp
 
-HEADERS  += mainwindow.h \
-    remoterq.h \
-    rqabout.h  \
+
+HEADERS  += mainwindow.h\
+    ../forms/qled.h \
     ../common/clienttcp.h \
     ../common/defines.h \
     ../common/logger.h \
     ../common/tcpheader.h \
     ../common/inireader.h \
     ../common/servertcp.h \
-    brieffileinfo.h \
-    headerresponce.h \
-    responceabout.h
+    ../paServer/remoterq.h \
+    ../paServer/rqabout.h \
+    ../paServer/brieffileinfo.h \
+    ../paServer/headerresponce.h
+
 
 FORMS    += mainwindow.ui
-
-RESOURCES += \
-    images.qrc

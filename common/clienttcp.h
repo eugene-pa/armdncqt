@@ -43,6 +43,7 @@ public:
     QString getid() { return idtype; }
     bool isConnected() { return sock->state() == QAbstractSocket::ConnectedState; }
     QAbstractSocket::SocketError lasterror() { return _lasterror; }
+    QTcpSocket * socket() { return sock; }
 
     QString name()                                          // имя в формате IP:порт
         { return QString("%1:%2").arg(remoteIp).arg(remotePort); }

@@ -3,13 +3,15 @@
 const quint32 RemoteRq::streamHeader = 0x55aa55aa;                 // заголовок
 const quint16 RemoteRq::paServerVersion = 1;                       // версия paServer
 
+QHostAddress RemoteRq::localaddress;
+QHostAddress RemoteRq::remoteaddress;
 
 RemoteRq::RemoteRq()
 {
     rq = rqEmpty;
+    src = localaddress;
+    dst = remoteaddress;
     remotePath = "";
-    reserv1 = "";
-    reserv2 = 0;
 }
 
 RemoteRq::~RemoteRq()
@@ -17,48 +19,35 @@ RemoteRq::~RemoteRq()
 
 }
 
-// сформировать пустой ответ
-// виртуальная функция должна быть переопределена в наследуемых классах
-QByteArray RemoteRq::prepare()
+void RemoteRq::SerializeBase(QDataStream &stream)
 {
-    return QByteArray();
+    stream << RemoteRq::streamHeader;
+    stream << RemoteRq::paServerVersion;
+    stream << (int)rq;
+    stream << src;
+    stream << dst;
+    stream << remotePath;
+    stream << param;
+    stream << reserv1;
+    stream << reserv2;
+    stream << reserv3;
 }
 
-// конструктор
-BriefFileInfo::BriefFileInfo (QFileInfo& fi)
+void RemoteRq::DeserializeBase(QDataStream &stream)
 {
-    fill(fi);
+    quint32 header;                                         // заголовок
+    quint16 version;                                        // версия paServer
+    stream >> header;
+    stream >> version;
+    int rqt; stream >> rqt;
+    rq = (RemoteRqType)rqt;
+    stream >> src;
+    stream >> dst;
+    stream >> remotePath;
+    stream >> param;
+    stream >> reserv1;
+    stream >> reserv2;
+    stream >> reserv3;
 }
 
-void BriefFileInfo::fill(QFileInfo& fi)
-{
-    _name           =  fi.fileName();
-    _lastChanged    = fi.lastModified();
-    _created        = fi.created();
-    _length         = fi.size();
 
-    _attrib         = "";
-    if (!fi.isWritable()) _attrib += "R";
-    if (fi.isHidden())    _attrib += "H";
-    if (!fi.isExecutable()) _attrib += "B";
-}
-
-/*
-void BriefFileInfo::Serialize(QDataStream& stream)
-{
-    stream << _name;                                        // имя файла локальное
-    stream << _lastChanged;                                 // дата изменения
-    stream << _created;                                     // дата создания
-    stream << _length;                                      // длина
-    stream << _attrib;                                      // атрибуты
-}
-
-void BriefFileInfo::Deserialize(QDataStream& stream)
-{
-    stream >> _name;                                        // имя файла локальное
-    stream >> _lastChanged;                                 // дата изменения
-    stream >> _created;                                     // дата создания
-    stream >> _length;                                      // длина
-    stream >> _attrib;                                      // атрибуты
-}
-*/

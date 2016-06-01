@@ -36,64 +36,35 @@ class RemoteRq
 {
 public:
 
+    static QHostAddress localaddress;
+    static QHostAddress remoteaddress;
+
     RemoteRq();
     ~RemoteRq();
 
     static const quint32 streamHeader;                      // заголовок
     static const quint16 paServerVersion;                   // версия paServer
 
-    virtual QByteArray data() { return QByteArray((const char*)this, sizeof(RemoteRq)); }
-    virtual QByteArray prepare();                            // сформировать ответ
+    bool isRemote() { return remotePath.length() > 0; }     // надо более строго выделить корректный удаленный путь
 
-    bool isRemote() { return remotePath.length() == 0; }
+    void SerializeBase(QDataStream &stream);
+    void DeserializeBase(QDataStream &stream);
+
+    RemoteRqType Rq() { return rq; }
 
 protected:
     RemoteRqType rq;                                        // запрос
     QHostAddress src;                                       // IP источника запроса
     QHostAddress dst;                                       // IP назначение запроса
-    QString      remotePath;                                // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост  tcp://10.52.19.71/tcp://192.168.1.1
-    QString      reserv1;                                   // резерв
-    int          reserv2;                                   // резерв
+    QString      fullPath;                                  // полный константный путь запроса, возможно рекурсивный: tcp://10.52.19.71/tcp://192.168.1.1
+    QString      remotePath;                                // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост
+    QVariant     param;                                     // параметр
+    QVariant     reserv1;                                   // резерв
+    QVariant     reserv2;                                   // резерв
+    QVariant     reserv3;                                   // резерв
 };
 
-class BriefFileInfo
-{
-public:
-    BriefFileInfo() { }
-    BriefFileInfo (QFileInfo& fi);                          // конструктор
-    void fill(QFileInfo& fi);
-//    void Serialize  (QDataStream& stream);
-//    void Deserialize(QDataStream& stream);
-
-    friend QDataStream &operator <<(QDataStream &stream, BriefFileInfo info)
-    {
-        stream << info._name;
-        stream << info._lastChanged;
-        stream << info._created;
-        stream << info._length;
-        stream << info._attrib;
-        return stream;
-    }
-    friend QDataStream &operator >> (QDataStream &stream, BriefFileInfo info)
-    {
-        stream >> info._name;
-        stream >> info._lastChanged;
-        stream >> info._created;
-        stream >> info._length;
-        stream >> info._attrib;
-        return stream;
-    }
-
-
-protected:
-    QString     _name;                                      // имя файла локальное
-    QDateTime   _lastChanged;                               // дата изменения
-    QDateTime   _created;                                   // дата создания
-    qint64      _length;                                    // длина
-    QString     _attrib;                                    // атрибуты
-};
-
-
+/*
 class Responce
 {
 public:
@@ -106,9 +77,9 @@ protected:
     QHostAddress src;                                       // IP источника лответа
     QHostAddress dst;                                       // IP назначение ответа
 //  QString      remotePath;                                // IP удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост  tcp://10.52.19.71/tcp://192.168.1.1
-    QString      reserv1;                                   // резерв
-    int          reserv2;                                   // резерв
+    QVariant      reserv1;                                   // резерв
+    QVariant      reserv2;                                   // резерв
 };
-
+*/
 
 #endif // REMOTERQ_H
