@@ -97,16 +97,16 @@ void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
 void MainWindow::slotSvrDataready     (ClientTcp * conn)
 {
     QString name(conn->name());
-    QString s("Приняты запрос от клиента " + conn->name());
+    QString s("Принят запрос от клиента " + conn->name());
     msg->setText(s);
 
-    QByteArray data(conn->data(), conn->length());
-    QBuffer buf(&data, nullptr);
+    QBuffer buf;
+    buf.setData(conn->data(), conn->length());
     buf.open(QIODevice::ReadOnly);
     QDataStream stream(&buf);
 
     RemoteRq rq;
-    rq.DeserializeBase(stream);
+    rq.Deserialize(stream);
     if (rq.isRemote())
     {
         // переадресация дальше по сети
@@ -114,18 +114,21 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     }
     else
     {
-        int a = 99;
         // разбор типа запроса
         switch (rq.Rq())
         {
             case rqAbout:
-                    {
-                        ResponceAbout responce;
-                        conn->packsend(responce.Serialize());
-                        break;
-                    }
+            {
+                ResponceAbout responce(rq);
+                conn->packsend(responce.Serialize());
+                break;
+            }
             case rqDirs:
-                        break;
+            {
+                ResponceDirs responce(rq);
+                conn->packsend(responce.Serialize());
+                break;
+            }
             case rqFileInfo:
                         break;
             case rqFilesInfo:

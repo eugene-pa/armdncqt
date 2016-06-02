@@ -23,9 +23,15 @@ SOURCES += main.cpp\
     ../common/inireader.cpp \
     ../common/servertcp.cpp \
     ../paServer/remoterq.cpp \
-    ../paServer/rqabout.cpp \
     ../paServer/brieffileinfo.cpp \
-    ../paServer/headerresponce.cpp
+    ../paServer/headerresponce.cpp \
+    ../paServer/responceabout.cpp \
+    ../paServer/responcedirs.cpp \
+    ../paServer/responceread.cpp \
+    ../paServer/responcetempfile.cpp \
+    ../paServer/responcedrives.cpp \
+    ../paServer/responcefiles.cpp \
+    ../paServer/responcefileinfo.cpp
 
 
 HEADERS  += mainwindow.h\
@@ -39,7 +45,14 @@ HEADERS  += mainwindow.h\
     ../paServer/remoterq.h \
     ../paServer/rqabout.h \
     ../paServer/brieffileinfo.h \
-    ../paServer/headerresponce.h
+    ../paServer/headerresponce.h \
+    ../paServer/responceabout.h \
+    ../paServer/responcedirs.h \
+    ../paServer/responceread.h \
+    ../paServer/responcetempfile.h \
+    ../paServer/responcedrives.h \
+    ../paServer/responcefiles.h \
+    ../paServer/responcefileinfo.h
 
 
 FORMS    += mainwindow.ui

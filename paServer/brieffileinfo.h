@@ -22,6 +22,7 @@ public:
         stream << info._created;
         stream << info._length;
         stream << info._attrib;
+        stream << info._reserv;
         return stream;
     }
     friend QDataStream &operator >> (QDataStream &stream, BriefFileInfo info)
@@ -31,6 +32,7 @@ public:
         stream >> info._created;
         stream >> info._length;
         stream >> info._attrib;
+        stream >> info._reserv;
         return stream;
     }
 
@@ -41,6 +43,7 @@ protected:
     QDateTime   _created;                                   // дата создания
     qint64      _length;                                    // длина
     QString     _attrib;                                    // атрибуты
+    QVariant    _reserv;
 };
 
 #endif // BRIEFFILEINFO_H

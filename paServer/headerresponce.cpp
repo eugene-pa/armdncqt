@@ -1,8 +1,11 @@
 #include "headerresponce.h"
 
-HeaderResponce::HeaderResponce()
+HeaderResponce::HeaderResponce(RemoteRq& req)
 {
-
+    rq = req.rq;
+    src = req.dst;
+    dst = req.src;
+    fullPath = req.fullPath;
 }
 
 HeaderResponce::~HeaderResponce()

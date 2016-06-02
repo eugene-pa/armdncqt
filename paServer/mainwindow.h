@@ -15,6 +15,7 @@
 #include "../common/inireader.h"
 #include "remoterq.h"
 #include "responceabout.h"
+#include "responcedirs.h"
 
 namespace Ui {
 class MainWindow;

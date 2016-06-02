@@ -1,3 +1,4 @@
+#include <QMessageBox>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -92,7 +93,61 @@ void MainWindow::dataready   (ClientTcp * conn)
 {
     ui->labelStatus->set(QLed::ledShape::round, QLed::ledStatus::on);
     msg->setText(QString("%1. Получен отклик от сервера %2: %3 байт").arg(QTime::currentTime().toString()).arg(conn->name()).arg(conn->rawLength()));
-//    conn->sendAck();                                      // квитирование
+
+    // обработка отклика
+    QBuffer buf;
+    buf.setData(conn->data(), conn->length());
+    buf.open(QIODevice::ReadOnly);
+    QDataStream stream(&buf);
+
+    HeaderResponce header;
+    header.Deserialize(stream);
+    switch (header.Rq())
+    {
+        case rqAbout:
+        {
+            ResponceAbout responce;
+            responce.Deserialize(stream);
+            // отобразим результат
+            QMessageBox box(QMessageBox::Information, "rqAbout", responce.toString());
+            box.exec();
+            break;
+        }
+        case rqDirs:
+        {
+            ResponceDirs responce;
+            responce.Deserialize(stream);
+            QMessageBox box(QMessageBox::Information, "rqDirs", responce.toString());
+            box.exec();
+            break;
+        }
+        case rqFileInfo:
+                    break;
+        case rqFilesInfo:
+                    break;
+        case rqFilesSize:
+                    break;
+        case rqDrives:
+                    break;
+        case rqProcesses:
+                    break;
+        case rqProcesseInfo:
+                    break;
+        case rqTempFile:
+                    break;
+        case rqTempFilesZip:
+                    break;
+        case rqTempDirZip:
+                    break;
+        case rqDeleteTemp:
+                    break;
+        case rqRead:
+                    break;
+        default:
+            break;
+    }
+
+
 }
 
 // получены необрамленные данные - отдельный сигнал
@@ -119,19 +174,22 @@ void MainWindow::on_pushButton_clicked()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    RqAbout rq;
+    RemoteRq rq(rqAbout);
     QByteArray data = rq.Serialize();
     connection->packsend(data);
 }
 
 void MainWindow::on_actionDirs_triggered()
 {
-
+    RemoteRq rq(rqDirs);
+    rq.setParam(ui->lineEditFolder->text());
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
 }
 
 void MainWindow::on_actionFiles_triggered()
 {
-
+    int a = 99;
 }
 
 void MainWindow::on_actionFileUnfo_triggered()

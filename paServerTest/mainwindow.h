@@ -10,7 +10,9 @@
 #include "../common/servertcp.h"
 #include "../common/defines.h"
 #include "../common/inireader.h"
-#include "../paServer/rqabout.h"
+#include "../paServer/remoterq.h"
+#include "../paServer/responceabout.h"
+#include "../paServer/responcedirs.h"
 
 namespace Ui {
 class MainWindow;

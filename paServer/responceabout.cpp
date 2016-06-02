@@ -1,8 +1,18 @@
+#include <QCoreApplication>
+#include <QTextCodec>
+
 #include "responceabout.h"
 
-// конструктор фрмирует отклик
+// конструктор по умолчанию для приемной стороны
 ResponceAbout::ResponceAbout()
 {
+
+}
+
+// конструктор фрмирует отклик
+ResponceAbout::ResponceAbout(RemoteRq& req)
+{
+    rq = req;
     QFileInfo info( QCoreApplication::applicationFilePath() );
 
     fileName = info.filePath();
@@ -27,15 +37,18 @@ ResponceAbout::ResponceAbout()
     userName = codec->toUnicode(user);
 }
 
+// сериализация ответа
 QByteArray ResponceAbout::Serialize()
 {
     QBuffer buf;
     buf.open(QBuffer::WriteOnly);
-
     QDataStream out(&buf);
-    out << RemoteRq::streamHeader;
-    out << RemoteRq::paServerVersion;
 
+    // 1. Заголовок
+    HeaderResponce header(rq);
+    header.Serialize(out);
+
+    // 2. Тело ответа
     out << fileName;
     out << fileInfo;
     out << hostName;
@@ -54,49 +67,35 @@ ResponceAbout::~ResponceAbout()
 }
 
 
-void ResponceAbout::Deserialize(QByteArray& data)
+void ResponceAbout::Deserialize(QDataStream& stream)
 {
-    quint32 header;                                          // заголовок
-    quint16 version;                                         // версия paServer
-
-    QBuffer buf(&data, nullptr);
-    buf.open(QIODevice::ReadOnly);
-
-    QDataStream stream(&buf);
-    stream >> header;
-    stream >> version;
-    if (header == RemoteRq::streamHeader)
+    if (rq.version <= RemoteRq::streamHeader)
     {
-        if (version <= RemoteRq::streamHeader)
+        if (rq.version >= 1)
         {
-            if (version >= 1)
-            {
-                stream >> fileName;
-                stream >> fileInfo;
-                stream >> hostName;
-                stream >> cpu;
-                stream >> kernel;
-                stream >> osversion;
-                stream >> userName;
-                stream >> reserv3;
-                stream >> reserv4;
-            }
-            if (version >= 2)
-            {
-
-            }
+            stream >> fileName;
+            stream >> fileInfo;
+            stream >> hostName;
+            stream >> cpu;
+            stream >> kernel;
+            stream >> osversion;
+            stream >> userName;
+            stream >> reserv3;
+            stream >> reserv4;
         }
-        else
+        if (rq.version >= 2)
         {
-            QString msg = QString("Клиент версии {1} не поддерживает работу с сервером версии {2}. Требуется обновление ПО клиента").arg(RemoteRq::streamHeader).arg(version);
-            log(msg);
+
         }
     }
     else
     {
-        QString msg = QString("Нет сигнатуры сериализации в потоке данных");
+        QString msg = QString("Клиент версии %1 не поддерживает работу с сервером версии %2. Требуется обновление ПО клиента").arg(RemoteRq::streamHeader).arg(rq.version);
         log(msg);
     }
-
 }
 
+QString ResponceAbout::toString()
+{
+    return QString("CPU: %1\r\nОС: %2\r\nVersion: %3\r\nХост: %4\r\nUSER: %5\r\nFile: %6\r\n").arg(cpu).arg(kernel).arg(osversion).arg(hostName).arg(userName).arg(fileName);
+}

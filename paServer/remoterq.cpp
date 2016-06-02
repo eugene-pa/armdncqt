@@ -6,23 +6,34 @@ const quint16 RemoteRq::paServerVersion = 1;                       // верси
 QHostAddress RemoteRq::localaddress;
 QHostAddress RemoteRq::remoteaddress;
 
-RemoteRq::RemoteRq()
+RemoteRq::RemoteRq(RemoteRqType req)
 {
-    rq = rqEmpty;
+    rq = req;
+
+    header  = RemoteRq::streamHeader;
+    version = paServerVersion;
+
     src = localaddress;
     dst = remoteaddress;
     remotePath = "";
+
 }
+
 
 RemoteRq::~RemoteRq()
 {
 
 }
 
-void RemoteRq::SerializeBase(QDataStream &stream)
+QByteArray RemoteRq::Serialize()
 {
-    stream << RemoteRq::streamHeader;
-    stream << RemoteRq::paServerVersion;
+    QBuffer buf;
+    buf.open(QBuffer::WriteOnly);
+    QDataStream stream (&buf);
+
+    stream << header;
+    stream << version;
+
     stream << (int)rq;
     stream << src;
     stream << dst;
@@ -31,12 +42,12 @@ void RemoteRq::SerializeBase(QDataStream &stream)
     stream << reserv1;
     stream << reserv2;
     stream << reserv3;
+
+    return buf.buffer();
 }
 
-void RemoteRq::DeserializeBase(QDataStream &stream)
+void RemoteRq::Deserialize (QDataStream &stream)
 {
-    quint32 header;                                         // заголовок
-    quint16 version;                                        // версия paServer
     stream >> header;
     stream >> version;
     int rqt; stream >> rqt;
@@ -50,4 +61,35 @@ void RemoteRq::DeserializeBase(QDataStream &stream)
     stream >> reserv3;
 }
 
+/*
+void RemoteRq::SerializeBase(QDataStream &stream)
+{
+    stream << header;
+    stream << version;
+
+    stream << (int)rq;
+    stream << src;
+    stream << dst;
+    stream << remotePath;
+    stream << param;
+    stream << reserv1;
+    stream << reserv2;
+    stream << reserv3;
+}
+
+void RemoteRq::DeserializeBase(QDataStream &stream)
+{
+    stream >> header;
+    stream >> version;
+    int rqt; stream >> rqt;
+    rq = (RemoteRqType)rqt;
+    stream >> src;
+    stream >> dst;
+    stream >> remotePath;
+    stream >> param;
+    stream >> reserv1;
+    stream >> reserv2;
+    stream >> reserv3;
+}
+*/
 

@@ -34,12 +34,15 @@ enum RemoteRqType
 
 class RemoteRq
 {
+    friend class HeaderResponce;
+    friend class ResponceAbout;
+    friend class ResponceDirs;
 public:
 
     static QHostAddress localaddress;
     static QHostAddress remoteaddress;
 
-    RemoteRq();
+    RemoteRq(RemoteRqType req = rqEmpty);
     ~RemoteRq();
 
     static const quint32 streamHeader;                      // заголовок
@@ -47,12 +50,22 @@ public:
 
     bool isRemote() { return remotePath.length() > 0; }     // надо более строго выделить корректный удаленный путь
 
-    void SerializeBase(QDataStream &stream);
-    void DeserializeBase(QDataStream &stream);
+    QByteArray Serialize();
+    void Deserialize(QDataStream &stream);
+
+//    void SerializeBase(QDataStream &stream);
+//    void DeserializeBase(QDataStream &stream);
 
     RemoteRqType Rq() { return rq; }
 
+    void setParam(QVariant value) { param = value; }
+
 protected:
+    // несериализуемая часть
+    quint32 header;                                         // сигнатура сериализации
+    quint16 version;                                        // версия протокола
+
+    // сериализуемая часть
     RemoteRqType rq;                                        // запрос
     QHostAddress src;                                       // IP источника запроса
     QHostAddress dst;                                       // IP назначение запроса

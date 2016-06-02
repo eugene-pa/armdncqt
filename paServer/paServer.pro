@@ -15,7 +15,6 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     remoterq.cpp \
-    rqabout.cpp  \
     ../common/clienttcp.cpp \
     ../common/defines.cpp \
     ../common/logger.cpp \
@@ -24,11 +23,16 @@ SOURCES += main.cpp\
     ../common/servertcp.cpp \
     brieffileinfo.cpp \
     headerresponce.cpp \
-    responceabout.cpp
+    responceabout.cpp \
+    responcedirs.cpp \
+    responcefileinfo.cpp \
+    responcefiles.cpp \
+    responcedrives.cpp \
+    responcetempfile.cpp \
+    responceread.cpp
 
 HEADERS  += mainwindow.h \
     remoterq.h \
-    rqabout.h  \
     ../common/clienttcp.h \
     ../common/defines.h \
     ../common/logger.h \
@@ -37,7 +41,13 @@ HEADERS  += mainwindow.h \
     ../common/servertcp.h \
     brieffileinfo.h \
     headerresponce.h \
-    responceabout.h
+    responceabout.h \
+    responcedirs.h \
+    responcefileinfo.h \
+    responcefiles.h \
+    responcedrives.h \
+    responcetempfile.h \
+    responceread.h
 
 FORMS    += mainwindow.ui
 

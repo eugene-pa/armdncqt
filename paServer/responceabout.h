@@ -1,18 +1,25 @@
 #ifndef RESPONCEABOUT_H
 #define RESPONCEABOUT_H
 
-#include "rqabout.h"
+#include "remoterq.h"
+#include "headerresponce.h"
+#include "brieffileinfo.h"
 
 class ResponceAbout
 {
 public:
-    ResponceAbout();
+    ResponceAbout();                                        // конструктор по умолчанию для приемной стороны
+    ResponceAbout(RemoteRq& req);                           // конструктор на базе запроса
     ~ResponceAbout();
 
     QByteArray Serialize();
-    void Deserialize(QByteArray& data);
+    void Deserialize(QDataStream& stream);
+    QString toString();
 
 protected:
+    RemoteRq        rq;                                     // исходный запрос
+
+    // сериализуемая часть
     QString         fileName;                               // - исполняемый файл сервера
     BriefFileInfo   fileInfo;                               // - информация об исполняемом файле
     QString         hostName;                               // - имя ПК
