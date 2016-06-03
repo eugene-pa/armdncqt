@@ -37,7 +37,7 @@ public:
     }
 
 
-protected:
+// protected:
     QString     _name;                                      // имя файла локальное
     QDateTime   _lastChanged;                               // дата изменения
     QDateTime   _created;                                   // дата создания

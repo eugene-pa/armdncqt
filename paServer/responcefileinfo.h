@@ -17,10 +17,12 @@ public:
     QString toString();
 
 protected:
-    RemoteRq        rq;                                     // исходный запрос
+    RemoteRq        _rq;                                    // исходный запрос
+    QString         _filepath;                              // искомый файл
 
     // сериализуемая часть
-    BriefFileInfo   fileInfo;                               // информация о файле
+    bool            _exist;                                 // файл существует
+    BriefFileInfo   _fileInfo;                              // информация о файле
 };
 
 #endif // RESPONCEFILEINFO_H
