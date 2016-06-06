@@ -13,6 +13,9 @@
 #include "../paServer/remoterq.h"
 #include "../paServer/responceabout.h"
 #include "../paServer/responcedirs.h"
+#include "../paServer/responcefileinfo.h"
+#include "../paServer/responcefiles.h"
+#include "../paServer/responcetempfile.h"
 
 namespace Ui {
 class MainWindow;

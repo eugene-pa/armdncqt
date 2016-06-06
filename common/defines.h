@@ -62,6 +62,10 @@ typedef const char *    LPCTSTR;
 #define strcmp(str1,str2) (str1==str2)
 #define strlen(str) str.length()
 
+#define FORMAT_DATETIME "dd.MM.yy hh:mm:ss"
+#define FORMAT_TIME     "hh:mm:ss"
+#define FORMAT_DATE     "dd.MM.yy"
+
 #define byteof(p,i) *(((BYTE *)&p)+i)                       // получить i-й байт области по произвольному указателю
 
 class DStation;

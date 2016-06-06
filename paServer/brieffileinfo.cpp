@@ -8,14 +8,16 @@ BriefFileInfo::BriefFileInfo (QFileInfo& fi)
 
 void BriefFileInfo::fill(QFileInfo& fi)
 {
+    bool _exist = fi.exists();
     _name           =  fi.fileName();
     _lastChanged    = fi.lastModified();
     _created        = fi.created();
     _length         = fi.size();
 
     _attrib         = "";
-    if (!fi.isWritable()) _attrib += "R";
+    if (fi.isReadable()) _attrib += "R";
+    if (fi.isWritable()) _attrib += "W";
     if (fi.isHidden())    _attrib += "H";
-    if (!fi.isExecutable()) _attrib += "B";
+    if (fi.isExecutable()) _attrib += "E";
 }
 

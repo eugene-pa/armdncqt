@@ -39,6 +39,8 @@ QByteArray RemoteRq::Serialize()
     stream << dst;
     stream << remotePath;
     stream << param;
+    stream << param2;
+    stream << param3;
     stream << reserv1;
     stream << reserv2;
     stream << reserv3;
@@ -56,6 +58,8 @@ void RemoteRq::Deserialize (QDataStream &stream)
     stream >> dst;
     stream >> remotePath;
     stream >> param;
+    stream >> param2;
+    stream >> param3;
     stream >> reserv1;
     stream >> reserv2;
     stream >> reserv3;

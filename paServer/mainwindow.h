@@ -16,6 +16,9 @@
 #include "remoterq.h"
 #include "responceabout.h"
 #include "responcedirs.h"
+#include "responcefileinfo.h"
+#include "responcefiles.h"
+#include "responcetempfile.h"
 
 namespace Ui {
 class MainWindow;

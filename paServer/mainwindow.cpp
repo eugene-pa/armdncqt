@@ -130,27 +130,55 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
                 break;
             }
             case rqFileInfo:
-                        break;
+            {
+                ResponceFileInfo fileinfo(rq);
+                conn->packsend(fileinfo.Serialize());
+                break;
+            }
             case rqFilesInfo:
-                        break;
+            {
+                ResponceFiles files(rq);
+                conn->packsend(files.Serialize());
+                break;
+            }
             case rqFilesSize:
-                        break;
+            {
+                break;
+            }
             case rqDrives:
-                        break;
+            {
+                break;
+            }
             case rqProcesses:
-                        break;
+            {
+                break;
+            }
             case rqProcesseInfo:
-                        break;
+            {
+                break;
+            }
             case rqTempFile:
-                        break;
+            {
+                ResponceTempFile temp(rq);
+                conn->packsend(temp.Serialize());
+                break;
+            }
             case rqTempFilesZip:
-                        break;
+            {
+                break;
+            }
             case rqTempDirZip:
-                        break;
+            {
+                break;
+            }
             case rqDeleteTemp:
-                        break;
+            {
+                break;
+            }
             case rqRead:
-                        break;
+            {
+                break;
+            }
             default:
                 break;
         }

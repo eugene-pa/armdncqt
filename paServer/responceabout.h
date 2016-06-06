@@ -17,7 +17,7 @@ public:
     QString toString();
 
 protected:
-    RemoteRq        rq;                                     // исходный запрос
+    RemoteRq        _rq;                                    // исходный запрос
 
     // сериализуемая часть
     QString         fileName;                               // - исполняемый файл сервера

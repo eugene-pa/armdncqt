@@ -12,7 +12,7 @@ ResponceAbout::ResponceAbout()
 // конструктор фрмирует отклик
 ResponceAbout::ResponceAbout(RemoteRq& req)
 {
-    rq = req;
+    _rq = req;
     QFileInfo info( QCoreApplication::applicationFilePath() );
 
     fileName = info.filePath();
@@ -45,7 +45,7 @@ QByteArray ResponceAbout::Serialize()
     QDataStream out(&buf);
 
     // 1. Заголовок
-    HeaderResponce header(rq);
+    HeaderResponce header(_rq);
     header.Serialize(out);
 
     // 2. Тело ответа
@@ -69,9 +69,9 @@ ResponceAbout::~ResponceAbout()
 
 void ResponceAbout::Deserialize(QDataStream& stream)
 {
-    if (rq.version <= RemoteRq::streamHeader)
+    if (_rq.version <= RemoteRq::streamHeader)
     {
-        if (rq.version >= 1)
+        if (_rq.version >= 1)
         {
             stream >> fileName;
             stream >> fileInfo;
@@ -83,14 +83,14 @@ void ResponceAbout::Deserialize(QDataStream& stream)
             stream >> reserv3;
             stream >> reserv4;
         }
-        if (rq.version >= 2)
+        if (_rq.version >= 2)
         {
 
         }
     }
     else
     {
-        QString msg = QString("Клиент версии %1 не поддерживает работу с сервером версии %2. Требуется обновление ПО клиента").arg(RemoteRq::streamHeader).arg(rq.version);
+        QString msg = QString("Клиент версии %1 не поддерживает работу с сервером версии %2. Требуется обновление ПО клиента").arg(RemoteRq::streamHeader).arg(_rq.version);
         log(msg);
     }
 }

@@ -8,6 +8,7 @@
 
 class BriefFileInfo
 {
+
 public:
     BriefFileInfo() { }
     BriefFileInfo (QFileInfo& fi);                          // конструктор
@@ -15,7 +16,7 @@ public:
 //    void Serialize  (QDataStream& stream);
 //    void Deserialize(QDataStream& stream);
 
-    friend QDataStream &operator <<(QDataStream &stream, BriefFileInfo info)
+    friend QDataStream &operator <<(QDataStream &stream, BriefFileInfo& info)
     {
         stream << info._name;
         stream << info._lastChanged;
@@ -25,7 +26,7 @@ public:
         stream << info._reserv;
         return stream;
     }
-    friend QDataStream &operator >> (QDataStream &stream, BriefFileInfo info)
+    friend QDataStream &operator >> (QDataStream &stream, BriefFileInfo& info)
     {
         stream >> info._name;
         stream >> info._lastChanged;

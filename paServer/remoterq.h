@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QHostInfo>
 #include <QBuffer>
+#include "../common/defines.h"
 
 // удаленный запрос
 
@@ -37,6 +38,9 @@ class RemoteRq
     friend class HeaderResponce;
     friend class ResponceAbout;
     friend class ResponceDirs;
+    friend class ResponceFileInfo;
+    friend class ResponceFiles;
+    friend class ResponceTempFile;
 public:
 
     static QHostAddress localaddress;
@@ -58,7 +62,9 @@ public:
 
     RemoteRqType Rq() { return rq; }
 
-    void setParam(QVariant value) { param = value; }
+    void setParam (QVariant value) { param  = value; }
+    void setParam2(QVariant value) { param2 = value; }
+    void setParam3(QVariant value) { param3 = value; }
 
 protected:
     // несериализуемая часть
@@ -72,6 +78,8 @@ protected:
     QString      fullPath;                                  // полный константный путь запроса, возможно рекурсивный: tcp://10.52.19.71/tcp://192.168.1.1
     QString      remotePath;                                // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост
     QVariant     param;                                     // параметр
+    QVariant     param2;                                    // параметр
+    QVariant     param3;                                    // параметр
     QVariant     reserv1;                                   // резерв
     QVariant     reserv2;                                   // резерв
     QVariant     reserv3;                                   // резерв

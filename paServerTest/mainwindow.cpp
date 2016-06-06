@@ -108,41 +108,70 @@ void MainWindow::dataready   (ClientTcp * conn)
         {
             ResponceAbout responce;
             responce.Deserialize(stream);
-            // отобразим результат
-            QMessageBox box(QMessageBox::Information, "rqAbout", responce.toString());
-            box.exec();
+            QMessageBox::information(this, "rqAbout", responce.toString());     // отобразим результат
+
             break;
         }
         case rqDirs:
         {
             ResponceDirs responce;
             responce.Deserialize(stream);
-            QMessageBox box(QMessageBox::Information, "rqDirs", responce.toString());
-            box.exec();
+            QMessageBox::information(this, "rqDirs", responce.toString());
             break;
         }
         case rqFileInfo:
-                    break;
+        {
+            ResponceFileInfo fileinfo;
+            fileinfo.Deserialize(stream);
+            QMessageBox::information(this, "rqDirs", fileinfo.toString());
+            break;
+        }
         case rqFilesInfo:
-                    break;
+        {
+            ResponceFiles files;
+            files.Deserialize(stream);
+            QMessageBox::information(this, "rqFiles", files.toString());
+            break;
+        }
         case rqFilesSize:
-                    break;
+        {
+            break;
+        }
         case rqDrives:
-                    break;
+        {
+            break;
+        }
         case rqProcesses:
-                    break;
+        {
+            break;
+        }
         case rqProcesseInfo:
-                    break;
+        {
+            break;
+        }
         case rqTempFile:
-                    break;
+        {
+            ResponceTempFile temp;
+            temp.Deserialize(stream);
+            QMessageBox::information(this, "rqTempFile", temp.toString());
+            break;
+        }
         case rqTempFilesZip:
-                    break;
+        {
+            break;
+        }
         case rqTempDirZip:
-                    break;
+        {
+            break;
+        }
         case rqDeleteTemp:
-                    break;
+        {
+            break;
+        }
         case rqRead:
-                    break;
+        {
+            break;
+        }
         default:
             break;
     }
@@ -172,6 +201,7 @@ void MainWindow::on_pushButton_clicked()
     connection->start();
 }
 
+// запрос "О хосте и сервисе"
 void MainWindow::on_actionAbout_triggered()
 {
     RemoteRq rq(rqAbout);
@@ -179,6 +209,7 @@ void MainWindow::on_actionAbout_triggered()
     connection->packsend(data);
 }
 
+// запрос списка каталогов заданной папки
 void MainWindow::on_actionDirs_triggered()
 {
     RemoteRq rq(rqDirs);
@@ -187,22 +218,40 @@ void MainWindow::on_actionDirs_triggered()
     connection->packsend(data);
 }
 
+// запрос пакета информации о файлах заданной папки
 void MainWindow::on_actionFiles_triggered()
 {
-    int a = 99;
+    RemoteRq rq(rqFilesInfo);
+    rq.setParam(ui->lineEditFolder->text());
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
 }
 
+// запрос информации о файле
 void MainWindow::on_actionFileUnfo_triggered()
 {
+    RemoteRq rq(rqFileInfo);
+    rq.setParam(ui->lineEditFolder->text());
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
 
 }
 
+// запрос чтения заданного файла
 void MainWindow::on_actionRead_triggered()
 {
-
+    RemoteRq rq(rqRead);
+    rq.setParam(ui->lineEditFolder->text());                // файл
+    rq.setParam2(0);                                        // смещение
+    rq.setParam3(1024);                                     // длина запрашиваемого блока данных
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
 }
 
 void MainWindow::on_actionTempCopy_triggered()
 {
-
+    RemoteRq rq(rqTempFile);
+    rq.setParam(ui->lineEditFolder->text());
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
 }
