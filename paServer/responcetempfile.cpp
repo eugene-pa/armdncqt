@@ -16,9 +16,9 @@ ResponceTempFile::ResponceTempFile(RemoteRq& req)
 
     if (temp.open())
     {
-
+        QDir  dir(_filesrc);
         QFile file(_filesrc);
-        _exist = file.exists();
+        _exist = file.exists() && !dir.exists();
         file.open( QIODevice::ReadOnly );
         QByteArray data = file.readAll();
 

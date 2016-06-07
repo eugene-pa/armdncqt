@@ -16,6 +16,7 @@
 #include "../paServer/responcefileinfo.h"
 #include "../paServer/responcefiles.h"
 #include "../paServer/responcetempfile.h"
+#include "../paServer/responceread.h"
 
 namespace Ui {
 class MainWindow;
@@ -29,6 +30,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void ReadNext (ResponceRead&);                          // чтение файла
+
 private slots:
     // уведомления от клиентов, подключающихся к удаленным серверам
     void connected   (ClientTcp *);                         // установлено соединение
@@ -36,6 +40,8 @@ private slots:
     void error       (ClientTcp *);                         // ошибка сокета
     void dataready   (ClientTcp *);                         // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
+
+    void slotReadNext (ResponceRead&);                      // чтение файла
 
     void on_actionAbout_triggered();
 
@@ -55,6 +61,9 @@ private:
     Ui::MainWindow *ui;
     ClientTcp * connection;                                 // соединение
     class QLabel * msg;
+
+    void rqReadFile(QString src, QString dst, qint64 offset, int length);
+
 };
 
 #endif // MAINWINDOW_H

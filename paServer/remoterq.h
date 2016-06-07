@@ -27,7 +27,7 @@ enum RemoteRqType
     rqTempFile     = 11,                                // запрос временной копии файла для копирования
     rqTempFilesZip = 12,                                // запрос архивирования указанных файлов во временом файле
     rqTempDirZip   = 13,                                // запрос архивирования каталога во временом файле
-    rqDeleteTemp   = 14,                                // запрос удаления всех временных файлов
+    rqDeleteTemp   = 14,                                // запрос удаления всех временных файлов (время создания и изменения - больше суток назад)
     rqRead         = 15,                                // запрос чтения части файла
     rqEnd          = 16,
 };
@@ -41,6 +41,7 @@ class RemoteRq
     friend class ResponceFileInfo;
     friend class ResponceFiles;
     friend class ResponceTempFile;
+    friend class ResponceRead;
 public:
 
     static QHostAddress localaddress;
@@ -65,6 +66,7 @@ public:
     void setParam (QVariant value) { param  = value; }
     void setParam2(QVariant value) { param2 = value; }
     void setParam3(QVariant value) { param3 = value; }
+    void setParam4(QVariant value) { param4 = value; }
 
 protected:
     // несериализуемая часть
@@ -78,8 +80,9 @@ protected:
     QString      fullPath;                                  // полный константный путь запроса, возможно рекурсивный: tcp://10.52.19.71/tcp://192.168.1.1
     QString      remotePath;                                // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост
     QVariant     param;                                     // параметр
-    QVariant     param2;                                    // параметр
-    QVariant     param3;                                    // параметр
+    QVariant     param2;                                    // параметр 2
+    QVariant     param3;                                    // параметр 3
+    QVariant     param4;                                    // параметр 4
     QVariant     reserv1;                                   // резерв
     QVariant     reserv2;                                   // резерв
     QVariant     reserv3;                                   // резерв

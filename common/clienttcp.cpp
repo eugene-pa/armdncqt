@@ -186,13 +186,13 @@ void ClientTcp::uncompress()
     if (!_transparentMode && isCompressed())
     {
         QByteArray zip(_data, _length);
-//        zip[2] = 0;                                         // необязательные действия
-//        zip[3] = 0;                                         // необязательные действия
+//        zip[2] = 0;                                       // необязательные действия
+//        zip[3] = 0;                                       // необязательные действия
         QByteArray unzip = qUncompress(zip);
-        _length = unzip.length();                            // оригинальная длина
+        _length = unzip.length() + 4;                       // длина пакета включает заголовок
         _data[2] = (BYTE)_length;
-        _data[3] = (BYTE)(_length >> 8);
-        for (int i=0; i< _length; i++)                       // копируем данные
+        _data[3] = (BYTE)((_length) >> 8);
+        for (int i=0; i< unzip.length(); i++)               // копируем данные
             _data[4+i] = unzip[i];
     }
 }

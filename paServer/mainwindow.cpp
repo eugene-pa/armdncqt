@@ -177,6 +177,10 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqRead:
             {
+                ResponceRead read(rq);
+                QByteArray data = read.Serialize();
+                int length = data.length();
+                conn->packsend(data, true);
                 break;
             }
             default:

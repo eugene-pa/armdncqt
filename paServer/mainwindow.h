@@ -19,6 +19,7 @@
 #include "responcefileinfo.h"
 #include "responcefiles.h"
 #include "responcetempfile.h"
+#include "responceread.h"
 
 namespace Ui {
 class MainWindow;

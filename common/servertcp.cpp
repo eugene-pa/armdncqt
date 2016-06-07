@@ -60,7 +60,7 @@ void ServerTcp::log (QString& msg)
 void ServerTcp::slotDataready (ClientTcp * client)
 {
 //  client->SendAck();                                      // квитирование
-    qDebug() << Logger::GetHex(client->data(), client->length());
+    //qDebug() << Logger::GetHex(client->data(), client->length());
 
     emit dataready(client);
 

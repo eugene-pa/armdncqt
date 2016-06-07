@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>491</width>
-    <height>124</height>
+    <width>288</width>
+    <height>170</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,12 +67,30 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Папка</string>
+         <string>Файл/Папка</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLineEdit" name="lineEditFolder">
+        <property name="text">
+         <string>c:/armdnc</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Назначение</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEditDst">
         <property name="text">
          <string>c:/armdnc</string>
         </property>
@@ -87,7 +105,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>491</width>
+     <width>288</width>
      <height>21</height>
     </rect>
    </property>

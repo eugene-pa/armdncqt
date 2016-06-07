@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+const int blocksize = 48000;
 
 Logger logger("Log/bridgetcp.log", true, true);             // лог
 
@@ -96,7 +97,12 @@ void MainWindow::dataready   (ClientTcp * conn)
 
     // обработка отклика
     QBuffer buf;
+    int n = conn->length() + 4;
     buf.setData(conn->data(), conn->length());
+    //QByteArray& a = conn->data();
+
+
+
     buf.open(QIODevice::ReadOnly);
     QDataStream stream(&buf);
 
@@ -153,7 +159,10 @@ void MainWindow::dataready   (ClientTcp * conn)
         {
             ResponceTempFile temp;
             temp.Deserialize(stream);
-            QMessageBox::information(this, "rqTempFile", temp.toString());
+            if (temp.exist())
+                QMessageBox::information(this, "rqTempFile", temp.toString());
+            else
+                QMessageBox::information(this, "rqTempFile", "Запрошенный файл отсутствует на диске");
             break;
         }
         case rqTempFilesZip:
@@ -170,6 +179,12 @@ void MainWindow::dataready   (ClientTcp * conn)
         }
         case rqRead:
         {
+            ResponceRead read;
+            read.Deserialize(stream);
+            msg->setText(read.toString());            //QMessageBox::information(this, "rqRead", read.toString());
+
+            // можно прямо тут писать без сигнала
+            emit(ReadNext(read));
             break;
         }
         default:
@@ -189,6 +204,7 @@ void MainWindow::rawdataready(ClientTcp * conn)
 
 void MainWindow::on_pushButton_clicked()
 {
+    ui->pushButton->setEnabled(false);
     serverConnectStr = ui->lineEdit->text();
     connection = new ClientTcp(serverConnectStr, &logger, compressEnabled, "remoteClient");
 
@@ -197,6 +213,8 @@ void MainWindow::on_pushButton_clicked()
     QObject::connect(connection, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
     QObject::connect(connection, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
     QObject::connect(connection, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
+
+    QObject::connect(this, SIGNAL(ReadNext (ResponceRead&)), this, SLOT(slotReadNext(ResponceRead&)));
 
     connection->start();
 }
@@ -237,15 +255,23 @@ void MainWindow::on_actionFileUnfo_triggered()
 
 }
 
+void MainWindow::rqReadFile(QString src, QString dst, qint64 offset, int length)
+{
+    RemoteRq rq(rqRead);
+    rq.setParam(src);                                       // файл
+    rq.setParam2(offset);                                   // смещение
+    rq.setParam3(length);                                   // длина запрашиваемого блока данных
+    rq.setParam4(dst);                                      // назначение (куда копируем)
+
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
+
+}
+
 // запрос чтения заданного файла
 void MainWindow::on_actionRead_triggered()
 {
-    RemoteRq rq(rqRead);
-    rq.setParam(ui->lineEditFolder->text());                // файл
-    rq.setParam2(0);                                        // смещение
-    rq.setParam3(1024);                                     // длина запрашиваемого блока данных
-    QByteArray data = rq.Serialize();
-    connection->packsend(data);
+    rqReadFile(ui->lineEditFolder->text(), ui->lineEditDst->text(), 0, blocksize);
 }
 
 void MainWindow::on_actionTempCopy_triggered()
@@ -254,4 +280,27 @@ void MainWindow::on_actionTempCopy_triggered()
     rq.setParam(ui->lineEditFolder->text());
     QByteArray data = rq.Serialize();
     connection->packsend(data);
+}
+
+// чтение очередной пачки файла
+void MainWindow::slotReadNext (ResponceRead& responce)
+{
+    QFile file(responce.dstfilepath());
+    if (file.open(QIODevice::ReadWrite))
+    {
+        bool ret = file.seek(responce.offset());
+        file.write(responce.data());
+        file.close();
+    }
+
+    if (!responce.isEof())
+    {
+        // рекурсивный вызов запроса на чтение
+        rqReadFile(responce.srcfilepath(), responce.dstfilepath(), responce.offset() + responce.length(), blocksize);
+    }
+    else
+    {
+        QMessageBox::information(this, "rqRead", "Файл скопирован!");
+    }
+
 }

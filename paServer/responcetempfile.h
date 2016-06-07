@@ -17,7 +17,7 @@ public:
     QByteArray Serialize();
     void Deserialize(QDataStream& stream);
     QString toString();
-
+    bool exist() { return _exist; }
 protected:
     QTemporaryFile temp;                                    //
     RemoteRq        _rq;                                    // исходный запрос
