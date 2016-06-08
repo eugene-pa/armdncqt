@@ -38,7 +38,8 @@ typedef unsigned int    UINT;
 typedef const char *    LPCTSTR;
 #endif
 
-#define SIGNATURE 0xAA55
+#define SIGNATURE    0xAA55                                 // сигнатура пакета
+#define SIGNATUREZIP 0x55AA                                 // сигнатура сжатого пакета
 #define DUBL 2
 #define MAX_TRAINS_ON_PER 5
 #define TRACE(param) qDebug() << param

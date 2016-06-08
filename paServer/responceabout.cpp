@@ -6,13 +6,16 @@
 // конструктор по умолчанию для приемной стороны
 ResponceAbout::ResponceAbout()
 {
-
+    _rq = rqEmpty;
+    _logger = nullptr;
 }
 
 // конструктор фрмирует отклик
-ResponceAbout::ResponceAbout(RemoteRq& req)
+ResponceAbout::ResponceAbout(RemoteRq& req, Logger * logger)
 {
     _rq = req;
+    _logger = logger;
+
     QFileInfo info( QCoreApplication::applicationFilePath() );
 
     fileName = info.filePath();
@@ -35,6 +38,9 @@ ResponceAbout::ResponceAbout(RemoteRq& req)
     QTextCodec *codec = QTextCodec::codecForName("UTF-8");
 #endif
     userName = codec->toUnicode(user);
+
+    if (logger)
+        logger->log(toString());
 }
 
 // сериализация ответа

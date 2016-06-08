@@ -6,6 +6,7 @@
 #include <QHostInfo>
 #include <QBuffer>
 #include "../common/defines.h"
+#include "../common/logger.h"
 
 // удаленный запрос
 
@@ -42,6 +43,7 @@ class RemoteRq
     friend class ResponceFiles;
     friend class ResponceTempFile;
     friend class ResponceRead;
+    friend class ResponceDrives;
 public:
 
     static QHostAddress localaddress;
@@ -52,6 +54,9 @@ public:
 
     static const quint32 streamHeader;                      // заголовок
     static const quint16 paServerVersion;                   // версия paServer
+
+    static QString getRqName(RemoteRqType);                 // получить имя запроса
+    QString getRqName() { return getRqName(rq); }
 
     bool isRemote() { return remotePath.length() > 0; }     // надо более строго выделить корректный удаленный путь
 
@@ -67,6 +72,9 @@ public:
     void setParam2(QVariant value) { param2 = value; }
     void setParam3(QVariant value) { param3 = value; }
     void setParam4(QVariant value) { param4 = value; }
+
+    QHostAddress getsrc() { return src; }                   // IP источника запроса
+    QHostAddress getdst() { return dst; }                   // IP назначение запроса
 
 protected:
     // несериализуемая часть

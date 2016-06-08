@@ -114,6 +114,7 @@
      <string>Запрос</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionDrives"/>
     <addaction name="actionDirs"/>
     <addaction name="actionFiles"/>
     <addaction name="actionFileUnfo"/>
@@ -177,6 +178,14 @@
    </property>
    <property name="text">
     <string>Временная копия</string>
+   </property>
+  </action>
+  <action name="actionDrives">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Список логических устройств</string>
    </property>
   </action>
  </widget>

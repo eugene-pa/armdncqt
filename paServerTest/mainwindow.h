@@ -17,6 +17,7 @@
 #include "../paServer/responcefiles.h"
 #include "../paServer/responcetempfile.h"
 #include "../paServer/responceread.h"
+#include "../paServer/responcedrives.h"
 
 namespace Ui {
 class MainWindow;
@@ -56,6 +57,8 @@ private slots:
     void on_actionRead_triggered();
 
     void on_actionTempCopy_triggered();
+
+    void on_actionDrives_triggered();
 
 private:
     Ui::MainWindow *ui;

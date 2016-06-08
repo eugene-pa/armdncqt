@@ -10,7 +10,7 @@ class ResponceFiles
 {
 public:
     ResponceFiles();                                        // конструктор по умолчанию для приемной стороны
-    ResponceFiles(RemoteRq& req);                           // конструктор на базе запроса (для передающей стороны)
+    ResponceFiles(RemoteRq& req, Logger * logger);          // конструктор на базе запроса (для передающей стороны)
     ~ResponceFiles();
 
     QByteArray Serialize();
@@ -21,6 +21,8 @@ public:
 
 protected:
     RemoteRq        _rq;                                    // исходный запрос
+    Logger *        _logger;
+
     QString         _folder;                                // папка
     bool            _exist;                                 // папка существует
 

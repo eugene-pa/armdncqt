@@ -3,22 +3,30 @@
 // конструктор по умолчанию для приемной стороны
 ResponceTempFile::ResponceTempFile()
 {
-
+    _rq = rqEmpty;
+    _logger = nullptr;
 }
 
 
 // конструктор на базе запроса (для передающей стороны)
-ResponceTempFile::ResponceTempFile(RemoteRq& req)
+// ПРОБЛЕМА: временный файл, создаваемый QTemporaryFile, уничтожается после уничтожения ResponceTempFile
+//           поэтому, надо создавать файл самому в папке временных файлов
+ResponceTempFile::ResponceTempFile(RemoteRq& req, Logger * logger)
 {
     _rq = req;
+    _logger = logger;
+
     QString s = req.param.toString();
     _filesrc = req.param.toString();
 
-    if (temp.open())
+    // создаем временный файл paServer-ГГГГММДД ЧЧММСС.***.tmp, чтобы потом проще удалить
+    QString tempfile = QString("%1/paServer-%2.%3.tmp").arg(QDir::tempPath()).arg(QDateTime::currentDateTime().toString("yyyyMMdd hhmmss")).arg(rand());
+    QFile temp(tempfile);
+    if (temp.open(QIODevice::WriteOnly))
     {
-        QDir  dir(_filesrc);
+        QFileInfo  info(_filesrc);
         QFile file(_filesrc);
-        _exist = file.exists() && !dir.exists();
+        _exist = file.exists() && info.isFile();
         file.open( QIODevice::ReadOnly );
         QByteArray data = file.readAll();
 
@@ -26,7 +34,10 @@ ResponceTempFile::ResponceTempFile(RemoteRq& req)
         temp.close();
         _filetemp = temp.fileName();
     }
-    //file.copy();
+
+    if (logger)
+        logger->log(toString());
+
 }
 
 ResponceTempFile::~ResponceTempFile()

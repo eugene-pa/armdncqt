@@ -9,7 +9,7 @@ class ResponceFileInfo
 {
 public:
     ResponceFileInfo();                                     // конструктор по умолчанию для приемной стороны
-    ResponceFileInfo(RemoteRq& req);                        // конструктор на базе запроса
+    ResponceFileInfo(RemoteRq& req, Logger * logger=nullptr);// конструктор на базе запроса
     ~ResponceFileInfo();
 
     QByteArray Serialize();
@@ -18,6 +18,7 @@ public:
 
 protected:
     RemoteRq        _rq;                                    // исходный запрос
+    Logger *        _logger;
     QString         _filepath;                              // искомый файл
 
     // сериализуемая часть

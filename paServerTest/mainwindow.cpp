@@ -60,6 +60,7 @@ void MainWindow::connected   (ClientTcp * conn)
     ui->actionFileUnfo->setEnabled(true);
     ui->actionRead->setEnabled(true);
     ui->actionTempCopy->setEnabled(true);
+    ui->actionDrives->setEnabled(true);
 
     QString s("Установлено соединение с сервером " + conn->name());
     msg->setText(s);
@@ -76,6 +77,7 @@ void MainWindow::disconnected(ClientTcp * conn)
     ui->actionFileUnfo->setEnabled(false);
     ui->actionRead    ->setEnabled(false);
     ui->actionTempCopy->setEnabled(false);
+    ui->actionDrives  ->setEnabled(false);
 
     QString s("Разорвано соединение с сервером " + conn->name());
     msg->setText(s);
@@ -145,6 +147,9 @@ void MainWindow::dataready   (ClientTcp * conn)
         }
         case rqDrives:
         {
+            ResponceDrives responce;
+            responce.Deserialize(stream);
+            QMessageBox::information(this, "rqDrives", responce.toString());
             break;
         }
         case rqProcesses:
@@ -227,6 +232,14 @@ void MainWindow::on_actionAbout_triggered()
     connection->packsend(data);
 }
 
+// список дисков
+void MainWindow::on_actionDrives_triggered()
+{
+    RemoteRq rq(rqDrives);
+    QByteArray data = rq.Serialize();
+    connection->packsend(data);
+}
+
 // запрос списка каталогов заданной папки
 void MainWindow::on_actionDirs_triggered()
 {
@@ -304,3 +317,4 @@ void MainWindow::slotReadNext (ResponceRead& responce)
     }
 
 }
+

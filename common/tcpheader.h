@@ -17,7 +17,9 @@ public:
 
     TcpHeader();                                                        // конструктор
 
-    bool Signatured() { return signature == SIGNATURE; }                // данные форматированы?
+    // ввожу отдельно поняие сигнатуры сжатого пакета
+    bool Signatured   () { return signature == SIGNATURE || signature == SIGNATUREZIP; } // данные форматированы?
+    bool SignaturedZip() { return signature == SIGNATUREZIP; }                          // данные сжаты?
     bool Extended  () { return length    == 0xffff;    }                // формат расширенный  ?
     int Length() { return length; }
 

@@ -11,7 +11,7 @@ class ResponceDirs
 {
 public:
     ResponceDirs();                                         // конструктор по умолчанию для приемной стороны
-    ResponceDirs(RemoteRq& req);                            // конструктор на базе запроса
+    ResponceDirs(RemoteRq& req, Logger * logger=nullptr);   // конструктор на базе запроса
     ~ResponceDirs();
 
     QByteArray Serialize();
@@ -25,6 +25,8 @@ public:
 
 protected:
     RemoteRq        _rq;                                    // исходный запрос
+    Logger *        _logger;
+
     QString         _folder;
     bool            _exist;                                 // папка существует
     QStringList     _list;                                  // список файлов заданной папки

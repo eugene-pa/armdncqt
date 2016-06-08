@@ -11,7 +11,7 @@ class ResponceTempFile
 {
 public:
     ResponceTempFile();                                     // конструктор по умолчанию для приемной стороны
-    ResponceTempFile(RemoteRq& req);                        // конструктор на базе запроса (для передающей стороны)
+    ResponceTempFile(RemoteRq& req, Logger * logger=nullptr);// конструктор на базе запроса (для передающей стороны)
     ~ResponceTempFile();
 
     QByteArray Serialize();
@@ -19,8 +19,9 @@ public:
     QString toString();
     bool exist() { return _exist; }
 protected:
-    QTemporaryFile temp;                                    //
+
     RemoteRq        _rq;                                    // исходный запрос
+    Logger *        _logger;
 
     QString         _filesrc;                               // оригинальный файл
     bool            _exist;                                 // папка существует

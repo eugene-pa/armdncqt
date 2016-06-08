@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-Logger logger("Log/bridgetcp.log", true, true);             // лог
+Logger logger("Log/paserver.log", true, true);             // лог
 
 #ifdef Q_OS_WIN
 QString iniFile = "c:/armdncqt/paServer/paServer.ini";    // настройки
@@ -107,6 +107,10 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
 
     RemoteRq rq;
     rq.Deserialize(stream);
+
+    logger.log(s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq.Rq())).arg(rq.getsrc().toString()).arg(rq.getdst().toString()));
+    msg->setText(s);
+
     if (rq.isRemote())
     {
         // переадресация дальше по сети
@@ -119,26 +123,26 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
         {
             case rqAbout:
             {
-                ResponceAbout responce(rq);
+                ResponceAbout responce(rq, &logger);
                 conn->packsend(responce.Serialize());
                 break;
             }
             case rqDirs:
             {
-                ResponceDirs responce(rq);
+                ResponceDirs responce(rq, &logger);
                 conn->packsend(responce.Serialize());
                 break;
             }
             case rqFileInfo:
             {
-                ResponceFileInfo fileinfo(rq);
-                conn->packsend(fileinfo.Serialize());
+                ResponceFileInfo responce(rq, &logger);
+                conn->packsend(responce.Serialize());
                 break;
             }
             case rqFilesInfo:
             {
-                ResponceFiles files(rq);
-                conn->packsend(files.Serialize());
+                ResponceFiles responce(rq, &logger);
+                conn->packsend(responce.Serialize());
                 break;
             }
             case rqFilesSize:
@@ -147,6 +151,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqDrives:
             {
+                ResponceDrives responce(rq, &logger);
+                conn->packsend(responce.Serialize());
                 break;
             }
             case rqProcesses:
@@ -159,8 +165,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqTempFile:
             {
-                ResponceTempFile temp(rq);
-                conn->packsend(temp.Serialize());
+                ResponceTempFile responce(rq, &logger);
+                conn->packsend(responce.Serialize());
                 break;
             }
             case rqTempFilesZip:
@@ -177,10 +183,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqRead:
             {
-                ResponceRead read(rq);
-                QByteArray data = read.Serialize();
-                int length = data.length();
-                conn->packsend(data, true);
+                ResponceRead responce(rq);
+                conn->packsend(responce.Serialize(), true);
                 break;
             }
             default:

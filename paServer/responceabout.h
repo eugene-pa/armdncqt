@@ -9,7 +9,7 @@ class ResponceAbout
 {
 public:
     ResponceAbout();                                        // конструктор по умолчанию для приемной стороны
-    ResponceAbout(RemoteRq& req);                           // конструктор на базе запроса
+    ResponceAbout(RemoteRq& req, Logger * logger=nullptr);  // конструктор на базе запроса
     ~ResponceAbout();
 
     QByteArray Serialize();
@@ -18,6 +18,7 @@ public:
 
 protected:
     RemoteRq        _rq;                                    // исходный запрос
+    Logger *        _logger;
 
     // сериализуемая часть
     QString         fileName;                               // - исполняемый файл сервера

@@ -3,17 +3,24 @@
 // конструктор по умолчанию для приемной стороны
 ResponceDirs::ResponceDirs()
 {
-
+    _rq = rqEmpty;
+    _logger = nullptr;
 }
 
 // конструктор на базе запроса
-ResponceDirs::ResponceDirs(RemoteRq& req)
+ResponceDirs::ResponceDirs(RemoteRq& req, Logger * logger)
 {
     _rq = req;
+    _logger = logger;
+
     _folder = req.param.toString();
     QDir dir(_folder);
     _exist = dir.exists();
     _list = dir.entryList(QDir::Dirs|QDir::NoDotAndDotDot);
+
+    if (logger)
+        logger->log(toString());
+
 }
 
 ResponceDirs::~ResponceDirs()

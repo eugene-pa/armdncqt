@@ -3,13 +3,15 @@
 // конструктор по умолчанию для приемной стороны
 ResponceFiles::ResponceFiles()
 {
-
+    _rq = rqEmpty;
+    _logger = nullptr;
 }
 
 // конструктор на базе запроса (для передающей стороны)
-ResponceFiles::ResponceFiles(RemoteRq& req)
+ResponceFiles::ResponceFiles(RemoteRq& req, Logger * logger)
 {
     _rq = req;
+    _logger = logger;
     _folder = req.param.toString();
 
     QDir dir(_folder);
@@ -19,6 +21,9 @@ ResponceFiles::ResponceFiles(RemoteRq& req)
     {
         _files.append(BriefFileInfo(list[i]));
     }
+
+    if (logger)
+        logger->log(toString());
 }
 
 ResponceFiles::~ResponceFiles()
@@ -39,7 +44,7 @@ QByteArray ResponceFiles::Serialize()
     // 2. Тело ответа
     out << _folder;
     out << _exist;
-    out << _files.size();
+    out << (int)_files.size();
     for (int i=0; i<_files.size(); i++)
         out << _files[i];
 

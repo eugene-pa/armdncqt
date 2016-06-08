@@ -9,7 +9,7 @@ class ResponceRead
 {
 public:
     ResponceRead();                                         // конструктор по умолчанию для приемной стороны
-    ResponceRead(RemoteRq& req);                            // конструктор на базе запроса
+    ResponceRead(RemoteRq& req, Logger * logger=nullptr);   // конструктор на базе запроса
     ~ResponceRead();
     QByteArray Serialize();
     void Deserialize(QDataStream& stream);
@@ -23,6 +23,7 @@ public:
     int length() { return _length; }
 protected:
     RemoteRq        _rq;                                    // исходный запрос
+    Logger *        _logger;
 
     // сериализуемая часть
     QString         _srcfilepath;                           // копируемый файл

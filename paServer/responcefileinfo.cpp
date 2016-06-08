@@ -3,18 +3,23 @@
 // конструктор по умолчанию для приемной стороны
 ResponceFileInfo::ResponceFileInfo()
 {
-
+    _rq = rqEmpty;
+    _logger = nullptr;
 }
 
 // конструктор на базе запроса
-ResponceFileInfo::ResponceFileInfo(RemoteRq& req)
+ResponceFileInfo::ResponceFileInfo(RemoteRq& req, Logger * logger)
 {
     _rq = req;
+    _logger = logger;
     _filepath = req.param.toString();
 
     QFileInfo info(_filepath);
     _fileInfo.fill(info);
     _exist = info.exists();
+
+    if (logger)
+        logger->log(toString());
 }
 
 ResponceFileInfo::~ResponceFileInfo()

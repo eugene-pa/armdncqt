@@ -3,13 +3,16 @@
 // конструктор по умолчанию для приемной стороны
 ResponceRead::ResponceRead()
 {
-
+    _rq = rqEmpty;
+    _logger = nullptr;
 }
 
 // конструктор на базе запроса
-ResponceRead::ResponceRead(RemoteRq& req)
+ResponceRead::ResponceRead(RemoteRq& req, Logger * logger)
 {
     _rq = req;
+    _logger = logger;
+
     _srcfilepath = req.param.toString();
     _offset      = (quint64)req.param2.toULongLong();
     _length      = req.param3.toInt();
@@ -21,18 +24,16 @@ ResponceRead::ResponceRead(RemoteRq& req)
     if (_exist && file.open(QIODevice::ReadOnly))
     {
         QFileInfo info(_srcfilepath);
-
-//        QString s = info.lastModified().toString();
-
         _fileInfo.fill(info);
-//        s = _fileInfo._lastChanged.toString();
-
         file.seek(_offset);
         _data = file.read(_length);
         _length = _data.length();
         _eof = file.atEnd();
         file.close();
     }
+
+    if (logger)
+        logger->log(toString());
 }
 
 
@@ -95,5 +96,6 @@ void ResponceRead::Deserialize(QDataStream& stream)
 
 QString ResponceRead::toString()
 {
-    return QString("Файл %1. Принят блок данных длиной %2 начиная с позиции %3").arg(_fileInfo._name).arg(_length).arg(_offset);
+    return _logger ? QString("Файл %1. Запрос блока длиной %2 начиная с позиции %3").arg(_fileInfo._name).arg(_length).arg(_offset) :
+                    QString("Файл %1. Принят блок данных длиной %2 начиная с позиции %3").arg(_fileInfo._name).arg(_length).arg(_offset);
 }

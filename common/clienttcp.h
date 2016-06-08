@@ -57,8 +57,9 @@ public:
 
     bool isCompressed();                                    // проверка префикса сжатых данных
 
-    bool isSignatured   () { return ((TcpHeader    *)_data)->Signatured(); }
-    bool isSignaturedExt() { return ((TcpHeaderExt *)_data)->Signatured(); }
+    bool isSignatured   () { return ((TcpHeader    *)_data)->Signatured();    }
+    bool isSignaturedZip() { return ((TcpHeader    *)_data)->SignaturedZip(); }
+    bool isSignaturedExt() { return ((TcpHeaderExt *)_data)->Signatured();    }
 
     void   packsend(void *, int , bool compress=false);     // упаковка и передача
     void   packsend(QByteArray&, bool compress=false);      // упаковка и передача

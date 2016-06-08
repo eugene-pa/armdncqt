@@ -37,23 +37,27 @@ void SignaturedPack::pack(char * src, int srclength, bool compress)
         QByteArray srcarr(srclength, 0);
         for (int i=0; i<srclength; i++)
             srcarr[i] = src[i];
-        QByteArray zipped = qCompress(srcarr);
+        QByteArray zipped = qCompress(srcarr);              // можно менять степень сжатия!
         memcpy(data, zipped.data() + 4, srclength = zipped.length()-4);
     }
     else
         memcpy(data, src, srclength);
-    signature = SIGNATURE;
+    signature = compress ? SIGNATUREZIP : SIGNATURE;        //signature = SIGNATURE;
     length = (WORD)(sizeof(TcpHeader) + srclength);
 }
 
 
 SignaturedPackExt::SignaturedPackExt(char * src, int length, bool compress)
 {
+    if (compress)
+        signature = SIGNATUREZIP;
     pack(src, length, compress);
 }
 
 SignaturedPackExt::SignaturedPackExt(QByteArray& array, bool compress)
 {
+    if (compress)
+        signature = SIGNATUREZIP;
     pack(array.data(), array.length(), compress);
 }
 
@@ -70,8 +74,10 @@ void SignaturedPackExt::pack(char * src, int srclength, bool compress)
     }
     else
         memcpy(data, src, srclength);
-    signature = SIGNATURE;
+
+    signature = compress ? SIGNATUREZIP : SIGNATURE;
     signature2 = 0xffff;
+
     length = sizeof(TcpHeaderExt) + srclength;
 }
 
