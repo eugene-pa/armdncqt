@@ -198,3 +198,24 @@ void MainWindow::slotAcceptError(QAbstractSocket::SocketError socketError)
 {
     Q_UNUSED(socketError);
 }
+
+void MainWindow::on_actionIni_triggered()
+{
+
+}
+
+void MainWindow::on_actionLog_triggered()
+{
+
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. Сервер удаленного доступа paServer\n\nФайл: %1.\nДата сборки: %2\nВерсия протокола: %3.0\n\n© ООО НПЦ Промавтоматика, 2016").arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)).arg(RemoteRq::paServerVersion));
+}
+
+void MainWindow::on_actionQT_about_triggered()
+{
+    QMessageBox::aboutQt(this, "Версия QT");
+}

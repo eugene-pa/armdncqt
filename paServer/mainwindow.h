@@ -6,6 +6,7 @@
 #include <QSysInfo>
 #include <QTextCodec>
 #include <QLabel>
+#include <QMessageBox>
 
 #include "../common/defines.h"
 #include "../common/logger.h"
@@ -40,6 +41,14 @@ private slots:
     void slotSvrNewConnection (ClientTcp *);
     void slotSvrDataready     (ClientTcp *);
     void slotSvrDisconnected  (ClientTcp *);
+
+    void on_actionIni_triggered();
+
+    void on_actionLog_triggered();
+
+    void on_actionAbout_triggered();
+
+    void on_actionQT_about_triggered();
 
 private:
     Ui::MainWindow *ui;
