@@ -66,9 +66,6 @@ void ResponceDrives::Deserialize(QDataStream& stream)
 
 QString ResponceDrives::toString()
 {
-    QString msg("Список логических дисковых устройств:\r\n");
-    for (int i=0; i<_list.count(); i++)
-         msg += _list[i] + "\r\n";
-    return msg;
+    return QString ("Список логических дисковых устройств:\r\n" + _list.join("\r\n"));
 }
 

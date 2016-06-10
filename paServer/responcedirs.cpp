@@ -70,8 +70,5 @@ void ResponceDirs::Deserialize(QDataStream& stream)
 
 QString ResponceDirs::toString()
 {
-    QString msg(_folder + ". Список каталогов папки:\r\n");
-    for (int i=0; i<_list.count(); i++)
-         msg += _list[i] + "\r\n";
-    return msg;
+    return QString (_folder + ". Список каталогов папки:\r\n" + _list.join("\r\n"));
 }

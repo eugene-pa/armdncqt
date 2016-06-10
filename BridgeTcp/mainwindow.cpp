@@ -105,6 +105,8 @@ MainWindow::MainWindow(QWidget *parent) :
         t->setItem(i,0, item);
         t->setItem(i,1, new QTableWidgetItem ("Сервер"));
         t->item(i,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));    // запомним клиента
+        t->setItem(i,2, new QTableWidgetItem (""));
+        t->setItem(i,3, new QTableWidgetItem (""));
     }
 
     // старт подключений после заполнения таблицы
@@ -250,12 +252,14 @@ void MainWindow::timerEvent(QTimerEvent *event)
 
             if (conn != nullptr)
             {
-                if (i >= connections.count())
+                if (ui->tableWidget->item(i,1)->text().length() == 0)
                     t->setItem(i,1, new QTableWidgetItem (conn->getid()));
+
                 QIcon icon = QIcon(conn->isConnected() ? *g_green : *g_yellow);
                 t->item(i,0)->setIcon(QIcon(conn->isConnected() ? *g_green : *g_yellow));
-                t->setItem(i,2, new QTableWidgetItem (QString("%1/%2").arg(conn->getsent(0)).arg(conn->getsent(1))));
-                t->setItem(i,3, new QTableWidgetItem (QString("%1/%2").arg(conn->getrcvd(0)).arg(conn->getrcvd(1))));
+
+                ui->tableWidget->item(i,2)->setText(QString("%1/%2").arg(conn->getsent(0)).arg(conn->getsent(1)));
+                ui->tableWidget->item(i,3)->setText(QString("%1/%2").arg(conn->getrcvd(0)).arg(conn->getrcvd(1)));
 
                 // отключенные клиенты удаляем из списка; удаляем объект ClientTcp
                 if (i >= connections.count() && !conn->isConnected())
@@ -298,4 +302,19 @@ void MainWindow::on_action_view_log_triggered()
 void MainWindow::on_action_about_triggered()
 {
 
+}
+
+int MainWindow::findRowByConn(ClientTcp *conn)
+{
+    QTableWidget * t = ui->tableWidget;
+    for (int i=0; i<ui->tableWidget->rowCount(); i++)
+    {
+        QTableWidgetItem * item = ui->tableWidget->item(i,0);
+        if (item != nullptr)
+        {
+            if (conn == (ClientTcp *) ui->tableWidget->item(i,0)->data(Qt::UserRole).value<void*>())
+                return i;
+        }
+    }
+    return -1;
 }

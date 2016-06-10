@@ -46,6 +46,7 @@ private slots:
 private:
     virtual void timerEvent(QTimerEvent *event);            // таймер
     void loadResources();
+    int findRowByConn(ClientTcp *conn);
 
     QVector <class ClientTcp*> connections;                 // соединения
 

@@ -30,16 +30,26 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-
     ui->setupUi(this);
 
-    ui->statusBar->addPermanentWidget(msg = new QLabel());   //
+    ui->statusBar->addPermanentWidget(msg = new QLabel(), true);   //
     loadResources();
     logger.log("Запуск");
 
     // порт, на котором работает сервис, по умолчанию = 208080
     IniReader rdr(iniFile);
     rdr.GetInt("PORT", port);
+
+    QTableWidget * t = ui->tableWidget;
+    t->setColumnCount(3);
+    t->verticalHeader()->setDefaultSectionSize(20);
+    t->setColumnWidth(0,90);
+    t->setColumnWidth(1,300);
+    t->setColumnWidth(2,300);
+    t->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    t->setHorizontalHeaderLabels(QStringList() << "Клиент" << "Запрос" << "Отклик");
+    t->setSortingEnabled(false);
+    t->setRowCount(0);
 
     server = new ServerTcp(port, QHostAddress::Any, &logger);
     QObject::connect(server, SIGNAL(acceptError(ClientTcp*)), this, SLOT(slotAcceptError(ClientTcp*)));
@@ -72,21 +82,26 @@ void MainWindow::slotSvrNewConnection (ClientTcp *conn)
     QString s("Подключен клиент " + conn->name());
     msg->setText(s);
 
-//    QTableWidget * t = ui->tableWidget;
-//    t->setRowCount(connections.count() + server->clients().count());
-//    int row = t->rowCount()-1;
-//    QString name = conn->name();
-//    t->setItem(row,0, new QTableWidgetItem (conn->name()));
-//    t->setItem(row,1, new QTableWidgetItem (conn->getid()));
-//    t->setItem(row,2, new QTableWidgetItem (QString("%1/%2").arg(conn->getsent(0)).arg(conn->getsent(1))));
-//    t->setItem(row,3, new QTableWidgetItem (QString("%1/%2").arg(conn->getrcvd(0)).arg(conn->getrcvd(1))));
-//    t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));    // запомним клиента
+    QTableWidget * t = ui->tableWidget;
+    t->setRowCount(server->clients().count());
+    int row = t->rowCount()-1;
+    QString name = conn->name();
+    t->setItem(row,0, new QTableWidgetItem (conn->name()));
+    t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));    // запомним клиента
+    t->setItem(row,1, new QTableWidgetItem (""));
+    t->setItem(row,2, new QTableWidgetItem (""));
 }
 
 void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
 {
     QString s("Отключен клиент " + conn->name());
     msg->setText(s);
+
+    int row = findRowByConn(conn);
+    if (row>=0)
+    {
+        ui->tableWidget->removeRow(row);
+    }
 }
 
 // получен запрос
@@ -105,43 +120,68 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     buf.open(QIODevice::ReadOnly);
     QDataStream stream(&buf);
 
-    RemoteRq rq;
-    rq.Deserialize(stream);
+    RemoteRq * rq = new RemoteRq();                         // нельзя создавать на стеке
+    rq->Deserialize(stream);
 
-    logger.log(s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq.Rq())).arg(rq.getsrc().toString()).arg(rq.getdst().toString()));
+    logger.log(s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq->Rq())).arg(rq->getsrc().toString()).arg(rq->getdst().toString()));
     msg->setText(s);
 
-    if (rq.isRemote())
+    if (rq->isRemote())
     {
-        // переадресация дальше по сети
-        int a = 99;
+        QString host, path;
+        if (RemoteRq::ParseNestedIp(rq->getRemotePath(), host, path))
+        {
+            rq->setRemote(path);                             // изымаем свой адрес из пути
+            ClientTcp * client = new ClientTcp(host, &logger, true, remoteClientId);
+            conn->setUserPtr(client);
+            client->setUserPtr(&rq);                        //
+
+            QObject::connect(client, SIGNAL(connected   (ClientTcp*)), this, SLOT(nextConnected   (ClientTcp*)));
+            QObject::connect(client, SIGNAL(disconnected(ClientTcp*)), this, SLOT(nextdisconnected(ClientTcp*)));
+            QObject::connect(client, SIGNAL(error       (ClientTcp*)), this, SLOT(nexterror       (ClientTcp*)));
+            QObject::connect(client, SIGNAL(dataready   (ClientTcp*)), this, SLOT(nextdataready   (ClientTcp*)));
+        }
+        else
+        {
+            logger.log(s = QString("Ошибка разбора IP адреса/порта запроса: %1").arg(rq->getRemotePath()));
+            msg->setText(s);
+        }
     }
     else
     {
+        int row = findRowByConn(conn);
+        if (row>=0)
+        {
+            ui->tableWidget->item(row,1)->setText(rq->toString());
+        }
         // разбор типа запроса
-        switch (rq.Rq())
+        switch (rq->Rq())
         {
             case rqAbout:
             {
-                ResponceAbout responce(rq, &logger);
+                ResponceAbout responce(*rq, &logger);
                 conn->packsend(responce.Serialize());
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 break;
             }
             case rqDirs:
             {
-                ResponceDirs responce(rq, &logger);
+                ResponceDirs responce(*rq, &logger);
                 conn->packsend(responce.Serialize());
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 break;
             }
             case rqFileInfo:
             {
-                ResponceFileInfo responce(rq, &logger);
+                ResponceFileInfo responce(*rq, &logger);
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 conn->packsend(responce.Serialize());
                 break;
             }
             case rqFilesInfo:
             {
-                ResponceFiles responce(rq, &logger);
+                ResponceFiles responce(*rq, &logger);
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 conn->packsend(responce.Serialize());
                 break;
             }
@@ -151,7 +191,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqDrives:
             {
-                ResponceDrives responce(rq, &logger);
+                ResponceDrives responce(*rq, &logger);
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 conn->packsend(responce.Serialize());
                 break;
             }
@@ -165,7 +206,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqTempFile:
             {
-                ResponceTempFile responce(rq, &logger);
+                ResponceTempFile responce(*rq, &logger);
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 conn->packsend(responce.Serialize());
                 break;
             }
@@ -183,7 +225,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             }
             case rqRead:
             {
-                ResponceRead responce(rq);
+                ResponceRead responce(*rq);
+                ui->tableWidget->item(row,2)->setText(responce.toString());
                 conn->packsend(responce.Serialize(), true);
                 break;
             }
@@ -219,3 +262,40 @@ void MainWindow::on_actionQT_about_triggered()
 {
     QMessageBox::aboutQt(this, "Версия QT");
 }
+
+int MainWindow::findRowByConn(ClientTcp *conn)
+{
+    for (int i=0; i<ui->tableWidget->rowCount(); i++)
+    {
+        QTableWidgetItem * item = ui->tableWidget->item(i,0);
+        if (item != nullptr)
+        {
+            if (conn == (ClientTcp *) ui->tableWidget->item(i,0)->data(Qt::UserRole).value<void*>())
+                return i;
+        }
+    }
+    return -1;
+}
+
+
+// уведомления клиентов рекурсивных подключений
+void MainWindow::nextConnected   (ClientTcp*)
+{
+
+}
+
+void MainWindow::nextdisconnected(ClientTcp*)
+{
+
+}
+
+void MainWindow::nexterror       (ClientTcp*)
+{
+
+}
+
+void MainWindow::nextdataready   (ClientTcp*)
+{
+
+}
+

@@ -42,6 +42,12 @@ private slots:
     void slotSvrDataready     (ClientTcp *);
     void slotSvrDisconnected  (ClientTcp *);
 
+    // уведомления клиентов рекурсивных подключений
+    void nextConnected        (ClientTcp *);
+    void nextdisconnected     (ClientTcp *);
+    void nexterror            (ClientTcp *);
+    void nextdataready        (ClientTcp *);
+
     void on_actionIni_triggered();
 
     void on_actionLog_triggered();
@@ -56,6 +62,8 @@ private:
     ServerTcp * server;
 
     void MainWindow::loadResources();
+
+    int findRowByConn(ClientTcp *);
 };
 
 #endif // MAINWINDOW_H

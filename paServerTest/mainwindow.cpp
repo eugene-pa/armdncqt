@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->statusBar->addPermanentWidget(msg = new QLabel());   //
+    ui->statusBar->addPermanentWidget(msg = new QLabel(), true);   //
 
     ui->labelStatus->set(QLed::ledShape::round, QLed::ledStatus::off, Qt::green, Qt::yellow);
 }

@@ -11,6 +11,7 @@
 // удаленный запрос
 
 extern void log(QString&);                              // глобальная функция лога
+const QString remoteClientId = "remoteClient";
 
 enum RemoteRqType
 {
@@ -56,9 +57,17 @@ public:
     static const quint16 paServerVersion;                   // версия paServer
 
     static QString getRqName(RemoteRqType);                 // получить имя запроса
+
+    // разбор вложенного пути, например, путь 192.168.0.100:8080/10.52.19.31:8080/192.168.1.11:8080 разбивается на 2 лексемы:
+    // - 192.168.0.100:8080
+    // - 10.52.19.31:8080/192.168.1.11:8080
+    static bool ParseNestedIp(QString& ipportpath, QString& root, QString& path);
+
     QString getRqName() { return getRqName(rq); }
+    QString& getRemotePath() { return remotePath; }
 
     bool isRemote() { return remotePath.length() > 0; }     // надо более строго выделить корректный удаленный путь
+    void setRemote(QString& path)  { remotePath = path; }
 
     QByteArray Serialize();
     void Deserialize(QDataStream &stream);
@@ -73,8 +82,11 @@ public:
     void setParam3(QVariant value) { param3 = value; }
     void setParam4(QVariant value) { param4 = value; }
 
+
     QHostAddress getsrc() { return src; }                   // IP источника запроса
     QHostAddress getdst() { return dst; }                   // IP назначение запроса
+
+    QString toString();
 
 protected:
     // несериализуемая часть
@@ -85,7 +97,7 @@ protected:
     RemoteRqType rq;                                        // запрос
     QHostAddress src;                                       // IP источника запроса
     QHostAddress dst;                                       // IP назначение запроса
-    QString      fullPath;                                  // полный константный путь запроса, возможно рекурсивный: tcp://10.52.19.71/tcp://192.168.1.1
+    QString      fullPath;                                  // полный константный путь запроса, возможно рекурсивный: 10.52.19.71:28080/192.168.1.1:28080/имя_файла
     QString      remotePath;                                // удаленный хост (возможен рекурсивный путь); если пустая строка - локальный хост
     QVariant     param;                                     // параметр
     QVariant     param2;                                    // параметр 2

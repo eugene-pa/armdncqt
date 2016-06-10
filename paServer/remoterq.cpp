@@ -93,35 +93,45 @@ QString RemoteRq::getRqName(RemoteRqType type)
     return ret;
 }
 
-/*
-void RemoteRq::SerializeBase(QDataStream &stream)
-{
-    stream << header;
-    stream << version;
 
-    stream << (int)rq;
-    stream << src;
-    stream << dst;
-    stream << remotePath;
-    stream << param;
-    stream << reserv1;
-    stream << reserv2;
-    stream << reserv3;
+QString RemoteRq::toString()
+{
+    switch(rq)
+    {
+        case rqEmpty       : return "rqEmpty"                                                                                  ; break;
+        case rqAbout       : return "Запрос информации о версии сервиса и хосте"                                               ; break;
+        case rqDirs        : return "Запрос списка каталогов"                                                                  ; break;
+        case rqFileInfo    : return "Запрос информации о файле"                                                                ; break;
+        case rqFilesInfo   : return "Запрос информации о всех файлах каталога"                                                 ; break;
+        case rqFilesSize   : return "Запрос размера заданных файлов"                                                           ; break;
+        case rqDrives      : return "Запрос списка логических устройств"                                                       ; break;
+        case rqProcesses   : return "Запрос списка процессов"                                                                  ; break;
+        case rqProcesseInfo: return "Запрос информации о процессе"                                                             ; break;
+        case rqTempFile    : return "Запрос временной копии файла для копирования"                                             ; break;
+        case rqTempFilesZip: return "Запрос архивирования указанных файлов во временом файле"                                  ; break;
+        case rqTempDirZip  : return "Запрос архивирования каталога во временом файле"                                          ; break;
+        case rqDeleteTemp  : return "Запрос удаления всех временных файлов"                                                    ; break;
+        case rqRead        : return "Запрос чтения блока данных файла"                                                         ; break;
+    }
 }
 
-void RemoteRq::DeserializeBase(QDataStream &stream)
+// разбор вложенного пути, например, путь 192.168.0.100:8080/10.52.19.31:8080/192.168.1.11:8080 разбивается на 2 лексемы:
+// - 192.168.0.100:8080
+// - 10.52.19.31:8080/192.168.1.11:8080
+bool RemoteRq::ParseNestedIp(QString& ipportpath, QString& root, QString& path)
 {
-    stream >> header;
-    stream >> version;
-    int rqt; stream >> rqt;
-    rq = (RemoteRqType)rqt;
-    stream >> src;
-    stream >> dst;
-    stream >> remotePath;
-    stream >> param;
-    stream >> reserv1;
-    stream >> reserv2;
-    stream >> reserv3;
-}
-*/
+    bool ret = true;
+    root.clear();
+    path.clear();
+    QRegularExpressionMatch match = QRegularExpression("\\A([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}):[0-9]{1,5}/\\b").match(ipportpath);
 
+    if (match.hasMatch())
+    {
+        int rootlength = match.captured().length();
+        root = match.captured().left(rootlength-1);
+        path = ipportpath.mid(rootlength);
+    }
+    else
+        ret = false;
+    return ret;
+}
