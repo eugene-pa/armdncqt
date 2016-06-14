@@ -21,6 +21,7 @@ QString editor = "gedit";                                   // блокнот
 
 int port = 28080;
 
+
 void log(QString& msg)                                      // глобальная функция лога
 {
     logger.log(msg);
@@ -58,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(server, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotSvrDisconnected(ClientTcp*)));
 
     server->start();
+
+    startTimer(1000);
 }
 
 MainWindow::~MainWindow()
@@ -126,20 +129,25 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     logger.log(s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq->Rq())).arg(rq->getsrc().toString()).arg(rq->getdst().toString()));
     msg->setText(s);
 
+    // Пример: 127.0.0.1:28080/192.168.0.1:28080
     if (rq->isRemote())
     {
-        QString host, path;
-        if (RemoteRq::ParseNestedIp(rq->getRemotePath(), host, path))
+        QString ipport = rq->getRemotePath(), host, path;
+
+        if (RemoteRq::ParseNestedIp(ipport, host, path))
         {
-            rq->setRemote(path);                             // изымаем свой адрес из пути
+            logger.log(s = QString("Перенаправляем запрос %1 хосту %2").arg(RemoteRq::getRqName(rq->Rq())).arg(host));
+            rq->setRemote(path);                            // изымаем свой адрес из пути
             ClientTcp * client = new ClientTcp(host, &logger, true, remoteClientId);
-            conn->setUserPtr(client);
-            client->setUserPtr(&rq);                        //
+            conn->setUserPtr(0,client);                     // в оригинальном сокете запоминаем потомка
+            client->setUserPtr(0,rq);                       // в сокете-потомке запоминаем запрос
+            client->setUserPtr(1,conn);                     // в сокете-потомке запоминаем родителя
 
             QObject::connect(client, SIGNAL(connected   (ClientTcp*)), this, SLOT(nextConnected   (ClientTcp*)));
             QObject::connect(client, SIGNAL(disconnected(ClientTcp*)), this, SLOT(nextdisconnected(ClientTcp*)));
             QObject::connect(client, SIGNAL(error       (ClientTcp*)), this, SLOT(nexterror       (ClientTcp*)));
             QObject::connect(client, SIGNAL(dataready   (ClientTcp*)), this, SLOT(nextdataready   (ClientTcp*)));
+            client->start();
         }
         else
         {
@@ -160,14 +168,16 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             case rqAbout:
             {
                 ResponceAbout responce(*rq, &logger);
-                conn->packsend(responce.Serialize());
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
                 break;
             }
             case rqDirs:
             {
                 ResponceDirs responce(*rq, &logger);
-                conn->packsend(responce.Serialize());
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
                 break;
             }
@@ -175,14 +185,16 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             {
                 ResponceFileInfo responce(*rq, &logger);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
-                conn->packsend(responce.Serialize());
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 break;
             }
             case rqFilesInfo:
             {
                 ResponceFiles responce(*rq, &logger);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
-                conn->packsend(responce.Serialize());
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 break;
             }
             case rqFilesSize:
@@ -193,7 +205,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             {
                 ResponceDrives responce(*rq, &logger);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
-                conn->packsend(responce.Serialize());
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 break;
             }
             case rqProcesses:
@@ -208,7 +221,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             {
                 ResponceTempFile responce(*rq, &logger);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
-                conn->packsend(responce.Serialize());
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 break;
             }
             case rqTempFilesZip:
@@ -227,7 +241,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             {
                 ResponceRead responce(*rq);
                 ui->tableWidget->item(row,2)->setText(responce.toString());
-                conn->packsend(responce.Serialize(), true);
+                QByteArray data = responce.Serialize();
+                conn->packsend(data);
                 break;
             }
             default:
@@ -279,12 +294,17 @@ int MainWindow::findRowByConn(ClientTcp *conn)
 
 
 // уведомления клиентов рекурсивных подключений
-void MainWindow::nextConnected   (ClientTcp*)
+void MainWindow::nextConnected   (ClientTcp* conn)
 {
+    QString s("Подключен клиент " + conn->name() + ". Транслируем запрос");
+    msg->setText(s);
 
+    RemoteRq * rq = (RemoteRq *)conn->userPtr(0);
+    QByteArray data = rq->Serialize();
+    conn->packsend(data);
 }
 
-void MainWindow::nextdisconnected(ClientTcp*)
+void MainWindow::nextdisconnected(ClientTcp* conn)
 {
 
 }
@@ -294,8 +314,39 @@ void MainWindow::nexterror       (ClientTcp*)
 
 }
 
-void MainWindow::nextdataready   (ClientTcp*)
+// приняли данные в сокете-потомке (рекурсивное подключение)
+// ретранслируем данные в сокет родителя
+void MainWindow::nextdataready   (ClientTcp* conn)
 {
+    ClientTcp* parent = (ClientTcp*)conn->userPtr(1);
+    parent->send(conn->rawData(), conn->rawLength());
+    parent->setUserPtr(0,nullptr);                          // в оригинальном сокете удаляем потомка
 
+    // можно сразу остановить сокет и разорвать соединение
+    // непонятно с удалением...
+
+    // не помогает исключению при удалении conn, возможно, это лишнее
+    QObject::disconnect(conn, SIGNAL(connected   (ClientTcp*)), this, SLOT(nextConnected   (ClientTcp*)));
+    QObject::disconnect(conn, SIGNAL(disconnected(ClientTcp*)), this, SLOT(nextdisconnected(ClientTcp*)));
+    QObject::disconnect(conn, SIGNAL(error       (ClientTcp*)), this, SLOT(nexterror       (ClientTcp*)));
+    QObject::disconnect(conn, SIGNAL(dataready   (ClientTcp*)), this, SLOT(nextdataready   (ClientTcp*)));
+
+    conn->stop();
+    conn->socket()->abort();
+    conn->socket()->close();
+
+    // сохраняем отработанные сокеты в корзине
+    _trash.append(conn);                                    // удаление экземпляра тут приводит к проблемам: delete conn;
 }
 
+
+// пришлось встроить корзину и отдельный код для удаления классов ClientTcp
+// удаляю объекты и выбираю их из корзины по таймеру
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    if (_trash.length() > 0)
+    {
+        delete _trash[0];
+        _trash.removeAt(0);
+    }
+}

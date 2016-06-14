@@ -6,7 +6,7 @@
 // конструктор по умолчанию для приемной стороны
 ResponceAbout::ResponceAbout()
 {
-    _rq = rqEmpty;
+    //_rq = rqEmpty;
     _logger = nullptr;
 }
 

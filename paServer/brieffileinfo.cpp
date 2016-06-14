@@ -8,7 +8,6 @@ BriefFileInfo::BriefFileInfo (QFileInfo& fi)
 
 void BriefFileInfo::fill(QFileInfo& fi)
 {
-    bool _exist = fi.exists();
     _name           =  fi.fileName();
     _lastChanged    = fi.lastModified();
     _created        = fi.created();

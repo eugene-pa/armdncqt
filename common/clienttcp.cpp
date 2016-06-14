@@ -52,7 +52,8 @@ ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
 
 void ClientTcp::init()
 {
-    _userPtr = nullptr;
+    for (int i=0; i<userdatacount; i++)
+        _userPtr [i] = nullptr;
     run = false;
     _data = new char[maxSize];
     clear();
@@ -71,8 +72,16 @@ void ClientTcp::init()
 ClientTcp::~ClientTcp()
 {
     log(msg = QString("Деструктор ClientTcp: %1:%2").arg(remoteIp).arg(remotePort));
+
+    // не факт, что нужно отсоединять; вообще не попадаю в деструктор :(
+    QObject::disconnect(sock, SIGNAL(connected   ()), this, SLOT(slotConnected()));
+    QObject::disconnect(sock, SIGNAL(readyRead   ()), this, SLOT(slotReadyRead()));
+    QObject::disconnect(sock, SIGNAL(disconnected()), this, SLOT(slotDisconnected()));
+    QObject::disconnect(sock, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(slotError(QAbstractSocket::SocketError)));
+
     sock->abort();
     sock->close();
+    sock = nullptr;
     delete _data;
 }
 
@@ -81,7 +90,7 @@ void ClientTcp::start()
     if (!run)
     {
         run = true;
-        if (!isServer())
+        if (!isServer() && sock != nullptr)
             sock->connectToHost(remoteIp,remotePort);
     }
 }
@@ -102,7 +111,9 @@ void ClientTcp::stop()
 // toRead - требуемая длина; если toRead==длине заголовка, принимаем заголовок, определяем длину пакета, и toRead = длине пакета
 void ClientTcp::slotReadyRead      ()
 {
-    while (true)
+    if (sock == nullptr)
+        return;
+    while (sock->isOpen()/*true*/)
     {
         _length += sock->read(_data+_length, toRead-_length);   // читаем в буфер со смещением length
         if (_length < toRead)

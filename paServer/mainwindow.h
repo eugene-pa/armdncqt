@@ -60,10 +60,13 @@ private:
     Ui::MainWindow *ui;
     class QLabel * msg;
     ServerTcp * server;
+    QList <class ClientTcp*> _trash;                        // корзина отработанных клиентов
 
-    void MainWindow::loadResources();
+    void loadResources();
 
     int findRowByConn(ClientTcp *);
+
+    virtual void timerEvent(QTimerEvent *event);
 };
 
 #endif // MAINWINDOW_H

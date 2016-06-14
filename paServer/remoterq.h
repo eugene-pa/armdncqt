@@ -11,7 +11,7 @@
 // удаленный запрос
 
 extern void log(QString&);                              // глобальная функция лога
-const QString remoteClientId = "remoteClient";
+const QString remoteClientId = "";                      // remoteClient";
 
 enum RemoteRqType
 {
@@ -50,7 +50,8 @@ public:
     static QHostAddress localaddress;
     static QHostAddress remoteaddress;
 
-    RemoteRq(RemoteRqType req = rqEmpty);
+    RemoteRq();
+    RemoteRq(RemoteRqType req, QString& fullpath);
     ~RemoteRq();
 
     static const quint32 streamHeader;                      // заголовок
@@ -87,6 +88,8 @@ public:
     QHostAddress getdst() { return dst; }                   // IP назначение запроса
 
     QString toString();
+
+    //void setFullPath(QString& path) { fullPath = path; }
 
 protected:
     // несериализуемая часть

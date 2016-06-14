@@ -69,8 +69,8 @@ public:
 
     UINT   getrcvd(int i) { return rcvd[i?1:0]; }           // счетчик: 0-пакетов, 1-байтов
     UINT   getsent(int i) { return sent[i?1:0]; }           // счетчик: 0-пакетов, 1-байтов
-    void * userPtr(){ return _userPtr; }                    // получить пользовательский указатель
-    void   setUserPtr(void *p) { _userPtr = p; }            // запомнить пользовательский указатель
+    void * userPtr(int i){ return _userPtr[i]; }            // получить пользовательский указатель
+    void   setUserPtr(int i, void *p) { _userPtr[i] = p; }  // запомнить пользовательский указатель
     bool   isServer() { return server != nullptr; }         // это серверное соединение ?
     bool   isAcked () { return acked; }                     // квитировано ?
     void   clear() { memset(_data, 0, maxSize); }
@@ -92,7 +92,8 @@ private:
     bool        _transparentMode;                           // прием "как есть" без распаковки - используется в шлюзе СПД для ретрансляции
 
     QAbstractSocket::SocketError _lasterror;                // ошибка
-    void        * _userPtr;                                  // указатель на данные пользователя
+    static const int userdatacount = 3;                     // число пользовательских данных
+    void        * _userPtr[userdatacount];                  // указатель на данные пользователя
     bool        acked;                                      // квитировано!
 
     // состояние приема пакета

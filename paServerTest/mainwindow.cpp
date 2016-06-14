@@ -227,7 +227,7 @@ void MainWindow::on_pushButton_clicked()
 // запрос "О хосте и сервисе"
 void MainWindow::on_actionAbout_triggered()
 {
-    RemoteRq rq(rqAbout);
+    RemoteRq rq(rqAbout,serverConnectStr);
     QByteArray data = rq.Serialize();
     connection->packsend(data);
 }
@@ -235,7 +235,7 @@ void MainWindow::on_actionAbout_triggered()
 // список дисков
 void MainWindow::on_actionDrives_triggered()
 {
-    RemoteRq rq(rqDrives);
+    RemoteRq rq(rqDrives,serverConnectStr);
     QByteArray data = rq.Serialize();
     connection->packsend(data);
 }
@@ -243,7 +243,7 @@ void MainWindow::on_actionDrives_triggered()
 // запрос списка каталогов заданной папки
 void MainWindow::on_actionDirs_triggered()
 {
-    RemoteRq rq(rqDirs);
+    RemoteRq rq(rqDirs,serverConnectStr);
     rq.setParam(ui->lineEditFolder->text());
     QByteArray data = rq.Serialize();
     connection->packsend(data);
@@ -252,7 +252,7 @@ void MainWindow::on_actionDirs_triggered()
 // запрос пакета информации о файлах заданной папки
 void MainWindow::on_actionFiles_triggered()
 {
-    RemoteRq rq(rqFilesInfo);
+    RemoteRq rq(rqFilesInfo,serverConnectStr);
     rq.setParam(ui->lineEditFolder->text());
     QByteArray data = rq.Serialize();
     connection->packsend(data);
@@ -261,7 +261,7 @@ void MainWindow::on_actionFiles_triggered()
 // запрос информации о файле
 void MainWindow::on_actionFileUnfo_triggered()
 {
-    RemoteRq rq(rqFileInfo);
+    RemoteRq rq(rqFileInfo,serverConnectStr);
     rq.setParam(ui->lineEditFolder->text());
     QByteArray data = rq.Serialize();
     connection->packsend(data);
@@ -270,7 +270,7 @@ void MainWindow::on_actionFileUnfo_triggered()
 
 void MainWindow::rqReadFile(QString src, QString dst, qint64 offset, int length)
 {
-    RemoteRq rq(rqRead);
+    RemoteRq rq(rqRead,serverConnectStr);
     rq.setParam(src);                                       // файл
     rq.setParam2(offset);                                   // смещение
     rq.setParam3(length);                                   // длина запрашиваемого блока данных
@@ -289,7 +289,7 @@ void MainWindow::on_actionRead_triggered()
 
 void MainWindow::on_actionTempCopy_triggered()
 {
-    RemoteRq rq(rqTempFile);
+    RemoteRq rq(rqTempFile,serverConnectStr);
     rq.setParam(ui->lineEditFolder->text());
     QByteArray data = rq.Serialize();
     connection->packsend(data);

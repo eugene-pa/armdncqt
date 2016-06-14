@@ -111,8 +111,10 @@ bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, int& port)
     QRegularExpressionMatch match = QRegularExpression("\\b([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}):[0-9]{1,5}\\b").match(ipport);
     if (match.hasMatch())
     {
-        QRegularExpressionMatch matchip   = QRegularExpression(".+(?=:)").match(ipport);
-        QRegularExpressionMatch matchport = QRegularExpression("(?<=:).+").match(ipport);
+        // проблема: обработка рекурсивных подключений, например: 127.0.0.1:28080/192.168.0.101:28080
+        QString lexem = match.captured();
+        QRegularExpressionMatch matchip   = QRegularExpression(".+(?=:)").match(lexem);
+        QRegularExpressionMatch matchport = QRegularExpression("(?<=:).+").match(lexem);
         // QRegularExpressionMatch matchport2 = QRegularExpression("\\d+$").match(ipport);
         if (matchip.hasMatch())
             ip = matchip.captured();

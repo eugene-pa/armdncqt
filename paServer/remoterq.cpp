@@ -3,20 +3,35 @@
 const quint32 RemoteRq::streamHeader = 0x48454144;                 // заголовок HEAD
 const quint16 RemoteRq::paServerVersion = 1;                       // версия paServer
 
-QHostAddress RemoteRq::localaddress;
-QHostAddress RemoteRq::remoteaddress;
+QHostAddress RemoteRq::localaddress("127.0.0.1");
+QHostAddress RemoteRq::remoteaddress("127.0.0.1");
 
-RemoteRq::RemoteRq(RemoteRqType req)
+RemoteRq::RemoteRq()
+{
+    rq = rqEmpty;
+    header  = RemoteRq::streamHeader;
+    version = paServerVersion;
+
+    src = localaddress;
+    dst = remoteaddress;
+
+    remotePath = "";
+}
+
+RemoteRq::RemoteRq(RemoteRqType req, QString& fullpath)
 {
     rq = req;
+    fullPath = fullpath;
 
     header  = RemoteRq::streamHeader;
     version = paServerVersion;
 
     src = localaddress;
     dst = remoteaddress;
-    remotePath = "";
 
+    // разделяем удаленный путь
+    QString host;
+    ParseNestedIp(fullPath, host, remotePath);
 }
 
 
@@ -37,6 +52,7 @@ QByteArray RemoteRq::Serialize()
     stream << (int)rq;
     stream << src;
     stream << dst;
+    stream << fullPath;
     stream << remotePath;
     stream << param;
     stream << param2;
@@ -57,6 +73,7 @@ void RemoteRq::Deserialize (QDataStream &stream)
     rq = (RemoteRqType)rqt;
     stream >> src;
     stream >> dst;
+    stream >> fullPath;
     stream >> remotePath;
     stream >> param;
     stream >> param2;
@@ -112,6 +129,7 @@ QString RemoteRq::toString()
         case rqTempDirZip  : return "Запрос архивирования каталога во временом файле"                                          ; break;
         case rqDeleteTemp  : return "Запрос удаления всех временных файлов"                                                    ; break;
         case rqRead        : return "Запрос чтения блока данных файла"                                                         ; break;
+        default: return "???";
     }
 }
 
@@ -121,7 +139,7 @@ QString RemoteRq::toString()
 bool RemoteRq::ParseNestedIp(QString& ipportpath, QString& root, QString& path)
 {
     bool ret = true;
-    root.clear();
+    root = ipportpath;
     path.clear();
     QRegularExpressionMatch match = QRegularExpression("\\A([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3}):[0-9]{1,5}/\\b").match(ipportpath);
 
@@ -131,7 +149,7 @@ bool RemoteRq::ParseNestedIp(QString& ipportpath, QString& root, QString& path)
         root = match.captured().left(rootlength-1);
         path = ipportpath.mid(rootlength);
     }
-    else
-        ret = false;
+//    else
+//        ret = false;
     return ret;
 }

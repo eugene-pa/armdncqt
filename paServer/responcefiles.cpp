@@ -3,7 +3,7 @@
 // конструктор по умолчанию для приемной стороны
 ResponceFiles::ResponceFiles()
 {
-    _rq = rqEmpty;
+    //_rq = rqEmpty;
     _logger = nullptr;
 }
 

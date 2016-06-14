@@ -2,7 +2,7 @@
 
 ResponceDrives::ResponceDrives()
 {
-    _rq = rqEmpty;
+    //_rq = rqEmpty;
     _logger = nullptr;
 }
 

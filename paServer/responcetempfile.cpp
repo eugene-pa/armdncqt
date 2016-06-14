@@ -3,7 +3,7 @@
 // конструктор по умолчанию для приемной стороны
 ResponceTempFile::ResponceTempFile()
 {
-    _rq = rqEmpty;
+    //_rq = rqEmpty;
     _logger = nullptr;
 }
 
