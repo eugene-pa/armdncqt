@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     responcefiles.cpp \
     responcedrives.cpp \
     responcetempfile.cpp \
-    responceread.cpp
+    responceread.cpp \
+    responceerror.cpp
 
 HEADERS  += mainwindow.h \
     remoterq.h \
@@ -47,7 +48,8 @@ HEADERS  += mainwindow.h \
     responcefiles.h \
     responcedrives.h \
     responcetempfile.h \
-    responceread.h
+    responceread.h \
+    responceerror.h
 
 FORMS    += mainwindow.ui
 

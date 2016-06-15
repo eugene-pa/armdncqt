@@ -126,6 +126,9 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     RemoteRq * rq = new RemoteRq();                         // нельзя создавать на стеке
     rq->Deserialize(stream);
 
+    rq->setsrc(conn->socket()->peerAddress());
+    rq->setdst(conn->socket()->localAddress());
+
     logger.log(s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq->Rq())).arg(rq->getsrc().toString()).arg(rq->getdst().toString()));
     msg->setText(s);
 
@@ -136,6 +139,10 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
 
         if (RemoteRq::ParseNestedIp(ipport, host, path))
         {
+            // здесь надо обработать ошибку установки связи: сокет не должен повисать навечно, нужно определить некоторое время, после чего
+            // остановить сокет и поместить в корзину;
+            // можно вернуть отрицательную квитанцию
+            //
             logger.log(s = QString("Перенаправляем запрос %1 хосту %2").arg(RemoteRq::getRqName(rq->Rq())).arg(host));
             rq->setRemote(path);                            // изымаем свой адрес из пути
             ClientTcp * client = new ClientTcp(host, &logger, true, remoteClientId);
@@ -257,14 +264,20 @@ void MainWindow::slotAcceptError(QAbstractSocket::SocketError socketError)
     Q_UNUSED(socketError);
 }
 
+// настроечный файл
 void MainWindow::on_actionIni_triggered()
 {
-
+    QStringList params;
+    params << iniFile;
+    processIni.start(editor, params);
 }
 
+// протокол работы (лог)
 void MainWindow::on_actionLog_triggered()
 {
-
+    QStringList params;
+    params << logger.GetActualFile();
+    processLog.start(editor, params);
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -306,11 +319,21 @@ void MainWindow::nextConnected   (ClientTcp* conn)
 
 void MainWindow::nextdisconnected(ClientTcp* conn)
 {
-
+    RemoteRq * rq     = (RemoteRq *)conn->userPtr(0);
+    ClientTcp* parent = (ClientTcp*)conn->userPtr(1);
+    ResponceError responce(*rq, Disconnect, &logger);
+    QByteArray data = responce.Serialize();
+    conn->packsend(data);
 }
 
-void MainWindow::nexterror       (ClientTcp*)
+void MainWindow::nexterror       (ClientTcp* conn)
 {
+    RemoteRq * rq     = (RemoteRq *)conn->userPtr(0);
+    ClientTcp* parent = (ClientTcp*)conn->userPtr(1);
+    ResponceError responce(*rq, Disconnect, &logger);
+    responce.setErrorText( conn->socket()->errorString());
+    QByteArray data = responce.Serialize();
+    conn->packsend(data);
 
 }
 

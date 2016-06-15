@@ -45,6 +45,7 @@ class RemoteRq
     friend class ResponceTempFile;
     friend class ResponceRead;
     friend class ResponceDrives;
+    friend class ResponceError;
 public:
 
     static QHostAddress localaddress;
@@ -86,6 +87,8 @@ public:
 
     QHostAddress getsrc() { return src; }                   // IP источника запроса
     QHostAddress getdst() { return dst; }                   // IP назначение запроса
+    void setsrc(QHostAddress a) { src = a; }                // IP источника запроса
+    void setdst(QHostAddress a) { dst = a; }                // IP назначение запроса
 
     QString toString();
 

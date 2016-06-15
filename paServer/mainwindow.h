@@ -7,6 +7,7 @@
 #include <QTextCodec>
 #include <QLabel>
 #include <QMessageBox>
+#include <QProcess>
 
 #include "../common/defines.h"
 #include "../common/logger.h"
@@ -22,6 +23,7 @@
 #include "responcetempfile.h"
 #include "responceread.h"
 #include "responcedrives.h"
+#include "responceerror.h"
 
 namespace Ui {
 class MainWindow;
@@ -67,6 +69,9 @@ private:
     int findRowByConn(ClientTcp *);
 
     virtual void timerEvent(QTimerEvent *event);
+
+    QProcess processIni;
+    QProcess processLog;
 };
 
 #endif // MAINWINDOW_H

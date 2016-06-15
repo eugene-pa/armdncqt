@@ -110,6 +110,9 @@ void MainWindow::dataready   (ClientTcp * conn)
 
     HeaderResponce header;
     header.Deserialize(stream);
+    header.setsrc(conn->socket()->peerAddress());
+    header.setdst(conn->socket()->localAddress());
+
     switch (header.Rq())
     {
         case rqAbout:

@@ -14,6 +14,10 @@ public:
     void Deserialize(QDataStream &stream);
 
     RemoteRqType Rq() { return rq; }
+
+    void setsrc(QHostAddress a) { src = a; }                // IP источника запроса
+    void setdst(QHostAddress a) { dst = a; }                // IP назначение запроса
+
 protected:
     RemoteRqType rq;                                        // тип запроса
 
