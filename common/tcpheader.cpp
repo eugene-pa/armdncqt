@@ -93,7 +93,7 @@ QString TcpHeader::ErrorInfo (QAbstractSocket::SocketError error)
         case QAbstractSocket::SocketResourceError               : return "Не достаточно системных ресурсов";
         case QAbstractSocket::SocketTimeoutError                : return "Истекло время для операции с сокетом";
         case QAbstractSocket::DatagramTooLargeError             : return "Размер дейтаграммы превышаеи максимальный";
-        case QAbstractSocket::NetworkError                      : return "Ошибка сетевого оборудованияв";
+        case QAbstractSocket::NetworkError                      : return "Ошибка сетевого оборудования";
         case QAbstractSocket::AddressInUseError                 : return "Адрес привязки уже используется в эксклюзивном режиме";
         case QAbstractSocket::SocketAddressNotAvailableError	: return "Адрес привязки не найден на узле";
         case QAbstractSocket::UnsupportedSocketOperationError	: return "Запрашиваемая операция не поддерживается ОС";

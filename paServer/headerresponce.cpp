@@ -1,11 +1,12 @@
 #include "headerresponce.h"
 
-HeaderResponce::HeaderResponce(RemoteRq& req)
+HeaderResponce::HeaderResponce(RemoteRq& req, bool success/*=true*/)
 {
     rq = req.rq;
     src = req.dst;
     dst = req.src;
     fullPath = req.fullPath;
+    _success = success;
 }
 
 HeaderResponce::~HeaderResponce()
@@ -18,6 +19,7 @@ void HeaderResponce::Serialize  (QDataStream &stream)
     stream << RemoteRq::streamHeader;
     stream << RemoteRq::paServerVersion;
     stream << (int)rq;
+    stream << _success;
     stream << src;
     stream << dst;
     stream << fullPath;
@@ -36,6 +38,7 @@ void HeaderResponce::Deserialize(QDataStream &stream)
     int rqt; stream >> rqt;
     rq = (RemoteRqType)rqt;
 
+    stream >> _success;
     stream >> src;
     stream >> dst;
     stream >> fullPath;

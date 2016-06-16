@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     ../paServer/responcetempfile.cpp \
     ../paServer/responcedrives.cpp \
     ../paServer/responcefiles.cpp \
-    ../paServer/responcefileinfo.cpp
+    ../paServer/responcefileinfo.cpp \
+    ../paServer/responceerror.cpp
 
 
 HEADERS  += mainwindow.h\
@@ -52,7 +53,8 @@ HEADERS  += mainwindow.h\
     ../paServer/responcetempfile.h \
     ../paServer/responcedrives.h \
     ../paServer/responcefiles.h \
-    ../paServer/responcefileinfo.h
+    ../paServer/responcefileinfo.h \
+    ../paServer/responceerror.h
 
 
 FORMS    += mainwindow.ui

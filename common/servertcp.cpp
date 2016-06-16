@@ -27,9 +27,9 @@ void ServerTcp::start()
 }
 
 // уведомление об ошибке сервера
-void ServerTcp::slotAcceptError(QAbstractSocket::SocketError socketError)
+void ServerTcp::slotAcceptError(ClientTcp * conn)
 {
-    emit acceptError (socketError);                         // ошибка на сокете
+    emit acceptError (conn);                                // ошибка на сокете
 }
 
 // уведомление о подключении нового клиента
@@ -38,9 +38,10 @@ void ServerTcp::slotNewConnection()
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
     ClientTcp * client = new ClientTcp(this, clientConnection, logger);
     _clients.append(client);                                 // добавить подключенного клиента в список
-    QObject::connect(client, SIGNAL(dataready (ClientTcp*)), this, SLOT(slotDataready (ClientTcp*)));
+    QObject::connect(client, SIGNAL(dataready    (ClientTcp*)), this, SLOT(slotDataready    (ClientTcp*)));
     QObject::connect(client, SIGNAL(rawdataready (ClientTcp*)), this, SLOT(slotRawdataready (ClientTcp*)));
-    QObject::connect(client, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotDisconnected(ClientTcp*)));
+    QObject::connect(client, SIGNAL(disconnected (ClientTcp*)), this, SLOT(slotDisconnected (ClientTcp*)));
+    QObject::connect(client, SIGNAL(error        (ClientTcp*)), this, SLOT(slotAcceptError  (ClientTcp*)));
 
     QString s = QString("ServerTcp [порт %1]. Подключен клиент %2").arg(port).arg(client->name());
     log(s);

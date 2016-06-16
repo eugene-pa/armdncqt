@@ -39,7 +39,7 @@ public:
 
 private slots:
     // уведомления сервера
-    void slotAcceptError(QAbstractSocket::SocketError socketError);
+    void slotAcceptError      (ClientTcp *);
     void slotSvrNewConnection (ClientTcp *);
     void slotSvrDataready     (ClientTcp *);
     void slotSvrDisconnected  (ClientTcp *);

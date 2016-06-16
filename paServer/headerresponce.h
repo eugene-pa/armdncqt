@@ -7,7 +7,7 @@ class HeaderResponce
 {
 public:
     HeaderResponce() { }                                    // конструктор по умолчанию
-    HeaderResponce(RemoteRq& req);                          // конструктор на базе запроса
+    HeaderResponce(RemoteRq& req, bool success=true);       // конструктор на базе запроса
     ~HeaderResponce();
 
     void Serialize  (QDataStream &stream);
@@ -18,10 +18,15 @@ public:
     void setsrc(QHostAddress a) { src = a; }                // IP источника запроса
     void setdst(QHostAddress a) { dst = a; }                // IP назначение запроса
 
-protected:
-    RemoteRqType rq;                                        // тип запроса
+    bool success() { return _success; }                     // все ОК
+    bool error  () { return !_success; }                    // ошибка
 
-    // сериализуемая часть клпсса
+    void setError(bool s=true) { _success = s; }
+
+protected:
+
+    RemoteRqType rq;                                        // тип запроса
+    bool         _success;                                  // успех/ошибка
     QHostAddress src;                                       // IP источника ответа
     QHostAddress dst;                                       // IP назначение ответа
     QString      fullPath;                                  // полный константный путь запроса, возможно рекурсивный: tcp://10.52.19.71/tcp://192.168.1.1

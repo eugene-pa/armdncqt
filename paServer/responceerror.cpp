@@ -25,7 +25,7 @@ QByteArray ResponceError::Serialize()
     QDataStream out(&buf);
 
     // 1. Заголовок
-    HeaderResponce header(_rq);
+    HeaderResponce header(_rq, false);
     header.Serialize(out);
 
     // 2. Тело ответа
@@ -61,7 +61,7 @@ void ResponceError::Deserialize(QDataStream& stream)
 
 QString ResponceError::toString()
 {
-    return QString("Ошибка обработки удаленного запроса: %1. %2").arg(errorName().arg(_errorText));
+    return QString("Ошибка обработки удаленного запроса: %1. %2").arg(errorName()).arg(_errorText);
 }
 
 QString ResponceError::errorName()

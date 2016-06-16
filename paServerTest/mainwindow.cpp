@@ -99,19 +99,23 @@ void MainWindow::dataready   (ClientTcp * conn)
 
     // обработка отклика
     QBuffer buf;
-    int n = conn->length() + 4;
     buf.setData(conn->data(), conn->length());
-    //QByteArray& a = conn->data();
-
-
-
     buf.open(QIODevice::ReadOnly);
     QDataStream stream(&buf);
 
     HeaderResponce header;
     header.Deserialize(stream);
-    header.setsrc(conn->socket()->peerAddress());
+    header.setsrc(conn->socket()->peerAddress());           // IP адреса src/dst берем из соединения
     header.setdst(conn->socket()->localAddress());
+
+    // если ошибка - разбор ошибки
+    if (header.error())
+    {
+        ResponceError responce;
+        responce.Deserialize(stream);
+        QMessageBox::information(this, "rqError", responce.toString());     // отобразим результат
+        return;
+    }
 
     switch (header.Rq())
     {
@@ -321,3 +325,17 @@ void MainWindow::slotReadNext (ResponceRead& responce)
 
 }
 
+
+void MainWindow::on_lineEditFolder_textChanged(const QString &arg1)
+{
+
+}
+
+void MainWindow::on_lineEdit_windowIconTextChanged(const QString &iconText)
+{
+}
+
+void MainWindow::on_lineEdit_editingFinished()
+{
+    serverConnectStr = ui->lineEdit->text();
+}

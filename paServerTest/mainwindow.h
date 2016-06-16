@@ -18,6 +18,7 @@
 #include "../paServer/responcetempfile.h"
 #include "../paServer/responceread.h"
 #include "../paServer/responcedrives.h"
+#include "../paServer/responceerror.h"
 
 namespace Ui {
 class MainWindow;
@@ -59,6 +60,12 @@ private slots:
     void on_actionTempCopy_triggered();
 
     void on_actionDrives_triggered();
+
+    void on_lineEditFolder_textChanged(const QString &arg1);
+
+    void on_lineEdit_windowIconTextChanged(const QString &iconText);
+
+    void on_lineEdit_editingFinished();
 
 private:
     Ui::MainWindow *ui;

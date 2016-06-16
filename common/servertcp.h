@@ -20,15 +20,15 @@ public:
 signals:
     void	newConnection(class ClientTcp *);               // подключение нового клиента
     void    dataready   (class ClientTcp *);                // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
-    void	acceptError (QAbstractSocket::SocketError socketError); // ошибка на сокете
+    void	acceptError (class ClientTcp *);                // ошибка на сокете
     void    disconnected (class ClientTcp *);               // разрыв соединения
 
 private slots:
-    void	slotAcceptError(QAbstractSocket::SocketError socketError);
     void	slotNewConnection();
     void    slotDataready    (class ClientTcp *);           // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void    slotRawdataready (class ClientTcp *);           // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void    slotDisconnected (class ClientTcp *);           // разрыв соединения
+    void	slotAcceptError  (class ClientTcp *);           // ошибка на сокете
 
 private:
     QList <class ClientTcp*> _clients;

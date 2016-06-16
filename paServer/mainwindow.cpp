@@ -259,9 +259,9 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
 }
 
 // ошибка на сокете
-void MainWindow::slotAcceptError(QAbstractSocket::SocketError socketError)
+void MainWindow::slotAcceptError(ClientTcp * conn)
 {
-    Q_UNUSED(socketError);
+    Q_UNUSED(conn);
 }
 
 // настроечный файл
@@ -323,17 +323,26 @@ void MainWindow::nextdisconnected(ClientTcp* conn)
     ClientTcp* parent = (ClientTcp*)conn->userPtr(1);
     ResponceError responce(*rq, Disconnect, &logger);
     QByteArray data = responce.Serialize();
-    conn->packsend(data);
+    parent->packsend(data);
+
+    conn->stop();
+    // сохраняем отработанные сокеты в корзине
+    _trash.append(conn);                                    // удаление экземпляра тут приводит к проблемам: delete conn;
+
 }
 
 void MainWindow::nexterror       (ClientTcp* conn)
 {
     RemoteRq * rq     = (RemoteRq *)conn->userPtr(0);
     ClientTcp* parent = (ClientTcp*)conn->userPtr(1);
-    ResponceError responce(*rq, Disconnect, &logger);
+    ResponceError responce(*rq, Timeout, &logger);
     responce.setErrorText( conn->socket()->errorString());
     QByteArray data = responce.Serialize();
-    conn->packsend(data);
+    parent->packsend(data);
+
+    conn->stop();
+    // сохраняем отработанные сокеты в корзине
+    _trash.append(conn);                                    // удаление экземпляра тут приводит к проблемам: delete conn;
 
 }
 
@@ -355,9 +364,6 @@ void MainWindow::nextdataready   (ClientTcp* conn)
     QObject::disconnect(conn, SIGNAL(dataready   (ClientTcp*)), this, SLOT(nextdataready   (ClientTcp*)));
 
     conn->stop();
-    conn->socket()->abort();
-    conn->socket()->close();
-
     // сохраняем отработанные сокеты в корзине
     _trash.append(conn);                                    // удаление экземпляра тут приводит к проблемам: delete conn;
 }

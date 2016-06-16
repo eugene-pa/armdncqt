@@ -118,7 +118,7 @@ void ClientTcp::slotReadyRead      ()
         _length += sock->read(_data+_length, toRead-_length);   // читаем в буфер со смещением length
         if (_length < toRead)
         {
-            if (_length)
+            if (_length > 0 )
                 qDebug() << "Недобор до" << toRead << ". Прочитано: " << _length;
             return;
         }
@@ -185,13 +185,16 @@ void ClientTcp::slotReadyRead      ()
 }
 
 
+// ДОРАБОТАНО С ПОДДЕРЖКОЙ РАЗНОЙ СТЕПЕНИ СЖАТИЯ: если сжатиен не по умолчанию, сигнатура ZIP 0x78,0x9C не используется,
+// поэтому вводится отдельный вид сигнатуры сжатого пакета:
+//  #define SIGNATURE    0xAA55                                 // сигнатура пакета общая (поддерживаются потоки Windows C++/C#)
+//  #define SIGNATUREZIP 0x55AA                                 // сигнатура сжатого пакета (только QT версия)
 // если принятые данные упакованы - распаковать и скорректировать поле длины
 // ПОКА НЕ УЧИТЫВАЕМ РАСШИРЕННЫЙ ЗАГОЛОВОК
 // функции qCompress/qUncompress совместимы с используемым в С++/C# проектах форматом ZLIB с особенностями:
 // - сжатые данные включают 6-байтный префикс:
 // - 4 байта оригинальной длины (похоже, не используются, можно проставить нули)
-// - 2 байта сигнатуры ZIP 0x78,0x9C, совпадающие с сигнатурой библиотеки ZLIB
-//   (ВАЖНО: ТОЛЬКО ПРИ СЖАТИИ ПО УМОЛЧАНИЮ!)
+// - (ВАЖНО: ТОЛЬКО ПРИ СЖАТИИ ПО УМОЛЧАНИЮ!) 2 байта сигнатуры ZIP 0x78,0x9C, совпадающие с сигнатурой библиотеки ZLIB
 //   С учетом того, что в сжатых пакетах длина заголовка пакета составляет 4 байта, за которым идет сигнатура ZIP 0x78,0x9C,
 //   заголовок пакета используется как префикс
 void ClientTcp::uncompress()
@@ -256,7 +259,7 @@ void ClientTcp::slotDisconnected ()
 void ClientTcp::slotError (QAbstractSocket::SocketError er)
 {
     _lasterror = er;
-    log (msg=QString("ClientTcp. Клиент %1. Ошибка: %2").arg(name()).arg(TcpHeader::ErrorInfo(er)));
+    log (msg=QString("ClientTcp. Клиент %1. Ошибка: %2").arg(name()).arg(sock->errorString()/*TcpHeader::ErrorInfo(er)*/));
     emit error (this);
     if (run && !isConnected())
         sock->connectToHost(remoteIp,remotePort);
