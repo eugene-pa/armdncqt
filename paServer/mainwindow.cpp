@@ -9,12 +9,12 @@ QString images(":/status/images/");                         // путь к об�
 QString editor = "notepad.exe";                             // блокнот
 #endif
 #ifdef Q_OS_MAC
-QString iniFile = "/Users/evgenyshmelev/armdncqt/paServer/paServer.ini.ini";  // настройки
+QString iniFile = "/Users/evgenyshmelev/armdncqt/paServer/paServer.ini";  // настройки
 QString images("/Users/evgenyshmelev/armdncqt/images/");    // путь к образам
 QString editor = "TextEdit";                                // блокнот
 #endif
 #ifdef Q_OS_LINUX
-QString iniFile = "/home/eugene/QTProjects/paServer/paServer.ini.ini";  // настройки
+QString iniFile = "/home/eugene/QTProjects/paServer/paServer.ini";      // настройки
 QString images("../images/");
 QString editor = "gedit";                                   // блокнот
 #endif
@@ -22,7 +22,7 @@ QString editor = "gedit";                                   // блокнот
 int port = 28080;
 
 
-void log(QString& msg)                                      // глобальная функция лога
+void log(QString msg)                                       // глобальная функция лога
 {
     logger.log(msg);
 }
@@ -33,13 +33,20 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->statusBar->addPermanentWidget(msg = new QLabel(), true);   //
     loadResources();
     logger.log("Запуск");
 
     // порт, на котором работает сервис, по умолчанию = 208080
     IniReader rdr(iniFile);
     rdr.GetInt("PORT", port);
+
+    ui->statusBar->addPermanentWidget(portInfo = new QLabel("Порт: " + QString::number(port)), true);   //
+    portInfo->setMaximumWidth(75);
+
+    ui->statusBar->addPermanentWidget(serverStatus = new QLed(ui->statusBar, QLed::round, QLed::on, Qt::yellow));
+    serverStatus->setFixedSize(15,15);
+
+    ui->statusBar->addPermanentWidget(msg = new QLabel(), true);   //
 
     QTableWidget * t = ui->tableWidget;
     t->setColumnCount(3);
@@ -93,6 +100,8 @@ void MainWindow::slotSvrNewConnection (ClientTcp *conn)
     t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));    // запомним клиента
     t->setItem(row,1, new QTableWidgetItem (""));
     t->setItem(row,2, new QTableWidgetItem (""));
+
+    serverStatus->set(QLed::round, QLed::on, server->clients().count() > 0 ? Qt::green : Qt::yellow);
 }
 
 void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
@@ -105,6 +114,8 @@ void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
     {
         ui->tableWidget->removeRow(row);
     }
+
+    serverStatus->set(QLed::round, QLed::on, server->clients().count() > 0 ? Qt::green : Qt::yellow);
 }
 
 // получен запрос
@@ -356,12 +367,6 @@ void MainWindow::nextdataready   (ClientTcp* conn)
 
     // можно сразу остановить сокет и разорвать соединение
     // непонятно с удалением...
-
-    // не помогает исключению при удалении conn, возможно, это лишнее
-    QObject::disconnect(conn, SIGNAL(connected   (ClientTcp*)), this, SLOT(nextConnected   (ClientTcp*)));
-    QObject::disconnect(conn, SIGNAL(disconnected(ClientTcp*)), this, SLOT(nextdisconnected(ClientTcp*)));
-    QObject::disconnect(conn, SIGNAL(error       (ClientTcp*)), this, SLOT(nexterror       (ClientTcp*)));
-    QObject::disconnect(conn, SIGNAL(dataready   (ClientTcp*)), this, SLOT(nextdataready   (ClientTcp*)));
 
     conn->stop();
     // сохраняем отработанные сокеты в корзине

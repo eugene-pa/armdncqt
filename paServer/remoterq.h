@@ -10,7 +10,7 @@
 
 // удаленный запрос
 
-extern void log(QString&);                              // глобальная функция лога
+extern void log(QString);                               // глобальная функция лога
 const QString remoteClientId = "";                      // remoteClient";
 
 enum RemoteRqType

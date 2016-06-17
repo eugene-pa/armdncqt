@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     responcedrives.cpp \
     responcetempfile.cpp \
     responceread.cpp \
-    responceerror.cpp
+    responceerror.cpp \
+    ../forms/qled.cpp
 
 HEADERS  += mainwindow.h \
     remoterq.h \
@@ -49,7 +50,8 @@ HEADERS  += mainwindow.h \
     responcedrives.h \
     responcetempfile.h \
     responceread.h \
-    responceerror.h
+    responceerror.h \
+    ../forms/qled.h
 
 FORMS    += mainwindow.ui
 

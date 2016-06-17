@@ -2,7 +2,8 @@
 #include "clienttcp.h"
 
 
-ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)  // конструктор, используемый сервером
+// конструктор, используемый сервером для создания экземпляра, обслуживающего подключение к серверу
+ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)
 {
     this->server = server;
     this->sock = sock;
@@ -17,6 +18,7 @@ ClientTcp::ClientTcp(ServerTcp *server, QTcpSocket  *sock, Logger * logger)  // 
     init();
 }
 
+// конструктор клиентской стороны для подключения к серверу, заданному IP-адресом и портом
 ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress, QString idtype)
 {
     server = nullptr;
@@ -34,6 +36,7 @@ ClientTcp::ClientTcp(QString& ip, int port, Logger * p, bool compress, QString i
     init();
 }
 
+// перегруженный конструктор клиентской стороны для подключения к серверу, заданному лексемой IP:ПОРТ
 ClientTcp::ClientTcp(QString& ipport, Logger * p, bool compress, QString idtype)
 {
     server = nullptr;
@@ -72,12 +75,6 @@ void ClientTcp::init()
 ClientTcp::~ClientTcp()
 {
     log(msg = QString("Деструктор ClientTcp: %1:%2").arg(remoteIp).arg(remotePort));
-
-    // не факт, что нужно отсоединять; вообще не попадаю в деструктор :(
-    QObject::disconnect(sock, SIGNAL(connected   ()), this, SLOT(slotConnected()));
-    QObject::disconnect(sock, SIGNAL(readyRead   ()), this, SLOT(slotReadyRead()));
-    QObject::disconnect(sock, SIGNAL(disconnected()), this, SLOT(slotDisconnected()));
-    QObject::disconnect(sock, SIGNAL(error(QAbstractSocket::SocketError)),this, SLOT(slotError(QAbstractSocket::SocketError)));
 
     sock->abort();
     sock->close();
@@ -251,7 +248,7 @@ void ClientTcp::slotDisconnected ()
 {
     log (msg=QString("ClientTcp. Разрыв соединения c хостом %1").arg(name()));
     emit disconnected (this);
-    if (run)
+    if (!isServer() && run)
         sock->connectToHost(remoteIp,remotePort);
 }
 
@@ -261,7 +258,7 @@ void ClientTcp::slotError (QAbstractSocket::SocketError er)
     _lasterror = er;
     log (msg=QString("ClientTcp. Клиент %1. Ошибка: %2").arg(name()).arg(sock->errorString()/*TcpHeader::ErrorInfo(er)*/));
     emit error (this);
-    if (run && !isConnected())
+    if (!isServer() && run && !isConnected())
         sock->connectToHost(remoteIp,remotePort);
 }
 

@@ -15,6 +15,8 @@
 #include "../common/servertcp.h"
 #include "../common/defines.h"
 #include "../common/inireader.h"
+#include "../forms/qled.h"
+#include "../common/inireader.h"
 #include "remoterq.h"
 #include "responceabout.h"
 #include "responcedirs.h"
@@ -60,6 +62,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    class QLabel * portInfo;
+    class QLed   * serverStatus;
     class QLabel * msg;
     ServerTcp * server;
     QList <class ClientTcp*> _trash;                        // корзина отработанных клиентов

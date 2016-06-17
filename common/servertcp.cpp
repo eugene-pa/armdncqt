@@ -87,9 +87,9 @@ void ServerTcp::slotDisconnected (class ClientTcp * client)
     QString s = QString("ServerTcp [порт %1]. Отключен клиент %2").arg(port).arg(client->name());
     log(s);
 
-//  qDebug() << QString("Отключение клиента: %1").arg(client->getid());
-    emit disconnected(client);
-    _clients.removeOne(client);
+    _clients.removeOne(client);                             // удаляем из списка клиентов
+    emit disconnected(client);                              // уведомляем сервер
+    delete client;                                          // удаляем выделенный экземпляр
 }
 
 // отправка данных "как есть" всем клиентам
