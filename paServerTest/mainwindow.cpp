@@ -26,7 +26,7 @@ bool compressEnabled = true;                                // сжатие на
 
 QString     serverConnectStr;                               // ip:порт основного сервера
 
-void log (QString& msg)
+void log (QString msg)
 {
     logger.log(msg);
 }

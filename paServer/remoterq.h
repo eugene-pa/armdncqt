@@ -11,7 +11,9 @@
 // удаленный запрос
 
 extern void log(QString);                               // глобальная функция лога
-const QString remoteClientId = "";                      // remoteClient";
+const QString remoteClientId = "";                      // вложенные подкдючения не идентифицируем, чтобы не засорять поток идентификацией
+                                                        // (если данные идут достаточно быстро вслед за идентификацией, они блокируются в один пакеет
+                                                        //  с телом идентификации и не распознаются как отдельные пакетные данные)
 
 enum RemoteRqType
 {
@@ -131,5 +133,14 @@ protected:
     QVariant      reserv2;                                   // резерв
 };
 */
+
+#include "../paServer/responceabout.h"
+#include "../paServer/responcedirs.h"
+#include "../paServer/responcefileinfo.h"
+#include "../paServer/responcefiles.h"
+#include "../paServer/responcetempfile.h"
+#include "../paServer/responceread.h"
+#include "../paServer/responcedrives.h"
+#include "../paServer/responceerror.h"
 
 #endif // REMOTERQ_H
