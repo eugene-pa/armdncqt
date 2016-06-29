@@ -14,7 +14,9 @@ public:
 
     QByteArray Serialize();
     void Deserialize(QDataStream& stream);
+    bool isDir() { return _dir; }
     QString toString();
+    BriefFileInfo fileInfo() { return _fileInfo; }
 
 protected:
     RemoteRq        _rq;                                    // исходный запрос
@@ -23,6 +25,7 @@ protected:
 
     // сериализуемая часть
     bool            _exist;                                 // файл существует
+    bool            _dir;                                   // каталог
     BriefFileInfo   _fileInfo;                              // информация о файле
 };
 

@@ -97,5 +97,7 @@ void ResponceRead::Deserialize(QDataStream& stream)
 QString ResponceRead::toString()
 {
     return _logger ? QString("Файл %1. Запрос блока длиной %2 начиная с позиции %3").arg(_fileInfo._name).arg(_length).arg(_offset) :
-                    QString("Файл %1. Принят блок данных длиной %2 начиная с позиции %3").arg(_fileInfo._name).arg(_length).arg(_offset);
+                    //QString("Файл %1. Принят блок данных длиной %2 начиная с позиции %3").arg(_fileInfo._name).arg(_length).arg(_offset);
+                     //QString("Принято %1 байт начиная с позиции %2").arg(_length).arg(_offset);
+                     QString("%1 / %2 байт").arg(_offset + _length).arg(_fileInfo.length());
 }

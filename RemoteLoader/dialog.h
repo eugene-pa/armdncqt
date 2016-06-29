@@ -40,6 +40,15 @@ signals:
 private:
     Ui::Dialog *ui;
     QStringList params;
+    QString serverConnectStr;                               // удаленный сервер
+    QVector <BriefFileInfo> _files;                         // информация о файлах заданного каталога (если копируем каталог)
+    int indx;                                               // индекс копируемого файла
+    QString localDstPath;                                   // актуальный локальный путь
+    BriefFileInfo info;                                     // информация об актуальном файле
+
+    qint64  todo;                                           // общий размер файлов для копирования
+    qint64  done;                                           // скопировано
+
     QStatusBar * statusBar;
     QLabel     * labelMsg;
     QLed       * status;
@@ -49,6 +58,8 @@ private:
     const int blocksize = 48000;
 
     void rqReadFile(QString src, QString dst, qint64 offset, int length);
+
+    QString version;
 };
 
 #endif // DIALOG_H

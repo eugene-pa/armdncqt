@@ -16,6 +16,7 @@ ResponceFileInfo::ResponceFileInfo(RemoteRq& req, Logger * logger)
 
     QFileInfo info(_filepath);
     _fileInfo.fill(info);
+    _dir   = info.isDir();
     _exist = info.exists();
 
     if (logger)
@@ -39,6 +40,7 @@ QByteArray ResponceFileInfo::Serialize()
 
     // 2. Тело ответа
     out << _exist;
+    out << _dir;
     out << _fileInfo;
 
     return buf.buffer();
@@ -51,6 +53,7 @@ void ResponceFileInfo::Deserialize(QDataStream& stream)
         if (_rq.version >= 1)
         {
             stream >> _exist;
+            stream >> _dir;
             stream >> _fileInfo;
         }
     }

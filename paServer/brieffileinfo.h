@@ -13,6 +13,8 @@ public:
     BriefFileInfo() { }
     BriefFileInfo (QFileInfo& fi);                          // конструктор
     void fill(QFileInfo& fi);
+    qint64 length() { return _length; }
+
 //    void Serialize  (QDataStream& stream);
 //    void Deserialize(QDataStream& stream);
 

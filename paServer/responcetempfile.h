@@ -18,6 +18,8 @@ public:
     void Deserialize(QDataStream& stream);
     QString toString();
     bool exist() { return _exist; }
+    QString& name() { return _filetemp; }
+    QString& nameSrc() { return _filesrc; }
 protected:
 
     RemoteRq        _rq;                                    // исходный запрос

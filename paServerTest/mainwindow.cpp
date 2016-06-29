@@ -294,6 +294,7 @@ void MainWindow::on_actionRead_triggered()
     rqReadFile(ui->lineEditFolder->text(), ui->lineEditDst->text(), 0, blocksize);
 }
 
+// создание временной копии файла
 void MainWindow::on_actionTempCopy_triggered()
 {
     RemoteRq rq(rqTempFile,serverConnectStr);

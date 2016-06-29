@@ -3,7 +3,7 @@
 Thumbs.db
 #Ignore files build by Visual Studio
 *.obj
-*.exe
+;*.exe
 *.pdb
 *.user
 *.aps
@@ -20,7 +20,7 @@ Thumbs.db
 *.ilk
 *.log
 *.tlog
-[Bb]in
+;[Bb]in
 [Dd]ebug*/
 ;*.lib
 *.sbr
