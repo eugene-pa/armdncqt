@@ -6,6 +6,9 @@
 #include <QStatusBar>
 #include <QLabel>
 #include <QMessageBox>
+#include <QProcess>
+#include <QThread>
+
 #include "../common/logger.h"
 #include "../common/clienttcp.h"
 #include "../paServer/remoterq.h"
@@ -56,8 +59,12 @@ private:
     ClientTcp * connection;                                 // соединение
 
     const int blocksize = 48000;
+    const int breakT = 5000;                                // время ожидания соединения
 
     void rqReadFile(QString src, QString dst, qint64 offset, int length);
+    virtual void timerEvent(QTimerEvent *event);                // таймер
+
+    int idTimer;
 
     QString version;
 };

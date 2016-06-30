@@ -24,9 +24,6 @@ Dialog::Dialog(QStringList& list, QWidget *parent) :
 
     params = list;
     serverConnectStr = params[0];
-    done = 0;                                               // скопировано
-    indx = 0;
-    todo = 0;
 
     ui->setupUi(this);
 
@@ -55,7 +52,7 @@ Dialog::Dialog(QStringList& list, QWidget *parent) :
     QObject::connect(this, SIGNAL(ReadNext (ResponceRead&)), this, SLOT(slotReadNext(ResponceRead&)));
 
     connection->start();
-
+    idTimer = startTimer(breakT);
 }
 
 Dialog::~Dialog()
@@ -66,11 +63,19 @@ Dialog::~Dialog()
 void Dialog::on_buttonBox_rejected()
 {
     this->close();
+    exit(-2);
 }
 
-// установлено соединение
+
+// установлено соединение, начинаем процесс копирования
+// ВАЖНО: при разрыве и повторной установке соединения процесс копирования начинается сначала
+//        Такое поведение вытекает из реализации, но его можно считать вполне приемлемым, так как оно обеспечивает корректное копирование
 void Dialog::connected   (ClientTcp * conn)
 {
+    done = 0;                                               // скопировано
+    indx = 0;
+    todo = 0;
+
     RemoteRq::localaddress  = conn->socket()->localAddress();
     RemoteRq::remoteaddress = conn->socket()->peerAddress();
 
@@ -83,6 +88,8 @@ void Dialog::connected   (ClientTcp * conn)
     RemoteRq rq(rqAbout, serverConnectStr);
     QByteArray data = rq.Serialize();
     connection->packsend(data);
+
+    killTimer(idTimer);
 }
 
 // разорвано соединение
@@ -92,6 +99,9 @@ void Dialog::disconnected(ClientTcp * conn)
     QString s("Разорвано соединение с сервером " + conn->name());
     labelMsg->setText(s);
     log (s);
+
+    // здесь нужно запустить таймер аварийного завершения, срабатывающий при отстутствии соединения в течение заданного времени, например, 10 сек
+    idTimer = startTimer(breakT);
 }
 
 
@@ -284,11 +294,19 @@ void Dialog::slotReadNext(ResponceRead&  responce)
         //QMessageBox::information(this, "rqRead", "Файл скопирован!");
         log ("Файл скопирован!");
 
+        // изменить дату и время модификации файла консольной командой "touch -t YYYYMMDDHHMM.SS"
+        // эта команда работает в Windows 10
+        QProcess process(this);
+        QString cmd = QString("touch -t %1 '%2'").arg(info._lastChanged.toString("yyyyMMddhhmm.ss")).arg(responce.dstfilepath());
+        process.start(cmd);
+        process.waitForFinished();
+
         if (++indx >= _files.count())
         {
             ui->progressBarAll->setValue(100);
             log ("Копирование завершено, завершение работы");
             close();
+            exit(0);
         }
         else
         {
@@ -323,4 +341,13 @@ void Dialog::rqReadFile(QString src, QString dst, qint64 offset, int length)
     QByteArray data = rq.Serialize();
     connection->packsend(data);
 
+}
+
+
+// аварийный таймер
+void Dialog::timerEvent(QTimerEvent *event)
+{
+    log (QString("Аварийное завершение - нет соедиения с сервером %1 ").arg(params[0]));
+    close();
+    exit(-1);
 }
