@@ -15,12 +15,6 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     remoterq.cpp \
-    ../common/clienttcp.cpp \
-    ../common/defines.cpp \
-    ../common/logger.cpp \
-    ../common/tcpheader.cpp \
-    ../common/inireader.cpp \
-    ../common/servertcp.cpp \
     brieffileinfo.cpp \
     headerresponce.cpp \
     responceabout.cpp \
@@ -31,16 +25,16 @@ SOURCES += main.cpp\
     responcetempfile.cpp \
     responceread.cpp \
     responceerror.cpp \
+    ../common/clienttcp.cpp \
+    ../common/defines.cpp \
+    ../common/logger.cpp \
+    ../common/tcpheader.cpp \
+    ../common/inireader.cpp \
+    ../common/servertcp.cpp \
     ../forms/qled.cpp
 
 HEADERS  += mainwindow.h \
     remoterq.h \
-    ../common/clienttcp.h \
-    ../common/defines.h \
-    ../common/logger.h \
-    ../common/tcpheader.h \
-    ../common/inireader.h \
-    ../common/servertcp.h \
     brieffileinfo.h \
     headerresponce.h \
     responceabout.h \
@@ -51,6 +45,12 @@ HEADERS  += mainwindow.h \
     responcetempfile.h \
     responceread.h \
     responceerror.h \
+    ../common/clienttcp.h \
+    ../common/defines.h \
+    ../common/logger.h \
+    ../common/tcpheader.h \
+    ../common/inireader.h \
+    ../common/servertcp.h \
     ../forms/qled.h
 
 FORMS    += mainwindow.ui

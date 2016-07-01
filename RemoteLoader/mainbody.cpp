@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QStringList>
 
-extern void log (QString);
+extern QString log (QString);
 
 int main(int argc, char *argv[])
 {

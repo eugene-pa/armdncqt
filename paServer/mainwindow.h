@@ -61,6 +61,9 @@ private slots:
     void on_actionQT_about_triggered();
 
 private:
+    const int delayTrashTempFiles = 60 * 5;                 // устаревание временных файлов, сек
+    const int timerTrashConnectionsInterval = 1000;         // интервал таймера очистки корзины соединений, мсек
+
     Ui::MainWindow *ui;
 
     class QLabel * portInfo;
@@ -77,6 +80,11 @@ private:
 
     QProcess processIni;
     QProcess processLog;
+
+    int idTimerConnections;                                 // таймер отслеживания корзины сетеывых соединений
+    int idTimerTempFiles;                                   // таймер отслеживания корзины временных файлов
+
+    QString version;                                        // версия сервера
 };
 
 #endif // MAINWINDOW_H

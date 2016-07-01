@@ -20,15 +20,9 @@ bool IniReader::readIniFile (QString& _spath, bool bUnicode)
 
     QString spath = _spath;
     QFileInfo fi(_spath);
-    if (!fi.isAbsolute())
-    {
-        // создаем папку лога
-        QString sdir = QString("%1/%2").arg(QDir::current().absolutePath()).arg(fi.path());
-        fi.dir().mkdir(sdir);
 
-        // формируем полное имя файла
-        spath = QString("%1/%2").arg(sdir).arg(fi.fileName());
-    }
+    if (fi.isRelative())
+        spath = QString("%1/%2").arg(QDir::current().absolutePath()).arg(_spath);   // формируем полное имя файла
 
     QFile file (spath);
     if (file.open(QFile::ReadOnly))
@@ -50,6 +44,7 @@ bool IniReader::readIniFile (QString& _spath, bool bUnicode)
         }
 
     }
+
     return ret;
 }
 

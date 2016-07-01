@@ -22,7 +22,7 @@ Logger::Logger(QString filename,                                    // имя ф
     logger    = nullptr;
 
     QFileInfo fi(sFilePath);
-    if (!fi.isAbsolute())
+    if (fi.isRelative())
     {
         // создаем папку лога
         QString sdir = QString("%1/%2").arg(QDir::current().absolutePath()).arg(fi.path());
@@ -53,7 +53,7 @@ QString Logger::GetActualFile ()
 
 
 // вывод в лог строки с блокировкой
-void Logger::log (QString str)
+QString Logger::log (QString str)
 {
     locker->lock();
 
@@ -81,6 +81,7 @@ void Logger::log (QString str)
     }
 
     locker->unlock();
+    return str;
 }
 
 

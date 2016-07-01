@@ -1,5 +1,7 @@
 #include "responcetempfile.h"
 
+QStringList ResponceTempFile::trashTempFiles;               // корзина имен временных файлов, созданных за время работы
+
 // конструктор по умолчанию для приемной стороны
 ResponceTempFile::ResponceTempFile()
 {
@@ -32,7 +34,8 @@ ResponceTempFile::ResponceTempFile(RemoteRq& req, Logger * logger)
 
         temp.write(data);
         temp.close();
-        _filetemp = temp.fileName();
+
+        trashTempFiles.append(_filetemp = temp.fileName());
     }
 
     if (logger)

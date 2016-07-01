@@ -20,8 +20,10 @@ public:
     bool exist() { return _exist; }
     QString& name() { return _filetemp; }
     QString& nameSrc() { return _filesrc; }
-protected:
 
+    static QStringList trashTempFiles;                      // список временных файлов, созданных за время работы
+
+protected:
     RemoteRq        _rq;                                    // исходный запрос
     Logger *        _logger;
 

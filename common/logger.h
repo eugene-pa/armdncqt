@@ -14,7 +14,7 @@ public:
            bool truncate   = false);                            // удалить существующий файл, если он есть
     ~Logger();
 
-    void log (QString str);                                     // вывод в лог строки  с блокировкой
+    QString log (QString str);                                  // вывод в лог строки  с блокировкой
     QString GetActualFile();                                    // получить актуальный файл
 
     // статические открытые функции

@@ -58,8 +58,8 @@ private:
 
     ClientTcp * connection;                                 // соединение
 
-    const int blocksize = 48000;
-    const int breakT = 5000;                                // время ожидания соединения
+    const int blocksize = 48000;                            // макисмальный размер блока данных при чтении
+    const int breakT = 10000;                               // время ожидания соединения
 
     void rqReadFile(QString src, QString dst, qint64 offset, int length);
     virtual void timerEvent(QTimerEvent *event);                // таймер

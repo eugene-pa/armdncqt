@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>458</width>
-    <height>205</height>
+    <width>486</width>
+    <height>132</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ДЦ ЮГ. Сервер удаленных подключений</string>
+   <string>ДЦ ЮГ. Сервер обслуживания удаленных подключений</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -41,7 +41,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>458</width>
+     <width>486</width>
      <height>21</height>
     </rect>
    </property>
@@ -56,14 +56,6 @@
     <addaction name="actionQT_about"/>
    </widget>
    <addaction name="menu"/>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionIni">

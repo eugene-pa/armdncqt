@@ -3,18 +3,20 @@
 
 Logger logger("Log/paserver.log", true, true);             // лог
 
+QString iniFile = "paServer.ini";                           // настройки
+
 #ifdef Q_OS_WIN
-QString iniFile = "c:/armdncqt/paServer/paServer.ini";    // настройки
+//QString iniFile = "c:/armdncqt/paServer/paServer.ini";    // настройки
 QString images(":/status/images/");                         // путь к образам
 QString editor = "notepad.exe";                             // блокнот
 #endif
 #ifdef Q_OS_MAC
-QString iniFile = "/Users/evgenyshmelev/armdncqt/paServer/paServer.ini";  // настройки
+//QString iniFile = "/Users/evgenyshmelev/armdncqt/paServer/paServer.ini";  // настройки
 QString images("/Users/evgenyshmelev/armdncqt/images/");    // путь к образам
 QString editor = "TextEdit";                                // блокнот
 #endif
 #ifdef Q_OS_LINUX
-QString iniFile = "/home/eugene/QTProjects/paServer/paServer.ini";      // настройки
+//QString iniFile = "/home/eugene/QTProjects/paServer/paServer.ini";      // настройки
 QString images("../images/");
 QString editor = "gedit";                                   // блокнот
 #endif
@@ -22,15 +24,17 @@ QString editor = "gedit";                                   // блокнот
 int port = 28080;
 
 
-void log(QString msg)                                       // глобальная функция лога
+QString log(QString msg)                                       // глобальная функция лога
 {
-    logger.log(msg);
+    return logger.log(msg);
 }
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    version = "paServer v.1.0.1";
+
     ui->setupUi(this);
 
     loadResources();
@@ -67,7 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     server->start();
 
-    startTimer(1000);
+    idTimerConnections = startTimer(timerTrashConnectionsInterval); // каждую секунду очищаем корзину соединений
+    idTimerTempFiles   = startTimer(delayTrashTempFiles*1000);      // каждый час очищаем корзину временных файлов
 }
 
 MainWindow::~MainWindow()
@@ -140,7 +145,9 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     rq->setsrc(conn->socket()->peerAddress());
     rq->setdst(conn->socket()->localAddress());
 
-    logger.log(s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq->Rq())).arg(rq->getsrc().toString()).arg(rq->getdst().toString()));
+    s = QString("Обработка запроса %1, src=%2, dst=%3").arg(RemoteRq::getRqName(rq->Rq())).arg(rq->getsrc().toString()).arg(rq->getdst().toString());
+    if (rq->Rq() != rqRead)
+        logger.log(s);
     msg->setText(s);
 
     // Пример: 127.0.0.1:28080/192.168.0.1:28080
@@ -258,6 +265,11 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
             case rqRead:
             {
                 ResponceRead responce(*rq);
+                // ВАЖНО:
+                // rq->getsrc() - источник   запроса, но место назначения копирования
+                // rq->getdst() - получатель запроса(ответчик), но источник копирования
+                if (responce.offset()==0)
+                    logger.log(CString("Старт копирования файла %1 --> %2. откуда=%3, куда=%4").arg(responce.srcfilepath()).arg(responce.dstfilepath()).arg(rq->getdst().toString()).arg(rq->getsrc().toString()));
                 ui->tableWidget->item(row,2)->setText(responce.toString());
                 QByteArray data = responce.Serialize();
                 conn->packsend(data);
@@ -294,7 +306,7 @@ void MainWindow::on_actionLog_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QFileInfo info( QCoreApplication::applicationFilePath() );
-    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. Сервер удаленного доступа paServer\n\nФайл: %1.\nДата сборки: %2\nВерсия протокола: %3.0\n\n© ООО НПЦ Промавтоматика, 2016").arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)).arg(RemoteRq::paServerVersion));
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. Сервер удаленного доступа paServer\n%1\n\nФайл: %2.\nДата сборки: %3\nВерсия протокола: %4.0\n\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)).arg(RemoteRq::paServerVersion));
 }
 
 void MainWindow::on_actionQT_about_triggered()
@@ -382,5 +394,22 @@ void MainWindow::timerEvent(QTimerEvent *event)
     {
         delete _trash[0];
         _trash.removeAt(0);
+    }
+
+    // каждый час очищаем корзину временных файлов
+    if (event->timerId() == idTimerTempFiles)
+    {
+        while (ResponceTempFile::trashTempFiles.length() > 0)
+        {
+            QFileInfo info(ResponceTempFile::trashTempFiles[0]);
+            if ((int)(QDateTime::currentDateTime().toTime_t() - info.lastRead().toTime_t()) > delayTrashTempFiles)
+            {
+                msg->setText(log("Удаляем временный файл " + info.filePath()));
+                QFile(info.filePath()).remove();
+                ResponceTempFile::trashTempFiles.removeAt(0);
+            }
+            else
+                break;                                      // оставшиеся файлы - "свежие"
+        }
     }
 }

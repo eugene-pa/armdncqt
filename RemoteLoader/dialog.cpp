@@ -3,17 +3,20 @@
 
 Logger logger("log/remoteloader.log", true, true);             // лог
 
-void log (QString msg)
+QString log (QString msg)
 {
-    logger.log(msg);
+    return logger.log(msg);
 }
 
 // порядок копирования:
 // - установка соединения
 // - запрос информации о сервере
 // - запрос информации о файле/каталоге
-// - если файл - запрос резервной копии, копирование файла
-// - если папака - запрос информации о файлах папки и поочередное копирование файлов
+// - если запрашиваем копирование файла - запрос временной копии, копирование файла
+// - если запрашиваем копирование папки - запрос информации о файлах папки и поочередное копирование файлов
+// - в случае отстутствия соединения более заданно времени сторожевого таймера breakT (по умолчанию 10 сек) - аврийный выход
+// - в случае разрыва и повторной установки соединения до срабатывания сторожевого таймера - продолжаем копирование с файла, на
+//   котором произошел разрыв
 
 Dialog::Dialog(QStringList& list, QWidget *parent) :
     QDialog(parent),
@@ -72,9 +75,7 @@ void Dialog::on_buttonBox_rejected()
 //        Такое поведение вытекает из реализации, но его можно считать вполне приемлемым, так как оно обеспечивает корректное копирование
 void Dialog::connected   (ClientTcp * conn)
 {
-    done = 0;                                               // скопировано
-    indx = 0;
-    todo = 0;
+    killTimer(idTimer);                                     // останавливаем сторожевой таймер
 
     RemoteRq::localaddress  = conn->socket()->localAddress();
     RemoteRq::remoteaddress = conn->socket()->peerAddress();
@@ -84,12 +85,29 @@ void Dialog::connected   (ClientTcp * conn)
     labelMsg->setText(s);
     log (s);
 
-    log ("Запрос информации о сервере");
-    RemoteRq rq(rqAbout, serverConnectStr);
-    QByteArray data = rq.Serialize();
-    connection->packsend(data);
+    // здесь можно проверить, не было ли прерывания процесса копирования, если было - продолжить с прерванного места
+    if (_files.length())
+    {
+        log ("Продолжаем копирование файлов");
+        info = _files[indx];
+        localDstPath = params[2] + "/" + _files[indx]._name;    // назначение формируем из имени папки и файла
+        RemoteRq rq(rqTempFile, serverConnectStr);
+        rq.setParam(params[1] + "/" + _files[indx]._name);
+        QByteArray data = rq.Serialize();
+        connection->packsend(data);
+    }
+    else
+    {
+        done = 0;                                               // скопировано
+        indx = 0;
+        todo = 0;
 
-    killTimer(idTimer);
+        log ("Запрос информации о сервере");
+        RemoteRq rq(rqAbout, serverConnectStr);
+        QByteArray data = rq.Serialize();
+        connection->packsend(data);
+    }
+
 }
 
 // разорвано соединение
@@ -300,6 +318,8 @@ void Dialog::slotReadNext(ResponceRead&  responce)
         QString cmd = QString("touch -t %1 '%2'").arg(info._lastChanged.toString("yyyyMMddhhmm.ss")).arg(responce.dstfilepath());
         process.start(cmd);
         process.waitForFinished();
+
+        // можно здесь удалить временную копию; а можно попытаться возложить эту функцию на сервер
 
         if (++indx >= _files.count())
         {
