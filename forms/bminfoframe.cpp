@@ -108,7 +108,14 @@ void BmInfoFrame::RedrawUndefined()
 
 void BmInfoFrame::redraw()
 {
-    bool bmExpired = qAbs(QDateTime::currentDateTime().secsTo(sysinfo->LastTime())) > 30;
+    // вопрос: как корректно оценить отсутствие инфы по КП
+    // - если это АРМ ШН и просматриваем архив, сравнить не с текущим временем, а со временем чтения архива
+    QDateTime t = QDateTime::currentDateTime();             // эталонное время
+    if (IsArmTools ())                                      // если это
+    {
+        t = sysinfo->LastTime();
+    }
+    bool bmExpired = qAbs(t.secsTo(sysinfo->LastTime())) > 30;
     if (st->IsTsExpire() || bmExpired)
     {
         RedrawUndefined();

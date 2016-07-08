@@ -19,7 +19,8 @@
 QString server_ipport = "192.168.0.100:1013";               // подключение к потоку ТС из настроечного файла
 QString baseDir;
 
-bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
+//bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
+bool blackBoxMode;                                          // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
     Logger logger("Log/armtools.log", true, true);
@@ -77,6 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifdef Q_OS_WIN
     QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
 #endif
+
+    modulType=APP_ARMUTILS;                                             // тип приложения
 
     dlgTs = nullptr;                                                    // состояние ТС
     dlgTu = nullptr;                                                    // состояние ТУ

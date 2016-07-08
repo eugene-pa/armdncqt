@@ -44,7 +44,7 @@ public:
     ~MainWindow();
     void timerEvent(QTimerEvent *event);
 
-    static bool blackBoxMode;                               // включен режима просмотра архива
+    //static bool blackBoxMode;                               // включен режима просмотра архива
 
 private slots:
     void on_actionBlackbox_triggered();
