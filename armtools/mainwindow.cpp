@@ -23,48 +23,35 @@ QString baseDir;
 bool blackBoxMode;                                          // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
-    Logger logger("Log/armtools.log", true, true);
-    QString dbname("C:/armdncqt/bd/arm.db");
-    QString extDb ("C:/armdncqt/bd/armext.db");
-    QString pathTemp ("c:/armdncqt/bd/temp/");
-    QString pathSave ("c:/armdncqt/bd/save/");
-    QString form  ("C:/armdncqt/pictures/Назаровский.shp"); // Табло1
-    QString formDir("C:/armdncqt/pictures/");
+    QString path = "C:/armdncqt/";
     QString images(":/status/images/");                     // путь к образам
-    QString iniFile = "c:/armdncqt/shaper/shaper.ini";
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
     QString editor = "notepad.exe";     // блокнот
 #endif
 #ifdef Q_OS_MAC
-    Logger logger("/Users/evgenyshmelev/armdncqt/Log/armtools.log", true, true);
-    QString dbname("/Users/evgenyshmelev/armdncqt/bd/arm.db");
-    QString extDb ("/Users/evgenyshmelev/armdncqt/bd/armext.db");
-    QString pathTemp ("/Users/evgenyshmelev/armdncqt/bd/temp/");
-    QString pathSave ("/Users/evgenyshmelev/armdncqt/bd/save/");
-    QString form  ("/Users/evgenyshmelev/armdncqt/Pictures/Назаровский.shp");
-    QString formDir("/Users/evgenyshmelev/armdncqt/Pictures/");
-    QString images("/Users/evgenyshmelev/armdncqt/images/");       // путь к образам
-    QString iniFile = "/Users/evgenyshmelev/armdncqt/shaper/shaper.ini";
-    QString compressor = "zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
-    QString decompressor = "unzip.exe";     // утилита для распаковки архивов
+    QString path = "/Users/evgenyshmelev/armdncqt/";
+    QString images(path + "images/");                       // путь к образам
+    QString compressor = "zip.exe";                         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "unzip.exe";                     // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
 
 #endif
 #ifdef Q_OS_LINUX
-    Logger logger("/home/eugene/QTProjects/armdncqt/Log/armtools.log", true, true);
-    QString dbname("/home/eugene/QTProjects/armdncqt/bd/arm.db");
-    QString extDb ("/home/eugene/QTProjects/armdncqt/bd/armext.db");
-    QString pathTemp ("/home/eugene/QTProjects/armdncqt/bd/temp/");
-    QString pathSave ("/home/eugene/QTProjects/armdncqt/bd/save/");
-    QString form  ("/home/eugene/QTProjects/armdncqt/pictures/Назаровский.shp");
-    QString formDir  ("/home/eugene/QTProjects/armdncqt/pictures/");
-    QString images("../images/");                                   // путь к образам
-    QString iniFile = "/home/eugene/QTProjects/armdncqt/shaper/shaper.ini";
-    QString compressor = "zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
-    QString decompressor = "unzip.exe";     // утилита для распаковки архивов
-    QString editor = "gedit";                             // блокнот
+    QString path = "/home/dc/Документы/armdncqt/";
+    QString images("../images/");                           // путь к образам
+    QString compressor = "zip.exe";                         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "unzip.exe";                     // утилита для распаковки архивов
+    QString editor = "gedit";                               // блокнот
 #endif
+    Logger logger(path + "Log/armtools.log", true, true);
+    QString dbname = path + "bd/arm.db";
+    QString extDb  = path + "bd/armext.db";
+    QString pathTemp=path + "bd/temp/";
+    QString pathSave=path + "bd/save/";
+    QString form    =path + "pictures/Назаровский.shp";
+    QString formDir =path + "pictures/";
+    QString iniFile =path + "shaper/shaper.ini";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),

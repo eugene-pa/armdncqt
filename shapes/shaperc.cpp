@@ -390,7 +390,7 @@ bool ShapeRc::compareXY(QPointF p1, QPointF p2, qreal delta)
 // Конец 1  = Конец  2:  x2y2[1]  == x2y2[2]   -   x1y1[1],x2y2[1],x1y1[2]
 int ShapeRc::compareXY(ShapeRc* shape, qreal  delta)
 {
-    if (сompareStrl(shape))
+    if (compareStrl(shape))
     {
         if (compareXY(shape->xy(), xy(), delta))
             return 0;
@@ -405,10 +405,10 @@ int ShapeRc::compareXY(ShapeRc* shape, qreal  delta)
 }
 
 // проверка полного соответствия направляющих стрелок в описании отрезков РЦ
-bool ShapeRc::сompareStrl(ShapeRc *shape)
+bool ShapeRc::compareStrl(ShapeRc *shape)
 {
-    if (sprRc->No()==18)
-        int a = 99;
+//    if (sprRc->No()==18)
+//        int a = 99;
 
     if (strl.count() == shape->strl.count())
     {

@@ -97,7 +97,7 @@ protected:
 
     static bool compareXY(QPointF p1, QPointF p2, qreal delta);
     int compareXY(ShapeRc* shape, qreal  delta);
-    bool сompareStrl(ShapeRc *);
+    bool compareStrl(ShapeRc *);
     void makePolygon(QPointF p1, QPointF p2, QPointF p3, ShapeRc * shapeTo);
 };
 
