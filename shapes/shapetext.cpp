@@ -123,6 +123,8 @@ void ShapeText::Parse(QString& src)
 #endif
 #ifdef Q_OS_LINUX
   qreal k = 1.1;
+  if (height > 16)                                          // уменьшаем размер
+      k = 1.4;
 #endif
 
 

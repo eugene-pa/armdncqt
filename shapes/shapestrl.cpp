@@ -37,7 +37,7 @@ int ShapeStrl::offset_x = 0,                                // смещение 
 QString ShapeStrl::fontname = "Segoe UI";                   // шрифт
 #endif
 #ifdef Q_OS_LINUX
-int ShapeStrl::fontsize = 11;                               // размер шрифта
+int ShapeStrl::fontsize = 10;                               // размер шрифта
 int ShapeStrl::offset_x = 0,                                // смещение текста
     ShapeStrl::offset_y = 0;
 QString ShapeStrl::fontname = "Segoe UI";                   // шрифт

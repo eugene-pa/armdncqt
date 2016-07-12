@@ -41,10 +41,10 @@ int ShapeSvtf::offset_x = -2,                               // смещение 
 QString ShapeSvtf::fontname = "Segoe UI";                   // шрифт
 #endif
 #ifdef Q_OS_LINUX
-int ShapeSvtf::fontsize = 11;                               // размер шрифта
+int ShapeSvtf::fontsize = 10;                               // размер шрифта
 int ShapeSvtf::offset_x = -2,                               // смещение текста
     ShapeSvtf::offset_y = 0;
-QString ShapeSvtf::fontname = "Segoe UI";                   // шрифт
+QString ShapeSvtf::fontname = "Tahoma"/*"Segoe UI"*/;                   // шрифт
 #endif
 
 ShapeSvtf::ShapeSvtf(QString& src, ShapeSet* parent) : DShape (src, parent)
