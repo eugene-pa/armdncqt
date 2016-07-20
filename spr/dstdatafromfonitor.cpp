@@ -240,7 +240,7 @@ void DStDataFromMonitor::ExtractSysInfo (int i, SysInfo* info)
     info->errors = CntLinkEr[i];                            // Общий счетчик ошибок связи
     info->tmdt = QDateTime::fromTime_t(LastTime [i]);       // Астр.время окончания последнего цикла ТС
     info->SysStatus(SysStatus[i]);                          // состояние SysStatus
-    long s = mvv1[i].speedCom3l;
+    int s = mvv1[i].speedCom3l;
     info->SpeedCom3(info->st->Kp2007() ? s : s/1200);       // скорость Com3 с учетом различия версий
     info->BreaksCom3(RcnctCom3[i]);                         // число реконнектов Com3
     s = mvv2[i].speedCom4l;

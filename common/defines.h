@@ -32,7 +32,7 @@
 // определения, облегчающие перенос кода с MSVC&MFC в QT
 typedef unsigned char   BYTE;
 typedef unsigned short  WORD;
-typedef unsigned long   DWORD;
+//typedef unsigned int    DWORD;
 typedef unsigned int    UINT;
 #ifndef Q_OS_WIN
 typedef const char *    LPCTSTR;
@@ -166,11 +166,11 @@ extern QPixmap  * g_green,
 
 #ifndef _WINBASE_
 typedef struct _COMMTIMEOUTS {
-    DWORD ReadIntervalTimeout;          /* Maximum time between read chars. */
-    DWORD ReadTotalTimeoutMultiplier;   /* Multiplier of characters.        */
-    DWORD ReadTotalTimeoutConstant;     /* Constant in milliseconds.        */
-    DWORD WriteTotalTimeoutMultiplier;  /* Multiplier of characters.        */
-    DWORD WriteTotalTimeoutConstant;    /* Constant in milliseconds.        */
+    UINT ReadIntervalTimeout;          /* Maximum time between read chars. */
+    UINT ReadTotalTimeoutMultiplier;   /* Multiplier of characters.        */
+    UINT ReadTotalTimeoutConstant;     /* Constant in milliseconds.        */
+    UINT WriteTotalTimeoutMultiplier;  /* Multiplier of characters.        */
+    UINT WriteTotalTimeoutConstant;    /* Constant in milliseconds.        */
 } COMMTIMEOUTS,*LPCOMMTIMEOUTS;
 #endif // #ifndef _COMMTIMEOUTS
 

@@ -43,7 +43,7 @@ public:
 protected:
     WORD    signature;                                      // SIGNATURE 0xAA55
     WORD    signature2;                                     // SIGNATURE 0xFFFF
-    DWORD    length;                                        // общая длина пакета (загловок + данные)
+    UINT    length;                                        // общая длина пакета (загловок + данные)
 };
 
 class SignaturedPack
@@ -67,7 +67,7 @@ public:
 
     WORD    signature;                                      // SIGNATURE 0xAA55
     WORD    signature2;                                     // SIGNATURE 0xFFFF
-    DWORD   length;                                         // общая длина пакета (загловок + данные)
+    UINT    length;                                         // общая длина пакета (загловок + данные)
     char data[maxSize];
 };
 
