@@ -5,10 +5,13 @@
 #include "settingsdialog.h"
 #include "rsbase.h"
 
+
+
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Dialog)
 {
+    rs = nullptr;
     settingdlg = nullptr;
     ui->setupUi(this);
 }
@@ -42,7 +45,7 @@ void Dialog::applysettings()
 void Dialog::dataready(QByteArray data)
 {
     if (data.length())
-        ui->textEdit->setPlainText(ui->textEdit->toPlainText() + QString(data) + "\n");
+        ui->textEdit->setPlainText(ui->textEdit->toPlainText() + /*QString(data)*/GetHex(data,32) + "\n");
 }
 
 // слот-обработчик уведомлений о неготовности данных
@@ -61,7 +64,7 @@ void Dialog::on_pushButton_Open_clicked()
 {
     if (ui->pushButton_Open->isChecked())
     {
-        rs = new BlockingRs(this, '1', 1024);
+        rs = new BlockingRs(this, 1, 1024);
         connect(rs, SIGNAL(dataready(QByteArray)), this, SLOT(dataready(QByteArray)));
         connect(rs, SIGNAL(timeout()), this, SLOT(timeout()));
         connect(rs, SIGNAL(error(int)), this, SLOT(error(int)));
@@ -77,7 +80,9 @@ void Dialog::on_pushButton_Open_clicked()
     else
     {
         emit(exit());
-        delete rs;
+        if (rs != nullptr)
+            delete rs;
+        rs = nullptr;
     }
 }
 
@@ -112,5 +117,17 @@ int MdmAgentReader::readData(QString settings/*class RsBase* serial*/)
 void Dialog::on_Dialog_finished(int result)
 {
     emit(exit());
-    delete rs;
+    if (rs != nullptr)
+        delete rs;
+    rs = nullptr;
+}
+
+QString Dialog::GetHex(QByteArray& array, int maxlength)
+{
+    QString tmp;
+    for (int i=0; i<array.length() && i<maxlength; i++)
+    {
+        tmp += QString("%1 ").arg((BYTE)array[i],2,16,QChar('0')).toUpper();
+    }
+    return tmp;
 }

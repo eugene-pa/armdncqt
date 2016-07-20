@@ -42,6 +42,7 @@ private:
     class MdmAgentReader * worker;
 
     class BlockingRs * rs;
+    QString GetHex(QByteArray& array, int maxlength);
 };
 
 
