@@ -56,7 +56,8 @@ void Dialog::timeout()
 
 void Dialog::error  (int error)
 {
-    ui->textEdit->setPlainText(ui->textEdit->toPlainText() + BlockingRs::errorText((BlockingRs::DataError)error));
+
+    ui->textEdit->setPlainText(ui->textEdit->toPlainText() + BlockingRs::errorText((BlockingRs::DataError)error) + ": " + rs->errorText());
 }
 
 // соединить

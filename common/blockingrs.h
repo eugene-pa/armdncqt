@@ -54,8 +54,9 @@ public:
 
     // виртуальные функции
     virtual void mainLoop();                                // основной цикл
-    virtual QByteArray readData(QSerialPort& serial);       // прием пакета данных с заданными таймаутами, маркером и максимальной длиной
     virtual void doData(QByteArray&);                       // можно перекрыть
+
+    QString errorText() { return lastErrorText; }
 
 private slots:
     void exit();
@@ -66,8 +67,10 @@ signals:
     void timeout  ();                                       // сигнал-уведомление о таймауте
 
 protected:
+    virtual QByteArray readData(QSerialPort& serial);       // прием пакета данных с заданными таймаутами, маркером и максимальной длиной
     bool parse(QString);                                    // разбор строки типа "COM1,9600,N,8,1"
 
+    QString lastErrorText;
     QString settings;                                       // настройки,например: COM1,9600,N,8,1
     QString _name;                                          // имя порта
     qint32 baudRate;                                        // скорость

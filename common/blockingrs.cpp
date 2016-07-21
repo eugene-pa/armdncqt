@@ -16,7 +16,7 @@ BlockingRs::BlockingRs(QObject *parent, BYTE marker, int maxlength) : QThread(pa
     this->parent = parent;                                  // родитель
     this->marker = marker;                                  // маркер или 0
     this->maxlength = maxlength;                            // максимальная длина
-
+    pSerial = nullptr;
 }
 
 BlockingRs::~BlockingRs()
@@ -56,6 +56,7 @@ void BlockingRs::run()
     serial.setStopBits(stopBits);
     if (!serial.open(QIODevice::ReadWrite))                 // открываем порт
     {
+        qDebug() << (lastErrorText = serial.errorString());
         emit (error(UNAVAILABLE));
         return;
     }
