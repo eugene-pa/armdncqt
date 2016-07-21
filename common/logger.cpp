@@ -20,7 +20,18 @@ Logger::Logger(QString filename,                                    // имя ф
     bDayly    = dayly;
     locker    = new QMutex();
     logger    = nullptr;
+    this->truncate  = truncate;
 
+    init(filename);
+}
+
+Logger::~Logger()
+{
+    delete locker;
+}
+
+void Logger::init(QString& filename)
+{
     QFileInfo fi(sFilePath);
     if (fi.isRelative())
     {
@@ -31,7 +42,12 @@ Logger::Logger(QString filename,                                    // имя ф
         // формируем полное имя файла
         sFilePath = QString("%1/%2").arg(sdir).arg(fi.fileName());
     }
-
+    else
+    {
+        // созданм папку по абсолютному пути
+        if (!fi.dir().exists())
+            QDir().mkdir(fi.dir().path());
+    }
     sFileNameWithoutExt = fi.baseName();
     sExt = fi.completeSuffix();
     dir  = fi.dir();
@@ -40,15 +56,16 @@ Logger::Logger(QString filename,                                    // имя ф
         QFile(GetActualFile()).remove();
 }
 
-Logger::~Logger()
-{
-    delete locker;
-}
-
 // актуальный файл в случае ежедневного архив формируется добавлением даты в формате: ПУТЬ/ИМЯ-ДД.*
 QString Logger::GetActualFile ()
 {
     return bDayly ? QString("%1/%2-%3.%4").arg(dir.absolutePath()).arg(sFileNameWithoutExt).arg(QDate::currentDate().toString("dd")).arg(sExt) : sFilePath;
+}
+
+// изменение файла лога и его размещения
+void Logger::ChangeActualFile(QString filename)
+{
+    init(filename);
 }
 
 

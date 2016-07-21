@@ -32,16 +32,16 @@ bool blackBoxMode;                                          // включен р
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
     QString images(path + "images/");                       // путь к образам
-    QString compressor = "zip.exe";                         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
-    QString decompressor = "unzip.exe";                     // утилита для распаковки архивов
+    QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
 
 #endif
 #ifdef Q_OS_LINUX
-    QString path = "/home/dc/Документы/armdncqt/";
+    QString path = "/home/dc/armdncqt/";
     QString images("../images/");                           // путь к образам
-    QString compressor = "zip.exe";                         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
-    QString decompressor = "unzip.exe";                     // утилита для распаковки архивов
+    QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
+    QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
 #endif
     Logger logger(path + "Log/armtools.log", true, true);
@@ -51,7 +51,7 @@ bool blackBoxMode;                                          // включен р
     QString pathSave=path + "bd/save/";
     QString form    =path + "pictures/Назаровский.shp";
     QString formDir =path + "pictures/";
-    QString iniFile =path + "shaper/shaper.ini";
+    QString iniFile =path + "armtools/armtools.ini";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -78,6 +78,21 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgStations = nullptr;                                              // станции
 
     reader = nullptr;
+
+    // если задан конфигурационный файл, читаем настройки и подстраиваем пути
+    IniReader rdr(iniFile);
+    if (rdr.GetText("WORKINDIRECTORY", path))
+    {
+        dbname = path + "bd/arm.db";
+        extDb  = path + "bd/armext.db";
+        pathTemp=path + "bd/temp/";
+        pathSave=path + "bd/save/";
+        form    =path + "pictures/Назаровский.shp";
+        formDir =path + "pictures/";
+
+        logger.ChangeActualFile(path + "Log/armtools.log");
+    }
+
 
 //    QByteArray src(10,0x55);
 //    QByteArray dst = qCompress(src);

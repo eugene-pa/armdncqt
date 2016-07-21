@@ -141,3 +141,6 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     images.qrc
+
+DISTFILES += \
+    armtools.ini

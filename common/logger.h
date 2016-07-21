@@ -16,6 +16,7 @@ public:
 
     QString log (QString str);                                  // вывод в лог строки  с блокировкой
     QString GetActualFile();                                    // получить актуальный файл
+    void    ChangeActualFile(QString);                          // изменение файла лога и его размещения
 
     // статические открытые функции
     static void SetLoger(Logger * p) { logger = p; }            // установить активный статический логгер
@@ -25,13 +26,18 @@ public:
 
 private:
     static  Logger * logger;                                    // статический экземпляр логгера
+
     QDir    dir;                                                // каталог
     QString sFileNameWithoutExt;
     QString sExt;
     QString sFilePath;                                          // полный путь к файлу лога
     bool	bLogTime;                               			// признак архивирования времени
     bool	bDayly;                                             // признак ведения лога в отд.файлы для кадого дня nsme-ДД.ext
+    bool    truncate;
     QMutex* locker;                                             // защита
+
+
+    void init(QString&);
 };
 
 #endif // LOGGER_H
