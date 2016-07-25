@@ -369,7 +369,7 @@ bool Route::parseExpression(QSqlQuery& query, QString field, QString& src, BoolE
             logger.log(QString("Маршрут %1. Ошибка выражения в поле %2 '%3': %4").arg(nameLog()).arg(field).arg(expr->Source()).arg(expr->ErrorText()));
         }
     }
-    return true;
+    return ret;
 }
 
 // получить перечисление идентифицированных РЦ маршрута

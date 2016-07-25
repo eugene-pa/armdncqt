@@ -807,7 +807,7 @@ bool Station::IsUndefinedTsPresrnt()
     for (int i = 0; i < TsMaxLengthBits; i++)
     {
         // если 1 или мигает и это не диагональ матрицы
-        if (tsStsRaw[i] || tsStsPulse[i] && !TsIndexed.contains(i))
+        if ((tsStsRaw[i] || tsStsPulse[i]) && !TsIndexed.contains(i))
         {
             if (Kp2000())
             {

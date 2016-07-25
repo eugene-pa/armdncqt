@@ -15,7 +15,6 @@ Logger::Logger(QString filename,                                    // имя ф
                bool dayly      /*= false*/,                         // отдельный файл на каждый день в формате ИМЯ-ДД.*
                bool truncate   /*= false*/)                         // удалить существующий файл, если он есть)
 {
-    sFilePath = filename;
     bLogTime  = tmdt;
     bDayly    = dayly;
     locker    = new QMutex();
@@ -32,6 +31,7 @@ Logger::~Logger()
 
 void Logger::init(QString& filename)
 {
+    sFilePath = filename;
     QFileInfo fi(sFilePath);
     if (fi.isRelative())
     {

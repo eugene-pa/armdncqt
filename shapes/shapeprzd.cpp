@@ -150,8 +150,8 @@ void ShapePrzd::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 // функция рисования
 static int dx = 3,  // смещение усика по Х
-           dy = 6,  // смещение усика по Y
-           dxt = 8; // отступ текста в траспаранте
+           dy = 6;  // смещение усика по Y
+//           dxt = 8; // отступ текста в траспаранте
 
 void ShapePrzd::Draw (QPainter* painter)
 {

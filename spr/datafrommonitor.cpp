@@ -119,7 +119,7 @@ void DDataFromMonitor::ExtractRcInfo(KrugInfo * krug)
     int length = GetLenRcInfo();                                                // длина данных по всем РЦ
     COneRc *datarc = (COneRc *)(GetPtrRcInfo() + sizeof (DRcDataFromMonitor));  // указатель на данные очередной РЦ
 
-    if (length == sizeof(DRcDataFromMonitor) + rcinfo->m_nRc * sizeof(COneRc))
+    if (length == (int)(sizeof(DRcDataFromMonitor) + rcinfo->m_nRc * sizeof(COneRc)))
     {
         for (int i=0; i<rcinfo->m_nRc; i++, datarc++)
         {

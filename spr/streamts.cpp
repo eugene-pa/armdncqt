@@ -47,6 +47,7 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
 //                    SetLocalTime(&st);
 #else
                     struct tm * pTm = localtime(&t);
+                    Q_UNUSED(pTm)       // ДОРАБОТАТЬ!
 #endif
                 }
             }
