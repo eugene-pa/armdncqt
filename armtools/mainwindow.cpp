@@ -565,7 +565,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 {
     int sts;
-    int ret;
+    int ret = 0;
 
     if (findChanges && isFindTsChanges())
         sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText());
