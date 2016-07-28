@@ -210,10 +210,28 @@ MainWindow::MainWindow(QWidget *parent) :
     idTimer = startTimer(1000);
     arhDateTime = QDateTime::currentDateTime();
     reader = new ArhReader(pathTemp,"@_");
+
+    Logger::LogStr ("Конструктор MainWindow завершил работу");
 }
 
 MainWindow::~MainWindow()
 {
+    Logger::LogStr ("Завершение работы. ~MainWindow()");
+
+    delete clientTcp;
+    delete reader;
+
+    delete StationsCmb;
+    delete dateEdit;
+    delete calendar;
+    delete stepValue;
+
+    delete labelTemp;
+    delete sliderTemp;
+    delete labelTemp2;
+    delete sliderScale;
+    delete checkFindLink;
+
     delete ui;
 }
 
@@ -565,7 +583,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 {
     int sts;
-    int ret;
+    int ret = 0;
 
     if (findChanges && isFindTsChanges())
         sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText());

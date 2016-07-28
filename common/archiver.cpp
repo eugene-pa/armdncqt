@@ -27,7 +27,7 @@ int ArchiveHeader::Read(QFile * file)
 
 ArhReader::~ArhReader()
 {
-
+    qDebug() << "~ArhReader()";
 }
 
 // конструктор ридера
