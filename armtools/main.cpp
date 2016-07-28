@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
+    qDebug() << "Exit main function";
     return a.exec();
 
 }

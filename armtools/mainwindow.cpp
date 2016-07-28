@@ -712,3 +712,8 @@ void MainWindow::on_actionPrev_triggered()
 {
 
 }
+
+void MainWindow::on_MainWindow_destroyed()
+{
+
+}

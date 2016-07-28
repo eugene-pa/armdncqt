@@ -98,6 +98,8 @@ private slots:
 
     void on_action_15_triggered();
 
+    void on_MainWindow_destroyed();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
