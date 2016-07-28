@@ -237,7 +237,7 @@ void ShapeSvtf::Draw(QPainter* painter)
 
     // основание
     //painter->setRenderHint(QPainter::Antialiasing, false);
-    if (subtype != Pzdn && subtype != Mnvr)
+    if (subtype != Pzdn && subtype != Mnvr)                 // фикс 2016.07.28. Если без ножек - не рисуем основание
     {
         painter->setPen(*pen2);
         painter->drawLine(base);
