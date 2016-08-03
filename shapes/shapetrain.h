@@ -11,7 +11,7 @@ public:
 
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
     virtual void  Draw (QPainter*);                         // функция рисования
-
+    virtual QRectF boundingRect() const;
 
     static bool bShowTrains;
     static bool bShowNonregTrains;

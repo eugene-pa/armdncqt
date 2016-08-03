@@ -32,6 +32,7 @@ void ShapeTrain::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 void ShapeTrain::Draw(QPainter* painter)
 {
     // поезда на РЦ
+    qDebug() << "draw trains";
     foreach (Train * train, Train::Trains)
     {
         if (bShowTrains && (bShowNonregTrains || train->no > 0))
@@ -49,6 +50,8 @@ void ShapeTrain::Draw(QPainter* painter)
                 Rc * rc = train->Rc[i];
                 if (rc==nullptr)
                     continue;
+
+                qDebug() << "finding...";
                 foreach (QGraphicsItem *shape, rc->shapes)
                 {
                     ShapeRc * shaperc = (ShapeRc *)shape;
@@ -109,7 +112,7 @@ void ShapeTrain::Draw(QPainter* painter)
                     boundRect = painter->boundingRect(pText->x() + 2, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
                 }
 
-
+                qDebug() << "train...";
                 painter->fillRect(boundRect, ShapeTrain::GetBrush(train->no));
                 boundRect.setLeft(boundRect.x() + 2);
                 painter->setPen(train->no ? Qt::white : Qt::black);
@@ -130,4 +133,9 @@ QBrush ShapeTrain::GetBrush(int no)
             no > 6000	?	Qt::darkRed     :
             no > 4000	?	Qt::darkGreen   :
                             Qt::darkBlue    ;
+}
+
+QRectF ShapeTrain::boundingRect() const
+{
+    return QRectF(0,0,1980*2, 1080*2);
 }
