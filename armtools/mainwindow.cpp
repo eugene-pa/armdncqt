@@ -15,9 +15,10 @@
 
 //QVector<ShapeSet *> sets;                                 // массив форм
 
-//QString server_ipport = "192.168.0.101:1010";             // подключение к потоку ТС из настроечного файла
+//QString server_ipport = "192.168.0.101:1020";             // подключение к потоку ТС из настроечного файла
 QString server_ipport = "192.168.0.100:1013";               // подключение к потоку ТС из настроечного файла
 QString baseDir;
+QString version = "1.0.1.10";                               // версия приложения
 
 //bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
 bool blackBoxMode;                                          // включен режима просмотра архива
@@ -25,6 +26,7 @@ bool blackBoxMode;                                          // включен р
 #ifdef Q_OS_WIN
     QString path = "C:/armdncqt/";
     QString images(":/status/images/");                     // путь к образам
+    QString imagesEx(":/images/images/");                   //
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
     QString editor = "notepad.exe";     // блокнот
@@ -32,6 +34,7 @@ bool blackBoxMode;                                          // включен р
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
     QString images(path + "images/");                       // путь к образам
+    QString imagesEx(path + "images/");                     // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
@@ -40,6 +43,7 @@ bool blackBoxMode;                                          // включен р
 #ifdef Q_OS_LINUX
     QString path = "/home/dc/armdncqt/";
     QString images("../images/");                           // путь к образам
+    QString imagesEx("../images/");                         // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
@@ -104,6 +108,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // загрузка пользовательской графики (можно вынести в глоб.функцию)
     loadResources();
+    // значок приложения
+    setWindowIcon (QIcon(QPixmap(imagesEx + "Config-Tools.png")));
 
     // добавляем в статус бар поля "IP_ПОРТ" и индикатор соединения
     ui->statusBar->addPermanentWidget(new QLabel(server_ipport));   //
@@ -269,6 +275,7 @@ void MainWindow::stationSelected(int index)
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
     g_actualStation = shapeId->St();
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
+    scaleView();
 
     cmbTs->clear();
     foreach (Ts *ts, g_actualStation->TsSorted)
@@ -711,4 +718,11 @@ void MainWindow::on_actionNext_triggered()
 void MainWindow::on_actionPrev_triggered()
 {
 
+}
+
+// О программе
+void MainWindow::on_action_About_triggered()
+{
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)));
 }

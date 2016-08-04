@@ -36,7 +36,8 @@ FORMS    += \
     mainwindow.ui
 
 DISTFILES += \
-    BridgeTcp.ini
+    BridgeTcp.ini \
+    history.txt
 
 RESOURCES += \
     images.qrc
