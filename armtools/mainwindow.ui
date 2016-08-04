@@ -74,11 +74,18 @@
     <addaction name="action_Less"/>
     <addaction name="action_ZoomOff"/>
    </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Сведения</string>
+    </property>
+    <addaction name="action_About"/>
+   </widget>
    <addaction name="menu_4"/>
    <addaction name="menu_6"/>
    <addaction name="menu_7"/>
    <addaction name="menu_8"/>
    <addaction name="menu_9"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="minimumSize">
@@ -350,6 +357,11 @@
      <family>Consolas</family>
      <pointsize>12</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>О программе</string>
    </property>
   </action>
  </widget>

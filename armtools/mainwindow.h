@@ -17,6 +17,7 @@
 #include <QtMath>
 #include <QLayout>
 #include <QProcess>
+#include <QMessageBox>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -97,6 +98,8 @@ private slots:
     void on_actionPrev_triggered();
 
     void on_action_15_triggered();
+
+    void on_action_About_triggered();
 
 signals:
     void changeStation(class Station *);                    // смена станции

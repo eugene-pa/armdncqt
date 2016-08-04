@@ -28,6 +28,7 @@ QHostAddress *ipRsrv;
 
 int      portBridge = 1010;                                 // порт шлюза
 
+QString version = "1.0.1.11";                               // версия приложения
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -41,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     logger.log("Запуск");
 
+    // iniFile = "bridgetcp.ini";                           // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
     IniReader rdr(iniFile);
 
     rdr.GetInt("BRIDGEPORT", portBridge);
@@ -226,6 +228,11 @@ void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
 {
     QString s("Отключен клиент " + conn->name());
     msg->setText(s);
+
+    int row = findRowByConn(conn);
+    if (row >= 0)
+        ui->tableWidget ->removeRow(row);
+
 //  logger.log(s);
 }
 
@@ -245,6 +252,8 @@ void MainWindow::timerEvent(QTimerEvent *event)
     QTableWidget * t = ui->tableWidget;
     for (int i=0; i<ui->tableWidget->rowCount(); i++)
     {
+        // проблема возникает при попытке отображения удаленного соеединения, когда клиент отваливается
+        // вариант - подписаться на события разрыва и
         QTableWidgetItem * item = ui->tableWidget->item(i,0);
         if (item != nullptr)
         {

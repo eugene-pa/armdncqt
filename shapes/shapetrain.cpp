@@ -32,7 +32,6 @@ void ShapeTrain::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 void ShapeTrain::Draw(QPainter* painter)
 {
     // поезда на РЦ
-    qDebug() << "draw trains";
     foreach (Train * train, Train::Trains)
     {
         if (bShowTrains && (bShowNonregTrains || train->no > 0))
@@ -51,7 +50,6 @@ void ShapeTrain::Draw(QPainter* painter)
                 if (rc==nullptr)
                     continue;
 
-                qDebug() << "finding...";
                 foreach (QGraphicsItem *shape, rc->shapes)
                 {
                     ShapeRc * shaperc = (ShapeRc *)shape;
@@ -95,6 +93,7 @@ void ShapeTrain::Draw(QPainter* painter)
                 painter->setFont(font);
                 QString s = train->no ? QString::number(train->no) : QString::number(train->sno);
                 QRectF boundRect;
+                QPolygonF header;
 
                 int flags = Qt::AlignLeft|Qt::AlignTop;
                 if ((train->IsEvn() && !orient) || (!train->IsEvn() && orient))
@@ -106,28 +105,30 @@ void ShapeTrain::Draw(QPainter* painter)
                     int w = boundRect.width();
                     boundRect.setLeft(boundRect.x() - w);
                     boundRect.setRight(boundRect.x() + w);
+
+                    // Формируем полигон направления
+                    header << boundRect.topRight();
+                    header << boundRect.bottomRight();
+                    header << (boundRect.topRight() + QPointF(8,boundRect.height()/2));
+                    header << boundRect.topRight();
                 }
                 else
                 {
                     // едем влево
                     pText = &pLft;
-                    boundRect = painter->boundingRect(pText->x() + 2, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
+                    boundRect = painter->boundingRect(pText->x() + 8, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
 
-                    QPainterPath path;
-                    QPolygonF header;
-                    header.append(boundRect.topLeft());
-                    header.append(boundRect.bottomLeft());
-                    header.append(boundRect.topLeft() + QPointF(-8,boundRect.height()/2));
-                    header.append(boundRect.topLeft());
-                    path.addPolygon(header);
-
-                    painter->setBackground(ShapeTrain::GetBrush(train->no));
-                    painter->setPen(ShapeTrain::GetBrush(train->no).color());
-                    //painter->drawPolygon(header, Qt::WindingFill);
-                    painter->drawPath(path);
+                    // Формируем полигон направления
+                    header << boundRect.topLeft();
+                    header << boundRect.bottomLeft();
+                    header << (boundRect.topLeft() + QPointF(-8,boundRect.height()/2));
+                    header << boundRect.topLeft();
                 }
 
-                qDebug() << "train...";
+                painter->setBrush(ShapeTrain::GetBrush(train->no));
+                painter->setPen(ShapeTrain::GetBrush(train->no).color());
+                painter->drawPolygon(header);
+
                 painter->fillRect(boundRect, ShapeTrain::GetBrush(train->no));
                 boundRect.setLeft(boundRect.x() + 2);
                 painter->setPen(train->no ? Qt::white : Qt::black);

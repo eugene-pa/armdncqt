@@ -143,4 +143,5 @@ RESOURCES += \
     images.qrc
 
 DISTFILES += \
-    armtools.ini
+    armtools.ini \
+    history.txt
