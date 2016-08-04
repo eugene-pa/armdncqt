@@ -99,17 +99,32 @@ void ShapeTrain::Draw(QPainter* painter)
                 int flags = Qt::AlignLeft|Qt::AlignTop;
                 if ((train->IsEvn() && !orient) || (!train->IsEvn() && orient))
                 {
+                    // едем вправо
                     pText = &pRht;  //  - new Vector(extrax/2 + text.Width, text.Height + extray + 3);  // базовая точка текста
                     boundRect = painter->boundingRect(pText->x() -2, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
-                    // ориентация по правому краю выполняем "вручную" смещая надпись влево на ширину номера
+                    // ориентацию по правому краю выполняем "вручную" смещая надпись влево на ширину номера
                     int w = boundRect.width();
                     boundRect.setLeft(boundRect.x() - w);
                     boundRect.setRight(boundRect.x() + w);
                 }
                 else
                 {
+                    // едем влево
                     pText = &pLft;
                     boundRect = painter->boundingRect(pText->x() + 2, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
+
+                    QPainterPath path;
+                    QPolygonF header;
+                    header.append(boundRect.topLeft());
+                    header.append(boundRect.bottomLeft());
+                    header.append(boundRect.topLeft() + QPointF(-8,boundRect.height()/2));
+                    header.append(boundRect.topLeft());
+                    path.addPolygon(header);
+
+                    painter->setBackground(ShapeTrain::GetBrush(train->no));
+                    painter->setPen(ShapeTrain::GetBrush(train->no).color());
+                    //painter->drawPolygon(header, Qt::WindingFill);
+                    painter->drawPath(path);
                 }
 
                 qDebug() << "train...";
@@ -135,6 +150,11 @@ QBrush ShapeTrain::GetBrush(int no)
                             Qt::darkBlue    ;
 }
 
+
+// решаем проблему глюка с отрисовкой номеров поездов: причина пропадания заключалась в выпадании области единственного примитива,
+// используемого для отрисовки всех поездов из области просмотра, так как функция boundingRect(), определенная в shape
+// не была переопределена
+// Здесь функция возвращает область из расчета 4-х мониторов (2*2) в режиме full hd
 QRectF ShapeTrain::boundingRect() const
 {
     return QRectF(0,0,1980*2, 1080*2);
