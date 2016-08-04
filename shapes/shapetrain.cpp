@@ -109,7 +109,7 @@ void ShapeTrain::Draw(QPainter* painter)
                     // Формируем полигон направления
                     header << boundRect.topRight();
                     header << boundRect.bottomRight();
-                    header << (boundRect.topRight() + QPointF(8,boundRect.height()/2));
+                    header << (boundRect.topRight() + QPointF(7,boundRect.height()/2));
                     header << boundRect.topRight();
                 }
                 else
@@ -121,12 +121,12 @@ void ShapeTrain::Draw(QPainter* painter)
                     // Формируем полигон направления
                     header << boundRect.topLeft();
                     header << boundRect.bottomLeft();
-                    header << (boundRect.topLeft() + QPointF(-8,boundRect.height()/2));
+                    header << (boundRect.topLeft() + QPointF(-7,boundRect.height()/2));
                     header << boundRect.topLeft();
                 }
 
                 painter->setBrush(ShapeTrain::GetBrush(train->no));
-                painter->setPen(ShapeTrain::GetBrush(train->no).color());
+                painter->setPen(Qt::transparent/*ShapeTrain::GetBrush(train->no).color()*/);
                 painter->drawPolygon(header);
 
                 painter->fillRect(boundRect, ShapeTrain::GetBrush(train->no));
