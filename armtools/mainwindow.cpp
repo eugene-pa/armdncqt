@@ -42,10 +42,8 @@ bool blackBoxMode;                                          // включен р
 #endif
 #ifdef Q_OS_LINUX
     QString path = "/home/dc/armdncqt/";
-    QString images  (":/status/images/");                   // путь к образам
-    QString imagesEx(":/images/images/");                   // путь к образам
-//    QString images("../images/");                         // путь к образам
-//    QString imagesEx("../images/");                       // путь к образам
+    QString images  (":/status/images/");                   // путь к образам   было "../images/"
+    QString imagesEx(":/images/images/");                   // путь к образам   было "../images/"
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
@@ -727,4 +725,9 @@ void MainWindow::on_action_About_triggered()
 {
     QFileInfo info( QCoreApplication::applicationFilePath() );
     QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)));
+}
+
+void MainWindow::on_action_QtAbout_triggered()
+{
+    QMessageBox::aboutQt(this, "Версия QT");
 }

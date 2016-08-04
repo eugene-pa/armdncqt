@@ -101,6 +101,8 @@ private slots:
 
     void on_action_About_triggered();
 
+    void on_action_QtAbout_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 

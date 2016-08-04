@@ -79,6 +79,8 @@
      <string>Сведения</string>
     </property>
     <addaction name="action_About"/>
+    <addaction name="separator"/>
+    <addaction name="action_QtAbout"/>
    </widget>
    <addaction name="menu_4"/>
    <addaction name="menu_6"/>
@@ -362,6 +364,11 @@
   <action name="action_About">
    <property name="text">
     <string>О программе</string>
+   </property>
+  </action>
+  <action name="action_QtAbout">
+   <property name="text">
+    <string>О Qt</string>
    </property>
   </action>
  </widget>
