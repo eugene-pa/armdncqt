@@ -136,6 +136,7 @@ private:
     class DlgTuInfo * dlgTu;                                // состояние ТС
     class DlgRcInfo * dlgRc;                                // состояние РЦ
     class DlgStrlInfo * dlgStrl;                            // состояние стрелок
+    class DlgSvtfInfo * dlgSvtf;                            // состояние светофоров
     class DlgKPinfo * dlgKp;                                // состояние  КП
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
     class DlgTrains * dlgTrains;                            // поезда

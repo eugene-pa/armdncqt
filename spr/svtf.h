@@ -5,6 +5,7 @@
 
 class Svtf : public SprBase
 {
+    friend class DlgSvtfInfo;
 public:
 
     enum SVTF_CLASS

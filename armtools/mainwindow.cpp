@@ -4,6 +4,7 @@
 
 #include "../forms/dlgrcinfo.h"
 #include "../forms/dlgstrlinfo.h"
+#include "../forms/dlgsvtfinfo.h"
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
 #include "../forms/dlgtuinfo.h"
@@ -76,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgTu = nullptr;                                                    // состояние ТУ
     dlgRc = nullptr;                                                    // состояние РЦ
     dlgStrl = nullptr;                                                  // состояние стрелок
+    dlgSvtf = nullptr;                                                  // состояние светофоров
     dlgKp = nullptr;                                                    // диалог КП
     dlgRoutes = nullptr;                                                // диалог маршрутов
     dlgTrains = nullptr;                                                // поезда
@@ -84,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     reader = nullptr;
 
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
+    // iniFile = "armtoola.ini";                           // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
     IniReader rdr(iniFile);
     if (rdr.GetText("WORKINDIRECTORY", path))
     {
@@ -411,7 +414,14 @@ void MainWindow::on_action_STRL_triggered()
 
 void MainWindow::on_action_SVTF_triggered()
 {
-
+    if (dlgSvtf == nullptr)
+    {
+        dlgSvtf = new DlgSvtfInfo(g_actualStation, this);
+        dlgSvtf->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgSvtf, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgSvtf->setVisible(!dlgSvtf->isVisible());
 }
 
 void MainWindow::on_action_Stations_triggered()
@@ -581,6 +591,19 @@ void MainWindow::timerEvent(QTimerEvent *event)
         dateEdit->setDate(QDate::currentDate());
         timeEdit->setTime(QTime::currentTime());
     }
+
+    // отслеживаем сосотояние диалогов и приводим в соотвествие состояние опций меню
+    ui->action_TS       ->setChecked(dlgTs      != nullptr && dlgTs     ->isVisible());
+    ui->action_TU       ->setChecked(dlgTu      != nullptr && dlgTu     ->isVisible());
+    ui->action_Routes   ->setChecked(dlgRoutes  != nullptr && dlgRoutes ->isVisible());
+    ui->action_RC       ->setChecked(dlgRc      != nullptr && dlgRc     ->isVisible());
+    ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
+    ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
+    ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
+    ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
+    //    ui->action_SVTF     ->setChecked(dlgKp != nullptr && dlgKp->isVisible());
+    //    ui->on_action_OTU   ->setChecked(dlgKp != nullptr && dlgKp->isVisible());
+
 }
 
 // прочитать и отобразить след.запись в архиве
