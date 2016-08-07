@@ -19,6 +19,7 @@
         <file>../images/star_red.png</file>
         <file>../images/index_add.png</file>
         <file>../images/index_down.png</file>
+        <file>../images/Config-Tools.png</file>
     </qresource>
     <qresource prefix="/status">
         <file>../images/box_blue.ico</file>

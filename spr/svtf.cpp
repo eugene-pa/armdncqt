@@ -93,6 +93,7 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
                                          SVTF_X;
         if (svtf->svtftype != SVTF_PRLS)
         {
+            svtf->tsList.append(ts);
             svtf->name = ts->Name();
             svtf->opened->SetTs(ts);
             svtf->svtferror     = query.value("SvtfError" ).toString(); // выражение ошибки светофора

@@ -4,6 +4,7 @@
 
 #include "../forms/dlgrcinfo.h"
 #include "../forms/dlgstrlinfo.h"
+#include "../forms/dlgsvtfinfo.h"
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
 #include "../forms/dlgtuinfo.h"
@@ -15,9 +16,10 @@
 
 //QVector<ShapeSet *> sets;                                 // массив форм
 
-//QString server_ipport = "192.168.0.101:1010";             // подключение к потоку ТС из настроечного файла
+//QString server_ipport = "192.168.0.101:1020";             // подключение к потоку ТС из настроечного файла
 QString server_ipport = "192.168.0.100:1013";               // подключение к потоку ТС из настроечного файла
 QString baseDir;
+QString version = "1.0.1.10";                               // версия приложения
 
 //bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
 bool blackBoxMode;                                          // включен режима просмотра архива
@@ -25,6 +27,7 @@ bool blackBoxMode;                                          // включен р
 #ifdef Q_OS_WIN
     QString path = "C:/armdncqt/";
     QString images(":/status/images/");                     // путь к образам
+    QString imagesEx(":/images/images/");                   //
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
     QString editor = "notepad.exe";     // блокнот
@@ -32,6 +35,7 @@ bool blackBoxMode;                                          // включен р
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
     QString images(path + "images/");                       // путь к образам
+    QString imagesEx(path + "images/");                     // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
@@ -39,7 +43,8 @@ bool blackBoxMode;                                          // включен р
 #endif
 #ifdef Q_OS_LINUX
     QString path = "/home/dc/armdncqt/";
-    QString images("../images/");                           // путь к образам
+    QString images  (":/status/images/");                   // путь к образам   было "../images/"
+    QString imagesEx(":/images/images/");                   // путь к образам   было "../images/"
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
@@ -72,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgTu = nullptr;                                                    // состояние ТУ
     dlgRc = nullptr;                                                    // состояние РЦ
     dlgStrl = nullptr;                                                  // состояние стрелок
+    dlgSvtf = nullptr;                                                  // состояние светофоров
     dlgKp = nullptr;                                                    // диалог КП
     dlgRoutes = nullptr;                                                // диалог маршрутов
     dlgTrains = nullptr;                                                // поезда
@@ -80,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     reader = nullptr;
 
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
+    // iniFile = "armtoola.ini";                           // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
     IniReader rdr(iniFile);
     if (rdr.GetText("WORKINDIRECTORY", path))
     {
@@ -104,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // загрузка пользовательской графики (можно вынести в глоб.функцию)
     loadResources();
+    // значок приложения
+    setWindowIcon (QIcon(QPixmap(imagesEx + "Config-Tools.png")));
 
     // добавляем в статус бар поля "IP_ПОРТ" и индикатор соединения
     ui->statusBar->addPermanentWidget(new QLabel(server_ipport));   //
@@ -269,6 +278,7 @@ void MainWindow::stationSelected(int index)
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
     g_actualStation = shapeId->St();
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
+    scaleView();
 
     cmbTs->clear();
     foreach (Ts *ts, g_actualStation->TsSorted)
@@ -404,7 +414,14 @@ void MainWindow::on_action_STRL_triggered()
 
 void MainWindow::on_action_SVTF_triggered()
 {
-
+    if (dlgSvtf == nullptr)
+    {
+        dlgSvtf = new DlgSvtfInfo(g_actualStation, this);
+        dlgSvtf->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgSvtf, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgSvtf->setVisible(!dlgSvtf->isVisible());
 }
 
 void MainWindow::on_action_Stations_triggered()
@@ -574,6 +591,19 @@ void MainWindow::timerEvent(QTimerEvent *event)
         dateEdit->setDate(QDate::currentDate());
         timeEdit->setTime(QTime::currentTime());
     }
+
+    // отслеживаем сосотояние диалогов и приводим в соотвествие состояние опций меню
+    ui->action_TS       ->setChecked(dlgTs      != nullptr && dlgTs     ->isVisible());
+    ui->action_TU       ->setChecked(dlgTu      != nullptr && dlgTu     ->isVisible());
+    ui->action_Routes   ->setChecked(dlgRoutes  != nullptr && dlgRoutes ->isVisible());
+    ui->action_RC       ->setChecked(dlgRc      != nullptr && dlgRc     ->isVisible());
+    ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
+    ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
+    ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
+    ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
+    //    ui->action_SVTF     ->setChecked(dlgKp != nullptr && dlgKp->isVisible());
+    //    ui->on_action_OTU   ->setChecked(dlgKp != nullptr && dlgKp->isVisible());
+
 }
 
 // прочитать и отобразить след.запись в архиве
@@ -713,7 +743,14 @@ void MainWindow::on_actionPrev_triggered()
 
 }
 
-void MainWindow::on_MainWindow_destroyed()
+// О программе
+void MainWindow::on_action_About_triggered()
 {
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)));
+}
 
+void MainWindow::on_action_QtAbout_triggered()
+{
+    QMessageBox::aboutQt(this, "Версия QT");
 }

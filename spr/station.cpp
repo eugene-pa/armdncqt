@@ -593,7 +593,7 @@ bool Station::GetTsPulseStsByName (QString name)
 // d0 - состояние, d1 - мигание
 int Station::GetTsStsByNameEx (QString name)
 {
-   return  GetTsStsByName (name) | (GetTsPulseStsByName (name) << 1);
+   return  GetTsStsByName (name) | ((GetTsPulseStsByName (name) << 1)!=0);
 }
 
 

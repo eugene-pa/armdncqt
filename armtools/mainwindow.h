@@ -17,6 +17,7 @@
 #include <QtMath>
 #include <QLayout>
 #include <QProcess>
+#include <QMessageBox>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -98,7 +99,9 @@ private slots:
 
     void on_action_15_triggered();
 
-    void on_MainWindow_destroyed();
+    void on_action_About_triggered();
+
+    void on_action_QtAbout_triggered();
 
 signals:
     void changeStation(class Station *);                    // смена станции
@@ -133,6 +136,7 @@ private:
     class DlgTuInfo * dlgTu;                                // состояние ТС
     class DlgRcInfo * dlgRc;                                // состояние РЦ
     class DlgStrlInfo * dlgStrl;                            // состояние стрелок
+    class DlgSvtfInfo * dlgSvtf;                            // состояние светофоров
     class DlgKPinfo * dlgKp;                                // состояние  КП
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
     class DlgTrains * dlgTrains;                            // поезда

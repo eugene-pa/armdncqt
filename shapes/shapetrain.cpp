@@ -49,6 +49,7 @@ void ShapeTrain::Draw(QPainter* painter)
                 Rc * rc = train->Rc[i];
                 if (rc==nullptr)
                     continue;
+
                 foreach (QGraphicsItem *shape, rc->shapes)
                 {
                     ShapeRc * shaperc = (ShapeRc *)shape;
@@ -92,23 +93,41 @@ void ShapeTrain::Draw(QPainter* painter)
                 painter->setFont(font);
                 QString s = train->no ? QString::number(train->no) : QString::number(train->sno);
                 QRectF boundRect;
+                QPolygonF header;
 
                 int flags = Qt::AlignLeft|Qt::AlignTop;
                 if ((train->IsEvn() && !orient) || (!train->IsEvn() && orient))
                 {
+                    // едем вправо
                     pText = &pRht;  //  - new Vector(extrax/2 + text.Width, text.Height + extray + 3);  // базовая точка текста
                     boundRect = painter->boundingRect(pText->x() -2, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
-                    // ориентация по правому краю выполняем "вручную" смещая надпись влево на ширину номера
+                    // ориентацию по правому краю выполняем "вручную" смещая надпись влево на ширину номера
                     int w = boundRect.width();
                     boundRect.setLeft(boundRect.x() - w);
                     boundRect.setRight(boundRect.x() + w);
+
+                    // Формируем полигон направления
+                    header << boundRect.topRight();
+                    header << boundRect.bottomRight();
+                    header << (boundRect.topRight() + QPointF(7,boundRect.height()/2));
+                    header << boundRect.topRight();
                 }
                 else
                 {
+                    // едем влево
                     pText = &pLft;
-                    boundRect = painter->boundingRect(pText->x() + 2, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
+                    boundRect = painter->boundingRect(pText->x() + 8, pText->y()-18,40,24, flags, s) + QMargins(2,0,2,0);  //
+
+                    // Формируем полигон направления
+                    header << boundRect.topLeft();
+                    header << boundRect.bottomLeft();
+                    header << (boundRect.topLeft() + QPointF(-7,boundRect.height()/2));
+                    header << boundRect.topLeft();
                 }
 
+                painter->setBrush(ShapeTrain::GetBrush(train->no));
+                painter->setPen(Qt::transparent/*ShapeTrain::GetBrush(train->no).color()*/);
+                painter->drawPolygon(header);
 
                 painter->fillRect(boundRect, ShapeTrain::GetBrush(train->no));
                 boundRect.setLeft(boundRect.x() + 2);
@@ -130,4 +149,14 @@ QBrush ShapeTrain::GetBrush(int no)
             no > 6000	?	Qt::darkRed     :
             no > 4000	?	Qt::darkGreen   :
                             Qt::darkBlue    ;
+}
+
+
+// решаем проблему глюка с отрисовкой номеров поездов: причина пропадания заключалась в выпадании области единственного примитива,
+// используемого для отрисовки всех поездов из области просмотра, так как функция boundingRect(), определенная в shape
+// не была переопределена
+// Здесь функция возвращает область из расчета 4-х мониторов (2*2) в режиме full hd
+QRectF ShapeTrain::boundingRect() const
+{
+    return QRectF(0,0,1980*2, 1080*2);
 }
