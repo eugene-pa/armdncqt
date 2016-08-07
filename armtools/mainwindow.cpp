@@ -34,8 +34,8 @@ bool blackBoxMode;                                          // включен р
 #endif
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
-    QString images(path + "images/");                       // путь к образам
-    QString imagesEx(path + "images/");                     // путь к образам
+    QString images(":/status/images/");                       // путь к образам
+    QString imagesEx(":/images/images/");                     // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
