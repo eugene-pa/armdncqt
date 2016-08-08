@@ -246,6 +246,7 @@ void ShapeRc::Draw(QPainter* painter)
 
     QPen *pen =
             sprRc == nullptr                        ?   PenUndefined    :       // не привязана
+//          sprRc->disabled                         ?   PenUndefined    :       // заблокирована
             state->isExpire ()                      ?   PenExpired      :       // нет данных
             isIr() && DShape::globalPulse           ?   PenIr           :       // ИР в активной фазе
             isBusy()                                ?   PenBusy         :       // занята
@@ -255,6 +256,14 @@ void ShapeRc::Draw(QPainter* painter)
             isZmk      ()                           ?   PenZmk          :       // замкнута
             state->isUndefined()                    ?   PenUndefined    :
                                                         PenFree;
+
+    // отрисовываю РЦ меняя прозрачность для заблокированных РЦ, чтобы показать состояние
+    QColor clr = pen->brush().color();
+    int alpha = 255;
+    if (sprRc && sprRc->disabled)
+        alpha = 60;
+    clr.setAlpha(alpha);
+    pen->setColor(clr);
 
     QColor color(Qt::black);
 

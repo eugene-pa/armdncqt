@@ -114,6 +114,7 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
         rc->allts.append(ts);
         rc->busy->SetTs(ts);
         rc->name = ts->Name();                              // имя РЦ определяем по имени сигнала занятости
+        rc->disabled = ts->disabled;
         rc->tpoint = rc->name.indexOf("Т")==0;              // признак того, что это перегонная точка (имя сигнала начинается с "Т")
 
         // читаем специфические для РЦ данные из таблицы ТС (только для сигналов занятости)

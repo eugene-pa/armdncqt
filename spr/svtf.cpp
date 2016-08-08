@@ -84,6 +84,7 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     if (svtfmain && tname!="ПРС")
     {
         svtf->svtftypename = tname;
+        svtf->disabled |= ts->disabled;
         svtf->svtftype= tname == "ВХ"  ? SVTF_IN  :         // входной
                         tname == "ВЫХ" ? SVTF_OUT :         // выходной
                         tname == "МРШ" ? SVTF_OUT :         // маршрутный

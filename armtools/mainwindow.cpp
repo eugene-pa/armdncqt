@@ -26,16 +26,12 @@ bool blackBoxMode;                                          // включен р
 
 #ifdef Q_OS_WIN
     QString path = "C:/armdncqt/";
-    QString images(":/status/images/");                     // путь к образам
-    QString imagesEx(":/images/images/");                   //
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
     QString editor = "notepad.exe";     // блокнот
 #endif
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
-    QString images(":/status/images/");                       // путь к образам
-    QString imagesEx(":/images/images/");                     // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
@@ -43,18 +39,19 @@ bool blackBoxMode;                                          // включен р
 #endif
 #ifdef Q_OS_LINUX
     QString path = "/home/dc/armdncqt/";
-    QString images  (":/status/images/");                   // путь к образам   было "../images/"
-    QString imagesEx(":/images/images/");                   // путь к образам   было "../images/"
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
 #endif
     Logger logger(path + "Log/armtools.log", true, true);
+
+    QString images(":/status/images/");                     // путь к образам status/images
+    QString imagesEx(":/images/images/");                   // путь к образам images/images
+
     QString dbname = path + "bd/arm.db";
     QString extDb  = path + "bd/armext.db";
     QString pathTemp=path + "bd/temp/";
     QString pathSave=path + "bd/save/";
-    QString form    =path + "pictures/Назаровский.shp";
     QString formDir =path + "pictures/";
     QString iniFile =path + "armtools/armtools.ini";
 
@@ -94,7 +91,6 @@ MainWindow::MainWindow(QWidget *parent) :
         extDb  = path + "bd/armext.db";
         pathTemp=path + "bd/temp/";
         pathSave=path + "bd/save/";
-        form    =path + "pictures/Назаровский.shp";
         formDir =path + "pictures/";
 
         logger.ChangeActualFile(path + "Log/armtools.log");

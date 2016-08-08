@@ -143,6 +143,7 @@ bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     strl->locked         ->Parse(ts, logger);
     strl->minus          ->Parse(ts, logger);
     strl->mu             ->Parse(ts, logger);
+    strl->disabled      |= ts->disabled;
 
     if (!ts->IsParsed())
     {

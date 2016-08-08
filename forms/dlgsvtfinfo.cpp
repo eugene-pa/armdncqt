@@ -31,7 +31,7 @@ void DlgSvtfInfo::fillData()
 
         QTreeWidgetItem * item = new QTreeWidgetItem(QStringList() << svtf->name << " " << "#" + QString::number(svtf->Id()));
         ui->treeSvtf->addTopLevelItem(item);
-        item->setData(0, Qt::UserRole,qVariantFromValue((void *)svtf));    // запомним стрелку
+        item->setData(0, Qt::UserRole,qVariantFromValue((void *)svtf));    // запомним светофор
         item->setIcon(0, svtf->IsOpen() ? * g_green : * g_white);
 
         if (svtf->formula_er != nullptr)
@@ -49,6 +49,8 @@ void DlgSvtfInfo::fillData()
             child->setIcon(1, ts->Sts() ? *g_green_dark_box : * g_white_box);      // идентификатор
             child->setData(0, Qt::UserRole,qVariantFromValue((void *)ts));    // запомним ТС
         }
+        item->setExpanded(svtf->IsOpen() || svtf->IsAlarm());
+        itemTs->setExpanded(svtf->IsOpen());
 
         QTreeWidgetItem * itemTu = new QTreeWidgetItem(QStringList() << "ТУ");
         item->addChild(itemTu);
@@ -67,7 +69,34 @@ void DlgSvtfInfo::fillData()
 
 void DlgSvtfInfo::UpdateStatus()
 {
-
+    for(int i=0; i < ui->treeSvtf->topLevelItemCount(); i++)
+    {
+        QTreeWidgetItem * item = ui->treeSvtf->topLevelItem(i);
+        Svtf * svtf = (Svtf *) item->data(0, Qt::UserRole).value<void*>();
+        item->setIcon(0, svtf->IsOpen() ? * g_green : * g_white);
+        if (item->childCount())
+        {
+            for(int j=0; j < item->childCount(); j++)
+            {
+                if (item->child(j)->text(0) == "Авария:")
+                {
+                    QTreeWidgetItem * itemA = item->child(j);
+                    itemA->setIcon(1, svtf->IsAlarm() ? *g_red_box : * g_white_box);      // авария
+                }
+                else
+                if (item->child(j)->text(0) == "ТС")
+                {
+                    QTreeWidgetItem * itemTs = item->child(j);
+                    for (int child = 0; child < itemTs->childCount(); child++)
+                    {
+                        Ts * ts = (Ts *) itemTs->child(child)->data(0, Qt::UserRole).value<void*>();
+                        if (ts!=nullptr)
+                            itemTs->child(child)->setIcon(1, ts->Sts() ? *g_green_box : * g_white_box);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void DlgSvtfInfo::timerEvent(QTimerEvent *event)

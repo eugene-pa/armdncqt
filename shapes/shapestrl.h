@@ -93,6 +93,7 @@ protected:
     static QPen * PenIr;                                    // искусственная разделка (мигает поверх других состояний)
     static QPen * PenMuRect;                                // окантовка стрелки на МУ
     static QPen * PenUndefined;                             // объект неопределен - пассивная отрисовка
+    static QPen * PenUndefined1;                            // объект неопределен - пассивная отрисовка толщиной 1 пиксель
     static QPen * PenNormalOk;                              // тонкая линия нормали, корректное состояние
     static QPen * PenNormalAlarm;                           // тонкая линия нормали, взрез
     static QPen * PenAlarmPulse1;                           // авария (1-я фаза мигания)

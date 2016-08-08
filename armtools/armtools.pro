@@ -147,4 +147,5 @@ RESOURCES += \
 
 DISTFILES += \
     armtools.ini \
-    history.txt
+    history.txt \
+    ../todo.txt

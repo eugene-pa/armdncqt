@@ -219,10 +219,16 @@ void ShapeSvtf::Draw(QPainter* painter)
     QPen * pen1 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : state->isExpire() ? PenExpired : MainPen;   // перо одинарной линии
     QPen * pen2 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : state->isExpire() ? PenExpired : MainPen2;  // перо двойной линии
 
+    QBrush nullBrush(Qt::transparent);                      // прозрачная кисть
+
     bool compact = this->set->compactSvtf;
+
+    if ((svtf && svtf->No() == 99) || (svtfM && svtfM->No()==99))
+        int a = 99;
 
     // кисть основная
     QBrush * brush= state->isUndefined()                ? BrushUndefined:
+                    (svtf && svtf->Disabled()) || (!svtf && svtfM && svtfM->Disabled()) ? &nullBrush : // отключен в БД
                     state->isExpire ()                  ? BrushExpired  :  // нет данных
                     isOpenPzd       ()                  ? BrushPzdOn    :
                     isOpenMnv() && (isMnv() || compact) ? BrushMnvOn    :  // маневровый открыт и светофор маневровый, либо режим совмещения при закрытом поездном
@@ -231,13 +237,14 @@ void ShapeSvtf::Draw(QPainter* painter)
                     svtf && svtf->IsTypeIn()            ? BrushPzdInOff :
                                                           BrushPzdOff;
     // кисть маневровая
-    QBrush * brushM = svtfM==nullptr || state->isUndefined() ? BrushUndefined :
-                      isOpenMnv()                            ? BrushMnvOn     :
+    QBrush * brushM = svtfM && svtfM->Disabled()             ? &nullBrush       :
+                      svtfM==nullptr || state->isUndefined() ? BrushUndefined   :
+                      isOpenMnv()                            ? BrushMnvOn       :
                                                               BrushMnvOff;
 
     // основание
     //painter->setRenderHint(QPainter::Antialiasing, false);
-    if (subtype != Pzdn && subtype != Mnvr)
+    if (subtype != Pzdn && subtype != Mnvr)                 // фикс 2016.07.28. Если без ножек - не рисуем основание
     {
         painter->setPen(*pen2);
         painter->drawLine(base);
