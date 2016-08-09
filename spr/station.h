@@ -167,6 +167,8 @@ public:
     QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
     QVector <class Tu*> TuSorted;                           // отсортированы по имени
 
+    QHash <QString, class Otu*> Otu;                        // ОТУ по станции
+
     QVector <class ShapeId*> formList;                      // список классов-идентификаторов форм
 
 

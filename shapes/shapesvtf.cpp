@@ -223,13 +223,12 @@ void ShapeSvtf::Draw(QPainter* painter)
 
     bool compact = this->set->compactSvtf;
 
-    if ((svtf && svtf->No() == 99) || (svtfM && svtfM->No()==99))
-        int a = 99;
+    bool disabled = (svtf && svtf->Disabled()) || (!svtf && svtfM && svtfM->Disabled());
 
     // кисть основная
     QBrush * brush= state->isUndefined()                ? BrushUndefined:
-                    (svtf && svtf->Disabled()) || (!svtf && svtfM && svtfM->Disabled()) ? &nullBrush : // отключен в БД
-                    state->isExpire ()                  ? BrushExpired  :  // нет данных
+                    disabled                            ? &nullBrush :      // отключен в БД
+                    state->isExpire ()                  ? BrushExpired  :   // нет данных
                     isOpenPzd       ()                  ? BrushPzdOn    :
                     isOpenMnv() && (isMnv() || compact) ? BrushMnvOn    :  // маневровый открыт и светофор маневровый, либо режим совмещения при закрытом поездном
                     isPrgls         ()                  ? (DShape::globalPulse ? BrushMnvOn : BrushPzdOff) :
@@ -237,10 +236,20 @@ void ShapeSvtf::Draw(QPainter* painter)
                     svtf && svtf->IsTypeIn()            ? BrushPzdInOff :
                                                           BrushPzdOff;
     // кисть маневровая
-    QBrush * brushM = svtfM && svtfM->Disabled()             ? &nullBrush       :
+    QBrush * brushM = disabled                               ? &nullBrush       :
                       svtfM==nullptr || state->isUndefined() ? BrushUndefined   :
                       isOpenMnv()                            ? BrushMnvOn       :
                                                               BrushMnvOff;
+
+    // отрисовываю РЦ меняя прозрачность для заблокированных РЦ, чтобы показать состояние
+    // можно такой способ применить также для заблокированных стрелок и светофоров
+    QColor clr = pen1->color();
+    int alpha = 255;
+    if (disabled)
+        alpha = 60;
+    clr.setAlpha(alpha);
+    pen1->setColor(clr);
+    pen2->setColor(clr);
 
     // основание
     //painter->setRenderHint(QPainter::Antialiasing, false);
@@ -334,7 +343,7 @@ void ShapeSvtf::Draw(QPainter* painter)
         // текст
         painter->setFont(*font);
         if (!(state->isExpire() || state->isUndefined()))
-            painter->setPen(*PenText);
+            painter->setPen(disabled ? *PenUndefined : *PenText);
         painter->drawText(boundRect, name, *option);
     }
 

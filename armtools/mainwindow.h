@@ -27,6 +27,7 @@
 #include "../spr/station.h"
 #include "../spr/ts.h"
 #include "../spr/tu.h"
+#include "../spr/otu.h"
 #include "../spr/krug.h"
 #include "../spr/properties.h"
 #include "../spr/esr.h"
@@ -133,7 +134,8 @@ private:
     void loadResources();
 
     class DlgTsInfo * dlgTs;                                // состояние ТС
-    class DlgTuInfo * dlgTu;                                // состояние ТС
+    class DlgTuInfo * dlgTu;                                // список ТY
+    class DlgOtu    * dlgOtu;                               // список ОТУ
     class DlgRcInfo * dlgRc;                                // состояние РЦ
     class DlgStrlInfo * dlgStrl;                            // состояние стрелок
     class DlgSvtfInfo * dlgSvtf;                            // состояние светофоров

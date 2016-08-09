@@ -40,9 +40,10 @@ void DlgTuInfo::changeStation(Station *pst)
     fillTable();                                            // заполнить таблицу имен ТС
 }
 
-void DlgTuInfo::closeEvent(QCloseEvent *)
+void DlgTuInfo::closeEvent(QCloseEvent *e)
 {
-
+    setVisible(false);
+    e->ignore();
 }
 
 // заполнить таблицу имен ТС

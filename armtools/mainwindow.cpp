@@ -8,6 +8,7 @@
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
 #include "../forms/dlgtuinfo.h"
+#include "../forms/dlgotu.h"
 #include "../forms/dlgkpinfo.h"
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
@@ -71,7 +72,8 @@ MainWindow::MainWindow(QWidget *parent) :
     modulType=APP_ARMUTILS;                                             // тип приложения
 
     dlgTs = nullptr;                                                    // состояние ТС
-    dlgTu = nullptr;                                                    // состояние ТУ
+    dlgTu = nullptr;                                                    // список ТУ
+    dlgOtu = nullptr;                                                   // список ОТУ
     dlgRc = nullptr;                                                    // состояние РЦ
     dlgStrl = nullptr;                                                  // состояние стрелок
     dlgSvtf = nullptr;                                                  // состояние светофоров
@@ -122,6 +124,7 @@ MainWindow::MainWindow(QWidget *parent) :
     IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
     Ts::ReadBd (dbname, krug, logger);                      // ТС
     Tu::ReadBd (dbname, krug, logger);                      // ТУ
+    Otu::ReadBd (dbname, krug, logger);
     Rc::ReadRelations(dbname, logger);                      // связи РЦ
     Route::ReadBd(dbname, krug, logger);                    // маршруты
     DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
@@ -357,7 +360,14 @@ void MainWindow::on_action_TU_triggered()
 
 void MainWindow::on_action_OTU_triggered()
 {
-
+    if (dlgOtu==nullptr)
+    {
+        dlgOtu = new DlgOtu(this, g_actualStation);
+        dlgOtu->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgOtu, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgOtu->setVisible(!dlgOtu->isVisible());
 }
 
 void MainWindow::on_action_Routes_triggered()

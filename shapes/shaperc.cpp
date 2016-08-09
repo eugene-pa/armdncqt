@@ -258,6 +258,7 @@ void ShapeRc::Draw(QPainter* painter)
                                                         PenFree;
 
     // отрисовываю РЦ меняя прозрачность для заблокированных РЦ, чтобы показать состояние
+    // можно такой способ применить также для заблокированных стрелок и светофоров
     QColor clr = pen->brush().color();
     int alpha = 255;
     if (sprRc && sprRc->disabled)

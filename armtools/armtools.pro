@@ -69,7 +69,9 @@ SOURCES += main.cpp\
     ../forms/dlgroutes.cpp \
     ../forms/dlgtuinfo.cpp \
     ../forms/dlgtrains.cpp \
-    ../forms/dlgsvtfinfo.cpp
+    ../forms/dlgsvtfinfo.cpp \
+    ../spr/otu.cpp \
+    ../forms/dlgotu.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -127,7 +129,9 @@ HEADERS  += mainwindow.h \
     ../forms/dlgkpinfo.h \
     ../forms/bminfoframe.h \
     ../forms/qled.h \
-    ../forms/dlgsvtfinfo.h
+    ../forms/dlgsvtfinfo.h \
+    ../spr/otu.h \
+    ../forms/dlgotu.h
 
 
 FORMS    += mainwindow.ui \
@@ -140,7 +144,8 @@ FORMS    += mainwindow.ui \
     ../forms/dlgroutes.ui \
     ../forms/dlgtuinfo.ui \
     ../forms/dlgtrains.ui \
-    ../forms/dlgsvtfinfo.ui
+    ../forms/dlgsvtfinfo.ui \
+    ../forms/dlgotu.ui
 
 RESOURCES += \
     images.qrc

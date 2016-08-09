@@ -32,10 +32,11 @@ public:
         BaseUnknown = 0,
         BaseTs,                                             // = 1
         BaseTu,                                             // = 2
-        BaseRc,                                             // = 3
-        BaseSvtf,                                           // = 4
-        BaseStrl,                                           // = 5
-        BaseMax,                                            // = 6
+        BaseOtu,                                            // = 3
+        BaseRc,                                             // = 4
+        BaseSvtf,                                           // = 5
+        BaseStrl,                                           // = 6
+        BaseMax,                                            // = 7
     };
 
     enum UniType
