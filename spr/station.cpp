@@ -356,14 +356,17 @@ void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule
     if (mpcEbilock)
     {
         maxModul = 1;
-        maxI = 0;
+        maxI = 1;
+        maxJ = 4096;
         tsPerModule = 4096;
     }
     else
     if (rpcDialog)
     {
+        // нюанс: при описании ст.РПЦ Диалог, например, ст.Новообразцовое, сиртуальные сигналы описываются начиная с 70-й строки
+        //        без изменения номера; то есть допустимая размерность > 64
         maxModul = 2;
-        maxI = 64;
+        maxI = 64 * 2;
         maxJ = 16;
         tsPerModule = 64 * 16;                              // 1024
     }

@@ -10,10 +10,10 @@ DlgOtu::DlgOtu(QWidget *parent, class Station * pst) :
     QTableWidget * t = ui->tableOtu;                     // заполнение таблицы описания ТY
 
     t->setSelectionMode(QAbstractItemView::ContiguousSelection);
-    t->setColumnCount(7);
+    t->setColumnCount(8);
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    t->setHorizontalHeaderLabels(QStringList() << "ОТУ" << "Код(#)" << "Реализация" << "ТС1" << "ТС2" << "ТУ эпилога" << "Сопряженная ОТУ");
+    t->setHorizontalHeaderLabels(QStringList() << "ОТУ" << "Код(#)" << "Реализация" << "ТС1" << "ТС2" << "ТУ эпилога" << "Сопряженная ОТУ" << "ЭЦ");
 
     t->setSelectionBehavior( QAbstractItemView::SelectRows );
     t->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -65,4 +65,9 @@ void DlgOtu::fillTable()
 
         row++;
     }
+
+    t->setSortingEnabled(true);                             // разрешаем сортировку
+    t->sortByColumn(0, Qt::AscendingOrder);                 // сортировка по умолчанию
+    t->resizeColumnsToContents();
+
 }

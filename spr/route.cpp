@@ -3,6 +3,8 @@
 
 QHash <int, Route *> Route::routes;                             // маршруты, индексированные по индексу ТС
 
+int svtfEndExist = -1;
+
 Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
 {
     Q_UNUSED(query)
@@ -57,10 +59,17 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
         if (tmp.length() > 0)
             svtfBeg = st->GetSvtfByName(tmp);
 
-        tmp     = query.value("SvtfEnd").toString().trimmed();  // необязательное имя светофора, ограждающего конец маршрута
-        if (tmp.length() > 0)
-            svtfEnd = st->GetSvtfByName(tmp);
-
+        if (svtfEndExist==-1)
+        {
+            QVariant vt = query.value("SvtfEnd");               // проверяем наличие поля SvtfEnd
+            svtfEndExist = vt.isValid();
+        }
+        if (svtfEndExist)
+        {
+            tmp     = query.value("SvtfEnd").toString().trimmed();  // необязательное имя светофора, ограждающего конец маршрута
+            if (tmp.length() > 0)
+                svtfEnd = st->GetSvtfByName(tmp);
+        }
         // [STRL] чтение и разбор списка стрелок в заданном положении [Strl]
         srcStrl     = query.value("Strl").toString().trimmed();
         if (srcStrl.length() > 0)
@@ -148,7 +157,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
 
         // ПРОБЛЕМА: при импорте/экспорте пробел в имени поля "Враждебные маршруты" заменяется подчеркиванием!
         // [Враждебные маршруты] - перечисление через пробел (или запятую)
-        // читаем строку, разбор строки выполняется на "втором проходе" после чтения всей таблицы, чтобы не зависить от порядка описания маршрутов в таблице
+        // читаем строку, разбор строки выполняется на "втором проходе" после чтения всей таблицы, чтобы не зависеть от порядка описания маршрутов в таблице
         // чм. static public void CheckOpponents(paLog logger)
         srcOpponentRoutes = query.value("Враждебные_маршруты").toString();
         if (srcOpponentRoutes.length() > 0 && srcOpponentRoutes=="-")

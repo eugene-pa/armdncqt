@@ -12,7 +12,7 @@ ShapeChild::ShapeChild(ShapeSet * set)
     setAttribute(Qt::WA_DeleteOnClose);
     setAlignment(Qt::AlignLeft|Qt::AlignTop);
 
-    scene = new QGraphicsScene(0,0,1920,1080);              //scene->setSceneRect(0,0,1920,1080);
+    scene = new QGraphicsScene(0,0,1920*2,1080*2);              //scene->setSceneRect(0,0,1920,1080);
     scene->setBackgroundBrush(QColor(211,211,211));         // Qt::lightGray
 
     for (int i=0; i<set->count(); i++)                      // формируем набор графических примитивов сцены

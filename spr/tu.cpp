@@ -118,6 +118,12 @@ ushort Tu::GetIJ()
     validIJ = false;
     if (st)
     {
+        if (st && st->IsMpcEbilock())                       // МПЦ:        №ТУ
+        {
+            validIJ = _j>0 && _j<=4096;
+            ij = _j;
+        }
+        else
         if (st->Kp2007())
         {
             validIJ = _i>0 && _i<=48 && _j>0 && _j<=32;
@@ -133,13 +139,9 @@ ushort Tu::GetIJ()
                 st->MarkTu(modul);
 
         }
-        else
-        if (st && st->IsMpcEbilock())                       // МПЦ:        №ТУ
-        {
-            validIJ = _j>0 && _j<=4096;
-            ij = _j;
-        }
     }
+    if (!validIJ)
+        int a = 99;
     return ij;
 }
 
