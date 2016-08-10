@@ -9,6 +9,7 @@
 #include "../common/logger.h"
 #include "ts.h"
 #include "tu.h"
+#include "otu.h"
 #include "rc.h"
 #include "strl.h"
 #include "svtf.h"

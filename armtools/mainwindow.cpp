@@ -601,14 +601,13 @@ void MainWindow::timerEvent(QTimerEvent *event)
     // отслеживаем сосотояние диалогов и приводим в соотвествие состояние опций меню
     ui->action_TS       ->setChecked(dlgTs      != nullptr && dlgTs     ->isVisible());
     ui->action_TU       ->setChecked(dlgTu      != nullptr && dlgTu     ->isVisible());
+    ui->action_OTU      ->setChecked(dlgOtu     != nullptr && dlgOtu    ->isVisible());
     ui->action_Routes   ->setChecked(dlgRoutes  != nullptr && dlgRoutes ->isVisible());
     ui->action_RC       ->setChecked(dlgRc      != nullptr && dlgRc     ->isVisible());
     ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
     ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
     ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
     ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
-    //    ui->action_SVTF     ->setChecked(dlgKp != nullptr && dlgKp->isVisible());
-    //    ui->on_action_OTU   ->setChecked(dlgKp != nullptr && dlgKp->isVisible());
 
 }
 

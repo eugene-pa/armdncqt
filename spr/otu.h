@@ -5,6 +5,8 @@
 
 class Otu : public SprBase
 {
+    friend class DlgOtu;
+
 public:
     // открытве статические функции
     static bool ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger);       // чтение БД
@@ -14,6 +16,8 @@ public:
     ~Otu();
 
     bool isUpok() { return upok; }
+    QString& ShortName() { return shortName; }
+    QString& TypeOfObject() { return objectType; }
     QString& NameTs1() { return nameTs1; }
     QString& NameTs2() { return nameTs2; }
     QString& EpilogTu(){ return epilogTu; }
