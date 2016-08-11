@@ -56,7 +56,7 @@ void DlgOtu::fillTable()
     t->setRowCount(pSt->Otu.count());
 
     int row = 0;
-    foreach (Otu * otu, pSt->Otu.values())
+    foreach (Otu * otu, pSt->OtuByNo.values())
     {
         // 0 - имя ОТУ
         t->setItem(row,0, new QTableWidgetItem (otu->shortName));
@@ -82,14 +82,15 @@ void DlgOtu::fillTable()
         if (otu->no2)
             t->setItem(row,6, new QTableWidgetItem (otu->st->OtuByNo[otu->no2]->ToString()));
 
-        // 6 - Сопряженная ОТУ
-        t->setItem(row,7, new QTableWidgetItem (otu->TypeOfObject()));
+        // 7 - Тип ЭЦ (алгоритма)
+        QString s = otu->TypeOfObject().length() ? otu->TypeOfObject() : otu->st->TypeEC();
+        t->setItem(row,7, new QTableWidgetItem (s));
 
         row++;
     }
 
     t->setSortingEnabled(true);                             // разрешаем сортировку
-    t->sortByColumn(0, Qt::AscendingOrder);                 // сортировка по умолчанию
+    t->sortByColumn(1, Qt::AscendingOrder);                 // сортировка по умолчанию
     t->resizeColumnsToContents();
 
 }

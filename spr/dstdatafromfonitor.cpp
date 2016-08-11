@@ -164,9 +164,9 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
 
     // ПРОБЛЕМА: в версии QT 5.2 + VS2010 не срабатывает исключающее или для QBitArray
-    st->tsStsRaw = st->tsSts ^ st->tsInverse;               // восстанавливаем исходное состояние по конечному с накладной инверсии
-    //for (int i=0; i<TsMaxLengthBits; i++)
-    //    st->tsStsRaw[i] = st->tsSts[i] ^ st->tsInverse[i];
+    st->tsStsRaw = (st->tsSts) ^ (st->tsInverse);               // восстанавливаем исходное состояние по конечному с накладной инверсии
+//    for (int i=0; i<TsMaxLengthBits; i++)
+//        st->tsStsRaw[i] = st->tsSts[i] ^ st->tsInverse[i];
 
     // IgnoreError - устарело
 

@@ -19,6 +19,7 @@
 #include <QProcess>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QDir>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"

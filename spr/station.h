@@ -190,6 +190,8 @@ public:
     bool IsLinkOk();                                        // состояние связи в последнем циклн опроса ОК
     bool IsLinkStatusChanged();                             // проверка изменения состояния связи со станцией с пред.цикла опроса
 
+    QString& TypeEC() { return typeEC; }
+
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
@@ -224,6 +226,7 @@ private:
     int     forms;                                          // число форм
     QString extForms;                                       // доп.формы
     QString orient;                                         // ориентация
+    QString typeEC;                                         // тип ЭЦ
 
     //	АДКСЦБ  EBILOCK АПКДК  РПЦДИАЛОГ  МПЦДИАЛОГ  МТУ=1(1)  МТС=19(2-20)  АБТЦМ
     bool    mpcEbilock;                                     // конфигурация с Ebilock950, а также ЭЦ ЕМ, РПЦ/МПЦ МПК + rpcMpcMPK

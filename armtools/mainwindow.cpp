@@ -15,15 +15,10 @@
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
 
-//QVector<ShapeSet *> sets;                                 // массив форм
 
-//QString server_ipport = "192.168.0.101:1020";             // подключение к потоку ТС из настроечного файла
-//QString server_ipport = "192.168.0.100:1013";               // подключение к потоку ТС из настроечного файла
-QString server_ipport = "192.168.0.100:9115";               // подключение к потоку ТС из настроечного файла
-QString baseDir;
+QString server_ipport = "127.0.0.1:1010";                  // подключение к потоку ТС из настроечного файла
 QString version = "1.0.1.10";                               // версия приложения
 
-//bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
 bool blackBoxMode;                                          // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
@@ -70,23 +65,24 @@ MainWindow::MainWindow(QWidget *parent) :
     QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
 #endif
 
-    modulType=APP_ARMUTILS;                                             // тип приложения
+    modulType=APP_ARMUTILS;                                 // тип приложения
 
-    dlgTs = nullptr;                                                    // состояние ТС
-    dlgTu = nullptr;                                                    // список ТУ
-    dlgOtu = nullptr;                                                   // список ОТУ
-    dlgRc = nullptr;                                                    // состояние РЦ
-    dlgStrl = nullptr;                                                  // состояние стрелок
-    dlgSvtf = nullptr;                                                  // состояние светофоров
-    dlgKp = nullptr;                                                    // диалог КП
-    dlgRoutes = nullptr;                                                // диалог маршрутов
-    dlgTrains = nullptr;                                                // поезда
-    dlgStations = nullptr;                                              // станции
+    dlgTs = nullptr;                                        // состояние ТС
+    dlgTu = nullptr;                                        // список ТУ
+    dlgOtu = nullptr;                                       // список ОТУ
+    dlgRc = nullptr;                                        // состояние РЦ
+    dlgStrl = nullptr;                                      // состояние стрелок
+    dlgSvtf = nullptr;                                      // состояние светофоров
+    dlgKp = nullptr;                                        // диалог КП
+    dlgRoutes = nullptr;                                    // диалог маршрутов
+    dlgTrains = nullptr;                                    // поезда
+    dlgStations = nullptr;                                  // станции
 
     reader = nullptr;
 
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
-    // iniFile = "armtoola.ini";                           // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
+    // pathQDir::currentPath();                             // текущий каталог - по умолчанию
+    // iniFile = "armtoola.ini";                            // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
     IniReader rdr(iniFile);
     if (rdr.GetText("WORKINDIRECTORY", path))               // рабочая папка
     {
@@ -99,11 +95,6 @@ MainWindow::MainWindow(QWidget *parent) :
         logger.ChangeActualFile(path + "Log/armtools.log");
     }
     rdr.GetText("SERVER", server_ipport);                   // подключение
-
-//    QByteArray src(10,0x55);
-//    QByteArray dst = qCompress(src);
-//    dst[3] = 0x0;
-//    QByteArray src2 = qUncompress(dst);
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");

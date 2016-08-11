@@ -113,9 +113,12 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
         mpcEbilock = rpcMpcMPK = rpcDialog = false;
 
         extForms = query.value("ExtFormList").toString();   // доп.формы, формат: 'имя_без_расширения' RADIOID ['имя_без_расширения' RADIOID]...
+        typeEC = query.value("ObjectType").toString();      // тип ЭЦ
+
         ParseExtForms();                                    // разбор строки
 
         ParseConfigKP2007(logger);                          // разбор конфигурации
+
 
         Stations[no] = this;
     }
