@@ -24,6 +24,8 @@ public:
     QVector <class Tu*>& EpilogTuList() { return epilogTuList; }
     class Station * St2() { return st2; }
 
+    virtual QString ToString();
+
 private:
     bool upok;                                              // команда реализуется встроенной системой ОТУ УПОК+БРОК
     QString shortName;                                      // имя ОТУ

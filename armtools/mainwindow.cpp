@@ -88,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
     // iniFile = "armtoola.ini";                           // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
     IniReader rdr(iniFile);
-    if (rdr.GetText("WORKINDIRECTORY", path))
+    if (rdr.GetText("WORKINDIRECTORY", path))               // рабочая папка
     {
         dbname = path + "bd/arm.db";
         extDb  = path + "bd/armext.db";
@@ -98,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
         logger.ChangeActualFile(path + "Log/armtools.log");
     }
-
+    rdr.GetText("SERVER", server_ipport);                   // подключение
 
 //    QByteArray src(10,0x55);
 //    QByteArray dst = qCompress(src);
@@ -278,7 +278,11 @@ void MainWindow::stationSelected(int index)
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
     g_actualStation = shapeId->St();
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
+
     scaleView();
+
+    child->horizontalScrollBar()->setValue(0);
+    child->verticalScrollBar()->setValue(0);
 
     cmbTs->clear();
     foreach (Ts *ts, g_actualStation->TsSorted)
@@ -464,9 +468,16 @@ void MainWindow::on_action_ZoomOff_triggered()
 void MainWindow::scaleView()
 {
     qreal scale = qPow(qreal(2), (sliderScale->value()) / qreal(50));
-    QMatrix matrix;
-    matrix.scale(scale, scale);
-    child->setMatrix(matrix);
+    QTransform transform;
+    transform.scale(scale, scale);
+    child->setTransform(transform);
+
+//    child->horizontalScrollBar()->setValue(0);
+//    child->verticalScrollBar()->setValue(0);
+
+    //QMatrix matrix;
+    //matrix.scale(scale, scale);
+    //child->setMatrix(matrix);
 }
 
 // вкл/откл тулбар

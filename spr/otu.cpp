@@ -32,6 +32,7 @@ Otu::Otu(QSqlQuery& query, class KrugInfo* krug, Logger& logger)
             st2 = Station::GetById(nost2);
 
         st->Otu[shortName] = this;
+        st->OtuByNo[no] = this;
     }
     catch(...)
     {
@@ -74,4 +75,9 @@ bool Otu::ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger)
     }
 
     return true;
+}
+
+QString Otu::ToString()
+{
+    return QString("%1[#%2], ст.%3").arg(shortName).arg(no).arg(st->Name());
 }

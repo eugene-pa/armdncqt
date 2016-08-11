@@ -58,10 +58,32 @@ void DlgOtu::fillTable()
     int row = 0;
     foreach (Otu * otu, pSt->Otu.values())
     {
-        // 0 - имя ТУ
+        // 0 - имя ОТУ
         t->setItem(row,0, new QTableWidgetItem (otu->shortName));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)otu));// запомним ТУ
         //t->item(row,0)->setBackground(tu->delay<0.5 ? QBrush(QColor(224,224,224)) : Qt::white);
+
+        // 1 - Код (#)
+        t->setItem(row,1, new QTableWidgetItem (QString::number(otu->no)));
+
+        // 2 - БРОК/СПО
+        t->setItem(row,2, new QTableWidgetItem (otu->isUpok() ? "БРОК" : "СПОК"));
+
+        // 3 - ТС1
+        t->setItem(row,3, new QTableWidgetItem (otu->nameTs1));
+
+        // 4 - ТС2
+        t->setItem(row,4, new QTableWidgetItem (otu->nameTs2));
+
+        // 5 - ТУ эпилог
+        t->setItem(row,5, new QTableWidgetItem (otu->epilogTu));
+
+        // 6 - Сопряженная ОТУ
+        if (otu->no2)
+            t->setItem(row,6, new QTableWidgetItem (otu->st->OtuByNo[otu->no2]->ToString()));
+
+        // 6 - Сопряженная ОТУ
+        t->setItem(row,7, new QTableWidgetItem (otu->TypeOfObject()));
 
         row++;
     }

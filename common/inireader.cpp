@@ -13,6 +13,7 @@ IniReader::~IniReader()
 
 
 // чтение опций из файла
+// ПРОБЛЕМА: порядок сортировки одноименных опций обратный: последняя опция будет первой
 bool IniReader::readIniFile (QString& _spath, bool bUnicode)
 {
     //QString root = QDir::currentPath();
