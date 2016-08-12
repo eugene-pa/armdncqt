@@ -192,6 +192,8 @@ public:
 
     QString& TypeEC() { return typeEC; }
 
+    bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
+
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
@@ -302,7 +304,6 @@ private:
     QVector<class ecMpkInfo    *> ecMpks;                   // описание подключений ЭЦ-МПК
 
     // закрытые функции
-    bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
     bool TestBit (QBitArray& bits, int index);              // проверка бита в битовом массиве
     void ParseExtForms();                                   // разбор доп.форм
     void ParseConfigKP2007(Logger& logger);                 // разбор строки конфигурации КП станции

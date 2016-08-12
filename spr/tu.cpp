@@ -46,13 +46,17 @@ Tu::Tu(QSqlQuery& query, class KrugInfo* krug, Logger& logger)
         if (polus .indexOf("-")==0 && polus .length()==1) polus .clear();
 
         st = Station::GetById(nost);
-        // поле ОТУ импользуется только для ДЦ МПК и Ретайм
-        otu     = st->IsRpcMpcMPK() || st->Retime() ? query.value("OTU").toFloat() : false;
 
         ij = GetIJ();                                       // cформировать IJ
 
         if (st != nullptr)
         {
+            // поле ОТУ импользуется только для ДЦ МПК и Ретайм
+            otu     = st->IsRpcMpcMPK() || st->Retime() ? query.value("OTU").toFloat() : false;
+
+            // сопряженные и составные ТУ в поле Question
+            extTuSrc = query.value("Question").toString();
+
             if (validIJ)
             {
                 // добавляем ТУ в справочники Tu, TuByIJ, TsSorted

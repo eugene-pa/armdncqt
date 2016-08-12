@@ -521,6 +521,24 @@ void Station::ParsePrologEpilog(Logger& logger)
             }
 
             tu->setTuEnum();
+
+            if (tu->extTuSrc.length())
+            {
+                QRegularExpression RgxTu ("(?<=[=,])[^ ^,]+");
+                QRegularExpressionMatchIterator m = RgxTu.globalMatch(tu->extTuSrc);
+                while (m.hasNext())
+                {
+                    QString tusrc = m.next().captured();
+                    Station * sttu;
+                    QString name;
+                    st->parseNames (tusrc, sttu, name); // разбор индексированных имен ТУ/ТС
+                    if (sttu->Tu.contains(name))
+                    {
+                        tu->extTu.append(sttu->Tu[name]);
+                    }
+                }
+            }
+
         }
     }
 }

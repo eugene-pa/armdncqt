@@ -59,7 +59,7 @@ void DlgTuInfo::fillTable()
     foreach (Tu * tu, pSt->Tu.values())
     {
         // 0 - имя ТУ
-        t->setItem(row,0, new QTableWidgetItem (tu->Name()));
+        t->setItem(row,0, new QTableWidgetItem (QString("%1    %2").arg(tu->Name()).arg(tu->extTuSrc)));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)tu));// запомним ТУ
         t->item(row,0)->setBackground(tu->delay<0.5 ? QBrush(QColor(224,224,224)) : Qt::white);
 
