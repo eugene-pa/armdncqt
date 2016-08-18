@@ -20,7 +20,7 @@ void Water::waiting(int ms)
     qDebug() << "start Water::waiting";
     while (!rqfinish)
     {
-        QMutex watermutex;                       // статический мьютекс иллюстрирует возможность разделения одного мьютекса несколькими потоками
+        QMutex watermutex;
         watermutex.lock();
         bool ret = condition->wait(&watermutex, ms);
         watermutex.unlock();

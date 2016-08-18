@@ -13,19 +13,18 @@ MainWindow::MainWindow(QWidget *parent) :
     // поток 1
     Water * waiter1 = new Water(condition);
     waiter1->moveToThread(&workerThread1);
-    connect(&workerThread1, &QThread::finished, waiter1, &QObject::deleteLater);
-    connect(this, &MainWindow::wait, waiter1, &Water::waiting);
-    connect(waiter1, &Water::timeout, this, &MainWindow::slotTimeout1);
-    connect(waiter1, &Water::evented, this, &MainWindow::slotEvent1);
+    connect(&workerThread1, SIGNAL(finished()), waiter1, SLOT(deleteLater()));      // стандартный сигнал/слот
+    connect(this   , SIGNAL(wait(int))   , waiter1, SLOT(waiting(int)));
+    connect(waiter1, SIGNAL(timeout())   , this   , SLOT(slotTimeout1()));
+    connect(waiter1, SIGNAL(evented(int)), this   , SLOT(slotEvent1(int)));
 
     // поток 2
     Water * waiter2 = new Water(condition);
     waiter2->moveToThread(&workerThread2);
-
-    connect(&workerThread2, &QThread::finished, waiter2, &QObject::deleteLater);
-    connect(this, &MainWindow::wait, waiter2, &Water::waiting);
-    connect(waiter2, &Water::timeout, this, &MainWindow::slotTimeout2);
-    connect(waiter2, &Water::evented, this, &MainWindow::slotEvent2);
+    connect(&workerThread2, SIGNAL(finished()), waiter2, SLOT(deleteLater()));      // стандартный сигнал/слот
+    connect(this   , SIGNAL(wait(int))   , waiter2, SLOT(waiting(int)));
+    connect(waiter2, SIGNAL(timeout())   , this   , SLOT(slotTimeout2()));
+    connect(waiter2, SIGNAL(evented(int)), this   , SLOT(slotEvent2(int)));
 
     workerThread1.start();
     workerThread2.start();
