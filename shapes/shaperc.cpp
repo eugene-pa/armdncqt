@@ -320,7 +320,7 @@ void ShapeRc::Prepare()
 
 QString ShapeRc::Dump()
 {
-    return "РЦ";
+    return sprRc == nullptr ? "?" : sprRc->About();
 }
 
 QString  ShapeRc::ObjectInfo()
@@ -446,3 +446,10 @@ void ShapeRc::makePolygon(QPointF p1, QPointF p2, QPointF p3, ShapeRc * shapeTo)
     combined = shapeTo->combined = true;
 }
 
+QRectF ShapeRc::boundingRect() const
+{
+    QRectF r = rect;
+    r.setTopLeft(QPointF(r.x()-1,r.y()-2));
+    r.setBottomRight(QPointF(r.x()+r.width() + 2, r.y()+r.height() + 4 ));
+    return r;
+}

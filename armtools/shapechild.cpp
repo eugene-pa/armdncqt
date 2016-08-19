@@ -23,6 +23,11 @@ ShapeChild::ShapeChild(ShapeSet * set)
     //scale(2,2);                                         // масштабирование всего представления
 
     startTimer(750);
+
+    setMouseTracking(true);
+
+    tooltipFont = QFont("Arial",12);
+    QToolTip::setFont(tooltipFont);
 }
 
 // смена формы
@@ -71,4 +76,41 @@ void ShapeChild::timerEvent(QTimerEvent *event)
 //    shapeSet->GetSet()[shapeSet->GetSet().count()-1]->Draw(&p);
 //    p.end();
 }
+/*
+bool ShapeChild::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip)
+    {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        //int index = itemAt(helpEvent->pos());
+        DShape * shape = shapeSet->GetNearestShape(helpEvent->pos());
+        if (shape != nullptr)
+            QToolTip::showText(helpEvent->globalPos(), shape->Dump());
+        else
+        {
+            QToolTip::hideText();
+            event->ignore();
+        }
+    }
+    return QWidget::event(event);
+}
+*/
 
+// отображаем тултип при перемещении мыши по мере необходимости
+// КЛЮЧЕВОЙ МОМЕНТ: учет масштабирования и скола схемы выполняется с помощью ИНВЕРТИРОВННОЙ матрицы трансформации ВЬЮПОРТА:
+//      QTransform t = viewportTransform().inverted();
+//      QPoint point = t.map(p);
+void ShapeChild::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint  p = event->pos();
+    QTransform t = viewportTransform().inverted();
+    QPoint point = t.map(p);
+
+    DShape * shape = shapeSet->GetNearestShape(point);
+    if (shape != nullptr)
+        QToolTip::showText(event->globalPos(), shape->Dump());
+    else
+    {
+        QToolTip::hideText();
+    }
+}

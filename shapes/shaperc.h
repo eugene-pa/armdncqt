@@ -71,6 +71,8 @@ public:
     virtual QString ObjectInfo();
     virtual void  Prepare();
 
+    QRectF boundingRect() const Q_DECL_OVERRIDE;
+
     void AddAndMerge();
 
 protected:

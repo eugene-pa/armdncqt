@@ -179,7 +179,7 @@ public:
 
     virtual QString ToString()                              // сообщение формата "(#номер_объекта) имя_объекта"
         { return QString(" (#%1)").arg(no); }
-    virtual QString About() { return "Класс Spr"; }         // коротко о классе
+    virtual QString About() { return "Класс Spr"; }         // информация об объекте
     virtual QString ObjectType()  { return ""; }            // тип объекта (РЦ/СТРЕЛКА/СВЕТОФОР)
     virtual UniType GetUniType()  { return Unknown;}        // виртуальная функци, возвращает тип объекта в терминах универсального протокола
     int GetUniSts() { return uniSts; }

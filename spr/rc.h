@@ -94,6 +94,8 @@ public:
     // добавление примитива в список примитивов РЦ. Для каждой РЦ, имеющей представление в актуальной схеме, имеем список всех отрезков-представлений
     void AddShape (class QGraphicsItem * shape) { shapes.append(shape); }
 
+    QString About() Q_DECL_OVERRIDE;
+
 private:
     static QHash <int, Rc *> rchash;                        // РЦ полигона, индексированные по ID
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ

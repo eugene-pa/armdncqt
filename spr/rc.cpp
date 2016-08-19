@@ -352,3 +352,24 @@ SprBase::UniStatusRc Rc::GetUniStatus()
     return SprBase::StsFreeUnlocked;
 }
 
+QString Rc::About()
+{
+    QString s = "Ст." + StationName();
+    s += ". РЦ " + Name();
+
+    s += busy       ->About();
+    s += zmk        ->About();
+    s += ir         ->About();
+    s += selected_ir->About();
+    s += uri        ->About();
+    s += locked     ->About();
+    s += unlocking  ->About();
+    s += falsebusy  ->About();
+    s += mu         ->About();
+
+    s += tuir       ->About();
+    s += tulock     ->About();
+    s += tuunlock   ->About();
+
+    return s;
+}

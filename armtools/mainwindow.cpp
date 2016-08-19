@@ -94,6 +94,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
         logger.ChangeActualFile(path + "Log/armtools.log");
     }
+
+    // создаем папки temp, save, если их нет
+    QDir temp(pathTemp);
+    if (!temp.exists())
+        temp.mkdir(".");
+    QDir save(pathSave);
+    if (!save.exists())
+        save.mkdir(".");
+
     rdr.GetText("SERVER", server_ipport);                   // подключение
 
     Logger::SetLoger(&logger);
@@ -259,6 +268,7 @@ void MainWindow::loadResources()
     g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
     g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
 
+    tooltip = true;
 }
 
 
@@ -269,6 +279,7 @@ void MainWindow::stationSelected(int index)
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
     g_actualStation = shapeId->St();
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
+    child->setMouseTracking(tooltip);
 
     scaleView();
 
@@ -761,4 +772,10 @@ void MainWindow::on_action_About_triggered()
 void MainWindow::on_action_QtAbout_triggered()
 {
     QMessageBox::aboutQt(this, "Версия QT");
+}
+
+// Вкл/откл тултипы
+void MainWindow::on_action_Tooltip_triggered()
+{
+    child->setMouseTracking(tooltip = ui->action_Tooltip->isChecked());
 }

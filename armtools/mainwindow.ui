@@ -67,6 +67,7 @@
     <property name="title">
      <string>Вид</string>
     </property>
+    <addaction name="action_Tooltip"/>
     <addaction name="action_Toolbar"/>
     <addaction name="action_ToolBar2"/>
     <addaction name="separator"/>
@@ -369,6 +370,17 @@
   <action name="action_QtAbout">
    <property name="text">
     <string>О Qt</string>
+   </property>
+  </action>
+  <action name="action_Tooltip">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Всплывающие подсказки</string>
    </property>
   </action>
  </widget>

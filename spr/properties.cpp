@@ -125,6 +125,15 @@ bool Property::Value()
     return Valid() ? ts->Value() : false;
 }
 
+// если свойство определено - вернуть описание свойства, ТС и состояние, иначе - пустая строка
+QString Property::About()
+{
+    QString s;
+    if (ts != nullptr)
+        s = QString("\r\nТС %1: %2 = %3").arg(type->Name()).arg(NameTs()).arg(Value() ? 1 : 0);
+    return s;
+}
+
 
 // Method
 // ------------------------------------------------------------------------------------------------------------------------
@@ -165,8 +174,22 @@ bool Method::Parse (class Tu * tu, Logger& logger)
     return ret;
 }
 
+// имя ТУ
+QString& Method::NameTu()
+{
+    return tu == nullptr ? empty : tu->Name();
+}
 
 QString& Method::NameTuEx()                               // Ст.имя_станции ТУ=имя_тс
 {
     return tu == nullptr ? empty : tu->NameEx();
+}
+
+// если свойство определено - вернуть описание свойства, ТС и состояние, иначе - пустая строка
+QString Method::About()
+{
+    QString s;
+    if (tu != nullptr)
+        s = QString("\r\nТУ %1: %2").arg(type->Name()).arg(NameTu  ());
+    return s;
 }

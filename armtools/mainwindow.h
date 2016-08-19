@@ -106,6 +106,8 @@ private slots:
 
     void on_action_QtAbout_triggered();
 
+    void on_action_Tooltip_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -152,6 +154,8 @@ private:
     bool bPlay;                                             // воспроизведение вперед
     bool bPlayBack;                                         // воспроизведение назад
     int  idTimer;                                           // таймер воспроизведения
+    bool tooltip;                                           // вкл.откл. тултипы
+
     bool readNext(QDateTime* dt=nullptr, bool findChanges=false);// прочитать и отобразить след.запись в архиве
     void readPrev();                                        // прочитать и отобразить пред.запись в архиве
 

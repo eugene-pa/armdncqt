@@ -43,6 +43,7 @@ public:
     bool Parse (class Ts * ts, Logger& logger);             // разбор ТС на принадлежность свойству
     class Ts * Ts() { return ts; }                          // указатель на класс ТС свойства или NULL
     void SetTs(class Ts * ptr) { ts = ptr; }                // назначить ТС
+    QString About();                                        // если свойство определено - вернуть описание свойства, ТС и состояние, иначе - пустая строка
 private:
 static QString empty;                                       // пустая строка
 
@@ -64,7 +65,7 @@ public:
     QString& NameProp() { return type->Name(); }
     bool Parse (class Tu * tu, Logger& logger);             // разбор ТС на принадлежность свойству
     class Tu * Tu() { return tu; }                          // указатель на класс ТС свойства или NULL
-
+    QString About();                                        // если метод определен - вернуть описание, ТУ, иначе - пустая строка
 private:
     static QString empty;                                       // пустая строка
 

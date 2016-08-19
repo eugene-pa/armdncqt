@@ -12,6 +12,7 @@ QString pzd("Поезда");
 ShapeTrain::ShapeTrain(ShapeSet* parent) : DShape (pzd, parent)
 {
     //int a = 99;
+    type = TRAIN_COD;
 }
 
 ShapeTrain::~ShapeTrain()

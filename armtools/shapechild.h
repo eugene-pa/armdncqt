@@ -19,6 +19,8 @@ public:
 protected:
     virtual void closeEvent(QCloseEvent *event);
     virtual void timerEvent(QTimerEvent *event);
+    //bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
 
 private slots:
 
@@ -34,6 +36,8 @@ private:
 
     QGraphicsScene * scene;
     class ShapeSet * shapeSet;
+
+    QFont tooltipFont;
 };
 
 #endif

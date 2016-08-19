@@ -126,3 +126,26 @@ void ShapeSet::Activate()
         ((ShapeRc *)shape)->AddAndMerge();
     }
 }
+
+DShape * ShapeSet::GetNearestShape(QPoint pnt, ShapeType type)
+{
+    foreach (DShape * shape, set)
+    {
+        ShapeType t = shape->GetType();
+        if (t == TRAIN_COD || t ==END_COD)
+            continue;
+        if (t ==SEGMENT_COD)
+            int a = 99;
+        if ((type ==END_COD || t==type) && shape->boundingRect().contains(pnt))
+        {
+            return shape;
+        }
+    }
+
+    return nullptr;
+}
+
+DShape * ShapeSet::GetNearestShape(QPoint Pnt, ShapeType *type, int n)
+{
+    return nullptr;
+}
