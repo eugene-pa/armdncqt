@@ -380,7 +380,7 @@ void ShapeSvtf::Prepare()
 
 QString ShapeSvtf::Dump()
 {
-    return "СВТФ";
+    return (svtf == nullptr ? "" : svtf->About()) + (svtfM == nullptr ? "" : "\r\n\r\n" + svtfM->About());
 }
 
 QString  ShapeSvtf::ObjectInfo()

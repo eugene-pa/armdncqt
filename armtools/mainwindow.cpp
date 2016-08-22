@@ -285,6 +285,7 @@ void MainWindow::stationSelected(int index)
 
     child->horizontalScrollBar()->setValue(0);
     child->verticalScrollBar()->setValue(0);
+    child->centerOn(0,0);
 
     cmbTs->clear();
     foreach (Ts *ts, g_actualStation->TsSorted)

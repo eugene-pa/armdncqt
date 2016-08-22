@@ -56,6 +56,8 @@ public:
     bool IsMnvrEx   () { return SafeValue(manevr); }        // доп.контроль маневрового сигнала
     bool IsAlarm    () { return formula_er && formula_er->ValueBool(); }
 
+    QString About() Q_DECL_OVERRIDE;
+
 private:
     static QHash <int, Svtf *> svtfhash;                     // СВТФ , индексированные по индексу ТС
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СВТФ

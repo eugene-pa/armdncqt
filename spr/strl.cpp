@@ -290,3 +290,28 @@ SprBase::UniStatusRc Strl::GetUniStatus()
     // TODO!!!
     return SprBase::StsFreeUnlocked;
 }
+
+QString Strl::About()
+{
+    QString s = "Ст." + StationName();
+    s += ". Стрелка " + Name();
+
+    s += plus           ->About();
+    s += minus          ->About();
+    s += vzrez          ->About();
+    s += selectedunlock ->About();
+    s += selectedvsa    ->About();
+    s += selectedvsa_p  ->About();
+    s += selectedvsa_m  ->About();
+    s += locked         ->About();
+    s += mu             ->About();
+
+    s += setplus        ->About();
+    s += setminus       ->About();
+    s += lock           ->About();
+    s += unlock         ->About();
+    s += selectvsa_p    ->About();
+    s += selectvsa_m    ->About();
+
+    return s;
+}

@@ -188,6 +188,38 @@ void Svtf::Accept()
     }
 }
 
+QString Svtf::About()
+{
+
+    QString s = "Ст." + StationName();
+    s += ". Свтф " + Name();
+
+    s += opened       ->About();
+    s += manevr       ->About();
+    s += calling      ->About();
+    s += pzdM         ->About();
+    s += mnvM         ->About();
+    s += locked       ->About();
+    s += ad           ->About();
+    s += seltounlock  ->About();
+    s += yelllow      ->About();
+    s += ko           ->About();
+    s += blinking     ->About();
+    s += canceling    ->About();
+
+    s += open         ->About();
+    s += close        ->About();
+    s += lock         ->About();
+    s += unlock       ->About();
+    s += adon         ->About();
+    s += adoff        ->About();
+    s += mm           ->About();
+    s += cancel       ->About();
+
+    return s;
+}
+
+
 // получить статус UNI
 SprBase::UniStatusRc Svtf::GetUniStatus()
 {

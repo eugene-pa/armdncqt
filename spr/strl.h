@@ -41,6 +41,8 @@ public:
     static Strl * GetById(int no);                          // получить справочник по номеру стрелки
     static void AcceptTS (class Station *);                 // обработка объектов по станции
 
+    QString About() Q_DECL_OVERRIDE;
+
 private:
     static QHash <int, Strl *> strlhash;                    // СТРЛ , индексированные по индексу ТС
     static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СТРЛ

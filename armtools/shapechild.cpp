@@ -26,7 +26,16 @@ ShapeChild::ShapeChild(ShapeSet * set)
 
     setMouseTracking(true);
 
+#ifdef Q_OS_WIN
     tooltipFont = QFont("Arial",12);
+#endif
+#ifdef Q_OS_MAC
+    tooltipFont = QFont("Arial",14);
+#endif
+#ifdef Q_OS_WIN
+    tooltipFont = QFont("Arial",12);
+#endif
+
     QToolTip::setFont(tooltipFont);
 }
 

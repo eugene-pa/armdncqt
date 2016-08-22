@@ -389,7 +389,7 @@ void ShapeStrl::Prepare()
 
 QString ShapeStrl::Dump()
 {
-    return "СТРЛ";
+    return (sprStrl == nullptr ? "" : sprStrl->About()) + (sprRc == nullptr ? "" : "\r\n\r\n" + sprRc->About());
 }
 
 QString  ShapeStrl::ObjectInfo()
