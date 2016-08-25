@@ -20,7 +20,7 @@ AbtcmInfo::~AbtcmInfo()
 // Наличие счетчиков определяется длиной общего блока данных: она должна быть больше сумм длин блоков ровно на число счетчиков
 // Если счетчик застыл - считаем, что по блоку данные не передаются, данные обнуляются и
 // устанавливается вртуальный сигнал АБТЦМ1.ОШБ
-bool AbtcmInfo::Parse(QVector<AbtcmInfo*>& list, QString& config, Logger& logger)
+bool AbtcmInfo::Parse(std::vector<AbtcmInfo*>& list, QString& config, Logger& logger)
 {
     bool ret = false;
     // выделяем опцию полностью
@@ -46,7 +46,7 @@ bool AbtcmInfo::Parse(QVector<AbtcmInfo*>& list, QString& config, Logger& logger
                     QRegularExpressionMatch match3 = QRegularExpression("\\d+").match(s);
                     UINT addr   = match3.captured().toUInt();
                     UINT length = QRegularExpression("\\d+").match(s,match3.capturedEnd()).captured().toUInt();
-                    list.append(new AbtcmInfo(addr, length, sumLength(list)));
+                    list.push_back(new AbtcmInfo(addr, length, sumLength(list)));
 
                     pos = match2.capturedEnd();
                 }
@@ -59,7 +59,7 @@ bool AbtcmInfo::Parse(QVector<AbtcmInfo*>& list, QString& config, Logger& logger
 }
 
 // подсчет общей длины данных по всем блокам
-UINT AbtcmInfo::sumLength(QVector<AbtcmInfo*>& list)
+UINT AbtcmInfo::sumLength(std::vector<AbtcmInfo*>& list)
 {
     UINT length = 0;
     foreach (AbtcmInfo* abtcm, list)

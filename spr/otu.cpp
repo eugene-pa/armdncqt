@@ -31,7 +31,7 @@ Otu::Otu(QSqlQuery& query, class KrugInfo* krug, Logger& logger)
         if (nost2)
             st2 = Station::GetById(nost2);
 
-        st->Otu[shortName] = this;
+        st->Otu[shortName.toStdString()] = this;
         st->OtuByNo[no] = this;
     }
     catch(...)

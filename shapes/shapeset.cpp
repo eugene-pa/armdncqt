@@ -106,9 +106,11 @@ void ShapeSet::MoveRel (float x0, float y0)
 // чтение форм
 void ShapeSet::ReadShapes(QString dir, Logger * logger)
 {
-    foreach (Station * st, Station::Stations)
+    for (auto rec : Station::Stations)
     {
-        foreach (ShapeId * p, st->formList)
+        Station * st = rec.second;
+
+        for (ShapeId * p : st->formList)
         {
             p->set = new ShapeSet(dir + p->fileName, logger);
         }
@@ -134,8 +136,6 @@ DShape * ShapeSet::GetNearestShape(QPoint pnt, ShapeType type)
         ShapeType t = shape->GetType();
         if (t == TRAIN_COD || t ==END_COD)
             continue;
-        if (t ==SEGMENT_COD)
-            int a = 99;
         if ((type ==END_COD || t==type) && shape->boundingRect().contains(pnt))
         {
             return shape;

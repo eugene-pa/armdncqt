@@ -169,9 +169,9 @@ Svtf * Svtf::GetById(int no)
 // обработка объектов по станции
 void Svtf::AcceptTS (Station *st)
 {
-    foreach(Svtf * svtf, st->Allsvtf().values())
+    for(auto rec : st->Allsvtf())
     {
-        svtf->Accept();
+        rec.second->Accept();
     }
 }
 

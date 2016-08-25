@@ -26,9 +26,9 @@ void DlgSvtfInfo::fillData()
     ui->treeSvtf->setHeaderLabels(QStringList() << "Светофор" << "Состояние" << "#" );
     ui->treeSvtf->setSortingEnabled(false);
 
-    foreach (Svtf * svtf, st->Allsvtf())
+    for (auto rec : st->Allsvtf())
     {
-
+        Svtf * svtf = rec.second;
         QTreeWidgetItem * item = new QTreeWidgetItem(QStringList() << svtf->name << " " << "#" + QString::number(svtf->Id()));
         ui->treeSvtf->addTopLevelItem(item);
         item->setData(0, Qt::UserRole,qVariantFromValue((void *)svtf));    // запомним светофор

@@ -69,7 +69,7 @@ void DlgRcInfo::fillData()
     QTableWidget * t = ui->tableRc;
     t->setSortingEnabled(false);                             // запрещаем сортировку
     t->setColumnCount(10);
-    t->setRowCount(st->Allrc().count());
+    t->setRowCount((int)st->Allrc().size());
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" << "Свтф >>" << "Свтф <<");
@@ -78,9 +78,12 @@ void DlgRcInfo::fillData()
     t->setSelectionMode(QAbstractItemView::SingleSelection);
 
     int row = 0;
-    foreach (Rc *rc, st->Allrc().values())
+    for (auto map : st->Allrc())
     {
+        Rc * rc = map.second;
+
         // РЦ
+
         t->setItem(row,0, new QTableWidgetItem (/**g_green,*/ rc->Name()));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)rc));    // запомним РЦ
         t->item(row,0)->setBackground(getBackground(rc));

@@ -53,11 +53,13 @@ void DlgOtu::fillTable()
 
     t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
-    t->setRowCount(pSt->Otu.count());
+    t->setRowCount((int)pSt->Otu.size());
 
     int row = 0;
-    foreach (Otu * otu, pSt->OtuByNo.values())
+    for (auto rec : pSt->OtuByNo)
     {
+        Otu * otu = rec.second;
+
         // 0 - имя ОТУ
         t->setItem(row,0, new QTableWidgetItem (otu->shortName));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)otu));// запомним ТУ

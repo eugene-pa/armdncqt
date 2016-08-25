@@ -154,6 +154,7 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     // в коде исходного проекта здесь реализовани механизм, позволяющий собирать модуль УПРАВЛЕНИЕ с входным потоком от другого модуля УПРАВЛЕНИЕ
     // с учетом особенностей "смешанных" станций Сетунь; не вдавался в подробности, пока здесь не реализовал; при необходимости - разобраться
 
+    // ПЕРИОДИЧЕСКИ НА ЭТИХ ОПЕРАЦИЯХ СЛУЧАЮТСЯ ГАЛЮНИКИ, МОЖЕТ РЕАЛИЗОВАТЬ СВОЙ УПРОЩЕННЫЙ КЛАСС БИТОВОГО МАССИВА, ЗАТОЧЕННЫЙ ПОД СВОИ НУЖДЫ
     // сохраняем массивы tsStsRaw, tsStsPulse (мне кажется эти массивы не используются)
     memmove (st->tsStsRawPrv  .data_ptr()->data()+1, st->tsStsRaw  .data_ptr()->data()+1, st->tsStsRawPrv  .size()/8+1);
     memmove (st->tsStsPulsePrv.data_ptr()->data()+1, st->tsStsPulse.data_ptr()->data()+1, st->tsStsPulsePrv.size()/8+1);
@@ -164,9 +165,9 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
 
 
     // ПРОБЛЕМА: в версии QT 5.2 + VS2010 не срабатывает исключающее или для QBitArray
-    st->tsStsRaw = (st->tsSts) ^ (st->tsInverse);               // восстанавливаем исходное состояние по конечному с накладной инверсии
-//    for (int i=0; i<TsMaxLengthBits; i++)
-//        st->tsStsRaw[i] = st->tsSts[i] ^ st->tsInverse[i];
+//    st->tsStsRaw = (st->tsSts) ^ (st->tsInverse);               // восстанавливаем исходное состояние по конечному с накладной инверсии
+    for (int i=0; i<TsMaxLengthBits; i++)
+        st->tsStsRaw[i] = st->tsSts[i] ^ st->tsInverse[i];
 
     // IgnoreError - устарело
 

@@ -245,9 +245,9 @@ Strl * Strl::GetById(int no)
 // обработка объектов по станции
 void Strl::AcceptTS (Station *st)
 {
-    foreach(Strl * strl, st->Allstrl().values())
+    for(auto rec : st->Allstrl())
     {
-        strl->Accept();
+        rec.second->Accept();
     }
 }
 

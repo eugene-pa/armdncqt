@@ -60,11 +60,13 @@ void DlgTsInfo::fillTable()
 
     t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
-    t->setRowCount(pSt->Ts.count());
+    t->setRowCount((int)pSt->Ts.size());
 
     int row = 0;
-    foreach (Ts * ts, pSt->Ts.values())
+    for (auto rec : pSt->Ts)
     {
+
+        Ts * ts = rec.second;
         // 1 столбец - номер сигнала = индекс+1
         t->setItem(row,0, new QTableWidgetItem (getStsImage(ts), QString("%1").arg(ts->GetIndex() + 1,5,10,QChar(' '))));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)ts));// запомним ТС

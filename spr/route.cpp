@@ -133,7 +133,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
             // если 0 - нет выражения
             if (indxTsZmk)
             {
-                srcZzmk = indxTsZmk == 0 ? "" : st->TsByIndxTsName.contains(indxTsZmk) ? st->TsByIndxTsName[indxTsZmk]->Name() : "";
+                srcZzmk = indxTsZmk == 0 ? "" : st->TsByIndxTsName.count(indxTsZmk) ? st->TsByIndxTsName[indxTsZmk]->Name() : "";
                 if (srcZzmk.length() == 0)
                     logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk в маршруте: '%2'").arg(nameLog()).arg(srcZzmk));
             }

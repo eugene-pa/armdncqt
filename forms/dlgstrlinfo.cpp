@@ -40,8 +40,9 @@ void DlgStrlInfo::fillData()
     ui->treeStrl->setHeaderLabels(QStringList() << "Стрелка" << "Состояние" << "#" );
     ui->treeStrl->setSortingEnabled(false);
 
-    foreach (Strl * strl, st->Allstrl())
+    for(auto rec : st->Allstrl())
     {
+        Strl * strl = rec.second;
         QTreeWidgetItem * item = new QTreeWidgetItem(QStringList() << strl->basename << "" << "#" + QString::number(strl->Id()));
         ui->treeStrl->addTopLevelItem(item);
         item->setData(0, Qt::UserRole,qVariantFromValue((void *)strl));    // запомним стрелку

@@ -53,11 +53,13 @@ void DlgTuInfo::fillTable()
 
     t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
-    t->setRowCount(pSt->Tu.count());
+    t->setRowCount((int)pSt->Tu.size());
 
     int row = 0;
-    foreach (Tu * tu, pSt->Tu.values())
+    for (auto rec : pSt->Tu)
     {
+        class Tu * tu = rec.second;
+
         // 0 - имя ТУ
         t->setItem(row,0, new QTableWidgetItem (QString("%1    %2").arg(tu->Name()).arg(tu->extTuSrc)));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)tu));// запомним ТУ

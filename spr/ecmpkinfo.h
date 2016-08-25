@@ -11,8 +11,8 @@ public:
     ecMpkInfo(UINT length, UINT offset);
     ~ecMpkInfo();
 
-    static bool Parse(QVector<ecMpkInfo*>& list, QString& s,Logger& logger);// разбор строки
-    static UINT sumLength(QVector<ecMpkInfo*>& list);                       // подсчет общей длины данных по всем блокам
+    static bool Parse(std::vector<ecMpkInfo*>& list, QString& s,Logger& logger);// разбор строки
+    static UINT sumLength(std::vector<ecMpkInfo*>& list);                       // подсчет общей длины данных по всем блокам
 
 private:
     UINT tsGroups;                                     // число групп ТС

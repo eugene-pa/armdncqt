@@ -205,12 +205,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     on_actionBlackbox_triggered();
 
-    foreach (Station * st, Station::Stations.values())
+    for (auto rec : Station::Stations)
     {
-        foreach (ShapeId * p, st->formList)
-          {
-              StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
-          }
+        Station * st = rec.second;
+        for (ShapeId * p : st->formList)
+        {
+            StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
+        }
     }
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
     StationsCmb->model()->sort(0);
@@ -288,8 +289,10 @@ void MainWindow::stationSelected(int index)
     child->centerOn(0,0);
 
     cmbTs->clear();
-    foreach (Ts *ts, g_actualStation->TsSorted)
+
+    for (Ts *ts : g_actualStation->TsSorted)
         cmbTs->addItem(ts->Name());
+
     cmbTs->setCurrentIndex(-1);
 
     emit changeStation(g_actualStation);
@@ -636,7 +639,7 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
     int ret = 0;
 
     if (findChanges && isFindTsChanges())
-        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText());
+        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString());
 
     qDebug() << "Следующая запись";
     if (reader != nullptr)
@@ -728,7 +731,7 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
             // поиск изменения статуса связи
             if (findChanges && isFindLinkErrors() && g_actualStation->IsLinkStatusChanged())
                 break;
-            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText()))
+            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString()))
                  break;
         }
 

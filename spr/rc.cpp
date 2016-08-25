@@ -299,9 +299,9 @@ bool Rc::ReadRelations(QString& dbpath, Logger& logger)
 // обработка объектов по станции
 void Rc::AcceptTS (Station *st)
 {
-    foreach(Rc * rc, st->Allrc().values())
+    for(auto map : st->Allrc())
     {
-        rc->Accept();
+        map.second->Accept();
     }
 }
 

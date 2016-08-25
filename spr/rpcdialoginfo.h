@@ -11,8 +11,8 @@ public:
     rpcDialogInfo(UINT sddrBmEx, UINT tsGroups, UINT tsOffset);
     ~rpcDialogInfo();
 
-    static bool Parse(QVector<rpcDialogInfo*>& list, QString& s,Logger& logger);// разбор строки
-    static UINT sumLength(QVector<rpcDialogInfo*>& list);                       // подсчет общей длины данных по всем блокам
+    static bool Parse(std::vector<rpcDialogInfo*>& list, QString& s,Logger& logger);// разбор строки
+    static UINT sumLength(std::vector<rpcDialogInfo*>& list);                       // подсчет общей длины данных по всем блокам
 
 private:
     UINT addrBmEx;                                     // адрес БМ, включая ЕСР, имеющие место быть; заполняется при чтении INI файла

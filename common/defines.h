@@ -1,6 +1,11 @@
 ﻿#ifndef DEFINES_H
 #define DEFINES_H
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>

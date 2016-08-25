@@ -144,8 +144,6 @@ ushort Tu::GetIJ()
 
         }
     }
-    if (!validIJ)
-        int a = 99;
     return ij;
 }
 
