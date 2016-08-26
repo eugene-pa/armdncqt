@@ -111,7 +111,7 @@ protected:
     struct   StrlShapeProp * prop;                          // описание актуального набора геометрии
     class   Strl* sprStrl;                                  // стрелка
     class   Rc  * sprRc;                                    // РЦ под стрелкой
-    QVector<class LinkedStrl*> strl;                        // определяющие стрелки
+    std::vector<class LinkedStrl*> strl;                    // определяющие стрелки
     bool	plusNormal;         							// TRUE - плюс по основному ходу, FALSE - ответвление
     QString name;                                           // имя (обозначение) стрелки
     int     idrc;											// N РЦ стрелки

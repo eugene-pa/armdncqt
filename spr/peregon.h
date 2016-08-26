@@ -8,7 +8,7 @@ class Peregon : public SprBase
 public:
 
     // открытые статические члены
-    static QHash<int, Peregon*> Peregons;                   // хэш-таблица указателей на справочники перегонов
+    static std::unordered_map<int, Peregon*> Peregons;                   // хэш-таблица указателей на справочники перегонов
 
     // открытые статические функции
     static Peregon * GetById (int no, class KrugInfo* krug = nullptr);    // получить справочник по номеру перегона

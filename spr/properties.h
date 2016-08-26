@@ -34,7 +34,7 @@ private:
 class Property
 {
 public:
-    Property (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
+    Property (QString name, std::unordered_map<std::string, class IdentityType *> hash, Logger& logger);
     bool Valid() { return ts != nullptr; }                  // валидность свойства
     bool Value();                                           // состояние
     QString& NameTs  ();                                    // имя ТС
@@ -56,7 +56,7 @@ static QString empty;                                       // пустая ст
 class Method
 {
 public:
-    Method (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
+    Method (QString name, std::unordered_map<std::string, class IdentityType *> hash, Logger& logger);
 
     bool Valid() { return tu != nullptr; }                  // валидность свойства
     bool Sts();

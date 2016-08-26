@@ -140,10 +140,10 @@ bool TrnspDescription::MakePath(QPointF xyBase, QPainterPath& path, Logger* logg
         QString lexem = matches.next().captured(0);
         QRegularExpression reg ("-?[\\d\\.]+");
         QRegularExpressionMatchIterator m = reg.globalMatch(lexem);
-        QVector <float> params;
+        std::vector <float> params;
         while (m.hasNext())
         {
-            params.append(m.next().captured(0).toFloat());
+            params.push_back(m.next().captured(0).toFloat());
         }
 
         switch (lexem.at(0).toLatin1())

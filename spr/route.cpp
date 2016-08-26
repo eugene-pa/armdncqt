@@ -1,7 +1,7 @@
 #include "route.h"
 #include "krug.h"
 
-QHash <int, Route *> Route::routes;                             // маршруты, индексированные по индексу ТС
+std::unordered_map <int, Route *> Route::routes;                // маршруты, индексированные по индексу ТС
 
 int svtfEndExist = -1;
 
@@ -80,7 +80,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
                 // в общем случае нужно уметь задавать индексированные описания, например: 221+[Минводы]
                 LinkedStrl * lnk = new LinkedStrl(st, list[i]);
                 if (lnk->strl != nullptr)
-                    listStrl.append(lnk);
+                    listStrl.push_back(lnk);
                 else
                 {
                     logger.log(QString("Маршрут %1. Ошибка описания стрелки %2 в маршруте: '%3'").arg(nameLog()).arg(list[i]).arg(srcStrl));
@@ -98,7 +98,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
             {
                 Rc * rc = st->GetRcByName(s);
                 if (rc != nullptr)
-                    listRc.append(rc);
+                    listRc.push_back(rc);
                 else
                 {
                     logger.log(QString("Маршрут %1. Ошибка описания РЦ %2 в маршруте: '%3'").arg(nameLog()).arg(s).arg(srcRc));
@@ -192,7 +192,7 @@ Route::~Route()
 Route * Route::GetById(int no, KrugInfo * krug)
 {
     int id = krug==nullptr ? no : krug->key(no);
-    return routes.contains(id) ? routes[id] : nullptr;
+    return routes.count(id) ? routes[id] : nullptr;
 }
 
 // получить справочник по уникальному ключу(номеру) маршрута
@@ -238,8 +238,9 @@ bool Route::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
 // обработать списки составных
 void Route::checkComplex  (class KrugInfo* krug, Logger& logger)
 {
-    foreach (Route * route, routes.values())
+    for (auto rec : routes)
     {
+        Route * route = rec.second;
         if (krug==nullptr || krug==route->krug)
         {
             route->checkComplex(logger);
@@ -250,8 +251,9 @@ void Route::checkComplex  (class KrugInfo* krug, Logger& logger)
 // обработать списки враждебных
 void Route::checkOpponents(class KrugInfo* krug, Logger& logger)
 {
-    foreach (Route * route, routes.values())
+    for (auto rec : routes)
     {
+        Route * route = rec.second;
         if (krug==nullptr || krug==route->krug)
         {
             route->checkOpponents(logger);
@@ -278,7 +280,7 @@ bool Route::checkComplex (Logger& logger)
             Route * route = st->GetRouteByNo(no);
             if (route != nullptr)
             {
-                listRoutes.append(route);
+                listRoutes.push_back(route);
                 // - светофор либо не задается вообще, либо должен совпадать со светофором первого маршрута в списке
                 if (indx == 0)
                 {
@@ -314,7 +316,7 @@ bool Route::checkOpponents (Logger& logger)
             {
                 Route * route = st->GetRouteByNo(no);
                 if (route != nullptr)
-                    listCrossRoutes.append(route);
+                    listCrossRoutes.push_back(route);
                 else
                     ret = false;
             }
@@ -332,7 +334,7 @@ QString Route::nameLog()
 }
 
 // чтение последовательности ТУ, проверка синтаксиса и запись в список
-bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger)
+bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, std::vector <Tu*> list, Logger& logger)
 {
     bool ret = true;
     src = query.value(field).toString().trimmed();
@@ -350,7 +352,7 @@ bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, QVector 
             }
             Tu * tu = st->GetTuByName(s);
             if (tu != nullptr)
-                list.append(tu);                            // список ТУ установки маршрута
+                list.push_back(tu);                            // список ТУ установки маршрута
             else
             {
                 logger.log(QString("Маршрут %1. Ошибка описания ТУ %2 в маршруте: [%3]='%4'").arg(nameLog()).arg(s).arg(field).arg(src));
@@ -424,7 +426,7 @@ bool Route::IsOpen()
 }
 
 // проверка полного соответствия заданного положения стрелок маршрута заданному положению списка направляюших стрелок
-bool Route::CheckRqState (QVector<LinkedStrl*> list)
+bool Route::CheckRqState (std::vector<LinkedStrl*>& list)
 {
     foreach (LinkedStrl* link, listStrl)
     {

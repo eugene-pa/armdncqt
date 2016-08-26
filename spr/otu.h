@@ -21,8 +21,8 @@ public:
     QString& NameTs1() { return nameTs1; }
     QString& NameTs2() { return nameTs2; }
     QString& EpilogTu(){ return epilogTu; }
-    QVector <class Tu*>& EpilogTuList() { return epilogTuList; }
     class Station * St2() { return st2; }
+    std::vector <class Tu*>& EpilogTuList() { return epilogTuList; }
 
     virtual QString ToString();
 
@@ -38,7 +38,7 @@ private:
     // с последующим выбором объекта. При описании команды  ПГРС в этом поле перечисляются через пробел возможные варианты команд разблокировки,
     // например ЧР НР ЧРУ НРУ для формирования меню поездному диспетчеру.
     QString epilogTu;                                       // перечисление доп.ТУ
-    QVector <class Tu*> epilogTuList;                       // список справочников доп.ТУ
+    std::vector <class Tu*> epilogTuList;                   // список справочников доп.ТУ
 
     // НЕ РЕАЛИЗОВАНО: в варианте стыковки с РПЦ Диалог в поле Apendix можно описать команды ТУ, сопровождающие выдачу ОТУ. Запись производится через пробел в формате: ОТУ1=ИМЯ1 [ОТУ2=ИМЯ2].
 

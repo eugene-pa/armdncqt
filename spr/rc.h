@@ -20,7 +20,7 @@ public:
     }
     class Rc *    lft;                                      // РЦ слева
     class Rc *    rht;                                      // РЦ справа
-    QVector	<class LinkedStrl*>strl;                        // Опред.стрелки со знаком
+    std::vector	<class LinkedStrl*>strl;                    // Опред.стрелки со знаком
     class Svtf * svtf_LR;                                   // разделяющий поездной светофор   слева - направо
     class Svtf * Svtf_LR_M;                                 // разделяющий маневровый светофор слева - направо
     class Svtf * svtf_RL;                                   // разделяющий поездной светофор   справа - налево
@@ -52,7 +52,7 @@ public:
 
     // открытые статические функции
     static Rc * GetById(int no, class KrugInfo * krug=nullptr);   // получить справочник по номеру РЦ
-    static QHash<int, Rc *>& AllRc() { return rchash; }     // получить таблицу всех РЦ
+    static std::unordered_map<int, Rc *>& AllRc() { return rchash; }// получить таблицу всех РЦ
 
     static bool ReadRelations(QString& dbpath, Logger& );   // чтение таблицы связей РЦ и формирование дерева связей
     static void AcceptTS (class Station *);                 // обработка объектов по станции
@@ -85,25 +85,25 @@ public:
     class Route * ActualRoute() { return actualRoute; }     // актуаьный маршрут
     class Train * Actualtrain() { return actualtrain; }     // актуаьный поезд
 
-    QVector <Ts *> Allts() { return allts; }          // список действительных ТС объекта
-    QVector <Tu *> Alltu() { return alltu; }          // список действительных ТУ объекта
+    std::vector <Ts *> Allts() { return allts; }            // список действительных ТС объекта
+    std::vector <Tu *> Alltu() { return alltu; }            // список действительных ТУ объекта
 
-    QList <class QGraphicsItem *> shapes;                   // динамически создаваемый список примитивов, отображающих эту РЦ; нужен для обработки стыков
+    std::vector <class QGraphicsItem *> shapes;             // динамически создаваемый список примитивов, отображающих эту РЦ; нужен для обработки стыков
                                                             // используется для улучшения отрисовки стыков РЦ путем отрисовки полилиний
                                                             // кроме того, используется для отрисовки номера поезда на РЦ
     // добавление примитива в список примитивов РЦ. Для каждой РЦ, имеющей представление в актуальной схеме, имеем список всех отрезков-представлений
-    void AddShape (class QGraphicsItem * shape) { shapes.append(shape); }
+    void AddShape (class QGraphicsItem * shape) { shapes.push_back(shape); }
 
     QString About() Q_DECL_OVERRIDE;
 
 private:
-    static QHash <int, Rc *> rchash;                        // РЦ полигона, индексированные по ID
-    static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
-    static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов РЦ
+    static std::unordered_map <int, Rc *> rchash;           // РЦ полигона, индексированные по ID
+    static std::unordered_map<std::string, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств РЦ
+    static std::unordered_map<std::string, class IdentityType *> methodIds;  //  множество шаблонов возможных методов РЦ
 
     // каждая РЦ имеет указатели на все возможные свойства РЦ; если свойство не задействовано, указатель содержит nullptr
     // хочу иметь коллекцию определенных для данной РЦ свойств и методов
-    QVector <Ts *> allts;                                   // список действительных ТС объекта
+    std::vector <Ts *> allts;                               // список действительных ТС объекта
     Property *locked;                                       // блокировка
     Property *busy;                                         // зканятость
     Property *zmk;                                          // замыкание
@@ -115,15 +115,15 @@ private:
     Property *mu;                                           // МУ
 
     // методы
-    QVector <Tu *> alltu;                                   // список действительных ТУ объекта
+    std::vector <Tu *> alltu;                               // список действительных ТУ объекта
     Method   * tulock;                                      // заблокировать
     Method   * tuunlock;                                    // разблокировать
     Method   * tuir;                                        // разделка
 
     bool	bRcHasStrl;                                     // Признак стрелочного блок-участка
 
-    QVector<NxtPrv*> prv;                                   // список всех предыдующих РЦ с определяющими стрелками
-    QVector<NxtPrv*> nxt;                                   // список всех следующих РЦ с определяющими стрелками
+    std::vector<NxtPrv*> prv;                               // список всех предыдующих РЦ с определяющими стрелками
+    std::vector<NxtPrv*> nxt;                               // список всех следующих РЦ с определяющими стрелками
     NxtPrv *prvActual;                                      // активная связь влево  по стрелкам
     NxtPrv *nxtActual;                                      // активная связь вправо по стрелкам
     RcTypes rcTopoType;                                     // тип по топологии

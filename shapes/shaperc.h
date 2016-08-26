@@ -10,7 +10,7 @@ class ShapeRc : public DShape
     friend class ShapeTrain;
 protected:
     class Rc * sprRc;                                       // указатель на справочник РЦ
-    QVector<class LinkedStrl*> strl;                        // определяющие стрелки
+    std::vector<class LinkedStrl*> strl;                    // определяющие стрелки
     //QPainterPath path;                                    // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
     QPolygonF poly;                                         // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
 

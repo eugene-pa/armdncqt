@@ -104,7 +104,7 @@ void ShapeRc::Parse(QString& src)
         {
             int nostrl = lexems[i].toInt(&ret);
             if (nostrl && ret)
-                strl.append(new LinkedStrl(nostrl));
+                strl.push_back(new LinkedStrl(nostrl));
             ok &= ret;
         }
 
@@ -338,7 +338,7 @@ void ShapeRc::AddAndMerge()
 
     if (sprRc)
     {
-        for (int i=0; i<sprRc->shapes.length(); i++)
+        for (int i=0; i<(int)sprRc->shapes.size(); i++)
         {
             ShapeRc * prv = (ShapeRc *)sprRc->shapes[i];
             if (prv->combined)
@@ -421,7 +421,7 @@ bool ShapeRc::compareStrl(ShapeRc *shape)
 //    if (sprRc->No()==18)
 //        int a = 99;
 
-    if (strl.count() == shape->strl.count())
+    if (strl.size() == shape->strl.size())
     {
         foreach (LinkedStrl* link, strl)
         {

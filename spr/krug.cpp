@@ -1,7 +1,7 @@
 #include "krug.h"
 
-QList<KrugInfo*     > KrugInfo::Krugs;                      // список кругов, отсортированный по именам
-QHash<int, KrugInfo*> KrugInfo::KrugsById;                  // словарь кругов по номерам
+std::vector<KrugInfo* > KrugInfo::Krugs;                    // список кругов, отсортированный по именам
+std::unordered_map<int, KrugInfo*> KrugInfo::KrugsById;     // словарь кругов по номерам
 
 
 KrugInfo::KrugInfo()

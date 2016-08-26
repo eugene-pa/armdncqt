@@ -72,11 +72,11 @@ bool IdentityType::ReadBd (QString& dbpath, Logger& logger)
 
 QString Property::empty;                                    // статическая пустая строка
 
-Property::Property (QString name, QHash<QString, class IdentityType *> hash, Logger& logger)
+Property::Property (QString name, std::unordered_map<std::string, class IdentityType *> hash, Logger& logger)
 {
-    if (hash.contains(name))
+    if (hash.count(name.toStdString()))
     {
-        type = hash[name];
+        type = hash[name.toStdString()];
         ts = nullptr;
     }
     else
@@ -139,11 +139,11 @@ QString Property::About()
 // ------------------------------------------------------------------------------------------------------------------------
 QString Method::empty;                                      // статическая пустая строка
 
-Method::Method (QString name, QHash<QString, class IdentityType *> hash, Logger& logger)
+Method::Method (QString name, std::unordered_map<std::string, class IdentityType *> hash, Logger& logger)
 {
-    if (hash.contains(name))
+    if (hash.count(name.toStdString()))
     {
-        type = hash[name];
+        type = hash[name.toStdString()];
         tu = nullptr;
     }
     else

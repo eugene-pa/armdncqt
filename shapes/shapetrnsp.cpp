@@ -10,8 +10,7 @@
 #include "../common/boolexpression.h"
 #include "../spr/sprbase.h"
 
-//QVector<TrnspDescription *> TrnspDescription::descriptions; // массив описателей
-QHash<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
+std::unordered_map<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
 bool TrnspDescription::loaded = false;
 
 QBrush ShapeTrnsp::brushUndefined;                          // общая кисть неопределенного состояния
@@ -88,7 +87,7 @@ void ShapeTrnsp::Parse(QString& src)
     roundedTuRect = QRectF(XY + QPointF(-3, -3), QSizeF(width+6, height + 6));
 
     // ищем описатель свойств и рассчитываем графику с учетом координат транспаранта
-    prop = idObj>=0 && idObj<TrnspDescription::descriptions.count() ? TrnspDescription::descriptions[idObj] : nullptr;
+    prop = idObj>=0 && idObj<TrnspDescription::descriptions.size() ? TrnspDescription::descriptions[idObj] : nullptr;
     if (prop == nullptr)
         set->logger()->log(QString("ShapeTrnsp. Не найдено описание транспаранта с типом #%1: '%2'").arg(idObj).arg(src));
     else

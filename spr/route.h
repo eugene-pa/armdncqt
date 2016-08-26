@@ -50,7 +50,7 @@ public:
 
     // открытые функции
     bool IsOpen();                                          // Проверка открытого состояния ограждающего светофора
-    QVector<LinkedStrl*> GetStrlList() { return listStrl; } // получить массив стрелок с указанием заданного положения
+    std::vector<LinkedStrl*> GetStrlList() { return listStrl; } // получить массив стрелок с указанием заданного положения
     bool StsRqSet() { return sts == RQSET; }                // проверка состояния Установка маршрута
     bool StsOn   () { return sts == WAIT_CLOSE || sts == WAIT_RZMK; }   // проверка замкнутости маршрута
     ROUTE_STS Sts() { return sts; }                         // состояние маршрута
@@ -67,7 +67,7 @@ public:
                 || type == ROUT_O_COMPLEX
                 || type == ROUT_IO_THROUGH
                 || type == ROUT_M_COMLEX
-                || listRoutes.length() > 0;
+                || listRoutes.size() > 0;
     }
 
     QString GetRcEnum();                                    // получить перечисление идентифицированных РЦ маршрута
@@ -75,10 +75,10 @@ public:
     QString GetTuSetEnum();                                 // получить перечисление ТУ установки
     QString GetTuCancelEnum();                              // получить перечисление ТУ отмены
 
-    bool CheckRqState (QVector<LinkedStrl*>);               // проверка полного соответствия заданного списка направляюших стрелок положению стрелок маршрута
+    bool CheckRqState (std::vector<LinkedStrl*>&);          // проверка полного соответствия заданного списка направляюших стрелок положению стрелок маршрута
 
 private:
-    static QHash <int, Route *> routes;                     // маршруты, индексированные по коду маршрута
+    static std::unordered_map <int, Route *> routes;        // маршруты, индексированные по коду маршрута
 
     // Константные данные
     int     relNo;        		                            // [No]         номеp маршрута на станции
@@ -147,15 +147,15 @@ private:
     QDateTime tPeregonOk;			                        // Засечка времени, когда перегон развернулся; после этого надо выдержать N сек. перед установкой маршрута
 
     // списки
-    QVector <Rc *        > listRc;                          // список РЦ  в маpшpуте
-    QVector <LinkedStrl* > listStrl;                        // список стpелок в маpшpуте
-    QVector <Tu*         > tuSetList;                       // последовательность ТУ установки маршрута
-    QVector <Tu*         > tuCancelList;                    // последовательность ТУ отмены маршрута
-    QVector <Tu*         > tuCancelPendingList;             // последовательность ТУ отмены набора
-    QVector <Tu*         > tuPeregon;                       // последовательность ТУ разворота перегона
+    std::vector <Rc *        > listRc;                      // список РЦ  в маpшpуте
+    std::vector <LinkedStrl* > listStrl;                    // список стpелок в маpшpуте
+    std::vector <Tu*         > tuSetList;                   // последовательность ТУ установки маршрута
+    std::vector <Tu*         > tuCancelList;                // последовательность ТУ отмены маршрута
+    std::vector <Tu*         > tuCancelPendingList;         // последовательность ТУ отмены набора
+    std::vector <Tu*         > tuPeregon;                   // последовательность ТУ разворота перегона
 
-    QVector <Route *     > listCrossRoutes;                 // список враждебных маршрутов
-    QVector <Route *     > listRoutes;                      // список составных маршрутов (пустой для элементарных)
+    std::vector <Route *     > listCrossRoutes;             // список враждебных маршрутов
+    std::vector <Route *     > listRoutes;                  // список составных маршрутов (пустой для элементарных)
 
     int     idType;				                            // код вида маршрута (ключ для RouteType)
     QString	tuText;				                            // имя ТУ (для ручного ввода)
@@ -202,7 +202,7 @@ private:
 
     // закрытые функции
     QString nameLog();                                      // обозначение маршрута для лога в формате: Ст.
-    bool parseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger);
+    bool parseTuList (QSqlQuery& query, QString field, QString& src, std::vector <Tu*> list, Logger& logger);
     bool parseExpression(QSqlQuery& query, QString field, QString& src, BoolExpression *& expr, Logger& logger);
     bool checkComplex   (Logger&);                          // обработать списки составных  маршрута
     bool checkOpponents (Logger&);                          // обработать списки враждебных маршрута

@@ -68,7 +68,7 @@ private:
     int    KontactInt;                                      // контакт целочисленный
 
     QString extTuSrc;
-    QVector <class Tu*> extTu;
+    std::vector <class Tu*> extTu;
 
     QString tuEnum;                                         // перечисление ТУ
     QString place;                                          // KNN:MM

@@ -3,9 +3,9 @@
 #include "strl.h"
 #include "properties.h"
 
-QHash<QString, class IdentityType *> Strl::propertyIds;     //  множество шаблонов возможных свойств СТРЛ
-QHash<QString, class IdentityType *> Strl::methodIds;       //  множество шаблонов возможных методов СТРЛ
-QHash <int, Strl *> Strl::strlhash;                         // СТРЛ , индексированные по индексу ТС
+std::unordered_map<std::string, class IdentityType *> Strl::propertyIds;     //  множество шаблонов возможных свойств СТРЛ
+std::unordered_map<std::string, class IdentityType *> Strl::methodIds;       //  множество шаблонов возможных методов СТРЛ
+std::unordered_map <int, Strl *> Strl::strlhash;                             // СТРЛ , индексированные по индексу ТС
 
 // -----------------------------------------------------------
 // конструктор стрелки по номеру со знаком
@@ -120,9 +120,9 @@ bool Strl::AddTemplate(IdentityType * ident)
     if (ident->ObjType() == "СТРЛ")
     {
         if (ident->PropType() == "ТС")
-            propertyIds[ident->Name()] = ident;
+            propertyIds[ident->Name().toStdString()] = ident;
         else
-            methodIds[ident->Name()] = ident;
+            methodIds[ident->Name().toStdString()] = ident;
         return true;
     }
     return false;
@@ -131,10 +131,10 @@ bool Strl::AddTemplate(IdentityType * ident)
 bool Strl::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
     int id = ts->IdStrl();
-    Strl * strl = strlhash.contains(id) ? strlhash[id] : new Strl(ts, logger);
+    Strl * strl = strlhash.count(id) ? strlhash[id] : new Strl(ts, logger);
 
     bool pls = strl->plus           ->Parse(ts, logger);
-    strl->tsList.append(ts);
+    strl->tsList.push_back(ts);
     strl->vzrez          ->Parse(ts, logger);
     strl->selectedunlock ->Parse(ts, logger);
     strl->selectedvsa    ->Parse(ts, logger);
@@ -218,9 +218,9 @@ bool Strl::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 
     // ищем существующую стрелку или добавляем новую
     int id = tu->IdStrl();
-    Strl * strl = strlhash.contains(id) ? strlhash[id] : new Strl(tu, logger);
+    Strl * strl = strlhash.count(id) ? strlhash[id] : new Strl(tu, logger);
 
-    strl->tuList.append(tu);
+    strl->tuList.push_back(tu);
     strl->selectvsa   ->Parse(tu, logger);
     strl->selectvsa_p ->Parse(tu, logger);
     strl->selectvsa_m ->Parse(tu, logger);
@@ -239,7 +239,7 @@ bool Strl::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 // получить справочник по номеру светофора
 Strl * Strl::GetById(int no)
 {
-    return strlhash.contains(no) ? strlhash[no] : nullptr;
+    return strlhash.count(no) ? strlhash[no] : nullptr;
 }
 
 // обработка объектов по станции

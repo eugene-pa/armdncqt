@@ -542,7 +542,7 @@ void Station::ParsePrologEpilog(Logger& logger)
                     st->parseNames (tusrc, sttu, name); // разбор индексированных имен ТУ/ТС
                     if (sttu->Tu.count(name.toStdString()))
                     {
-                        tu->extTu.append(sttu->Tu[name.toStdString()]);
+                        tu->extTu.push_back(sttu->Tu[name.toStdString()]);
                     }
                 }
             }

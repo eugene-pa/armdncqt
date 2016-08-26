@@ -33,8 +33,9 @@ void ShapeTrain::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 void ShapeTrain::Draw(QPainter* painter)
 {
     // поезда на РЦ
-    foreach (Train * train, Train::Trains)
+    for (auto rec : Train::Trains)
     {
+        Train * train = rec.second;
         if (bShowTrains && (bShowNonregTrains || train->no > 0))
         {
             QPointF pLft = QPointF(99999, 99999),                 // крайняя левая точка
@@ -51,7 +52,7 @@ void ShapeTrain::Draw(QPainter* painter)
                 if (rc==nullptr)
                     continue;
 
-                foreach (QGraphicsItem *shape, rc->shapes)
+                for (QGraphicsItem *shape : rc->shapes)
                 {
                     ShapeRc * shaperc = (ShapeRc *)shape;
 

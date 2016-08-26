@@ -101,7 +101,7 @@ void DlgRcInfo::fillData()
 
         // ТС
         QString s;
-        foreach (Ts *ts, rc->Allts())
+        for (Ts *ts : rc->Allts())
         {
             s += ts->Name() + "   ";
         }
@@ -109,7 +109,7 @@ void DlgRcInfo::fillData()
 
         // ТУ
         s.clear();
-        foreach (Tu *tu, rc->Alltu())
+        for (Tu *tu : rc->Alltu())
         {
             s += tu->Name() + "   ";
         }
@@ -117,10 +117,10 @@ void DlgRcInfo::fillData()
 
         // Слева
         s.clear();
-        foreach (NxtPrv * lnk, rc->prv)
+        for (NxtPrv * lnk : rc->prv)
         {
             s += lnk->lft->Name();
-            if (lnk->strl.count())
+            if (lnk->strl.size())
             {
                 s += " [";
                 foreach (LinkedStrl * lstrl, lnk->strl)
@@ -134,10 +134,10 @@ void DlgRcInfo::fillData()
 
         // Справа
         s.clear();
-        foreach (NxtPrv * lnk, rc->nxt)
+        for (NxtPrv * lnk : rc->nxt)
         {
             s += lnk->rht->Name();
-            if (lnk->strl.count())
+            if (lnk->strl.size())
             {
                 s += " [";
                 foreach (LinkedStrl * lstrl, lnk->strl)

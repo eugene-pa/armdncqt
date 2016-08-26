@@ -19,7 +19,6 @@
 #include <QPen>
 
 #include <time.h>
-#include <QHash>
 #include <QList>
 #include <QSqlDatabase>
 #include <QSqlQuery>

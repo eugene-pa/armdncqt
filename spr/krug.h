@@ -2,16 +2,15 @@
 #ifndef KRUG_H
 #define KRUG_H
 
-#include "qstring.h"
-#include "qhash.h"
+#include "station.h"
 
 class KrugInfo
 {
 public:
 
     // статические члены
-    static QList<KrugInfo*> Krugs;                          // список кругов, отсортированный по именам
-    static QHash<int, KrugInfo*> KrugsById;                 // словарь кругов по номерам
+    static std::vector<KrugInfo*> Krugs;                    // список кругов, отсортированный по именам
+    static std::unordered_map<int, KrugInfo*> KrugsById;    // словарь кругов по номерам
 
     // открытые функции
     KrugInfo();
@@ -29,7 +28,7 @@ public:
     QString ipMainWithoutPort(){ return _ipMainWithoutPort;}
     QString ipRsrvWithoutPort(){ return _ipRsrvWithoutPort;}
 
-    QList <class Train*> trains() { return _trains; }       // информация о поездах круга
+    std::vector <class Train*> trains() { return _trains; } // информация о поездах круга
 
     int key (int n) { return (_no << 16) | n; }             // получить идентификатор объекта с учетом круга
 
@@ -46,7 +45,7 @@ protected:
     QString _ipMainWithoutPort;
     QString _ipRsrvWithoutPort;
 
-    QList <class Train*> _trains;                           // информация о поездах круга
+    std::vector <class Train*> _trains;                 // информация о поездах круга
 
 //    public ArrayList DataRcInfo = new ArrayList();                          // информация об РЦ круга
 //    public List<PCInfo> Hosts   { get; private set; }                       // список хостов

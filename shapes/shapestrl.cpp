@@ -146,7 +146,7 @@ void ShapeStrl::Parse(QString& src)
         {
             int nostrl = lexems[i].toInt(&ret);
             if (nostrl && ret)
-                strl.append(new LinkedStrl(nostrl));
+                strl.push_back(new LinkedStrl(nostrl));
             ok &= ret;
         }
         if (!LinkedStrl::checkList(strl, set->logger()))

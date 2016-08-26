@@ -2,7 +2,7 @@
 #include "krug.h"
 #include "rc.h"
 
-QHash  <int, Train *> Train::Trains;                        // поезда , индексированные по системному номеру
+std::unordered_map <int, Train *> Train::Trains;            // поезда , индексированные по системному номеру
 QStack <Train*> Train::FreeTrains;                          // пул удаленных справочников для повторного использования
 
 
@@ -45,14 +45,14 @@ Train::~Train()
 Train * Train::GetBySysNo(int sno, KrugInfo * krug)
 {
     Q_UNUSED(krug)
-    return Trains.contains(sno) ? Trains[sno] : nullptr;
+    return Trains.count(sno) ? Trains[sno] : nullptr;
 }
 
 // добавить поезд
 Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 {
     int key = krug==nullptr ? sno : krug->no() << 16 | sno;    // формируем ключ
-    return Trains.contains(key) ? Trains[key] : restore(sno, no, krug);
+    return Trains.count(key) ? Trains[key] : restore(sno, no, krug);
 }
 
 // добавить занятую РЦ
@@ -60,10 +60,10 @@ Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 // причем nrc не соответствкет размерности Rc
 void Train::AddRc(class Rc* rc)
 {
-    if (nrc < Rc.length())
+    if (nrc < Rc.size())
         Rc[nrc] = rc;
     else
-        Rc.append(rc);
+        Rc.push_back(rc);
     nrc++;
 }
 
@@ -71,12 +71,15 @@ void Train::AddRc(class Rc* rc)
 void Train::ClearRc()
 {
     nrc = 0;
-    for (int i=0; i<Rc.length(); i++)
-        Rc[i] = nullptr;
+    for (class Rc * rc : Rc)
+        rc = nullptr;
 }
 
 void Train::ClearAllRc()
 {
-    foreach (Train * train, Trains)
+    for (auto rec : Trains)
+    {
+        Train * train = rec.second;
         train->ClearRc();
+    }
 }

@@ -23,12 +23,13 @@ void DlgTrains::fill(bool all)
 {
     QTableWidget * t = ui->tableTrains;
     t->clearContents();
-    t->setRowCount(Train::Trains.count());
+    t->setRowCount((int)Train::Trains.size());
     t->setSortingEnabled(false);
 
     int row = 0;
-    foreach (Train * train, Train::Trains)
+    for (auto rec : Train::Trains)
     {
+        Train * train = rec.second;
         if (!all && train->no==0)
             continue;
         t->setItem(row,0, new QTableWidgetItem (QString::number(train->sno)));
