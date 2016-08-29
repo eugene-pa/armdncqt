@@ -101,3 +101,10 @@ void DShape::log (QString msg)
         qDebug() << msg;
     }
 }
+
+QString DShape::StationName()
+{
+    if (st != nullptr )
+        return st->Name();
+    return QString("#%1").arg(idst);
+}

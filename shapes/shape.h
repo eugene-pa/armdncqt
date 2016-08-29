@@ -103,6 +103,9 @@ public:
     QPointF  x2y2()  { return rect.bottomRight(); }
     QSizeF  size()   { return rect.size       (); }
 //inline bool    SetVisivle(bool s=true) { bVisible = s; }	// 2009.08.24. Отрисовывается по условиям
+
+    QString StationName();
+
 };
 
 

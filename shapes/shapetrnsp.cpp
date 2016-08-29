@@ -190,6 +190,7 @@ void ShapeTrnsp::Parse(QString& src)
 
     // далее может идти признак привязки транспаранта к следующему текстовому примитиву
     //bool bLink = lexems[index++].toInt(&ret) != 0 ? true : false;
+    index++;                                                // игнорирую привязку
     if (index > lexems.length() - 1)    return;             //
 
     // далее может идти либо комментарий, либо описание транспаранта в кавычках
@@ -220,6 +221,9 @@ void ShapeTrnsp::Parse(QString& src)
     //    XY_titleOff = XY + new Vector((Width - TitleOff.Width)/2, (Height - TitleOff.Height)/2);
     //    XY_titleExt = XY + new Vector((Width - TitleExt.Width)/2, (Height - TitleExt.Height)/2);
 
+
+    if (!toolTipText.length() && prop!=nullptr && prop->description.length())
+        toolTipText = prop->description;
 }
 
 
@@ -253,7 +257,30 @@ void ShapeTrnsp::Prepare()
 
 QString ShapeTrnsp::Dump()
 {
-    return "ТРАНСП";
+    QString s = "Ст." + StationName();
+    if (toolTipText.length())
+        s += "\r\n" + toolTipText;
+    else
+    if (prop->description.length())
+        s += "\r\n" + prop->description;
+
+    for (int i=1; i<=3; i++)
+    {
+        if (stsExpr[i-1] != nullptr && stsExpr[i-1]->Source().length())
+        {
+            s += "\r\nТС" + QString::number(i) + ": " + stsExpr[i-1]->Source();
+            if (stsPulseExpr[i-1]!=nullptr && stsPulseExpr[i-1]->Source().length())
+                s += ",   " + stsPulseExpr[i-1]->Source();
+        }
+    }
+
+    if (tuNames.length() > 0)
+        s += "\r\nТУ ВКЛ: " + tuNames[0];
+    if (tuNames.length() > 1)
+        s += "\r\nТУ ВЫКЛ: " + tuNames[1];
+
+
+    return s;
 }
 
 QString  ShapeTrnsp::ObjectInfo()

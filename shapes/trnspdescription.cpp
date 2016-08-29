@@ -71,6 +71,8 @@ TrnspDescription::TrnspDescription(QSqlQuery& query, Logger& logger)
     // флаг рисования при отсутствии сигнала
     drawOffState = query.value("DrawWhenTsOff").toBool();
     description = query.value("Comment").toString().trimmed();
+    if (description.length())
+        int a = 99;
     geometry = query.value("Geometry").toString().trimmed();
 
     descriptions[id] = this;
