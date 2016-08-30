@@ -124,15 +124,15 @@ public:
 static void InitInstruments();                              // инициализация статических инструментов отрисовки
 
 protected:
-    virtual void  Draw (QPainter*);                         // функция рисования
-    virtual void  Parse(QString&);                          // разбор строки описания
-    virtual bool  CheckIt();
-    virtual void  FixUpUnsafe();
-    virtual QString Dump();
-    virtual QString ObjectInfo();
-    virtual void  Prepare();
-    virtual void accept();                                  // вычисление состояния примитива
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+    virtual void  Draw (QPainter*) override;                // функция рисования
+    virtual void  Parse(QString&) override;                 // разбор строки описания
+    virtual bool  CheckIt() override;
+    virtual void  FixUpUnsafe() override;
+    virtual QString Dump() override;
+    virtual QString ObjectInfo() override;
+    virtual void  Prepare() override;
+    virtual void accept() override;                         // вычисление состояния примитива
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
 
     void suiteFont (QPainter *, Palitra& palitra);          // подгонка размера шрифта под занимаемое место
 };

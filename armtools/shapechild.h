@@ -17,10 +17,9 @@ public:
     void clear() { scene->clear(); }
 
 protected:
-    virtual void closeEvent(QCloseEvent *event);
-    virtual void timerEvent(QTimerEvent *event);
-    //bool event(QEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void closeEvent(QCloseEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
+    void mouseMoveEvent(QMouseEvent  *) override;
 
 private slots:
 

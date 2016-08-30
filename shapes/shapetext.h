@@ -29,8 +29,8 @@ public:
     ~ShapeText();
     static void InitInstruments();                          // инициализация статических инструментов отрисовки
 
-    virtual void  Draw (QPainter*);                         // функция рисования
-    virtual void  Parse(QString&);                          // разбор строки описания
+    virtual void  Draw (QPainter*) override;                // функция рисования
+    virtual void  Parse(QString&) override;                 // разбор строки описания
 
 protected:
     int height;
@@ -51,8 +51,8 @@ protected:
 
     bool IsNameSt() { return type == NAME_COD; }            // проверка, является ли текст именем станции
 
-    void accept();                                          // вычисление состояния примитива
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+    void accept() override;                                 // вычисление состояния примитива
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
 
 };
 

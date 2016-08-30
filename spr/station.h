@@ -324,7 +324,7 @@ class ShapeId
 {
     friend class ShapeSet;
 public:
-    ShapeId(Station * st, QString& name, int radioid)
+    ShapeId(Station * st, QString name, int radioid)
     {
         this->st = st;
         this->radioid = radioid;

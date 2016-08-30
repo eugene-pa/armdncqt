@@ -49,12 +49,12 @@ public:
     ShapePrzd(QString& src, ShapeSet* parent);
     ~ShapePrzd();
     static void InitInstruments();                          // инициализация статических инструментов отрисовки
-    virtual void  Draw (QPainter*);                         // функция рисования
+    virtual void  Draw (QPainter*) override;                // функция рисования
 
 protected:
-    void accept();                                          // вычисление состояния примитива
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    virtual void  Parse(QString&);                          // разбор строки описания
+    void accept() override;                                 // вычисление состояния примитива
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
+    virtual void  Parse(QString&) override;                 // разбор строки описания
 
 };
 

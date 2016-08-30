@@ -67,7 +67,7 @@ Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 // причем nrc не соответствкет размерности Rc
 void Train::AddRc(class Rc* rc)
 {
-    if (nrc < Rc.size())
+    if (nrc < (int)Rc.size())
         Rc[nrc] = rc;
     else
         Rc.push_back(rc);

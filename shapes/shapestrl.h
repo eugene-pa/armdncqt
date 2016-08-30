@@ -159,15 +159,15 @@ public:
     inline short GetIdRc() {return idrc; }                  // РЦ
     class Route * ActualRoute() { return sprRc == nullptr ? nullptr : sprRc->ActualRoute(); }
 
-    virtual void Draw(QPainter* pDC);						// функция рисования
-    virtual void  Parse(QString&);
-    virtual bool  CheckIt();
-    virtual void  FixUpUnsafe();
-    virtual QString Dump();
-    virtual QString ObjectInfo();
-    virtual void  Prepare();
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    virtual void accept();                                  // вычисление состояния примитива
+    virtual void Draw(QPainter* pDC) override;              // функция рисования
+    virtual void  Parse(QString&) override;
+    virtual bool  CheckIt() override;
+    virtual void  FixUpUnsafe() override;
+    virtual QString Dump() override;
+    virtual QString ObjectInfo() override;
+    virtual void  Prepare() override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
+    virtual void accept() override;                         // вычисление состояния примитива
 };
 
 #endif // SHAPESTRL_H
