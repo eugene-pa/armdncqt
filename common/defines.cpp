@@ -112,3 +112,17 @@ bool loadResources(QString dir)
             g_strl_minus     ->isNull() ||
             g_strl_plus      ->isNull());
 }
+
+// формирование полного пути из относительного
+// если путь относительный - меняем и возвращаем true
+// если путь полный - ничего не менять и вернуть false
+bool makeFullPath(QString base, QString& path)
+{
+    QFileInfo fi(path);
+    if (fi.isRelative())
+    {
+        path = base + "/" + path;
+        return true;
+    }
+    return false;
+}

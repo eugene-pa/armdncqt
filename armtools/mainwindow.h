@@ -106,6 +106,10 @@ private slots:
 
     void on_action_Tooltip_triggered();
 
+    void on_action_VisibleTrains_triggered();
+
+    void on_action_VisibleNonregTrains_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 

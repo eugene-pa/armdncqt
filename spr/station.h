@@ -35,7 +35,8 @@ class Station : public QObject
 
 public:
     // открытые статические члены
-    static std::unordered_map<int, Station*> Stations;      // хэш-таблица указателей на справочники станций
+    static std::unordered_map<int, Station*> Stations;      // хэш-таблица указателей на справочники станций, индексированная по ключу "номер станции"
+    static std::vector<Station*> StationsOrg;               // массив станций в порядке чтения из БД
     static bool LockLogicEnable;                            // включен логический контроль
     static bool InputStreamRss;                             // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
     static short	MainLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
@@ -334,7 +335,7 @@ public:
     Station * St() { return st; }
     QString Name() { return name; }
     class ShapeSet * Set() { return set; }
-
+    void setShape(class ShapeSet *s) { set = s; }
 private:
     Station * st;                                           // станция-собственник
     int radioid;                                            // кнопка

@@ -70,6 +70,9 @@
     <addaction name="action_Tooltip"/>
     <addaction name="action_Toolbar"/>
     <addaction name="separator"/>
+    <addaction name="action_VisibleTrains"/>
+    <addaction name="action_VisibleNonregTrains"/>
+    <addaction name="separator"/>
     <addaction name="action_More"/>
     <addaction name="action_Less"/>
     <addaction name="action_ZoomOff"/>
@@ -369,6 +372,22 @@
    </property>
    <property name="text">
     <string>Всплывающие подсказки</string>
+   </property>
+  </action>
+  <action name="action_VisibleTrains">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Показывать поезда</string>
+   </property>
+  </action>
+  <action name="action_VisibleNonregTrains">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Показывать незарегистрированные поезда</string>
    </property>
   </action>
  </widget>

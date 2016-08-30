@@ -53,3 +53,5 @@ __WPF__/
 Векторная графика/
 
 *.autosave
+pictures/log/*
+

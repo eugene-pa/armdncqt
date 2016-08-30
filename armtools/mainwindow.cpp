@@ -14,10 +14,13 @@
 #include "../forms/dlgtrains.h"
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
+#include "../spr/train.h"
+#include "../shapes/shapetrain.h"
 
-
-QString server_ipport = "127.0.0.1:1010";                  // подключение к потоку ТС из настроечного файла
+QString server_ipport = "127.0.0.1:1010";                   // подключение к потоку ТС из настроечного файла
 QString version = "1.0.1.10";                               // версия приложения
+
+QStringList extVideos;                                      // доп.видеоформы
 
 bool blackBoxMode;                                          // включен режима просмотра архива
 
@@ -93,6 +96,17 @@ MainWindow::MainWindow(QWidget *parent) :
         formDir =path + "pictures/";
 
         logger.ChangeActualFile(path + "Log/armtools.log");
+    }
+
+    // если задана опция FORMNAME, принимаем доп.формы
+    QString tmp;
+    if (rdr.GetText("FORMNAME", tmp))
+    {
+        extVideos = tmp.split(QRegExp("[\\s,]+"));
+        for (QString& s : extVideos)
+        {
+            makeFullPath(path, s);
+        }
     }
 
     // создаем папки temp, save, если их нет
@@ -192,21 +206,37 @@ MainWindow::MainWindow(QWidget *parent) :
 
     on_actionBlackbox_triggered();
 
-    for (auto rec : Station::Stations)
+    // сначала добавляем доп.формы
+    for (QString& form : extVideos)
     {
-        Station * st = rec.second;
+        ShapeSet * set = new ShapeSet(form, &logger);
+        if (set->isok())
+        {
+            QFileInfo fi(form);
+            ShapeId * pid = new ShapeId(nullptr, fi.baseName(), 0);
+            pid->setShape(set);
+            StationsCmb->addItem(fi.baseName(), qVariantFromValue((void *)pid));
+        }
+    }
+    for (Station * st : Station::StationsOrg)
+    {
         for (ShapeId * p : st->formList)
         {
             StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
         }
     }
     QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
-    StationsCmb->model()->sort(0);
-    StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
+    //StationsCmb->model()->sort(0);
 
     idTimer = startTimer(1000);
     arhDateTime = QDateTime::currentDateTime();
     reader = new ArhReader(pathTemp,"@_");
+
+    ui->action_VisibleTrains->setChecked(ShapeTrain::bShowTrains);
+    ui->action_VisibleNonregTrains->setChecked(ShapeTrain::bShowNonregTrains);
+
+    StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
+    stationSelected(0);
 
     Logger::LogStr ("Конструктор MainWindow завершил работу");
 }
@@ -262,8 +292,11 @@ void MainWindow::loadResources()
 void MainWindow::stationSelected(int index)
 {
     Q_UNUSED(index)
+    if (StationsCmb->currentIndex() < 0)
+        return;
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
-    g_actualStation = shapeId->St();
+    if (shapeId->St() != nullptr)
+        g_actualStation = shapeId->St();
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
     child->setMouseTracking(tooltip);
 
@@ -275,12 +308,15 @@ void MainWindow::stationSelected(int index)
 
     cmbTs->clear();
 
-    for (Ts *ts : g_actualStation->TsSorted)
-        cmbTs->addItem(ts->Name());
+    if (g_actualStation != nullptr)
+    {
+        for (Ts *ts : g_actualStation->TsSorted)
+            cmbTs->addItem(ts->Name());
 
-    cmbTs->setCurrentIndex(-1);
+        cmbTs->setCurrentIndex(-1);
 
-    emit changeStation(g_actualStation);
+        emit changeStation(g_actualStation);
+    }
 }
 
 // обработка уведомлений ClientTcp потока ТС
@@ -760,4 +796,14 @@ void MainWindow::on_action_QtAbout_triggered()
 void MainWindow::on_action_Tooltip_triggered()
 {
     child->setMouseTracking(tooltip = ui->action_Tooltip->isChecked());
+}
+
+void MainWindow::on_action_VisibleTrains_triggered()
+{
+    ShapeTrain::bShowTrains = !ShapeTrain::bShowTrains;
+}
+
+void MainWindow::on_action_VisibleNonregTrains_triggered()
+{
+    ShapeTrain::bShowNonregTrains = !ShapeTrain::bShowNonregTrains;
 }

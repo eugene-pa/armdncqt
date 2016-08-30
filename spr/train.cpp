@@ -3,7 +3,7 @@
 #include "rc.h"
 
 std::unordered_map <int, Train *> Train::Trains;            // поезда , индексированные по системному номеру
-QStack <Train*> Train::FreeTrains;                          // пул удаленных справочников для повторного использования
+std::stack <Train*> Train::FreeTrains;                          // пул удаленных справочников для повторного использования
 
 
 Train::Train()
@@ -21,7 +21,14 @@ Train::Train(int sno, int no, class KrugInfo * krug)
 Train * Train::restore(int sno, int no, class KrugInfo * krug)
 {
     qDebug() << "Добавляем поезд в Trains:  Sno=" << sno << "  No=" << no;
-    Train * train = FreeTrains.length() ? FreeTrains.pop() : new Train(sno, no, krug);
+    Train * train;
+    if (FreeTrains.size())
+    {
+        train = FreeTrains.top();
+        FreeTrains.pop();
+    }
+    else
+        train = new Train(sno, no, krug);
     train->update(sno, no, krug);
     return train;
 }

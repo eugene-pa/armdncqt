@@ -33,8 +33,10 @@ protected:
     int	   nDiameter;					                    // индивидуальная установка диаметра светофора для формы
     int	   nThick;                                          // индивидуальная установка толщины линий
     Logger * plog;
+    bool   ok;                                              // форма загружена
 
     void ScanFile();                                        // Сканирование/загрузка файла
+
 public:
     ShapeSet(QString path, Logger * logger, bool bTablo=false);
     ~ShapeSet();
@@ -62,6 +64,7 @@ public:
     inline bool IsTabloShape  () { return bTabloShape;}
     inline Logger * logger    () { return plog; }               // базовый логгер
     static float X0,Y0;					    // общее смещение схем, задавыаемое опцией X0=, Н0=
+    bool isok() { return ok; }
 
     //static int nTabloDiameter;			    // опционируемая установка диаметра светофора ТАБЛО
     //static int nTabloThick;				    // опционируемая установка толщины линий ТАБЛО

@@ -17,6 +17,7 @@ float ShapeSet::X0 = 0.0,
 
 ShapeSet::ShapeSet(QString path, Logger * logger, bool bTablo/*=false*/)
 {
+    ok = false;
     plog = logger;
     bTabloShape = bTablo;
     xMin = yMin = 999999.;									// Минимальная ккордината примитива
@@ -88,6 +89,7 @@ void ShapeSet::ScanFile()
         // проблема: номера поездов не отрисовываются при масштабе > 1:1
         set.push_back(new ShapeTrain(this));
         //set.append(new ShapeTrain(this));
+        ok = true;
     }
     else
     {
@@ -103,7 +105,8 @@ void ShapeSet::MoveRel (float x0, float y0)
 }
 
 
-// чтение форм
+// чтение форм всех станций
+// указатели на формы запоминаются в справочниках станций в std::vector <class ShapeId*> formList
 void ShapeSet::ReadShapes(QString dir, Logger * logger)
 {
     for (auto rec : Station::Stations)

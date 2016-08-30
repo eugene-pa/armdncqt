@@ -179,5 +179,6 @@ typedef struct _COMMTIMEOUTS {
 #endif // #ifndef _COMMTIMEOUTS
 
 extern void addCRC (QByteArray& data);
+extern bool makeFullPath(QString base, QString& path);
 
 #endif // DEFINES_H

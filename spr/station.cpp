@@ -18,6 +18,7 @@
 //#include "tu.h"
 
 std::unordered_map<int, Station*> Station::Stations;        // хэш-таблица указателей на справочники станций
+std::vector<Station*> Station::StationsOrg;                 // массив станций в порядке чтения из БД
 bool    Station::LockLogicEnable;                           // включен логический контроль
 bool    Station::InputStreamRss = false;                    // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
 
@@ -121,6 +122,7 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 
 
         Stations[no] = this;
+        StationsOrg.push_back(this);
     }
     catch(...)
     {

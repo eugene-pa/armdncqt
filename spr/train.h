@@ -1,7 +1,7 @@
 #ifndef TRAIN_H
 #define TRAIN_H
 
-#include <QStack>
+#include <stack>
 #include "../common/logger.h"
 #include "sprbase.h"
 
@@ -36,7 +36,7 @@ private:
     // ВАРИАНТ: сохранять удаленные справочники в отдельном списке и брать по возможности их оттуда.
     //          Можно было бы просто помечать справочник как "пустой", но тогда нельзя организовать хэш-таблицу по ключу sno
     static std::unordered_map <int, Train *> Trains;        // поезда , индексированные по ключу: круг + системный номер
-    static QStack <Train *> FreeTrains;                     // пул удаленных справочников для повторного использования
+    static std::stack <Train *> FreeTrains;                 // пул удаленных справочников для повторного использования
 
     int     sno;                                            // ключ: krug + системный номер
     int     no;                                             // номер
