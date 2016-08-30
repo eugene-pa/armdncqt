@@ -86,8 +86,6 @@ private slots:
 
     void on_action_ZoomOff_triggered();
 
-    void on_action_ToolBar2_triggered();
-
     void scaleView();
 
     void on_actionPlay_triggered();
@@ -123,9 +121,7 @@ private:
     QCalendarWidget* calendar;                              // пристегиваемый календарь выбора даты
     QSpinBox * stepValue;                                   // задание шага смещений в архиве, мин
     QLabel   * labelStep;
-    QLabel   * labelTemp;                                   // Темп и диапазон
-    QLabel   * labelTemp2;
-    QSlider  * sliderTemp;                                  // слайдер темпа воспроизведения
+    QLabel   * labelZoom;                                   // Зум
     QSlider  * sliderScale;                                 // слайдер масштабирования
 
     QCheckBox* checkFindTs;                                 // флажок Поиск изменений ТС

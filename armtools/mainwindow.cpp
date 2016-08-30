@@ -146,14 +146,33 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));                             // Шаг по минутам
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
 
-    ui->mainToolBar->addWidget(labelTemp = new QLabel("     Темп,X:  1:1 "));                       // Темп
-    ui->mainToolBar->addWidget(sliderTemp = new QSlider(Qt::Horizontal));                           // Задатчик-слайдер
-    ui->mainToolBar->addWidget(labelTemp2 = new QLabel(" 10:1"));
-    sliderTemp->setTickPosition(QSlider::TicksAbove);
-    sliderTemp->setFixedWidth(180);
-    sliderTemp->setRange(1,10);
-    sliderTemp->setValue(1);
-    sliderTemp->setTickInterval(1);
+    // 2 - флажок "Изменения ТС" и список ТС
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(checkFindTs = new QCheckBox("ТС", ui->mainToolBar));
+    checkFindTs->setLayoutDirection(Qt::RightToLeft);
+    QObject::connect(checkFindTs, SIGNAL(toggled(bool)), SLOT(tsToggled(bool)));        // флажок ТС
+
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(cmbTs = new QComboBox);
+    cmbTs->setMaxVisibleItems(30);
+    cmbTs->setEnabled(false);
+
+    // 3 - флажок "Ош.связи"
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(checkFindLink = new QCheckBox(" Ош.связи", ui->mainToolBar));
+    checkFindLink->setLayoutDirection(Qt::RightToLeft);
+
+    // 1 - масштабирование
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(labelZoom = new QLabel("Масштаб: ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(sliderScale = new QSlider(Qt::Horizontal, ui->mainToolBar));
+    sliderScale->setMinimum(-50);
+    sliderScale->setMaximum(100);
+    sliderScale->setValue(0);
+    sliderScale->setTickPosition(QSlider::TicksAbove);
+    sliderScale->setFixedWidth(180);
+    connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
+
 
     ui->mainToolBar->setBaseSize(800,36);
 
@@ -170,38 +189,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
     clientTcp->start();
 //    scale = 1;
-
-
-    // динамическое формирование расширенного тулбара
-    // 1 - масштабирование
-    // 2 - поиск изменений ТС
-    // 3 - поиск ошибок связи
-    ui->toolBar2->addWidget(new QLabel("Масштаб:  ", ui->toolBar2));
-    ui->toolBar2->addWidget(sliderScale = new QSlider(Qt::Horizontal, ui->toolBar2));
-    sliderScale->setMinimum(-50);
-    sliderScale->setMaximum(100);
-    sliderScale->setValue(0);
-    sliderScale->setTickPosition(QSlider::TicksAbove);
-    sliderScale->setFixedWidth(180);
-    connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
-
-    // 2 - флажок "Изменения ТС" и список ТС
-    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
-    ui->toolBar2->addWidget(checkFindTs = new QCheckBox(" Изменение ТС", ui->toolBar2));
-    checkFindTs->setLayoutDirection(Qt::RightToLeft);
-    QObject::connect(checkFindTs, SIGNAL(toggled(bool)), SLOT(tsToggled(bool)));        // флажок ТС
-
-    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
-    ui->toolBar2->addWidget(cmbTs = new QComboBox);
-    cmbTs->setMaxVisibleItems(30);
-    cmbTs->setEnabled(false);
-
-    // 3 - флажок "Ош.связи"
-    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
-    ui->toolBar2->addWidget(checkFindLink = new QCheckBox(" Ош.связи", ui->toolBar2));
-    checkFindLink->setLayoutDirection(Qt::RightToLeft);
-
-    ui->toolBar2->setVisible(false);
 
     on_actionBlackbox_triggered();
 
@@ -236,9 +223,7 @@ MainWindow::~MainWindow()
     delete calendar;
     delete stepValue;
 
-    delete labelTemp;
-    delete sliderTemp;
-    delete labelTemp2;
+    delete labelZoom;
     delete sliderScale;
     delete checkFindLink;
 
@@ -492,11 +477,6 @@ void MainWindow::on_action_Toolbar_triggered()
     ui->mainToolBar->setVisible(ui->action_Toolbar->isChecked());
 }
 
-// вкл/откл панели масштабирования
-void MainWindow::on_action_ToolBar2_triggered()
-{
-    ui->toolBar2->setVisible(ui->action_ToolBar2->isChecked());
-}
 
 QProcess process;
 // протокол работы модуля
@@ -534,9 +514,7 @@ void MainWindow::on_actionBlackbox_triggered()
     ui->action_Stop  ->setEnabled(blackBoxMode);
     stepValue        ->setEnabled(blackBoxMode);
     labelStep        ->setEnabled(blackBoxMode);
-    labelTemp        ->setEnabled(blackBoxMode);
-    labelTemp2       ->setEnabled(blackBoxMode);
-    sliderTemp       ->setEnabled(blackBoxMode);
+//  labelZoom        ->setEnabled(blackBoxMode);
     checkFindTs      ->setEnabled(blackBoxMode);
     cmbTs            ->setEnabled(blackBoxMode && checkFindTs->isChecked());
     checkFindLink    ->setEnabled(blackBoxMode);
