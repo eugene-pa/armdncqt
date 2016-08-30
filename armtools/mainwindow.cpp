@@ -770,7 +770,7 @@ void MainWindow::on_actionPrev_triggered()
 void MainWindow::on_action_About_triggered()
 {
     QFileInfo info( QCoreApplication::applicationFilePath() );
-    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.created().toString(FORMAT_DATETIME)));
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.lastModified().toString(FORMAT_DATETIME)));
 }
 
 void MainWindow::on_action_QtAbout_triggered()

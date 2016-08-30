@@ -109,13 +109,16 @@ bool ShapeChild::event(QEvent *event)
 // КЛЮЧЕВОЙ МОМЕНТ: учет масштабирования и скола схемы выполняется с помощью ИНВЕРТИРОВННОЙ матрицы трансформации ВЬЮПОРТА:
 //      QTransform t = viewportTransform().inverted();
 //      QPoint point = t.map(p);
+std::vector<ShapeType> tooltipShapes = { SEGMENT_COD, ANGLE_COD, SVTF_COD, STRL_COD, MODE_COD };
 void ShapeChild::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint  p = event->pos();
     QTransform t = viewportTransform().inverted();
     QPoint point = t.map(p);
 
-    DShape * shape = shapeSet->GetNearestShape(point);
+    // если нужно выводить тултипы на тексте, можно сделать 2 итерации - без текста, затем отдельно текст
+    // иначе часто попадаем на текст ДО ОБЪЕКТОВ, особенно в компактных схемах
+    DShape * shape = shapeSet->GetNearestShape(point, &tooltipShapes);
     if (shape != nullptr)
         QToolTip::showText(event->globalPos(), shape->Dump());
     else

@@ -47,7 +47,7 @@ public:
     void MoveRel (float,float);				    // перемещение на заданное расстояние
     void Prepare ();
 
-    DShape * GetNearestShape(QPoint Pnt, ShapeType type=END_COD);
+    DShape * GetNearestShape(QPoint Pnt, std::vector<ShapeType>* = nullptr);
     DShape * GetNearestShape(QPoint Pnt, ShapeType *type, int n);
 
     float   GetxMin() { return xMin; }			    // Минимальная координата примитива по оси X

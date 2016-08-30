@@ -89,7 +89,7 @@ public:
     virtual void  Draw(QPainter* painter);                  // отрисовка
     virtual bool  CheckIt() { return true; }				// Проверка корректности привязки
     virtual void  FixUpUnsafe   () { }						// Очистка небезопасных ошибок привязки
-    virtual QString Dump		()  { return "?";  }
+    virtual QString Dump		()  { return "";  }
     virtual QString ObjectInfo	()  { return "";  }			// развернутая информация по объекту
     virtual void    Prepare     ()  { }
     virtual void    Parse(QString&)  { }

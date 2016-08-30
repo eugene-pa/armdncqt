@@ -129,16 +129,21 @@ void ShapeSet::Activate()
     }
 }
 
-DShape * ShapeSet::GetNearestShape(QPoint pnt, ShapeType type)
+
+// поиск ближайшего к заданной точке примитива
+// std::vector<ShapeType>* types - указатель на вектор нужных типов, если nullptr (по умолчанию) - ищем любой примитив
+DShape * ShapeSet::GetNearestShape(QPoint pnt, std::vector<ShapeType>* types)
 {
-    foreach (DShape * shape, set)
+    for (DShape * shape : set)
     {
         ShapeType t = shape->GetType();
         if (t == TRAIN_COD || t ==END_COD)
             continue;
-        if ((type ==END_COD || t==type) && shape->boundingRect().contains(pnt))
+        //if ((type ==END_COD || t==type) && shape->boundingRect().contains(pnt))
+        if (types==nullptr || find(types->begin(), types->end(), t) != types->end())
         {
-            return shape;
+            if (shape->boundingRect().contains(pnt))
+                return shape;
         }
     }
 
