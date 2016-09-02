@@ -22,7 +22,7 @@ DlgRoutes::~DlgRoutes()
 // смена станции
 void DlgRoutes::changeStation(class Station * p)
 {
-    if (p!=st)
+    if (p!=st && p!=nullptr)
     {
         ui->tableRoutes->clear();
         st = p;

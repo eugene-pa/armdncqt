@@ -23,7 +23,7 @@ DlgStrlInfo::~DlgStrlInfo()
 // смена станции
 void DlgStrlInfo::changeStation(class Station * p)
 {
-    if (p!=st)
+    if (p!=st && p!=nullptr)
     {
         ui->treeStrl->clear();
         st = p;

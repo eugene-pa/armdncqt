@@ -115,7 +115,7 @@ void DlgSvtfInfo::closeEvent(QCloseEvent *e)
 // смена станции
 void DlgSvtfInfo::changeStation(class Station * p)
 {
-    if (p!=st)
+    if (p!=st && p!=nullptr)
     {
         ui->treeSvtf->clear();
         st = p;

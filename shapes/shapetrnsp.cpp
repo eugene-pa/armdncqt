@@ -450,7 +450,7 @@ void ShapeTrnsp::Draw(QPainter* painter)
                 QTextOption op(Qt::AlignCenter);
 
                 // особо обрабатываю транспарант 25 - TRNSP_TEXT, выводим имя сигнала вместо названия транспаранта
-                if (prop->id==TRNSP_TEXT)
+                if (prop->id==TRNSP_TEXT || palitra.text.length()==0)
                 {
                     painter->drawText(rect, stsExpr[0]->Source(), op);
                 }

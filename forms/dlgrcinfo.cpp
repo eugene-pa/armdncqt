@@ -25,7 +25,7 @@ DlgRcInfo::~DlgRcInfo()
 // смена станции
 void DlgRcInfo::changeStation(class Station * p)
 {
-    if (p!=st)
+    if (p!=st && p!=nullptr)
     {
         ui->tableRc->clear();
         st = p;

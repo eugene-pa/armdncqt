@@ -153,15 +153,26 @@ void Station::GetValue(QString& name, int& ret)
         tsname = tsname.replace("~", "");
     }
 
-    if (st != nullptr && Ts.count(tsname.toStdString()))
+    if (st != nullptr && st->Ts.count(tsname.toStdString()))
     {
-        class Ts * ts = Ts[tsname.toStdString()];
+        class Ts * ts = st->Ts[tsname.toStdString()];
         ret =  ts->Disabled() ? false :                         // Для блокированных ТС возвращаем false в выражениях (Решение не однозначное...)
                pulse ? ts->StsPulse() : ts->Sts();
     }
     else
     {
-        qDebug() << QString("Ошибка идентификации сигнала %1").arg(name);
+        // 2016.09.02. Обрабатываю неявные виртуальные сигналы МДМ1 и МДМ2
+        if (name=="МДМ1")
+        {
+            ret = st->IsCom3On() ? 1 : 0;
+        }
+        else
+        if (name=="МДМ2")
+        {
+            ret = st->IsCom4On() ? 1 : 0;
+        }
+        else
+            qDebug() << QString("Ошибка идентификации сигнала %1").arg(name);
     }
 }
 
