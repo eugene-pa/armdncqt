@@ -188,6 +188,9 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     ExtractSysInfo (0, st->mainSysInfo);                    // извлечь SysInfo по основному БМ
     ExtractSysInfo (1, st->rsrvSysInfo);                    // извлечь SysInfo по резервному БМ
 
+    st->stsCom3On = st->GetSysInfo(Rsrv)->Com3Connected();
+    st->stsCom4On = st->GetSysInfo(Rsrv)->Com4Connected();
+
     st->tSpokSnd = tSpokSnd;
     st->tSpokRcv = tSpokRcv;
 

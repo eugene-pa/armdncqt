@@ -35,15 +35,15 @@ DlgTsInfo::~DlgTsInfo()
 // слот обработки события смена станции
 void DlgTsInfo::changeStation(class Station *pst)
 {
-    if (pSt == pst)
-        return;
+    if (pst!=pSt && pst!=nullptr)
+    {
+        pSt = pst;
+        ui->labelSt->setText(pst->Name());                      // имя станции
+        ui->widgetTs->setNormal(ui->checkBox->isChecked());     // состояние нормализации
 
-    pSt = pst;
-    ui->labelSt->setText(pst->Name());                      // имя станции
-    ui->widgetTs->setNormal(ui->checkBox->isChecked());     // состояние нормализации
-
-    fillTable();                                            // заполнить таблицу имен ТС
-    ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
+        fillTable();                                            // заполнить таблицу имен ТС
+        ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
+    }
 }
 
 // получить значок состояния ТС

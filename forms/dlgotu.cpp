@@ -29,13 +29,12 @@ DlgOtu::~DlgOtu()
 // слот обработки события смена станции
 void DlgOtu::changeStation(Station *pst)
 {
-    if (pSt == pst || pst==nullptr)
-        return;
-
-    pSt = pst;
-    setWindowTitle("Список ОТУ по станции " + pst->Name());
-
-    fillTable();                                            // заполнить таблицу имен ТС
+    if (pst!=pSt && pst!=nullptr)
+    {
+        pSt = pst;
+        setWindowTitle("Список ОТУ по станции " + pst->Name());
+        fillTable();                                            // заполнить таблицу имен ТС
+    }
 }
 
 
