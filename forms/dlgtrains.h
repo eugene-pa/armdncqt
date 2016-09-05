@@ -21,6 +21,12 @@ private slots:
 private:
     Ui::DlgTrains *ui;
     void fill(bool all=true);
+    void updateList();
+    void addTrainInfo(int row, class Train *);
+
+    // события
+    virtual void timerEvent(QTimerEvent *event) override;
+
 };
 
 #endif // DLGTRAINS_H

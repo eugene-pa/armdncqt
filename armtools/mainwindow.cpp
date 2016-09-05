@@ -364,7 +364,7 @@ void MainWindow::rawdataready(ClientTcp *client)
 }
 
 
-
+// ТС
 void MainWindow::on_action_TS_triggered()
 {
     if (dlgTs==nullptr)
@@ -377,7 +377,7 @@ void MainWindow::on_action_TS_triggered()
         dlgTs->setVisible(!dlgTs->isVisible());
 }
 
-
+// ТУ
 void MainWindow::on_action_TU_triggered()
 {
     if (dlgTu==nullptr)
@@ -390,6 +390,7 @@ void MainWindow::on_action_TU_triggered()
         dlgTu->setVisible(!dlgTu->isVisible());
 }
 
+// ОТУ
 void MainWindow::on_action_OTU_triggered()
 {
     if (dlgOtu==nullptr)
@@ -402,6 +403,7 @@ void MainWindow::on_action_OTU_triggered()
         dlgOtu->setVisible(!dlgOtu->isVisible());
 }
 
+// Маршруты
 void MainWindow::on_action_Routes_triggered()
 {
     if (dlgRoutes==nullptr)
@@ -414,6 +416,7 @@ void MainWindow::on_action_Routes_triggered()
         dlgRoutes->setVisible(!dlgRoutes->isVisible());
 }
 
+// КП
 void MainWindow::on_action_KP_triggered()
 {
     if (dlgKp==nullptr)
@@ -426,6 +429,7 @@ void MainWindow::on_action_KP_triggered()
         dlgKp->setVisible(!dlgKp->isVisible());
 }
 
+// РЦ
 void MainWindow::on_action_RC_triggered()
 {
     if (dlgRc==nullptr)
@@ -438,6 +442,7 @@ void MainWindow::on_action_RC_triggered()
         dlgRc->setVisible(!dlgRc->isVisible());
 }
 
+// стрелки
 void MainWindow::on_action_STRL_triggered()
 {
     if (dlgStrl == nullptr)
@@ -450,6 +455,7 @@ void MainWindow::on_action_STRL_triggered()
         dlgStrl->setVisible(!dlgStrl->isVisible());
 }
 
+// светофоры
 void MainWindow::on_action_SVTF_triggered()
 {
     if (dlgSvtf == nullptr)
@@ -462,6 +468,7 @@ void MainWindow::on_action_SVTF_triggered()
         dlgSvtf->setVisible(!dlgSvtf->isVisible());
 }
 
+// станции
 void MainWindow::on_action_Stations_triggered()
 {
     if (dlgStations == nullptr)
@@ -471,6 +478,19 @@ void MainWindow::on_action_Stations_triggered()
     }
     else
         dlgStations->setVisible(!dlgStations->isVisible());
+}
+
+// поезда
+void MainWindow::on_action_DlgTrains_triggered()
+{
+
+    if (dlgTrains == nullptr)
+    {
+        dlgTrains = new DlgTrains(this);
+        dlgTrains->show();
+    }
+    else
+        dlgTrains->setVisible(!dlgTrains->isVisible());
 }
 
 
@@ -524,8 +544,37 @@ void MainWindow::on_action_15_triggered()
 //    process.waitForFinished(-1);
 }
 
+// О программе
+void MainWindow::on_action_About_triggered()
+{
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.lastModified().toString(FORMAT_DATETIME)));
+}
 
-// --------------------------------------------- Работа с архивом ----------------------------
+void MainWindow::on_action_QtAbout_triggered()
+{
+    QMessageBox::aboutQt(this, "Версия QT");
+}
+
+// Вкл/откл тултипы
+void MainWindow::on_action_Tooltip_triggered()
+{
+    child->setMouseTracking(tooltip = ui->action_Tooltip->isChecked());
+}
+
+void MainWindow::on_action_VisibleTrains_triggered()
+{
+    ShapeTrain::bShowTrains = !ShapeTrain::bShowTrains;
+}
+
+void MainWindow::on_action_VisibleNonregTrains_triggered()
+{
+    ShapeTrain::bShowNonregTrains = !ShapeTrain::bShowNonregTrains;
+}
+
+
+
+// -------------------------------------------------------------- Работа с архивом ---------------------------------------------------------------------
 //                                           можно вынести в отд.файл
 // щелчок флажка поиск изменений ТС; если сняли флажок - очистить поле выбора искомого ТС в списке
 void MainWindow::tsToggled(bool checked)
@@ -640,6 +689,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
     ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
     ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
     ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
+    ui->action_DlgTrains->setChecked(dlgTrains  != nullptr && dlgTrains ->isVisible());
 
 }
 
@@ -779,31 +829,4 @@ void MainWindow::on_actionPrev_triggered()
 {
 
 }
-
-// О программе
-void MainWindow::on_action_About_triggered()
-{
-    QFileInfo info( QCoreApplication::applicationFilePath() );
-    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.lastModified().toString(FORMAT_DATETIME)));
-}
-
-void MainWindow::on_action_QtAbout_triggered()
-{
-    QMessageBox::aboutQt(this, "Версия QT");
-}
-
-// Вкл/откл тултипы
-void MainWindow::on_action_Tooltip_triggered()
-{
-    child->setMouseTracking(tooltip = ui->action_Tooltip->isChecked());
-}
-
-void MainWindow::on_action_VisibleTrains_triggered()
-{
-    ShapeTrain::bShowTrains = !ShapeTrain::bShowTrains;
-}
-
-void MainWindow::on_action_VisibleNonregTrains_triggered()
-{
-    ShapeTrain::bShowNonregTrains = !ShapeTrain::bShowNonregTrains;
-}
+// -------------------------------------------------------------- end Работа с архивом ---------------------------------------------------------------------

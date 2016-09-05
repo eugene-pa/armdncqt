@@ -110,6 +110,8 @@ private slots:
 
     void on_action_VisibleNonregTrains_triggered();
 
+    void on_action_DlgTrains_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 

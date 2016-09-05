@@ -50,7 +50,6 @@ public:
     void Prepare ();
 
     DShape * GetNearestShape(QPoint Pnt, std::vector<ShapeType>* = nullptr);
-    DShape * GetNearestShape(QPoint Pnt, ShapeType *type, int n);
 
     float   GetxMin() { return xMin; }			    // Минимальная координата примитива по оси X
     float   GetyMin() { return yMin; }		            // Минимальная координата примитива по оси Y

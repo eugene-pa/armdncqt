@@ -165,7 +165,7 @@ void ShapeSvtf::Parse(QString& src)
         tSize = QSize(50,20);                               // макс.размер поля для номера
         bool left = (((int) subtype)%2) > 0;                // направление
         xyText = XY + (left ? QPointF(23, offset_y) : QPointF(offset_x - tSize.width(), offset_y));// точка написания номера
-        boundRect = QRectF(xyText, tSize);
+        rect = boundRect = QRectF(xyText, tSize);
         // опции выравнивания текста
         option = new QTextOption((left ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignTop);
 

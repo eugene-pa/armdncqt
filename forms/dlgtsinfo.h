@@ -29,8 +29,8 @@ public:
 
 private:
     // события
-    virtual void timerEvent(QTimerEvent *event);
-    virtual void closeEvent(QCloseEvent *);
+    virtual void timerEvent(QTimerEvent *event) override;
+    virtual void closeEvent(QCloseEvent *)  override;
 
     QIcon getStsImage (class Ts * ts);                      // получить значок состояния ТС
     void UpdateList();                                      // обновить состояние ТС в списке

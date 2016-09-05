@@ -26,11 +26,12 @@ SprBase::SprBase()
     unitype = Unknown;
 
     BaseNames.push_back("?"    );
-    BaseNames.push_back("ТС"   );
-    BaseNames.push_back("ТУ"   );
-    BaseNames.push_back("РЦ"   );
-    BaseNames.push_back("СВТФ" );
-    BaseNames.push_back("СТРЛ" );
+    BaseNames.push_back("ТС"   );                           // 1 - BaseTs
+    BaseNames.push_back("ТУ"   );                           // 2 - BaseTu
+    BaseNames.push_back("ОТУ"  );                           // 3 - BaseOtu
+    BaseNames.push_back("РЦ"   );                           // 4 - BaseRc
+    BaseNames.push_back("СВТФ" );                           // 5 - BaseSvtf
+    BaseNames.push_back("СТРЛ" );                           // 6 - BaseStrl
 }
 
 SprBase::~SprBase()

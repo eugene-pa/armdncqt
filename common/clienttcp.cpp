@@ -115,8 +115,8 @@ void ClientTcp::slotReadyRead      ()
         _length += sock->read(_data+_length, toRead-_length);   // читаем в буфер со смещением length
         if (_length < toRead)
         {
-            if (_length > 0 )
-                qDebug() << "Недобор до" << toRead << ". Прочитано: " << _length;
+//            if (_length > 0 )
+//                qDebug() << "Недобор до" << toRead << ". Прочитано: " << _length;
             return;
         }
         if (_length==sizeof(TcpHeaderExt))                  // расширенный 8-ми байтный заголовок

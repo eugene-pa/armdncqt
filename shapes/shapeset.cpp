@@ -153,7 +153,3 @@ DShape * ShapeSet::GetNearestShape(QPoint pnt, std::vector<ShapeType>* types)
     return nullptr;
 }
 
-DShape * ShapeSet::GetNearestShape(QPoint Pnt, ShapeType *type, int n)
-{
-    return nullptr;
-}

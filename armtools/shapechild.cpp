@@ -78,35 +78,10 @@ void ShapeChild::timerEvent(QTimerEvent *event)
     DShape::globalPulse = !DShape::globalPulse;             // в случае нескольких окон это делать нельзя, так как переменная DShape::globalPulse одна
     Q_UNUSED(event)
     scene->update();
-
-    // пробовал принудительно отрисовывать поезда при масштабировании - бесполезно!
-//    QPainter p;
-//    p.begin(this);
-//    shapeSet->GetSet()[shapeSet->GetSet().count()-1]->Draw(&p);
-//    p.end();
 }
-/*
-bool ShapeChild::event(QEvent *event)
-{
-    if (event->type() == QEvent::ToolTip)
-    {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-        //int index = itemAt(helpEvent->pos());
-        DShape * shape = shapeSet->GetNearestShape(helpEvent->pos());
-        if (shape != nullptr)
-            QToolTip::showText(helpEvent->globalPos(), shape->Dump());
-        else
-        {
-            QToolTip::hideText();
-            event->ignore();
-        }
-    }
-    return QWidget::event(event);
-}
-*/
 
 // отображаем тултип при перемещении мыши по мере необходимости
-// КЛЮЧЕВОЙ МОМЕНТ: учет масштабирования и скола схемы выполняется с помощью ИНВЕРТИРОВННОЙ матрицы трансформации ВЬЮПОРТА:
+// КЛЮЧЕВОЙ МОМЕНТ: учет масштабирования и скролла схемы выполняется с помощью ИНВЕРТИРОВННОЙ матрицы трансформации ВЬЮПОРТА:
 //      QTransform t = viewportTransform().inverted();
 //      QPoint point = t.map(p);
 std::vector<ShapeType> tooltipShapes = { SEGMENT_COD, ANGLE_COD, SVTF_COD, STRL_COD, MODE_COD };
@@ -126,3 +101,23 @@ void ShapeChild::mouseMoveEvent(QMouseEvent *event)
         QToolTip::hideText();
     }
 }
+
+/*
+bool ShapeChild::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip)
+    {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        //int index = itemAt(helpEvent->pos());
+        DShape * shape = shapeSet->GetNearestShape(helpEvent->pos());
+        if (shape != nullptr)
+            QToolTip::showText(helpEvent->globalPos(), shape->Dump());
+        else
+        {
+            QToolTip::hideText();
+            event->ignore();
+        }
+    }
+    return QWidget::event(event);
+}
+*/

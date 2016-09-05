@@ -204,7 +204,7 @@ void ShapeStrl::Parse(QString& src)
 
         // дял отрисовеи окантовки расширяем прямоугольник rect на dxy пикселей
         int dxy = 7;
-        boundRect = QRect(rect.x()-dxy, rect.y()-dxy, width + dxy*2, height + dxy*2);
+        rect = boundRect = QRect(rect.x()-dxy, rect.y()-dxy, width + dxy*2, height + dxy*2);
 
         if (!ok)
         {

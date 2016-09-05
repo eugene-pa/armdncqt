@@ -20,6 +20,7 @@ public:
     static Train * restore(int sno, int no, class KrugInfo * krug);
     static void ClearAllRc();
     static void AcceptTS (class Station *);                 // обработка объектов по станции
+    static void ClearMark();                                // очистить пометки
 
     Train();
     Train(int sno, int no=0, class KrugInfo * krug = nullptr);
@@ -30,6 +31,7 @@ public:
     void AddRc(class Rc * rc);                              // добавить занятую РЦ
     void ClearRc();                                         // очистить список РЦ
     bool IsEvn() { return ((no > 0 ? no : sno) % 2) == 0; } // четный ?
+
 private:
     // учитывая динамический характер объекта "поезд" можно было бы организовать пул справочников поездов таким образом,
     // чтобы не возвращать однажды выделеннную память, а повторно использовать ее после удаления поезда
@@ -60,6 +62,9 @@ private:
 
     int     nrc;                                            // число занятых поездом РЦ
     std::vector <class Rc *> Rc;                            // массив указателей на справочники занятых РЦ (не используемые обнуляются)
+
+    bool    marked;
+
 // хочу сделать более осмысленной модель
 //	short	NoRc;										    // номер последней занятой РЦ
 //	BOOL	EraseMark;									    // Пометка для удаления

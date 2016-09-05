@@ -52,7 +52,8 @@ Train::~Train()
 Train * Train::GetBySysNo(int sno, KrugInfo * krug)
 {
     Q_UNUSED(krug)
-    return Trains.count(sno) ? Trains[sno] : nullptr;
+    int key = krug==nullptr ? sno : krug->no() << 16 | sno;    // формируем ключ
+    return Trains.count(key) ? Trains[key] : nullptr;
 }
 
 // добавить поезд
@@ -64,7 +65,7 @@ Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 
 // добавить занятую РЦ
 // механизм повторного использования места в массие QVector Rc не срабатывает (по крайне мере в эмуляторе LINUX, имеем первый элемент = 0, потом значащий)
-// причем nrc не соответствкет размерности Rc
+// причем nrc не соответствует размерности Rc
 void Train::AddRc(class Rc* rc)
 {
     if (nrc < (int)Rc.size())
@@ -88,5 +89,14 @@ void Train::ClearAllRc()
     {
         Train * train = rec.second;
         train->ClearRc();
+    }
+}
+
+void Train::ClearMark()
+{
+    for (auto rec : Trains)
+    {
+        Train * train = rec.second;
+        train->marked = false;
     }
 }
