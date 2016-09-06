@@ -14,6 +14,9 @@ DlgStationsInfo::DlgStationsInfo(QWidget *parent) :
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setHorizontalHeaderLabels(QStringList() << "Станция   " << " # " << " Ras " << "Адрес" << " Версия " << "ОТУ" << "КП ID" << "Конфигурация" );
 
+    // автоматически растягтваем 8-й столбец
+    t->horizontalHeader()->setSectionResizeMode(7, QHeaderView::Stretch);
+
     // заполнение таблицы информацией о станциях
     // сортировка выполняется автоматически
     // указатель на объект запоминается в ячейках первого столбца

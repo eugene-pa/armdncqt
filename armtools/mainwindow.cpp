@@ -136,6 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
     KrugInfo * krug = nullptr;
     Esr::ReadBd(dbname, logger);                            // ЕСР
     Station::ReadBd(dbname, krug, logger);                  // станции
+    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
     IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
     Ts::ReadBd (dbname, krug, logger);                      // ТС
     Tu::ReadBd (dbname, krug, logger);                      // ТУ

@@ -20,6 +20,9 @@ DlgTsInfo::DlgTsInfo(QWidget *parent, class Station * pst) :
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "№" << "Сигнал" << "Место" << "M/I/J");
 
+    // автоматически растягтваем 2-й столбец
+    t->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
     // привязываем обработчик выбора сигнала виджета widgetTs
     QObject::connect(ui->widgetTs, SIGNAL(tsSelected (int)), this, SLOT(on_tsSelected(int)));
 
