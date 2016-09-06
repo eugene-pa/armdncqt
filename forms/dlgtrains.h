@@ -22,7 +22,8 @@ private:
     Ui::DlgTrains *ui;
     void fill(bool all=true);
     void updateList();
-    void addTrainInfo(int row, class Train *);
+    void addTrainInfo(int row, class Train *, bool create=false);
+    bool adjusted;
 
     // события
     virtual void timerEvent(QTimerEvent *event) override;

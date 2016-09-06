@@ -79,7 +79,7 @@ void Train::AddRc(class Rc* rc)
 void Train::ClearRc()
 {
     nrc = 0;
-    for (class Rc * rc : Rc)
+    for (class Rc *& rc : Rc)
         rc = nullptr;
 }
 

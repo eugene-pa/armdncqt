@@ -7,12 +7,18 @@ DlgTrains::DlgTrains(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DlgTrains)
 {
+    adjusted = false;
+
     ui->setupUi(this);
     QTableWidget * t = ui->tableTrains;
     t->verticalHeader()->setDefaultSectionSize(20);
+
     t->setColumnCount(3);
     t->setHorizontalHeaderLabels(QStringList() << "sno" << "No" << "РЦ" );
     fill(ui->checkBox->isChecked());
+
+    // автоматически растягтваем 3-й столбец
+    t->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
 
     startTimer(1000);
 }
@@ -23,12 +29,16 @@ DlgTrains::~DlgTrains()
 }
 
 // добавить в таблицу инфу по поезду
-void DlgTrains::addTrainInfo(int row, Train * train)
+void DlgTrains::addTrainInfo(int row, Train * train, bool create)
 {
     QTableWidget * t = ui->tableTrains;
 
-    t->setItem(row,0, new QTableWidgetItem (QString::number(train->sno)));      // sno
-    t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)train));     // запомним справочник
+    if (create)
+    {
+        t->setRowCount(t->rowCount() + 1);
+        t->setItem(row,0, new QTableWidgetItem (QString::number(train->sno)));      // sno
+        t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)train));     // запомним справочник
+    }
 
     t->setItem(row,1, new QTableWidgetItem (QString::number(train->no)));       // no
 
@@ -46,7 +56,6 @@ void DlgTrains::fill(bool all)
 {
     QTableWidget * t = ui->tableTrains;
     t->clearContents();
-    t->setRowCount((int)Train::Trains.size());
     t->setSortingEnabled(false);
 
     int row = 0;
@@ -56,11 +65,15 @@ void DlgTrains::fill(bool all)
         if (!all && train->no==0)
             continue;
 
-        addTrainInfo(row++, train);
+        addTrainInfo(row++, train, true);
     }
     t->setRowCount(row);
 
-    t->resizeColumnsToContents();
+    if (t->rowCount())
+    {
+        t->resizeColumnsToContents();
+        adjusted = true;
+    }
     t->setSortingEnabled(true);                         // разрешаем сортировку
     t->sortByColumn(1, Qt::AscendingOrder);             // сортировка по умолчанию по №
 
@@ -95,8 +108,14 @@ void DlgTrains::updateList()
         if (train->marked || (!ui->checkBox->isChecked() && train->no==0))
             continue;
         // если поезда нет в списке - добавляем
-        addTrainInfo(row++, train);
+        addTrainInfo(row++, train, true);
     }
+    if (!adjusted && t->rowCount())
+    {
+        t->resizeColumnsToContents();
+        adjusted = true;
+    }
+
 
 }
 
