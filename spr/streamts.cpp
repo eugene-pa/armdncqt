@@ -95,9 +95,30 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
     Peregon *prg = Peregon::GetById (NoPrg, krug);
     if (prg)
     {
-//        prg->ChdkOn		 = ChdkOn;              // вкл/окл контроль поездов по ЧДК
-//        prg->AllEvnTrains= AllEvnTrains;		// число поездов в четном напр.
-//        prg->AllOddTrains= AllOddTrains;		// число поездов в нечетном напр.
+        prg->chdkOn		 = ChdkOn > 0;                      // вкл/окл контроль поездов по ЧДК
+
+        while (!prg->evnTrains.empty())
+            prg->evnTrains.pop();
+        short * p = &EvnTrains[0];
+        for (int i=0; i<AllEvnTrains; i++)                  // число поездов в четном напр.
+        {
+            int sno = p[i];
+            Train * train = Train::GetBySysNo(sno, krug);
+            if (train != nullptr)
+                prg->evnTrains.push(train);
+        }
+
+        while (!prg->oddTrains.empty())
+            prg->oddTrains.pop();
+        p = &OddTrains[0];
+        for (int i=0; i<AllOddTrains; i++)                  // число поездов в четном напр.
+        {
+            int sno = p[i];
+            Train * train = Train::GetBySysNo(sno, krug);
+            if (train != nullptr)
+                prg->oddTrains.push(train);
+        }
+
 //        memmove(pPrg->EvnTrains,EvnTrains,sizeof(EvnTrains));
 //        memmove(pPrg->OddTrains,OddTrains,sizeof(OddTrains));
     }

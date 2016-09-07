@@ -47,7 +47,11 @@ class DPrgDataFromMonitor
 protected:
     WORD	Signature;							// сигнатура (55aa)
     BYTE	NoPrg;								// номер перегона
-    int/*BOOL*/	ChdkOn;							// вкл/окл контроль поездов по ЧДК. ВАЖНО:  BOOL определен в defines.h как bool
+    // в исходящем пакете ChdkOn - 4-байтный int, интерпретируем побайтно с тремя байтами резерва
+    BYTE	ChdkOn;                             // вкл/окл контроль поездов по ЧДК. ВАЖНО:  BOOL определен в defines.h как bool
+    BYTE    rsrv1;                              //
+    BYTE    rsrv2;
+    BYTE    rsrv3;
     short   AllEvnTrains  ;						// число поездов в четном напр.
     short   AllOddTrains  ;						// число поездов в нечетном напр.
     short   EvnTrains [MAX_TRAINS_ON_PER];		// четные поезда
