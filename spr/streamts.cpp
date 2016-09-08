@@ -105,7 +105,9 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             int sno = p[i];
             Train * train = Train::GetBySysNo(sno, krug);
             if (train != nullptr)
+            {
                 prg->evnTrains.push(train);
+            }
         }
 
         while (!prg->oddTrains.empty())
@@ -116,7 +118,9 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             int sno = p[i];
             Train * train = Train::GetBySysNo(sno, krug);
             if (train != nullptr)
+            {
                 prg->oddTrains.push(train);
+            }
         }
 
 //        memmove(pPrg->EvnTrains,EvnTrains,sizeof(EvnTrains));

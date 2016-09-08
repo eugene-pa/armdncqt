@@ -317,7 +317,7 @@
   </action>
   <action name="action_More">
    <property name="text">
-    <string>Масштаб +</string>
+    <string>Масштаб + (Ctrl + '+')</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -325,7 +325,7 @@
   </action>
   <action name="action_Less">
    <property name="text">
-    <string>Масштаб -</string>
+    <string>Масштаб -  (Ctrl + '-')</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
@@ -333,7 +333,10 @@
   </action>
   <action name="action_ZoomOff">
    <property name="text">
-    <string>Масштаб 1:1</string>
+    <string>Масштаб 1:1  (Ctrl + '*')</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+*</string>
    </property>
   </action>
   <action name="action_ToolBar2">

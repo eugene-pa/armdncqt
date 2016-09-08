@@ -15,12 +15,12 @@ Train::Train(int sno, int no, class KrugInfo * krug)
 {
     nrc = 0;
     update(sno, no, krug);
-    Train::Trains[key(sno)] = this;
+    Trains[key(sno)] = this;
 }
 
 Train * Train::restore(int sno, int no, class KrugInfo * krug)
 {
-    qDebug() << "Добавляем поезд в Trains:  Sno=" << sno << "  No=" << no;
+    qDebug() << "Добавляем поезд в Trains:  Sno=" << sno << "  No=" << no << " всего:" << Trains.size();
     Train * train;
     if (FreeTrains.size())
     {
