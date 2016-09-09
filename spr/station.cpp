@@ -335,33 +335,37 @@ void Station::SortTu()
     }
 }
 
+void Station::countMTUMTS()
+{
+    // считаем модули ТС/ТУ
+    for (int i=0; i<mts.count(); i++)
+    {
+        if (IsTsPresent(i))
+            mtsCount++;
+        if (IsTuPresent(i))
+            mtuCount++;
+    }
+
+    // для КП2000 сдвигаем пометки МТС на число модулей ТУ
+    if (Kp2000())
+    {
+        // просмотр с конца, чтобы не мшать просмотру внесением изменений
+        for (int i=mts.count()-1; i>=0; i--)
+            if (IsTsPresent(i))
+                SetBit(mts, i + mtuCount);
+        for (int i=0; i<mtu.count(); i++)
+            if (IsTuPresent(i))
+                SetBit(mts, i, false);
+    }
+
+}
+
 // сдвинуть пометки МТС для КП2000 на число ТУ
 void Station::CountMT()
 {
     for (auto rec : Stations)
     {
-        Station * st = rec.second;
-
-        // считаем модули ТСб ТУ
-        for (int i=0; i<st->mts.count(); i++)
-        {
-            if (st->IsTsPresent(i))
-                st->mtsCount++;
-            if (st->IsTuPresent(i))
-                st->mtuCount++;
-        }
-
-        // для КП2000 сдвигаем пометки МТС на число модулей ТУ
-        if (st->Kp2000())
-        {
-            // просмотр с конца, чтобы не мшать просмотру внесением изменений
-            for (int i=st->mts.count()-1; i>=0; i--)
-                if (st->IsTsPresent(i))
-                    st->SetBit(st->mts, i + st->mtuCount);
-            for (int i=0; i<st->mtu.count(); i++)
-                if (st->IsTuPresent(i))
-                    st->SetBit(st->mts, i, false);
-        }
+        rec.second->countMTUMTS();
     }
 }
 
@@ -924,6 +928,9 @@ void Station::ParseConfigKP2007(Logger& logger)
     // МТС,МТУ
     ParseMT (false);
     ParseMT (true);
+
+    // подсчет числа модулей
+    countMTUMTS();
 
     // явное опсание исключений ТУ для разных режимов управления
     ParseTuEclusion();

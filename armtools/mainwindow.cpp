@@ -21,14 +21,14 @@ QString server_ipport = "127.0.0.1:1010";                   // подключе�
 QString version = "1.0.1.10";                               // версия приложения
 
 QStringList extVideos;                                      // доп.видеоформы
-
+QString title = "АРМ ШН. ";
 bool blackBoxMode;                                          // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
     QString path = "C:/armdncqt/";
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
-    QString editor = "notepad.exe";     // блокнот
+    QString editor = "notepad.exe";                         // блокнот
 #endif
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
@@ -43,12 +43,13 @@ bool blackBoxMode;                                          // включен р
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
 #endif
-    Logger logger(path + "Log/armtools.log", true, true);
+    Logger logger(path + "log/armtools.log", true, true);
 
     QString images(":/status/images/");                     // путь к образам status/images
     QString imagesEx(":/images/images/");                   // путь к образам images/images
 
     QString dbname = path + "bd/arm.db";
+    QString esrdbbname = "bd/arm.db";
     QString extDb  = path + "bd/armext.db";
     QString pathTemp=path + "bd/temp/";
     QString pathSave=path + "bd/save/";
@@ -98,8 +99,13 @@ MainWindow::MainWindow(QWidget *parent) :
         logger.ChangeActualFile(path + "Log/armtools.log");
     }
 
-    // если задана опция FORMNAME, принимаем доп.формы
     QString tmp;
+
+    // опция ESRDBNAME
+    if (rdr.GetText("ESRDBNAME", tmp))
+        esrdbbname = QFileInfo(tmp).isAbsolute() ? tmp : path + tmp;
+
+    // если задана опция FORMNAME, принимаем доп.формы
     if (rdr.GetText("FORMNAME", tmp))
     {
         extVideos = tmp.split(QRegExp("[\\s,]+"));
@@ -108,6 +114,12 @@ MainWindow::MainWindow(QWidget *parent) :
             makeFullPath(path, s);
         }
     }
+
+    // опция TITLE
+    if (rdr.GetText("TITLE", tmp))
+        title += tmp;
+
+    this->setWindowTitle(title);
 
     // создаем папки temp, save, если их нет
     QDir temp(pathTemp);
@@ -134,7 +146,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // загрузка НСИ
     KrugInfo * krug = nullptr;
-    Esr::ReadBd(dbname, logger);                            // ЕСР
+    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
     Station::ReadBd(dbname, krug, logger);                  // станции
     Peregon::ReadBd(dbname, krug, logger);                  // перегоны
     IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
@@ -150,6 +162,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // динамическое формирование элементов тулбара
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionBlackbox, StationsCmb = new QComboBox);                 // "Черный ящик"
+    StationsCmb->setMaxVisibleItems(50);
     ui->mainToolBar->insertWidget(ui->actionPrev, dateEdit = new QDateEdit(QDate::currentDate()));  // Дата
     dateEdit->setCalendarWidget(calendar = new QCalendarWidget());                                  // Календарь
     dateEdit->setCalendarPopup(true);

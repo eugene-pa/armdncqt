@@ -53,6 +53,7 @@ public:
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
     static void CountMT();                                  // посчитать модули и сдвинуть пометки МТС для КП2000 на число ТУ
+    void countMTUMTS();                                     // посчитать модули и сдвинуть пометки МТС для КП2000 на число ТУ
 
     // открытые функции
     Station(QSqlQuery&, class KrugInfo* , Logger& );        // конструктор на базе записи в БД

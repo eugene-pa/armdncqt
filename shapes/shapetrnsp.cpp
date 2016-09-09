@@ -438,16 +438,29 @@ void ShapeTrnsp::Draw(QPainter* painter)
         }
         else
         {
+            QTextOption op(Qt::AlignCenter);
+
             if (path.length() != 0)                         // геометрия пути
             {
-                painter->drawPath(path);
+                painter->drawPath(path);                    // некоторые транспаранты могут иметь геометрию + текст, например ЧКЖ/НКЖ
+                                                            // можно опционировать в поле БД, можно зашить в код
+                if (idObj==TRNSP_CHKZH || idObj==TRNSP_NKZH)
+                {
+                    if (!palitra.suited)
+                        suiteFont (painter, palitra);
+                    QRectF r = rect;
+                    if (idObj==TRNSP_NKZH)
+                        r.moveTopLeft (QPointF(rect.x() - 8, rect.y()-8));
+                    else
+                        r.moveTopLeft (QPointF(rect.x() + 8, rect.y()-8));
+                    painter->drawText(r, palitra.text, op);
+                }
             }
             else                                            // окантовка с текстом
             {
                 painter->drawRect(rect);
 
                 painter->setFont(palitra.font);
-                QTextOption op(Qt::AlignCenter);
 
                 // особо обрабатываю транспарант 25 - TRNSP_TEXT, выводим имя сигнала вместо названия транспаранта
                 if (prop->id==TRNSP_TEXT || palitra.text.length()==0)

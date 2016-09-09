@@ -4,7 +4,7 @@
 #include "shaperc.h"
 
 bool ShapeTrain::bShowTrains        = true;
-bool ShapeTrain::bShowNonregTrains  = true;
+bool ShapeTrain::bShowNonregTrains  = false;
 
 // "виртуальный" объект ShapeTrain генерится при создании формы последним примитивом
 // его функци рисования paint отрисовывает все поезда на РЦ и на слепых перегонах

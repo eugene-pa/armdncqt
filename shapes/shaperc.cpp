@@ -136,8 +136,8 @@ void ShapeRc::normalize()
         case Vert:  y2 = y1 + (x2-x1); x2 = x1;             break;
         case ArcNW: y2 = y1;    y1 = y1-R;  x2 = x1-R;      break;
         case ArcNE: x2 = x1;    x1 += R;    y2 = y1 - R;    break;
-        case ArcSE: x2 = 1 + R; y2 = y1;    y1 += R;        break;
-        case ArcSW: x2 = x1;    x1 -= R;    y2 = y1 + R;    break;
+        case ArcSE: x2 = x1 + R; y2 = y1;    y1 += R;        break;
+        case ArcSW:x2 = x1;    x1 -= R;    y2 = y1 + R;     break;
         case ArcSWN:y2 = y1 - R;y1 += R;    x2 = x1;        break;
         case ArcNES:y2 = y1 - R;y1 += R;    x2 = x1;        break;
 

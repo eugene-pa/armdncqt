@@ -195,7 +195,7 @@ bool Tu::ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger)
 
     logger.log("Сортировка списка ТУ TuSorted");
     Station::SortTu();
-    Station::CountMT();
+    //Station::CountMT();
 
     return true;
 
