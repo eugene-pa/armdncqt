@@ -324,6 +324,7 @@ QString BoolExpression::ErrorText()
             s = "Ошибка синтаксиса. Корректное вычисление невозможно"; break;
         case GetVariableError:
             s = ErrorUndefinedVarNameText + "'" + UndefinedVarName + "'"; break;
+        default:                                    break;
 
     }
     return s;

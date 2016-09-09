@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
         pathSave=path + "bd/save/";
         formDir =path + "pictures/";
 
-        logger.ChangeActualFile(path + "Log/armtools.log");
+        logger.ChangeActualFile(path + "log/armtools.log");
     }
 
     QString tmp;
@@ -713,7 +713,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 // если задано условие поиска (ТС или связь) - ищем изменение конкретного ТС или состояния связи
 bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 {
-    int sts;
+    int sts = 0;
     int ret = 0;
 
     if (findChanges && isFindTsChanges())
