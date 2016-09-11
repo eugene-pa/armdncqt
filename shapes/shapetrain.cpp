@@ -91,7 +91,16 @@ void ShapeTrain::Draw(QPainter* painter)
                 bool orient = orientLft == orientRht ? orientLft : orientRht;
 
                 QPointF  * pText;
-                QFont font = QFont("Verdana",10, 60);
+#ifdef Q_OS_WIN
+                int fsize = 10;
+#endif
+#ifdef Q_OS_MAC
+                int fsize = 12;
+#endif
+#ifdef Q_OS_LINUX
+                int fsize = 10;
+#endif
+                QFont font = QFont("Verdana",fsize, 60);
                 painter->setFont(font);
                 QString s = train->no ? QString::number(train->no) : QString::number(train->sno);
                 QRectF boundRect;
