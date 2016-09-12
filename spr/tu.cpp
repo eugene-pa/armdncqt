@@ -122,6 +122,13 @@ ushort Tu::GetIJ()
     validIJ = false;
     if (st)
     {
+        // вирт.ТУ "ПАУЗА"
+        if (modul==0 && _i==0 && _j==0)
+        {
+            validIJ = true;
+            return ij;
+        }
+
         if (st && st->IsMpcEbilock())                       // МПЦ:        №ТУ
         {
             validIJ = _j>0 && _j<=4096;

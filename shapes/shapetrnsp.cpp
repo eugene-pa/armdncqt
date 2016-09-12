@@ -396,9 +396,8 @@ void ShapeTrnsp::Draw(QPainter* painter)
     if (blinking && DShape::globalPulse)
         return;
 
-    if ((*state)[StsOn] || (*state)[StsOff] || (*state)[StsExt]
-            || path.length()/*idObj==TRNSP_UKSPS*/  // возможно, нужны не все транспаранты
-            )
+    // отрисовка если транспарант MUST DRAW всегда или есть активные состояния
+    if (prop->drawOffState || (*state)[StsOn] || (*state)[StsOff] || (*state)[StsExt])
     {
 //        bool on = (*state)[StsOn],
 //             off = (*state)[StsOff],

@@ -791,6 +791,7 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
                 //     уведомление о невозможности
 
                 // если ничего никак не нашли (ret=-1) и это не поиск изменений - выход
+                ret = reader->Read(*rqDate);
                 if (ret < 0 || !findChanges)
                     break;
             }
