@@ -112,6 +112,8 @@ private slots:
 
     void on_action_DlgTrains_triggered();
 
+    void on_action_load_log();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 

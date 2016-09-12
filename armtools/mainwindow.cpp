@@ -207,6 +207,24 @@ MainWindow::MainWindow(QWidget *parent) :
     calendar->hide();
     timeEdit->setDisplayFormat("hh:mm:ss");
 
+    // создаем меню ПОМОЩЬ справа
+    QMenuBar *bar = new QMenuBar(ui->menuBar);
+    QMenu *menu = new QMenu("Помощь", bar);
+    bar->addMenu(menu);
+
+    QAction *action1 = new QAction("О программе", bar);
+    menu->addAction(action1);
+    connect(action1, SIGNAL(triggered()), this, SLOT(on_action_About_triggered()));
+
+    QAction *action2 = new QAction("Протокол загрузки", bar);
+    menu->addAction(action2);
+    connect(action2, SIGNAL(triggered()), this, SLOT(on_action_load_log()));
+
+    QAction *action3 = new QAction("О QT", bar);
+    menu->addAction(action3);
+    connect(action3, SIGNAL(triggered()), this, SLOT(on_action_QtAbout_triggered()));
+
+    ui->menuBar->setCornerWidget(bar);
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
@@ -570,6 +588,14 @@ void MainWindow::on_action_QtAbout_triggered()
     QMessageBox::aboutQt(this, "Версия QT");
 }
 
+void MainWindow::on_action_load_log()
+{
+    QStringList params;
+    params << logger.GetActualFile();
+    process.start(editor, params);
+}
+
+
 // Вкл/откл тултипы
 void MainWindow::on_action_Tooltip_triggered()
 {
@@ -790,8 +816,11 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
                 // if (ошибка)
                 //     уведомление о невозможности
 
+                // позиционируемся на заданное время, если требуется
+                if (rqDate != nullptr)
+                    ret = reader->Read(*rqDate);
+
                 // если ничего никак не нашли (ret=-1) и это не поиск изменений - выход
-                ret = reader->Read(*rqDate);
                 if (ret < 0 || !findChanges)
                     break;
             }
