@@ -264,6 +264,7 @@ QString ShapeTrnsp::Dump()
     if (prop->description.length())
         s += "\r\n" + prop->description;
 
+    // ТС
     for (int i=1; i<=3; i++)
     {
         if (stsExpr[i-1] != nullptr && stsExpr[i-1]->Source().length())
@@ -271,6 +272,7 @@ QString ShapeTrnsp::Dump()
             s += "\r\nТС" + QString::number(i) + ": " + stsExpr[i-1]->Source();
             if (stsPulseExpr[i-1]!=nullptr && stsPulseExpr[i-1]->Source().length())
                 s += ",   " + stsPulseExpr[i-1]->Source();
+            s += " = " + QString::number(stsExpr[i-1]->ValueBool());
         }
     }
 

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QTextCodec>
+#include <QPushButton>
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QPaintEvent>

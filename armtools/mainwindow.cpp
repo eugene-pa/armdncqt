@@ -201,6 +201,11 @@ MainWindow::MainWindow(QWidget *parent) :
     sliderScale->setFixedWidth(180);
     connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
 
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    QPushButton * scale11 = new QPushButton("1:1", ui->mainToolBar);
+    ui->mainToolBar->addWidget(scale11);
+    scale11->setFixedWidth(32);
+    connect(scale11, SIGNAL(pressed()), this, SLOT(on_action_ZoomOff_triggered()));
 
     ui->mainToolBar->setBaseSize(800,36);
 
@@ -525,18 +530,19 @@ void MainWindow::on_action_DlgTrains_triggered()
         dlgTrains->setVisible(!dlgTrains->isVisible());
 }
 
-
+// крупнее
 void MainWindow::on_action_More_triggered()
 {
     sliderScale->setValue(sliderScale->value() + 1);
     scaleView();                                    // масштабирование всего представления
 }
+// мельче
 void MainWindow::on_action_Less_triggered()
 {
     sliderScale->setValue(sliderScale->value() - 1);
     scaleView();
 }
-
+// масштаб 1:1
 void MainWindow::on_action_ZoomOff_triggered()
 {
     sliderScale->setValue(0);
