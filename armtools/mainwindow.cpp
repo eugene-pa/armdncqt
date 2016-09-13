@@ -12,6 +12,7 @@
 #include "../forms/dlgkpinfo.h"
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
+#include "../forms/dlgperegoninfo.h"
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
 #include "../spr/train.h"
@@ -81,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgRoutes = nullptr;                                    // диалог маршрутов
     dlgTrains = nullptr;                                    // поезда
     dlgStations = nullptr;                                  // станции
+    dlgPeregons = nullptr;                                  // перегоны
 
     reader = nullptr;
 
@@ -104,6 +106,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // опция ESRDBNAME
     if (rdr.GetText("ESRDBNAME", tmp))
         esrdbbname = QFileInfo(tmp).isAbsolute() ? tmp : path + tmp;
+    else
+        esrdbbname = path + esrdbbname;
 
     // если задана опция FORMNAME, принимаем доп.формы
     if (rdr.GetText("FORMNAME", tmp))
@@ -285,14 +289,14 @@ MainWindow::~MainWindow()
     delete clientTcp;
     delete reader;
 
-    delete StationsCmb;
-    delete dateEdit;
-    delete calendar;
-    delete stepValue;
+//    delete StationsCmb;
+//    delete dateEdit;
+//    delete calendar;
+//    delete stepValue;
 
-    delete labelZoom;
-    delete sliderScale;
-    delete checkFindLink;
+//    delete labelZoom;
+//    delete sliderScale;
+//    delete checkFindLink;
 
     delete ui;
 }
@@ -517,6 +521,18 @@ void MainWindow::on_action_Stations_triggered()
         dlgStations->setVisible(!dlgStations->isVisible());
 }
 
+// перегоны
+void MainWindow::on_action_Peregons_triggered()
+{
+    if (dlgPeregons == nullptr)
+    {
+        dlgPeregons = new DlgPeregonInfo(this);
+        dlgPeregons->show();
+    }
+    else
+        dlgPeregons->setVisible(!dlgPeregons->isVisible());
+}
+
 // поезда
 void MainWindow::on_action_DlgTrains_triggered()
 {
@@ -734,6 +750,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
     ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
     ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
     ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
+    ui->action_Stations ->setChecked(dlgPeregons!= nullptr && dlgPeregons->isVisible());
     ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
     ui->action_DlgTrains->setChecked(dlgTrains  != nullptr && dlgTrains ->isVisible());
 
@@ -880,3 +897,4 @@ void MainWindow::on_actionPrev_triggered()
 
 }
 // -------------------------------------------------------------- end Работа с архивом ---------------------------------------------------------------------
+

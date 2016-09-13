@@ -115,6 +115,8 @@ private slots:
 
     void on_action_load_log();
 
+    void on_action_Peregons_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -152,6 +154,7 @@ private:
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
     class DlgTrains * dlgTrains;                            // поезда
     class DlgStationsInfo * dlgStations;                    // станции
+    class DlgPeregonInfo* dlgPeregons;                      // перегоны
 
     // работа с архивом
     QDateTime arhDateTime;                                  // дата/время архивного файла

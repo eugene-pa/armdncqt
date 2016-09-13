@@ -2,6 +2,7 @@
 #include "../spr/train.h"
 #include "../spr/rc.h"
 #include "shaperc.h"
+//#include "QThread"
 
 bool ShapeTrain::bShowTrains        = true;
 bool ShapeTrain::bShowNonregTrains  = false;
@@ -32,6 +33,7 @@ void ShapeTrain::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 // - в зависимости от направления поезда и станции отрисовываем номер над крайней левой или правой точкой
 void ShapeTrain::Draw(QPainter* painter)
 {
+    //qDebug() << "Drawing thread: " << QThread::currentThreadId ();
     // поезда на РЦ
     for (auto rec : Train::Trains)
     {

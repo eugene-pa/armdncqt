@@ -153,6 +153,6 @@ RESOURCES += \
     images.qrc
 
 DISTFILES += \
-    armtools.ini \
     history.txt \
-    ../todo.txt
+    ../todo.txt \
+    armtools.ini

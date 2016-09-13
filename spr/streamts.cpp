@@ -97,8 +97,7 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
     {
         prg->chdkOn		 = ChdkOn > 0;                      // вкл/окл контроль поездов по ЧДК
 
-        while (!prg->evnTrains.empty())
-            prg->evnTrains.pop();
+        prg->evnTrains.clear();
         short * p = &EvnTrains[0];
         for (int i=0; i<AllEvnTrains; i++)                  // число поездов в четном напр.
         {
@@ -106,12 +105,11 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             Train * train = Train::GetBySysNo(sno, krug);
             if (train != nullptr)
             {
-                prg->evnTrains.push(train);
+                prg->evnTrains.push_back(train);
             }
         }
 
-        while (!prg->oddTrains.empty())
-            prg->oddTrains.pop();
+        prg->oddTrains.clear();
         p = &OddTrains[0];
         for (int i=0; i<AllOddTrains; i++)                  // число поездов в четном напр.
         {
@@ -119,7 +117,9 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             Train * train = Train::GetBySysNo(sno, krug);
             if (train != nullptr)
             {
-                prg->oddTrains.push(train);
+                prg->oddTrains.push_back(train);
+                train = prg->oddTrains[i];
+                int a = 99;
             }
         }
 

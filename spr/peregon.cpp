@@ -13,6 +13,7 @@ Peregon::Peregon(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     noRcEvnFrom = noRcEvnTo = noRcOddFrom = noRcOddTo = 0;
     leftOddOrient = false;                                  // Нестандартная ориентация изображения станции (слева - нечетные поезда)
     chdkOn        = true;
+    busyOddExpr = busyEvnExpr = nullptr;
 
     this->krug = krug;
     try
@@ -25,7 +26,7 @@ Peregon::Peregon(QSqlQuery& query, KrugInfo* krug, Logger& logger)
         stdown  = Station::GetById(nostdown, krug);
 
         pathes  = query.value("Pathes").toInt(&ret);        // путей
-        blind   = query.value("Pathes").toBool();           // слепой
+        blind   = query.value("Blind").toBool();            // слепой
         blindOddTime = query.value("BlindOdd").toInt(&ret); // время хода нечетное
         blindEvnTime = query.value("BlindEvn").toInt(&ret); // время хода четное
 
@@ -35,7 +36,23 @@ Peregon::Peregon(QSqlQuery& query, KrugInfo* krug, Logger& logger)
         //shortname  += stdown == nullptr ? " -  --- " : " - " + stdown->Name().left(4);
         shortname   = query.value("NicName").toString();
         busyOdd     = query.value("BuzyOdd").toString();    // Выражение занятости в нечетном направлении
+        if (busyOdd.length() && (stup != nullptr || stdown != nullptr))
+        {
+            busyOddExpr = new BoolExpression(busyOdd);
+            if (busyOddExpr->Valid())
+                QObject::connect(busyOddExpr, SIGNAL(GetVar(QString&,int&)), stup != nullptr ? stup : stdown, SLOT(GetValue(QString&,int&)));
+            else
+                logger.log(QString("%1. Ошибка синтаксиса в поле BuzyOdd '%2': %3").arg(Name()).arg(busyOddExpr->Source()).arg(busyOddExpr->ErrorText()));
+        }
         busyEvn     = query.value("BuzyEvn").toString();    // Выражение занятости в   четном направлении
+        if (busyEvn.length() && (stup != nullptr || stdown != nullptr))
+        {
+            busyEvnExpr = new BoolExpression(busyEvn);
+            if (busyEvnExpr->Valid())
+                QObject::connect(busyEvnExpr, SIGNAL(GetVar(QString&,int&)), stup != nullptr ? stup : stdown, SLOT(GetValue(QString&,int&)));
+            else
+                logger.log(QString("%1. Ошибка синтаксиса в поле BuzyEvn '%2': %3").arg(Name()).arg(busyEvnExpr->Source()).arg(busyEvnExpr->ErrorText()));
+        }
 
         // по умолчанию перегон ориентирован как ЧН
         // перегон считается обратно ориентированным (НЧ), если хотя бы одна примыкающая станция НЧ

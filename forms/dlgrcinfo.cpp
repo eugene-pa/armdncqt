@@ -64,6 +64,8 @@ void DlgRcInfo::updateStatus()
 // - поезд
 void DlgRcInfo::fillData()
 {
+    if (st==nullptr)
+        return;
     setWindowTitle("Состояние РЦ по ст." + st->Name());
 
     QTableWidget * t = ui->tableRc;

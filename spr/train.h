@@ -13,6 +13,7 @@ class Train : public SprBase
     friend class DPrgDataFromMonitor;
     friend class DlgTrains;
     friend class ShapeTrain;
+    friend class DlgPeregonInfo;
 public:
 
     // открытые статические функции

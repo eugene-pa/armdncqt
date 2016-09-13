@@ -16,6 +16,12 @@ public:
     ~DlgPeregonInfo();
 
 private:
+    QString s;
+
+    // события
+    virtual void timerEvent(QTimerEvent *event) override;
+    virtual void closeEvent(QCloseEvent *)  override;
+    void updateStatus();
     Ui::DlgPeregonInfo *ui;
 };
 
