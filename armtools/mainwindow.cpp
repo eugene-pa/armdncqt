@@ -55,7 +55,7 @@ bool blackBoxMode;                                          // включен р
     QString pathTemp=path + "bd/temp/";
     QString pathSave=path + "bd/save/";
     QString formDir =path + "pictures/";
-    QString iniFile =path + "armtools/armtools.ini";
+    QString iniFile =       "armtools.ini";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -148,21 +148,6 @@ MainWindow::MainWindow(QWidget *parent) :
     hostStatus.setPixmap(*g_yellow);
     ui->statusBar->addPermanentWidget(&hostStatus);
 
-    // загрузка НСИ
-    KrugInfo * krug = nullptr;
-    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
-    Station::ReadBd(dbname, krug, logger);                  // станции
-    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
-    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
-    Ts::ReadBd (dbname, krug, logger);                      // ТС
-    Tu::ReadBd (dbname, krug, logger);                      // ТУ
-    Otu::ReadBd (dbname, krug, logger);
-    Rc::ReadRelations(dbname, logger);                      // связи РЦ
-    Route::ReadBd(dbname, krug, logger);                    // маршруты
-    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
-
-    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
-
     // динамическое формирование элементов тулбара
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionBlackbox, StationsCmb = new QComboBox);                 // "Черный ящик"
@@ -172,8 +157,6 @@ MainWindow::MainWindow(QWidget *parent) :
     dateEdit->setCalendarPopup(true);
     ui->mainToolBar->insertWidget(ui->actionPrev,new QLabel(" "));                                  // Пробнл
     ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));  // Время
-
-
 
     ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));                             // Шаг по минутам
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
@@ -227,7 +210,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QAction *action2 = new QAction("Протокол загрузки", bar);
     menu->addAction(action2);
-    connect(action2, SIGNAL(triggered()), this, SLOT(on_action_load_log()));
+    connect(action2, SIGNAL(triggered()), this, SLOT(action_load_log()));
 
     QAction *action3 = new QAction("О QT", bar);
     menu->addAction(action3);
@@ -235,15 +218,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->menuBar->setCornerWidget(bar);
 
-    // инициализация сетевых клиентов для подключения к серверу потока ТС
-    clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
-    QObject::connect(clientTcp, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
-    clientTcp->start();
 //    scale = 1;
+    // загрузка НСИ
+    KrugInfo * krug = nullptr;
+    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
+    Station::ReadBd(dbname, krug, logger);                  // станции
+    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
+    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
+    Ts::ReadBd (dbname, krug, logger);                      // ТС
+    Tu::ReadBd (dbname, krug, logger);                      // ТУ
+    Otu::ReadBd (dbname, krug, logger);
+    Rc::ReadRelations(dbname, logger);                      // связи РЦ
+    Route::ReadBd(dbname, krug, logger);                    // маршруты
+    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
+    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
     on_actionBlackbox_triggered();
 
@@ -278,6 +266,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
     stationSelected(0);
+
+    // инициализация сетевых клиентов для подключения к серверу потока ТС
+    clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
+    QObject::connect(clientTcp, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
+    clientTcp->start();
 
     Logger::LogStr ("Конструктор MainWindow завершил работу");
 }
@@ -610,7 +607,7 @@ void MainWindow::on_action_QtAbout_triggered()
     QMessageBox::aboutQt(this, "Версия QT");
 }
 
-void MainWindow::on_action_load_log()
+void MainWindow::action_load_log()
 {
     QStringList params;
     params << logger.GetActualFile();

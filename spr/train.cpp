@@ -14,6 +14,17 @@ Train::Train()
 Train::Train(int sno, int no, class KrugInfo * krug)
 {
     nrc = 0;
+    ind1 = ind2 = ind3 = 0;
+    st = nullptr;
+    tBlindPrgnOn = 0;
+    marked = false;
+    guColor = 0;
+    guType = 0;
+    guCars = 0;
+    guBrutto = 0;
+    guLokser = 0;
+    guLokno = 0;
+
     update(sno, no, krug);
     Trains[key(sno)] = this;
 }

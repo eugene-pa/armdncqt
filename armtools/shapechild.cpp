@@ -37,6 +37,8 @@ ShapeChild::ShapeChild(ShapeSet * set)
 #endif
 
     QToolTip::setFont(tooltipFont);
+//    setAlignment(Qt::AlignLeft | Qt::AlignTop);
+//    centerOn(0, 0);
 }
 
 // смена формы

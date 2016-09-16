@@ -7,6 +7,7 @@ class Peregon : public SprBase
 {
     friend class DPrgDataFromMonitor;
     friend class DlgPeregonInfo;
+    friend class ShapeTrnsp;
 public:
 
     // открытые статические члены

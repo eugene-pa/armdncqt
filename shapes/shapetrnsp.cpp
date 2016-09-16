@@ -9,6 +9,8 @@
 #include "shapeset.h"
 #include "../common/boolexpression.h"
 #include "../spr/sprbase.h"
+#include "../spr/peregon.h"
+#include "shapetrain.h"
 
 std::unordered_map<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
 bool TrnspDescription::loaded = false;
@@ -20,6 +22,8 @@ QPen   ShapeTrnsp::whitePen;                                // общее бел
 ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     pulsing = false;
+    noprg = 0;
+    prg = nullptr;
     // обнуление массива формул
     for (int i=0; i<maxStates; i++)
     {
@@ -151,6 +155,27 @@ void ShapeTrnsp::Parse(QString& src)
             }
         }
         i++;
+    }
+
+    // обраюотаем направление и номер перегона на транспарнтах слепых перегонов
+    if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
+    {
+        QString s = stsExpr[0]->Source();
+        dir = s[0] == 'Ч' ? 1 : s[0] == 'Н' ? -1 : 0;
+        QRegularExpression regexEx("\\A[ЧН]\\[#\\d\\]\\z");
+        QRegularExpressionMatch match = regexEx.match(s);
+        if (match.hasMatch())
+        {
+            QRegularExpression regexExN("\\d");
+            QRegularExpressionMatch match = regexExN.match(s);
+            if (match.hasMatch())
+            {
+                noprg = match.captured().toInt();
+                prg = Peregon::GetById(noprg);
+            }
+        }
+        else
+            log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта 'Поезда на перегоне': %1").arg(src));
     }
 
     if (index > lexems.length() - 1)    return;
@@ -457,6 +482,22 @@ void ShapeTrnsp::Draw(QPainter* painter)
                     else
                         r.moveTopLeft (QPointF(rect.x() + 8, rect.y()-8));
                     painter->drawText(r, palitra.text, op);
+                }
+            }
+            else                                            // поезда на слепых перегонах отрисовываем отдельно
+            if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
+            {
+                if (prg != nullptr)
+                {
+                    if (isEvn() && prg->evnTrains.size())
+                    {
+                        ShapeTrain::drawTrain(painter, prg->evnTrains[0], prg->leftOddOrient, xy(), this->x2y2());
+                    }
+                    else
+                    if (isOdd() && prg->oddTrains.size())
+                    {
+                        ShapeTrain::drawTrain(painter, prg->oddTrains[0], prg->leftOddOrient, xy(), xy());
+                    }
                 }
             }
             else                                            // окантовка с текстом

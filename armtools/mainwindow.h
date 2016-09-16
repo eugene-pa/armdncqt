@@ -113,7 +113,7 @@ private slots:
 
     void on_action_DlgTrains_triggered();
 
-    void on_action_load_log();
+    void action_load_log();
 
     void on_action_Peregons_triggered();
 
