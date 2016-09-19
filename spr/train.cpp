@@ -51,7 +51,7 @@ void Train::update(int sno, int no, class KrugInfo * krug)
     this->krug = krug;
     krugno = krug==nullptr ? 0 : krug->no();
     tmdt = QDateTime::currentDateTime();
-    ClearRc();
+//  ClearRc();
 }
 
 Train::~Train()
@@ -71,7 +71,8 @@ Train * Train::GetBySysNo(int sno, KrugInfo * krug)
 Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 {
     int key = krug==nullptr ? sno : krug->no() << 16 | sno;    // формируем ключ
-    return Trains.count(key) ? Trains[key] : restore(sno, no, krug);
+    Trains.count(key) ? Trains[key]->update(sno, no, krug) : restore(sno, no, krug);
+    return Trains[key];
 }
 
 // добавить занятую РЦ

@@ -160,8 +160,12 @@ void ShapeTrnsp::Parse(QString& src)
     // обраюотаем направление и номер перегона на транспарнтах слепых перегонов
     if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
     {
+        dir = 0;
         QString s = stsExpr[0]->Source();
-        dir = s[0] == 'Ч' ? 1 : s[0] == 'Н' ? -1 : 0;
+        if (s.indexOf("Ч") ==0)
+            dir = 1;
+        if (s.indexOf("Н") ==0 || s.indexOf("H") ==0)
+            dir = -1;
         QRegularExpression regexEx("\\A[ЧН]\\[#\\d\\]\\z");
         QRegularExpressionMatch match = regexEx.match(s);
         if (match.hasMatch())
@@ -489,14 +493,26 @@ void ShapeTrnsp::Draw(QPainter* painter)
             {
                 if (prg != nullptr)
                 {
+                    // нужно уметь отображать несколько поездов со сдвигом
                     if (isEvn() && prg->evnTrains.size())
                     {
-                        ShapeTrain::drawTrain(painter, prg->evnTrains[0], prg->leftOddOrient, xy(), this->x2y2());
+                        for (int i=0; i<prg->evnTrains.size(); i++)
+                        {
+                            float dx = (prg->leftOddOrient ? 10 : -10)*i;
+                            float dy = (prg->leftOddOrient ? -18 : 18)*i;
+                            ShapeTrain::drawTrain(painter, prg->evnTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), x2y2() + QPointF(dx,dy+24));
+                        }
                     }
                     else
+                    // нужно уметь отображать несколько поездов со сдвигом
                     if (isOdd() && prg->oddTrains.size())
                     {
-                        ShapeTrain::drawTrain(painter, prg->oddTrains[0], prg->leftOddOrient, xy(), xy());
+                        for (int i=0; i<prg->oddTrains.size(); i++)
+                        {
+                            float dx = (prg->leftOddOrient ? -10 : 10)*i;
+                            float dy = (prg->leftOddOrient ? 18 : -18)*i;
+                            ShapeTrain::drawTrain(painter, prg->oddTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), xy() + QPointF(dx,dy+24));
+                        }
                     }
                 }
             }

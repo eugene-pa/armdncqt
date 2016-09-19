@@ -48,8 +48,8 @@ protected:
     QStringList tuNames;                                    // имена команд ТУ
     QStringList tuTexts;                                    // расшифровка ТУ
 
-    bool isEvn() { return dir =  1; }
-    bool isOdd() { return dir = -1; }
+    bool isEvn() { return dir ==  1; }
+    bool isOdd() { return dir == -1; }
     int  dir;                                               // направление на транспаранте перегона -1 - неч, +1 чет
     int  noprg;                                             // номер перегона
     class Peregon * prg;                                    // справочник перегона
