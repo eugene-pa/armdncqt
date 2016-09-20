@@ -496,7 +496,7 @@ void ShapeTrnsp::Draw(QPainter* painter)
                     // нужно уметь отображать несколько поездов со сдвигом
                     if (isEvn() && prg->evnTrains.size())
                     {
-                        for (int i=0; i<prg->evnTrains.size(); i++)
+                        for (uint i=0; i<prg->evnTrains.size(); i++)
                         {
                             float dx = (prg->leftOddOrient ? 10 : -10)*i;
                             float dy = (prg->leftOddOrient ? -18 : 18)*i;
@@ -507,7 +507,7 @@ void ShapeTrnsp::Draw(QPainter* painter)
                     // нужно уметь отображать несколько поездов со сдвигом
                     if (isOdd() && prg->oddTrains.size())
                     {
-                        for (int i=0; i<prg->oddTrains.size(); i++)
+                        for (uint i=0; i<prg->oddTrains.size(); i++)
                         {
                             float dx = (prg->leftOddOrient ? -10 : 10)*i;
                             float dy = (prg->leftOddOrient ? 18 : -18)*i;

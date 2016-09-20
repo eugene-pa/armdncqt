@@ -119,12 +119,8 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             {
                 prg->oddTrains.push_back(train);
                 train = prg->oddTrains[i];
-                int a = 99;
             }
         }
-
-//        memmove(pPrg->EvnTrains,EvnTrains,sizeof(EvnTrains));
-//        memmove(pPrg->OddTrains,OddTrains,sizeof(OddTrains));
     }
 
 }
