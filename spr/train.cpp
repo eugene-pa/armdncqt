@@ -8,14 +8,22 @@ std::stack <Train*> Train::FreeTrains;                          // пул уда
 
 Train::Train()
 {
-    nrc = 0;
+    zero();
 }
 
 Train::Train(int sno, int no, class KrugInfo * krug)
 {
+    zero();
+    update(sno, no, krug);
+    Trains[key(sno)] = this;
+}
+
+void Train::zero()
+{
     nrc = 0;
     ind1 = ind2 = ind3 = 0;
     st = nullptr;
+    prg = nullptr;
     tBlindPrgnOn = 0;
     marked = false;
     guColor = 0;
@@ -24,9 +32,6 @@ Train::Train(int sno, int no, class KrugInfo * krug)
     guBrutto = 0;
     guLokser = 0;
     guLokno = 0;
-
-    update(sno, no, krug);
-    Trains[key(sno)] = this;
 }
 
 Train * Train::restore(int sno, int no, class KrugInfo * krug)
@@ -98,12 +103,15 @@ void Train::ClearRc()
         rc = nullptr;
 }
 
+
+// очистить ссылки на РЦ
 void Train::ClearAllRc()
 {
     for (auto rec : Trains)
     {
         Train * train = rec.second;
         train->ClearRc();
+        train->prg = nullptr;
     }
 }
 

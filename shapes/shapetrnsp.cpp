@@ -166,7 +166,7 @@ void ShapeTrnsp::Parse(QString& src)
             dir = 1;
         if (s.indexOf("Н") ==0 || s.indexOf("H") ==0)
             dir = -1;
-        QRegularExpression regexEx("\\A[ЧН]\\[#\\d\\]\\z");
+        QRegularExpression regexEx("\\A[ЧН]\\[#\\d+\\]");
         QRegularExpressionMatch match = regexEx.match(s);
         if (match.hasMatch())
         {

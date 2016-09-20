@@ -29,10 +29,10 @@ void DDataFromMonitor::Extract(UINT length, KrugInfo * krug)
         {
             if (ExtractOptionsInfo())                       // 1. Общие параметры
             {
+                Train::ClearAllRc();                        // 3. очистить списки РЦ
                 ExtractStInfo(krug);                        // 2. Информация по станциям
                 if (!(IsArmTools() && g_QuickSearching))    // Если не включен режим ускорееного просмотра АРМ ШН - обрабатываем РЦ и поезда
                 {
-                    Train::ClearAllRc();                    // 3. очистить списки РЦ
                     ExtractRcInfo	 (krug);                // 4. информация по РЦ
                     ExtractTrainsInfo(krug);                // 5. информация по поездам
                 }

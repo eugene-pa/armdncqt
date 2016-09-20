@@ -84,6 +84,7 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
 // ==============================================================================================================================================================
 //								class DPrgDataFromMonitor
 // ==============================================================================================================================================================
+// записываем номера четных и нечетных поездов на слепых перегонов в очереди перегонов
 void DPrgDataFromMonitor::Extract(KrugInfo * krug)
 {
     if (Signature != SIGNATURE)
@@ -92,7 +93,8 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
         return;
     }
 
-    Peregon *prg = Peregon::GetById (NoPrg, krug);
+
+    Peregon *prg = Peregon::GetById (NoPrg, krug);          // поиск перегона по номеру
     if (prg)
     {
         prg->chdkOn		 = ChdkOn > 0;                      // вкл/окл контроль поездов по ЧДК
@@ -105,7 +107,8 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             Train * train = Train::GetBySysNo(sno, krug);
             if (train != nullptr)
             {
-                prg->evnTrains.push_back(train);
+                train->prg = prg;                           // обратная ссылка в поезде на слепой перегон
+                prg->evnTrains.push_back(train);            // поезд - в очередь на перегоне
             }
         }
 
@@ -117,8 +120,8 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
             Train * train = Train::GetBySysNo(sno, krug);
             if (train != nullptr)
             {
-                prg->oddTrains.push_back(train);
-                train = prg->oddTrains[i];
+                train->prg = prg;                           // обратная ссылка в поезде на слепой перегон
+                prg->oddTrains.push_back(train);            // поезд - в очередь на перегоне
             }
         }
     }
