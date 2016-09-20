@@ -39,7 +39,7 @@
     <addaction name="action_7"/>
     <addaction name="separator"/>
     <addaction name="action_Stations"/>
-    <addaction name="action_8"/>
+    <addaction name="action_Peregons"/>
     <addaction name="separator"/>
     <addaction name="action_DlgTrains"/>
    </widget>
@@ -148,7 +148,7 @@
     <string>Переезды</string>
    </property>
   </action>
-  <action name="action_8">
+  <action name="action_Peregons">
    <property name="text">
     <string>Перегоны</string>
    </property>

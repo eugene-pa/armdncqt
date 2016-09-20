@@ -12,6 +12,7 @@
 #include "../forms/dlgkpinfo.h"
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
+#include "../forms/dlgperegoninfo.h"
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
 #include "../spr/train.h"
@@ -54,7 +55,7 @@ bool blackBoxMode;                                          // включен р
     QString pathTemp=path + "bd/temp/";
     QString pathSave=path + "bd/save/";
     QString formDir =path + "pictures/";
-    QString iniFile =path + "armtools/armtools.ini";
+    QString iniFile =       "armtools.ini";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -81,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgRoutes = nullptr;                                    // диалог маршрутов
     dlgTrains = nullptr;                                    // поезда
     dlgStations = nullptr;                                  // станции
+    dlgPeregons = nullptr;                                  // перегоны
 
     reader = nullptr;
 
@@ -104,6 +106,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // опция ESRDBNAME
     if (rdr.GetText("ESRDBNAME", tmp))
         esrdbbname = QFileInfo(tmp).isAbsolute() ? tmp : path + tmp;
+    else
+        esrdbbname = path + esrdbbname;
 
     // если задана опция FORMNAME, принимаем доп.формы
     if (rdr.GetText("FORMNAME", tmp))
@@ -144,21 +148,6 @@ MainWindow::MainWindow(QWidget *parent) :
     hostStatus.setPixmap(*g_yellow);
     ui->statusBar->addPermanentWidget(&hostStatus);
 
-    // загрузка НСИ
-    KrugInfo * krug = nullptr;
-    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
-    Station::ReadBd(dbname, krug, logger);                  // станции
-    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
-    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
-    Ts::ReadBd (dbname, krug, logger);                      // ТС
-    Tu::ReadBd (dbname, krug, logger);                      // ТУ
-    Otu::ReadBd (dbname, krug, logger);
-    Rc::ReadRelations(dbname, logger);                      // связи РЦ
-    Route::ReadBd(dbname, krug, logger);                    // маршруты
-    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
-
-    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
-
     // динамическое формирование элементов тулбара
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionBlackbox, StationsCmb = new QComboBox);                 // "Черный ящик"
@@ -168,8 +157,6 @@ MainWindow::MainWindow(QWidget *parent) :
     dateEdit->setCalendarPopup(true);
     ui->mainToolBar->insertWidget(ui->actionPrev,new QLabel(" "));                                  // Пробнл
     ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));  // Время
-
-
 
     ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));                             // Шаг по минутам
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
@@ -201,6 +188,11 @@ MainWindow::MainWindow(QWidget *parent) :
     sliderScale->setFixedWidth(180);
     connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
 
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    QPushButton * scale11 = new QPushButton("1:1", ui->mainToolBar);
+    ui->mainToolBar->addWidget(scale11);
+    scale11->setFixedWidth(32);
+    connect(scale11, SIGNAL(pressed()), this, SLOT(on_action_ZoomOff_triggered()));
 
     ui->mainToolBar->setBaseSize(800,36);
 
@@ -218,7 +210,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QAction *action2 = new QAction("Протокол загрузки", bar);
     menu->addAction(action2);
-    connect(action2, SIGNAL(triggered()), this, SLOT(on_action_load_log()));
+    connect(action2, SIGNAL(triggered()), this, SLOT(action_load_log()));
 
     QAction *action3 = new QAction("О QT", bar);
     menu->addAction(action3);
@@ -226,15 +218,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->menuBar->setCornerWidget(bar);
 
-    // инициализация сетевых клиентов для подключения к серверу потока ТС
-    clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
-    QObject::connect(clientTcp, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
-    QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
-    clientTcp->start();
 //    scale = 1;
+    // загрузка НСИ
+    KrugInfo * krug = nullptr;
+    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
+    Station::ReadBd(dbname, krug, logger);                  // станции
+    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
+    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
+    Ts::ReadBd (dbname, krug, logger);                      // ТС
+    Tu::ReadBd (dbname, krug, logger);                      // ТУ
+    Otu::ReadBd (dbname, krug, logger);
+    Rc::ReadRelations(dbname, logger);                      // связи РЦ
+    Route::ReadBd(dbname, krug, logger);                    // маршруты
+    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
+    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
     on_actionBlackbox_triggered();
 
@@ -270,6 +267,15 @@ MainWindow::MainWindow(QWidget *parent) :
     StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
     stationSelected(0);
 
+    // инициализация сетевых клиентов для подключения к серверу потока ТС
+    clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
+    QObject::connect(clientTcp, SIGNAL(connected   (ClientTcp*)), this, SLOT(connected   (ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(disconnected(ClientTcp*)), this, SLOT(disconnected(ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(error       (ClientTcp*)), this, SLOT(error       (ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
+    QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
+    clientTcp->start();
+
     Logger::LogStr ("Конструктор MainWindow завершил работу");
 }
 
@@ -280,14 +286,14 @@ MainWindow::~MainWindow()
     delete clientTcp;
     delete reader;
 
-    delete StationsCmb;
-    delete dateEdit;
-    delete calendar;
-    delete stepValue;
+//    delete StationsCmb;
+//    delete dateEdit;
+//    delete calendar;
+//    delete stepValue;
 
-    delete labelZoom;
-    delete sliderScale;
-    delete checkFindLink;
+//    delete labelZoom;
+//    delete sliderScale;
+//    delete checkFindLink;
 
     delete ui;
 }
@@ -512,6 +518,18 @@ void MainWindow::on_action_Stations_triggered()
         dlgStations->setVisible(!dlgStations->isVisible());
 }
 
+// перегоны
+void MainWindow::on_action_Peregons_triggered()
+{
+    if (dlgPeregons == nullptr)
+    {
+        dlgPeregons = new DlgPeregonInfo(this);
+        dlgPeregons->show();
+    }
+    else
+        dlgPeregons->setVisible(!dlgPeregons->isVisible());
+}
+
 // поезда
 void MainWindow::on_action_DlgTrains_triggered()
 {
@@ -525,18 +543,19 @@ void MainWindow::on_action_DlgTrains_triggered()
         dlgTrains->setVisible(!dlgTrains->isVisible());
 }
 
-
+// крупнее
 void MainWindow::on_action_More_triggered()
 {
     sliderScale->setValue(sliderScale->value() + 1);
     scaleView();                                    // масштабирование всего представления
 }
+// мельче
 void MainWindow::on_action_Less_triggered()
 {
     sliderScale->setValue(sliderScale->value() - 1);
     scaleView();
 }
-
+// масштаб 1:1
 void MainWindow::on_action_ZoomOff_triggered()
 {
     sliderScale->setValue(0);
@@ -588,7 +607,7 @@ void MainWindow::on_action_QtAbout_triggered()
     QMessageBox::aboutQt(this, "Версия QT");
 }
 
-void MainWindow::on_action_load_log()
+void MainWindow::action_load_log()
 {
     QStringList params;
     params << logger.GetActualFile();
@@ -728,6 +747,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
     ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
     ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
     ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
+    ui->action_Stations ->setChecked(dlgPeregons!= nullptr && dlgPeregons->isVisible());
     ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
     ui->action_DlgTrains->setChecked(dlgTrains  != nullptr && dlgTrains ->isVisible());
 
@@ -874,3 +894,4 @@ void MainWindow::on_actionPrev_triggered()
 
 }
 // -------------------------------------------------------------- end Работа с архивом ---------------------------------------------------------------------
+

@@ -15,6 +15,7 @@ public:
 
     static bool bShowTrains;
     static bool bShowNonregTrains;
+    static void drawTrain(QPainter* painter, class Train*train, bool oddevnorient, QPointF pLft, QPointF pRht);
 
     static QBrush GetBrush(int no);
 };

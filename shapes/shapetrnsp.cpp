@@ -9,6 +9,8 @@
 #include "shapeset.h"
 #include "../common/boolexpression.h"
 #include "../spr/sprbase.h"
+#include "../spr/peregon.h"
+#include "shapetrain.h"
 
 std::unordered_map<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
 bool TrnspDescription::loaded = false;
@@ -20,6 +22,8 @@ QPen   ShapeTrnsp::whitePen;                                // общее бел
 ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     pulsing = false;
+    noprg = 0;
+    prg = nullptr;
     // обнуление массива формул
     for (int i=0; i<maxStates; i++)
     {
@@ -153,6 +157,31 @@ void ShapeTrnsp::Parse(QString& src)
         i++;
     }
 
+    // обраюотаем направление и номер перегона на транспарнтах слепых перегонов
+    if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
+    {
+        dir = 0;
+        QString s = stsExpr[0]->Source();
+        if (s.indexOf("Ч") ==0)
+            dir = 1;
+        if (s.indexOf("Н") ==0 || s.indexOf("H") ==0)
+            dir = -1;
+        QRegularExpression regexEx("\\A[ЧН]\\[#\\d\\]\\z");
+        QRegularExpressionMatch match = regexEx.match(s);
+        if (match.hasMatch())
+        {
+            QRegularExpression regexExN("\\d");
+            QRegularExpressionMatch match = regexExN.match(s);
+            if (match.hasMatch())
+            {
+                noprg = match.captured().toInt();
+                prg = Peregon::GetById(noprg);
+            }
+        }
+        else
+            log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта 'Поезда на перегоне': %1").arg(src));
+    }
+
     if (index > lexems.length() - 1)    return;
 
     // проверяем опциональное наличие тильды [~]
@@ -264,6 +293,7 @@ QString ShapeTrnsp::Dump()
     if (prop->description.length())
         s += "\r\n" + prop->description;
 
+    // ТС
     for (int i=1; i<=3; i++)
     {
         if (stsExpr[i-1] != nullptr && stsExpr[i-1]->Source().length())
@@ -271,6 +301,7 @@ QString ShapeTrnsp::Dump()
             s += "\r\nТС" + QString::number(i) + ": " + stsExpr[i-1]->Source();
             if (stsPulseExpr[i-1]!=nullptr && stsPulseExpr[i-1]->Source().length())
                 s += ",   " + stsPulseExpr[i-1]->Source();
+            s += " = " + QString::number(stsExpr[i-1]->ValueBool());
         }
     }
 
@@ -455,6 +486,34 @@ void ShapeTrnsp::Draw(QPainter* painter)
                     else
                         r.moveTopLeft (QPointF(rect.x() + 8, rect.y()-8));
                     painter->drawText(r, palitra.text, op);
+                }
+            }
+            else                                            // поезда на слепых перегонах отрисовываем отдельно
+            if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
+            {
+                if (prg != nullptr)
+                {
+                    // нужно уметь отображать несколько поездов со сдвигом
+                    if (isEvn() && prg->evnTrains.size())
+                    {
+                        for (int i=0; i<prg->evnTrains.size(); i++)
+                        {
+                            float dx = (prg->leftOddOrient ? 10 : -10)*i;
+                            float dy = (prg->leftOddOrient ? -18 : 18)*i;
+                            ShapeTrain::drawTrain(painter, prg->evnTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), x2y2() + QPointF(dx,dy+24));
+                        }
+                    }
+                    else
+                    // нужно уметь отображать несколько поездов со сдвигом
+                    if (isOdd() && prg->oddTrains.size())
+                    {
+                        for (int i=0; i<prg->oddTrains.size(); i++)
+                        {
+                            float dx = (prg->leftOddOrient ? -10 : 10)*i;
+                            float dy = (prg->leftOddOrient ? 18 : -18)*i;
+                            ShapeTrain::drawTrain(painter, prg->oddTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), xy() + QPointF(dx,dy+24));
+                        }
+                    }
                 }
             }
             else                                            // окантовка с текстом

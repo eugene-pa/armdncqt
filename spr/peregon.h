@@ -6,6 +6,8 @@
 class Peregon : public SprBase
 {
     friend class DPrgDataFromMonitor;
+    friend class DlgPeregonInfo;
+    friend class ShapeTrnsp;
 public:
 
     // открытые статические члены
@@ -34,6 +36,8 @@ private:
     QString shortname;
     QString	busyOdd;                                        // Выражение занятости в нечетном направлении
     QString	busyEvn;                                        // Выражение занятости в   четном направлении
+    class BoolExpression * busyOddExpr;                     // вычислитель занятости в нечетном направлении
+    class BoolExpression * busyEvnExpr;                     // вычислитель занятости в четном направлении
 
     // === Контроль соответствия зависимостей ===
     time_t	timeChangeDir;                                  // Время последнего разворота перегона
@@ -65,8 +69,8 @@ private:
     int    noRcOddFrom;                                     // РЦ стык выхода на слепой  перегон  в нечетном направлении
     int    noRcOddTo;                                       // РЦ стык выхода со слепого перегона в нечетном направлении
 
-    std::queue<class Train *> evnTrains;                    // список поездов в четном направлении
-    std::queue<class Train *> oddTrains;                    // список поездов в нечетном направлении
+    std::vector<class Train *> evnTrains;                    // список поездов в четном направлении
+    std::vector<class Train *> oddTrains;                    // список поездов в нечетном направлении
 
 };
 
