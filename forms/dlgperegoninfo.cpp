@@ -72,7 +72,7 @@ void DlgPeregonInfo::updateStatus()
             t->item(row,4)->setForeground(p->busyOddExpr->ValueBool() ? Qt::red : Qt::black);
 
         s.clear();
-        for (int i=0; i<p->evnTrains.size(); i++)
+        for (uint i=0; i<p->evnTrains.size(); i++)
         {
             const Train * tr = p->evnTrains[i];
             s += QString::number(tr->sno) + "/" + QString::number(tr->no);
@@ -80,7 +80,7 @@ void DlgPeregonInfo::updateStatus()
         t->setItem(row,9, new QTableWidgetItem (s));                            // четные поезда
 
         s.clear();
-        for (int i=0; i<p->oddTrains.size(); i++)
+        for (uint i=0; i<p->oddTrains.size(); i++)
         {
             const Train * tr = p->oddTrains.at(i);
             s += QString::number(tr->sno) + "/" + QString::number(tr->no);
