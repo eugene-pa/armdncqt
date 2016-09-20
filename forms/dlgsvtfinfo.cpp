@@ -20,6 +20,8 @@ DlgSvtfInfo::~DlgSvtfInfo()
 
 void DlgSvtfInfo::fillData()
 {
+    if (st==nullptr)
+        return;
     setWindowTitle("Состояние светофоров по ст." + st->Name());
     ui->treeSvtf->setColumnCount(3);
     ui->treeSvtf->setHeaderLabel("Состояние светофоров по станции " + st->Name());

@@ -106,8 +106,8 @@ class COneTrain
 {
     #pragma pack(1)
 public:
-	short	No;
-	short	SNo;
+    unsigned short	No;
+    unsigned short	SNo;
     UINT	LastTime;									// Время последней операции - time_t
     #pragma pack()
 };

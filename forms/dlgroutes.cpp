@@ -47,6 +47,8 @@ void DlgRoutes::closeEvent(QCloseEvent * e)
 // - поезд
 void DlgRoutes::FillData()
 {
+    if (st==nullptr)
+        return;
     setWindowTitle("Маршруты по ст." + st->Name());
 
     QTableWidget * t = ui->tableRoutes;

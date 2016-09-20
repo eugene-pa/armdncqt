@@ -64,6 +64,7 @@ Train * Train::GetBySysNo(int sno, KrugInfo * krug)
 {
     Q_UNUSED(krug)
     int key = krug==nullptr ? sno : krug->no() << 16 | sno;    // формируем ключ
+    bool found = Trains.count(key);
     return Trains.count(key) ? Trains[key] : nullptr;
 }
 
