@@ -30,7 +30,9 @@ void DlgKPinfo::changeStation(class Station * p)
 
 void DlgKPinfo::redraw(Station * p)
 {
-    if (p!=nullptr && p!=st)
+    if (p==nullptr)
+        return;
+    if (p!=st)
     {
         st = p;
         setWindowTitle(QString ("Состояние КП ст.%1 (#%2  адр=%3[%4], id=%5:%6)").arg(st->Name()).arg(st->No()).arg(st->Addr()).arg(st->Ras()).arg(st->GidUralId()).arg(st->GidRemoteId()));

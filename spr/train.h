@@ -42,8 +42,8 @@ private:
     static std::unordered_map <int, Train *> Trains;        // поезда , индексированные по ключу: круг + системный номер
     static std::stack <Train *> FreeTrains;                 // пул удаленных справочников для повторного использования
 
-    int     sno;                                            // ключ: krug + системный номер
-    int     no;                                             // номер
+    uint     sno;                                           // ключ: krug + системный номер
+    uint     no;                                            // номер
     short   ind1;                                           // индекс
     short   ind2;
     short   ind3;

@@ -8,6 +8,8 @@ BmInfoFrame::BmInfoFrame(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    st = nullptr;
+
     okColor = QColor(0,220,0);
     erColor = QColor(255,0,0);
     okBrush = QBrush(okColor);
@@ -68,7 +70,8 @@ void BmInfoFrame::setObj(class Station * p, bool rsrv)
 void BmInfoFrame::paintEvent(QPaintEvent* e)
 {
     Q_UNUSED(e)
-    redraw();
+    if (st!=nullptr)
+        redraw();
 }
 
 // обработка тика таймера

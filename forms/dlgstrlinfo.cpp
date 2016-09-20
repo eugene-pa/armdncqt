@@ -34,6 +34,8 @@ void DlgStrlInfo::changeStation(class Station * p)
 
 void DlgStrlInfo::fillData()
 {
+    if (st==nullptr)
+        return;
     setWindowTitle("Состояние стрелок по ст." + st->Name());
     ui->treeStrl->setColumnCount(3);
     ui->treeStrl->setHeaderLabel("Состояние стрелок по станции " + st->Name());
