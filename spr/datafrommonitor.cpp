@@ -58,7 +58,7 @@ void DDataFromMonitor::ExtractStInfo (KrugInfo * krug)
 {
     int stationInfoLength = nSt * LenOneSt;                 // 1. длина блока информации по станциям в блоке StInfo
 
-    BYTE * dataptr;
+    BYTE * dataptr = nullptr;
     // 1. обработка информации по станциям
     if (GetLenStInfo() >= stationInfoLength)
     {
