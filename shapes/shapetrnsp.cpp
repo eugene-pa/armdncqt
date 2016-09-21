@@ -498,8 +498,8 @@ void ShapeTrnsp::Draw(QPainter* painter)
                     {
                         for (uint i=0; i<prg->evnTrains.size(); i++)
                         {
-                            float dx = (prg->leftOddOrient ? 10 : -10)*i;
-                            float dy = (prg->leftOddOrient ? -18 : 18)*i;
+                            float dx = (prg->leftOddOrient ? 10 : -10)*(int)i;
+                            float dy = (prg->leftOddOrient ? -18 : 18)*(int)i;
                             ShapeTrain::drawTrain(painter, prg->evnTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), x2y2() + QPointF(dx,dy+24));
                         }
                     }
@@ -509,9 +509,9 @@ void ShapeTrnsp::Draw(QPainter* painter)
                     {
                         for (uint i=0; i<prg->oddTrains.size(); i++)
                         {
-                            float dx = (prg->leftOddOrient ? -10 : 10)*i;
-                            float dy = (prg->leftOddOrient ? 18 : -18)*i;
-                            ShapeTrain::drawTrain(painter, prg->oddTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), xy() + QPointF(dx,dy+24));
+                            float dx = (prg->leftOddOrient ? -10 : 10)*(int)i;
+                            float dy = (prg->leftOddOrient ? 18 : -18)*(int)i;
+                            ShapeTrain::drawTrain(painter, prg->oddTrains[i], prg->leftOddOrient , xy() + QPointF(dx,dy+24), x2y2() + QPointF(dx,dy));
                         }
                     }
                 }

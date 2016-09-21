@@ -86,6 +86,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     reader = nullptr;
 
+    bPlay = false;
+    bPlayBack = false;
+
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
     // pathQDir::currentPath();                             // текущий каталог - по умолчанию
     // iniFile = "armtoola.ini";                            // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
@@ -704,6 +707,37 @@ void MainWindow::on_actionPlay_triggered()
         on_action_Stop_triggered();
 }
 
+// нажатие кнопки "Воспроизведение назад" ("<")
+// надо воспроизводить архив с заданного времени
+void MainWindow::on_actionReverce_triggered()
+{
+    bPlayBack = ui->actionReverce->isChecked();
+    if (bPlayBack)
+    {
+        arhDateTime = QDateTime(dateEdit->date(),timeEdit->time());
+        reader->setArhName(arhDateTime);                    // определение файла для чтения и инициализация
+        int ret = readPrev(&arhDateTime);
+        if (ret == -1)
+        {
+            // не нашли; проблема с датой, нужна подкачка нужного файла
+            ui->actionReverce->setChecked(false);
+            bPlayBack = false;
+            return;
+        }
+
+        bPlay = false;
+        ui->actionNext->setEnabled(false);
+        ui->actionPrev->setEnabled(false);
+        ui->actionReverce->setEnabled(false);
+        ui->action_Stop->setEnabled(true);
+        dateEdit->setEnabled(false);
+        timeEdit->setEnabled(false);
+    }
+    else
+        on_action_Stop_triggered();
+}
+
+
 // нажатие кнопки "СТОП" ("||")
 void MainWindow::on_action_Stop_triggered()
 {
@@ -747,7 +781,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
     ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
     ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
     ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
-    ui->action_Stations ->setChecked(dlgPeregons!= nullptr && dlgPeregons->isVisible());
+    ui->action_Peregons ->setChecked(dlgPeregons!= nullptr && dlgPeregons->isVisible());
     ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
     ui->action_DlgTrains->setChecked(dlgTrains  != nullptr && dlgTrains ->isVisible());
 
@@ -873,9 +907,121 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 }
 
 // прочитать и отобразить пред.запись в архиве
-void MainWindow::readPrev()
+bool MainWindow::readPrev(QDateTime* rqDate, bool findChanges)
 {
+    int sts = 0;
+    int ret = 0;
+
+    if (findChanges && isFindTsChanges())
+        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString());
     qDebug() << "Предыдущая запись";
+
+    if (reader != nullptr)
+    {
+        Station::FastScanArchive = isExtFind();
+        while (true)
+        {
+            // если задан шаг смещения - смещение на заданное задатчиком время dt
+            int dt = stepValue->value();
+            if (dt > 0)
+                ret = reader->Read(QDateTime::fromTime_t(reader->time() - dt*60));  // время с учетом задатчика
+            else
+            // если не задан шаг задатчиком dt, но в функцию передано конкретное требуемое время rqDate - пытаемся позиционируовать на это время
+            if (rqDate != nullptr)
+                ret = reader->Read(*rqDate);                                        // явно заданное время
+
+            // если время не задано и шаг не задан - просто читаем след.запись
+            ret = reader->Prev();                                               // пред.запись
+            //ret = reader->Prev();                                               // пред.запись
+
+            // не нашли в текущем файле нужного времени
+            if (ret==-1)
+            {
+                // надо переместить время на конец предыдущего часа
+                // можно проверить dt на допустимое значение
+                if (reader->isExist() && reader->isBegOfFile())
+                {
+                    if (reader->setPrevHour(QDateTime::fromTime_t(reader->time())))
+                    {
+                        qDebug() << reader->getFileName();
+                        ret = reader->Last();
+                    }
+                }
+                else
+                {
+                    QString zipFile = pathSave + reader->getZipName(reader->rqt());
+                    if (QFile::exists(zipFile))
+                    {
+                        qDebug() << "Извлекаем файл из архива " << zipFile;
+                        reader->close();
+                        QProcess process;
+                        QStringList params;
+                        params << "-o" << zipFile << reader->getFileName() << "-d" << pathTemp;
+                        process.start(decompressor, params);
+                        if (process.waitForFinished())
+                        {
+                            reader->setArhName(reader->rqt());
+                            if ((ret =reader->First()) ==-1)
+                            {
+                                // чужое время, лажа; запросить архив снова
+                            }
+                        }
+                        else
+                        {
+                            // проблемы завершения процесса разархивирования
+                        }
+                    }
+                    else
+                    {
+                        // подкачка
+                        break;
+                    }
+                }
+                // if (нет след файла)
+                // {
+                //     if (нет архива)
+                //        подкачка (если нет возможности подкачки - уведомление о фатальной ошибке)
+                //     разархивирование (если нет возможности разархивирования - уведомление о фатальной ошибке))
+                // }
+                // читаем первую запись
+                // if (ошибка)
+                //     уведомление о невозможности
+
+                // позиционируемся на заданное время, если требуется
+                if (rqDate != nullptr)
+                    ret = reader->Read(*rqDate);
+
+                // если ничего никак не нашли (ret=-1) и это не поиск изменений - выход
+                if (ret < 0 || !findChanges)
+                    break;
+            }
+
+            // обработать данные
+            DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
+            QDateTime t = QDateTime::fromTime_t(reader->time());
+            dateEdit->setDate(t.date());
+            timeEdit->setTime(t.time());
+            data->Extract(reader->Length());
+            QApplication::processEvents();
+
+            // если шаг по времени или не ищем изменения или изменения есть - выход из цикла
+            if (dt || !findChanges || (!isExtFind() && g_actualStation->IsTsChanged()))
+                break;                                      // нашли измененные ТС
+            // поиск изменения статуса связи
+            if (findChanges && isFindLinkErrors() && g_actualStation->IsLinkStatusChanged())
+                break;
+            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString()))
+                 break;
+        }
+
+        if (Station::FastScanArchive)
+        {
+            Station::FastScanArchive = false;
+            g_actualStation->AcceptTS();
+        }
+    }
+    return ret > 0;
+
 }
 
 
@@ -884,14 +1030,15 @@ void MainWindow::on_actionNext_triggered()
 {
     if (!readNext(nullptr, true))
     {
-        // не согли найти очередной архив
+        // не смогли найти очередной архив
     }
 }
 
 // обработка кнопки шаг назад
 void MainWindow::on_actionPrev_triggered()
 {
-
+    readPrev(nullptr, true);
 }
 // -------------------------------------------------------------- end Работа с архивом ---------------------------------------------------------------------
+
 

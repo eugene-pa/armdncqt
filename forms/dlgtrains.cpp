@@ -43,6 +43,8 @@ void DlgTrains::addTrainInfo(int row, Train * train, bool create)
     t->setItem(row,1, new QTableWidgetItem (QString::number(train->no)));       // no
 
     QString rc;
+    if (train->prg != nullptr)
+        rc = "Перегон " + train->prg->Name() + "  ";
     for (int i=0; i<train->nrc; i++)
     {
         rc += QString("%1  ").arg(train->Rc[i]->NameEx());

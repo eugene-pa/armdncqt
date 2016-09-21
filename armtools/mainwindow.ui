@@ -61,9 +61,9 @@
     <property name="title">
      <string>Обновления</string>
     </property>
-    <addaction name="action_12"/>
+    <addaction name="action_UpdateNsi"/>
     <addaction name="separator"/>
-    <addaction name="action_18"/>
+    <addaction name="action_RestoreNsi"/>
    </widget>
    <widget class="QMenu" name="menu_9">
     <property name="title">
@@ -149,6 +149,9 @@
    </property>
   </action>
   <action name="action_Peregons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Перегоны</string>
    </property>
@@ -285,12 +288,12 @@
     <string>Удаление временных файлов</string>
    </property>
   </action>
-  <action name="action_12">
+  <action name="action_UpdateNsi">
    <property name="text">
     <string>Обновление БД и схем станций</string>
    </property>
   </action>
-  <action name="action_18">
+  <action name="action_RestoreNsi">
    <property name="text">
     <string>Откат к предыдущей версии</string>
    </property>
@@ -328,14 +331,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+*</string>
-   </property>
-  </action>
-  <action name="action_ToolBar2">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Расширенная панель управления</string>
    </property>
   </action>
   <action name="action_Stop">

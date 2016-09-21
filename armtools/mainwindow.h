@@ -117,6 +117,8 @@ private slots:
 
     void on_action_Peregons_triggered();
 
+    void on_actionReverce_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -165,7 +167,7 @@ private:
     bool tooltip;                                           // вкл.откл. тултипы
 
     bool readNext(QDateTime* dt=nullptr, bool findChanges=false);// прочитать и отобразить след.запись в архиве
-    void readPrev();                                        // прочитать и отобразить пред.запись в архиве
+    bool readPrev(QDateTime* dt=nullptr, bool findChanges=false);// прочитать и отобразить пред.запись в архиве
 
     bool isExtFind() { return isFindTsChanges() || isFindLinkErrors(); }
     bool isFindTsChanges() { return checkFindTs->isChecked(); }     // режим поиска ТС ?
