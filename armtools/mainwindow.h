@@ -119,6 +119,8 @@ private slots:
 
     void on_actionReverce_triggered();
 
+    void on_action_Pereezd_triggered();
+
 signals:
     void changeStation(class Station *);                    // смена станции
 
@@ -157,6 +159,8 @@ private:
     class DlgTrains * dlgTrains;                            // поезда
     class DlgStationsInfo * dlgStations;                    // станции
     class DlgPeregonInfo* dlgPeregons;                      // перегоны
+    class DlgPereezd* dlgPereezd;                           // переезды
+
 
     // работа с архивом
     QDateTime arhDateTime;                                  // дата/время архивного файла

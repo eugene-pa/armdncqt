@@ -809,7 +809,7 @@ Rc * Station::GetRcByName  (QString& name)
     QString tsname;
     parseNames (name, st, tsname);
 
-    no = 0;
+    //no = 0;
     for (auto map : st->allrc)
     {
         if (map.second->Name()==tsname)

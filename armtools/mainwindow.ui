@@ -36,7 +36,7 @@
     <addaction name="action_RC"/>
     <addaction name="action_STRL"/>
     <addaction name="action_SVTF"/>
-    <addaction name="action_7"/>
+    <addaction name="action_Pereezd"/>
     <addaction name="separator"/>
     <addaction name="action_Stations"/>
     <addaction name="action_Peregons"/>
@@ -143,7 +143,10 @@
     <string>Станции</string>
    </property>
   </action>
-  <action name="action_7">
+  <action name="action_Pereezd">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Переезды</string>
    </property>

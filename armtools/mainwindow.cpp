@@ -13,10 +13,12 @@
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
 #include "../forms/dlgperegoninfo.h"
+#include "../forms/dlgpereezd.h"
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
 #include "../spr/train.h"
 #include "../shapes/shapetrain.h"
+
 
 QString server_ipport = "127.0.0.1:1010";                   // подключение к потоку ТС из настроечного файла
 QString version = "1.0.1.10";                               // версия приложения
@@ -83,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgTrains = nullptr;                                    // поезда
     dlgStations = nullptr;                                  // станции
     dlgPeregons = nullptr;                                  // перегоны
+    dlgPereezd = nullptr;                                   // переезды
 
     reader = nullptr;
 
@@ -233,6 +236,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Otu::ReadBd (dbname, krug, logger);
     Rc::ReadRelations(dbname, logger);                      // связи РЦ
     Route::ReadBd(dbname, krug, logger);                    // маршруты
+    Pereezd::ReadBd (dbname, krug, logger);                 // переезды
+
     DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
     ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
@@ -533,6 +538,19 @@ void MainWindow::on_action_Peregons_triggered()
         dlgPeregons->setVisible(!dlgPeregons->isVisible());
 }
 
+// переезды
+void MainWindow::on_action_Pereezd_triggered()
+{
+    if (dlgPereezd == nullptr)
+    {
+        dlgPereezd = new DlgPereezd(this);
+        dlgPereezd->show();
+    }
+    else
+        dlgPereezd->setVisible(!dlgPereezd->isVisible());
+}
+
+
 // поезда
 void MainWindow::on_action_DlgTrains_triggered()
 {
@@ -782,6 +800,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
     ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
     ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
     ui->action_Peregons ->setChecked(dlgPeregons!= nullptr && dlgPeregons->isVisible());
+    ui->action_Pereezd  ->setChecked(dlgPereezd != nullptr && dlgPereezd ->isVisible());
     ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
     ui->action_DlgTrains->setChecked(dlgTrains  != nullptr && dlgTrains ->isVisible());
 
@@ -1040,5 +1059,6 @@ void MainWindow::on_actionPrev_triggered()
     readPrev(nullptr, true);
 }
 // -------------------------------------------------------------- end Работа с архивом ---------------------------------------------------------------------
+
 
 

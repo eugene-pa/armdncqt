@@ -33,6 +33,7 @@ ShapePrzd::ShapePrzd(QString& src, class ShapeSet* parent) : DShape (src, parent
 {
     for (int i=0; i<exprAll; i++)
         formulas[i] = nullptr;
+    pereerd = nullptr;
 
     try
     {
@@ -116,6 +117,7 @@ void ShapePrzd::Parse(QString& src)
             }
         }
     }
+    Pereezd::findByShape(this);
 }
 
 

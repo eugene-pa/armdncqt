@@ -104,7 +104,7 @@ bool Peregon::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
     }
     catch(...)
     {
-        logger.log("Исключение в функции Station::ReadBd");
+        logger.log("Исключение в функции Peregon::ReadBd");
         return false;
     }
 

@@ -2,9 +2,11 @@
 #define SHAPEPRZD_H
 
 #include "shape.h"
+#include "../spr/pereezd.h"
 
 class ShapePrzd : public DShape
 {
+    friend class Pereezd;
 protected:
     enum
     {
@@ -26,7 +28,7 @@ protected:
     };
 
     class BoolExpression * formulas[exprAll];               // формулы
-
+    class Pereezd * pereerd;                                // справочник переезда
     static QBrush BrushOpen;                                // открыт
     static QBrush BrushClose;                               // закрыт
     static QBrush BrushUndef;                               // неизвестно

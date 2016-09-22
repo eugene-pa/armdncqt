@@ -71,7 +71,9 @@ SOURCES += main.cpp\
     ../forms/dlgsvtfinfo.cpp \
     ../spr/otu.cpp \
     ../forms/dlgotu.cpp \
-    ../forms/dlgperegoninfo.cpp
+    ../forms/dlgperegoninfo.cpp \
+    ../spr/pereezd.cpp \
+    ../forms/dlgpereezd.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -132,7 +134,9 @@ HEADERS  += mainwindow.h \
     ../forms/dlgsvtfinfo.h \
     ../spr/otu.h \
     ../forms/dlgotu.h \
-    ../forms/dlgperegoninfo.h
+    ../forms/dlgperegoninfo.h \
+    ../spr/pereezd.h \
+    ../forms/dlgpereezd.h
 
 
 FORMS    += mainwindow.ui \
@@ -147,7 +151,8 @@ FORMS    += mainwindow.ui \
     ../forms/dlgtrains.ui \
     ../forms/dlgsvtfinfo.ui \
     ../forms/dlgotu.ui \
-    ../forms/dlgperegoninfo.ui
+    ../forms/dlgperegoninfo.ui \
+    ../forms/dlgpereezd.ui
 
 RESOURCES += \
     images.qrc

@@ -1,28 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DlgRcInfo</class>
- <widget class="QDialog" name="DlgRcInfo">
+ <class>DlgPereezd</class>
+ <widget class="QDialog" name="DlgPereezd">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>715</width>
-    <height>449</height>
+    <width>1062</width>
+    <height>443</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Состояние РЦ</string>
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTableWidget" name="tableRc"/>
+    <widget class="QTableWidget" name="table"/>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
@@ -31,32 +38,32 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DlgRcInfo</receiver>
+   <receiver>DlgPereezd</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>572</x>
-     <y>431</y>
+     <x>248</x>
+     <y>254</y>
     </hint>
     <hint type="destinationlabel">
-     <x>710</x>
-     <y>108</y>
+     <x>157</x>
+     <y>274</y>
     </hint>
    </hints>
   </connection>
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DlgRcInfo</receiver>
+   <receiver>DlgPereezd</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>652</x>
-     <y>425</y>
+     <x>316</x>
+     <y>260</y>
     </hint>
     <hint type="destinationlabel">
-     <x>711</x>
-     <y>165</y>
+     <x>286</x>
+     <y>274</y>
     </hint>
    </hints>
   </connection>

@@ -24,9 +24,6 @@ DlgPeregonInfo::DlgPeregonInfo(QWidget *parent) :
         Peregon * p = rec.second;
 
         t->setItem(row,0, new QTableWidgetItem ("#" + QString("%1").arg(p->No(),2,10,QChar(' ')) + " - " + p->Name()));
-
-
-
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)p));     // запомним перегон
 
         t->setItem(row,1, new QTableWidgetItem (QString::number(p->pathes)));   // путей
