@@ -11,6 +11,7 @@ DlgTsInfo::DlgTsInfo(QWidget *parent, class Station * pst) :
 {
     ui->setupUi(this);
 
+    st = nullptr;
     ui->spinBox->setRange(1,4);                             // страницы 1-4
 
     QTableWidget * t = ui->tableWidget;                     // заполнение таблицы описания ТС
@@ -38,14 +39,14 @@ DlgTsInfo::~DlgTsInfo()
 // слот обработки события смена станции
 void DlgTsInfo::changeStation(class Station *pst)
 {
-    if (pst!=pSt && pst!=nullptr)
+    if (pst!=st && pst!=nullptr)
     {
-        pSt = pst;
+        st = pst;
         ui->labelSt->setText(pst->Name());                      // имя станции
         ui->widgetTs->setNormal(ui->checkBox->isChecked());     // состояние нормализации
 
         fillTable();                                            // заполнить таблицу имен ТС
-        ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
+        ui->widgetTs->updateWidget(st = pst);                  // отрисовка ТС
     }
 }
 
@@ -63,10 +64,10 @@ void DlgTsInfo::fillTable()
 
     t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
-    t->setRowCount((int)pSt->Ts.size());
+    t->setRowCount((int)st->Ts.size());
 
     int row = 0;
-    for (auto rec : pSt->Ts)
+    for (auto rec : st->Ts)
     {
 
         Ts * ts = rec.second;
@@ -131,7 +132,7 @@ void DlgTsInfo::on_checkBox_toggled(bool checked)
 // слот обработки поля смены страницы
 void DlgTsInfo::on_spinBox_valueChanged(int arg1)
 {
-    ui->widgetTs->updateWidget(pSt, arg1);
+    ui->widgetTs->updateWidget(st, arg1);
 }
 
 // слот обработки уведомления о выборе ТС

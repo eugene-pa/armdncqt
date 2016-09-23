@@ -27,16 +27,35 @@ Pereezd::Pereezd(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 
         s       = query.value("StsOpen").toString();
         if (s.length())
+        {
             openVal = new BoolExpression(s);
+            if (openVal->Valid())
+                QObject::connect(openVal, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+        }
+
         s       = query.value("StsAlarm").toString();
         if (s.length())
+        {
             alarmVal = new BoolExpression(s);
+            if (alarmVal->Valid())
+                QObject::connect(alarmVal, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+        }
+
         s       = query.value("StsZagr").toString();
         if (s.length())
+        {
             zagrVal = new BoolExpression(s);
+            if (zagrVal->Valid())
+                QObject::connect(zagrVal, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+        }
+
         s       = query.value("StsIzv").toString();
         if (s.length())
+        {
             izvVal = new BoolExpression(s);
+            if (izvVal->Valid())
+                QObject::connect(izvVal, SIGNAL(GetVar(QString&,int&)), st, SLOT(GetValue(QString&,int&)));
+        }
 
         srcRc = query.value("RC").toString();
         if (srcRc.length() > 0)
@@ -144,4 +163,21 @@ Pereezd * Pereezd::findByShape (ShapePrzd * shp)
     }
     qDebug() << "Не найден переезд в БД: " << shp->Dump();
     return shp->pereerd = nullptr;
+}
+
+// обработка переездов по станции
+void Pereezd::AcceptTS (class Station *)
+{
+    for (auto rec : Pereezds)
+    {
+        rec.second->acceptTS();
+    }
+}
+
+void Pereezd::acceptTS ()
+{
+    isOpen  = openVal  ? openVal ->GetValue() : false;
+    isAlarm = alarmVal ? alarmVal->GetValue() : false;
+    isZagr  = zagrVal  ? zagrVal ->GetValue() : false;
+    isIzv   = izvVal   ? izvVal  ->GetValue() : false;
 }

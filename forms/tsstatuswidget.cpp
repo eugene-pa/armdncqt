@@ -61,6 +61,7 @@ void TsStatusWidget::updateWidget (class Station * pst, int p)
 
 void TsStatusWidget::DrawTs  (QPainter *p)
 {
+
     for (int i = 0; i < 32*32 ; i++)
     {
         int row         = i / 32,                               // строка в матрице

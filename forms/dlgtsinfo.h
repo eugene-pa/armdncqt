@@ -35,7 +35,7 @@ private:
     QIcon getStsImage (class Ts * ts);                      // получить значок состояния ТС
     void UpdateList();                                      // обновить состояние ТС в списке
     Ui::DlgTsInfo *ui;
-    class Station * pSt;
+    class Station * st;
 
 
     void fillTable();

@@ -17,6 +17,11 @@ public:
     ~DlgPereezd();
 
 private:
+    // события
+    virtual void timerEvent(QTimerEvent *event) override;
+    virtual void closeEvent(QCloseEvent *)  override;
+
+    void updateStatus();
     Ui::DlgPereezd *ui;
 };
 

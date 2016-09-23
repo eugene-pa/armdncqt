@@ -57,9 +57,6 @@ private:
     bool    logicalType;
     class Logger * logger;
 
-//  public delegate int GetVarDelegate (string xpr);        // тип делегата
-//  GetVarDelegate GetVar;                                  // функция делегата
-
     QString UndefinedVarName;                               // имя неопределенной переменной
     QString ErrorUndefinedVarNameText;                      // текст исключения
     Error error;                                            // тип ошибки

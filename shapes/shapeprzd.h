@@ -28,6 +28,7 @@ protected:
     };
 
     class BoolExpression * formulas[exprAll];               // формулы
+
     class Pereezd * pereerd;                                // справочник переезда
     static QBrush BrushOpen;                                // открыт
     static QBrush BrushClose;                               // закрыт
@@ -57,7 +58,7 @@ protected:
     void accept() override;                                 // вычисление состояния примитива
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
     virtual void  Parse(QString&) override;                 // разбор строки описания
-
+    virtual QString Dump() override;
 };
 
 #endif // SHAPEPRZD_H

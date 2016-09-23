@@ -9,6 +9,7 @@
 #include "rc.h"
 #include "svtf.h"
 #include "strl.h"
+#include "pereezd.h"
 #include "esr.h"
 #include "dstdatafromfonitor.h"
 #include "abtcminfo.h"
@@ -1105,6 +1106,7 @@ void Station::AcceptTS   ()
     Strl::AcceptTS (this);									// состояние стрелок
     Rc  ::AcceptTS (this);                                  // состояние РЦ
     Svtf::AcceptTS (this);									// состояние светофоров	2014.10.22 перенес ДО МАРШРУТОВ
+    Pereezd::AcceptTS (this);
 
     //DPereezd	  ::AcceptTS (NoSt);											// 2015.01.22 переезды
     //DPeregon	  ::AcceptTS ();												// 2015.01.22 все перегоны

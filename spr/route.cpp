@@ -135,15 +135,15 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
             {
                 srcZzmk = indxTsZmk == 0 ? "" : st->TsByIndxTsName.count(indxTsZmk) ? st->TsByIndxTsName[indxTsZmk]->Name() : "";
                 if (srcZzmk.length() == 0)
-                    logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk в маршруте: '%2'").arg(nameLog()).arg(srcZzmk));
+                    logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk: '%2'").arg(nameLog()).arg(srcZzmk));
             }
             else
-                srcZzmk.clear();
+                srcZzmk.clear();            // поле обработано!
         }
+        // если поле необработано (см.выше) и srcZzmk непустая - генерим выражение
         if (srcZzmk.length() > 0)
         {
-            zmkExpr = new BoolExpression(srcZzmk);
-            srcZzmkError = !zmkExpr->Valid();
+            srcZzmkError = !parseExpression(query, "CodZmk", srcZzmk, zmkExpr, logger);
         }
 
         // [Complex] - перечисление составных маршрутов через + (или пробел)

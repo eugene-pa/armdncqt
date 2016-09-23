@@ -202,3 +202,9 @@ void ShapePrzd::Draw (QPainter* painter)
         }
     }
 }
+
+QString ShapePrzd::Dump()
+{
+    return pereerd != nullptr ? pereerd->About() :
+           QString ("%1  source='%2'").arg(StationName()).arg(source);
+}

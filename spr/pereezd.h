@@ -21,7 +21,8 @@ public:
     QString About() Q_DECL_OVERRIDE;
     int noPrg;												// номер перегона
     class Peregon * prg;                                    // справочник перегона
-
+private:
+    void acceptTS ();
     class BoolExpression * openVal ;                        // выражение для контроля "открыт"
     class BoolExpression * alarmVal;                        // выражение для контроля "авария"
     class BoolExpression * zagrVal ;                        // выражение для контроля "заград.сигнализация"
