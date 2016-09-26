@@ -60,7 +60,7 @@ DlgPereezd::~DlgPereezd()
     delete ui;
 }
 
-void DlgPereezd::timerEvent(QTimerEvent *event)
+void DlgPereezd::timerEvent(QTimerEvent *)
 {
     updateStatus();
 }

@@ -4,6 +4,9 @@
 #include "ui_dlgstrlinfo.h"
 #include "../spr/station.h"
 
+const QString zmkStrl("И.ЗМК");
+const QString muStrl ("МУ");
+
 DlgStrlInfo::DlgStrlInfo(Station * st, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DlgStrlInfo)
@@ -50,14 +53,29 @@ void DlgStrlInfo::fillData()
         item->setData(0, Qt::UserRole,qVariantFromValue((void *)strl));    // запомним стрелку
         item->setIcon(0, strl->isPlus() ? * g_strl_plus : strl->isMinus() ? * g_strl_minus : * g_red_box);
 
+        // создаем листья для всех ТС и обобщенных сигналом замыкания и МУ
         QTreeWidgetItem * itemTs  = new QTreeWidgetItem(QStringList() << "ТС");
         item->addChild(itemTs);
         foreach (Ts * ts, strl->tsList)
         {
-            QTreeWidgetItem * child = new QTreeWidgetItem(QStringList() << "" << ts->Name() << ts->Place());
+            // если есть формула, даем формулу, иначе - координаты
+            QTreeWidgetItem * child = new QTreeWidgetItem(QStringList() << "" << ts->Name() << (ts->formula.length() ? ts->formula : ts->Place()));
             itemTs->addChild(child);
             child->setIcon(1, ts->Sts() ? *g_green_box : * g_white_box);      // идентификатор
             child->setData(0, Qt::UserRole,qVariantFromValue((void *)ts));    // запомним ТС
+        }
+        if (strl->formula_zs)
+        {
+            QTreeWidgetItem * child = new QTreeWidgetItem(QStringList() << "" << zmkStrl << strl->formula_zs->Source());
+            child->setIcon(1, strl->formula_zs->GetValue() ? *g_green_box : * g_white_box);
+            itemTs->addChild(child);
+        }
+        // МУ
+        if (strl->formula_mu)
+        {
+            QTreeWidgetItem * child = new QTreeWidgetItem(QStringList() << "" << muStrl << strl->formula_mu->Source());
+            child->setIcon(1, strl->formula_mu->GetValue() ? *g_green_box : * g_white_box);
+            itemTs->addChild(child);
         }
 
         QTreeWidgetItem * itemTu = new QTreeWidgetItem(QStringList() << "ТУ");
@@ -107,6 +125,13 @@ void DlgStrlInfo::UpdateStatus()
                         Ts * ts = (Ts *) itemTs->child(child)->data(0, Qt::UserRole).value<void*>();
                         if (ts!=nullptr)
                             itemTs->child(child)->setIcon(1, ts->Sts() ? *g_green_box : * g_white_box);
+                        else
+                        if (strl->formula_zs && (itemTs->child(child)->text(1).indexOf(zmkStrl)>=0))
+                            itemTs->child(child)->setIcon(1, strl->formula_zs->GetValue() ? *g_green_box : * g_white_box);
+                        else
+                        if (strl->formula_mu && (itemTs->child(child)->text(1).indexOf(muStrl)>=0))
+                            itemTs->child(child)->setIcon(1, strl->formula_mu->GetValue() ? *g_green_box : * g_white_box);
+
                     }
                  }
              }

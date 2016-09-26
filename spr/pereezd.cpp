@@ -158,7 +158,9 @@ Pereezd * Pereezd::findByShape (ShapePrzd * shp)
                 )
                 return shp->pereerd = przd;
             else
-                int a = 99;
+            {
+                // int a = 99;
+            }
         }
     }
     qDebug() << "Не найден переезд в БД: " << shp->Dump();
