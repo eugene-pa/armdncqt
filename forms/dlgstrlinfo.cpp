@@ -78,6 +78,8 @@ void DlgStrlInfo::fillData()
             itemTs->addChild(child);
         }
 
+        if (strl->tuList.size()==0)
+            continue;
         QTreeWidgetItem * itemTu = new QTreeWidgetItem(QStringList() << "ТУ");
         item->addChild(itemTu);
         foreach (Tu * tu, strl->tuList)

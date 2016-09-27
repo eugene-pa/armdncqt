@@ -54,6 +54,9 @@ void DlgSvtfInfo::fillData()
         item->setExpanded(svtf->IsOpen() || svtf->IsAlarm());
         itemTs->setExpanded(svtf->IsOpen());
 
+        if (svtf->tuList.size()==0)
+            continue;
+
         QTreeWidgetItem * itemTu = new QTreeWidgetItem(QStringList() << "ТУ");
         item->addChild(itemTu);
         foreach (Tu * tu, svtf->tuList)
