@@ -141,6 +141,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     rdr.GetText("SERVER", server_ipport);                   // подключение
 
+
+    if (rdr.GetText("ZIP", tmp))
+        compressor = tmp;
+    if (rdr.GetText("UNZIP", tmp))
+        decompressor = tmp;
+
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
