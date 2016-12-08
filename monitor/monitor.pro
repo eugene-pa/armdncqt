@@ -1,21 +1,20 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-04-01T10:26:36
+# Project created by QtCreator 2016-11-29T09:21:12
 #
 #-------------------------------------------------
 
-QT       += core gui widgets sql serialport
+QT       += core gui network widgets sql serialport
 CONFIG   += console
-QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = mdmagent
+TARGET = monitor
 TEMPLATE = app
 INCLUDEPATH += ../forms/
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
+        mainwindow.cpp\
     ../common/boolexpression.cpp \
     ../common/defines.cpp \
     ../common/archiver.cpp \
@@ -45,13 +44,12 @@ SOURCES += main.cpp\
     ../spr/ecmpkinfo.cpp \
     ../spr/krug.cpp \
     ../common/blockingrs.cpp \
-    rasrs.cpp \
-    kpframe.cpp \
     ../forms/qled.cpp \
     ../common/qled.cpp \
     ../spr/pereezd.cpp
 
-HEADERS  += mainwindow.h \
+
+HEADERS  += mainwindow.h\
     ../common/boolexpression.h \
     ../common/inireader.h \
     ../common/defines.h \
@@ -82,15 +80,11 @@ HEADERS  += mainwindow.h \
     ../spr/ecmpkinfo.h \
     ../spr/krug.h \
     ../common/blockingrs.h \
-    rasrs.h \
-    kpframe.h \
     ../forms/qled.h \
     ../common/qled.h \
     ../spr/pereezd.h
 
-
-FORMS    += mainwindow.ui \
-    kpframe.ui
+FORMS    += mainwindow.ui
 
 RESOURCES += \
     images.qrc

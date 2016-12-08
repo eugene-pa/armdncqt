@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>../images/redo.png</file>
+        <file>../images/f2.png</file>
+        <file>../images/ShiftF2.png</file>
+        <file>../images/f3.png</file>
+        <file>../images/f4.png</file>
+        <file>../images/f2_.png</file>
+        <file>../images/f3_.png</file>
+        <file>../images/f4_.png</file>
+        <file>../images/ShiftF2_.png</file>
+        <file>../images/f5.png</file>
+        <file>../images/f5_.png</file>
+        <file>../images/f6.png</file>
+        <file>../images/f6_.png</file>
+    </qresource>
+</RCC>

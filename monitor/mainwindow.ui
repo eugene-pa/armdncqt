@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>947</width>
+    <height>595</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Panel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_2">
+      <property name="frameShape">
+       <enum>QFrame::WinPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>947</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Маршруты</string>
+    </property>
+    <addaction name="action_set"/>
+    <addaction name="action_cancel"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_set"/>
+   <addaction name="action_cancel"/>
+   <addaction name="action_Strl"/>
+   <addaction name="action_Svtf"/>
+   <addaction name="action_Adch"/>
+   <addaction name="action_adn"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_set">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f2_.png</normaloff>
+     <normalon>:/icons/images/f2.png</normalon>:/icons/images/f2_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Установка маршрута</string>
+   </property>
+   <property name="toolTip">
+    <string>Установка маршрута</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="action_cancel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/ShiftF2_.png</normaloff>
+     <normalon>:/icons/images/ShiftF2.png</normalon>:/icons/images/ShiftF2_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Отмена маршрута</string>
+   </property>
+   <property name="toolTip">
+    <string>Отмена маршрута</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F2</string>
+   </property>
+  </action>
+  <action name="action_Strl">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f3_.png</normaloff>
+     <normalon>:/icons/images/f3.png</normalon>:/icons/images/f3_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Стрелки</string>
+   </property>
+   <property name="toolTip">
+    <string>Индивидуальный перевод стрелок</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="action_Svtf">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f4_.png</normaloff>
+     <normalon>:/icons/images/f4.png</normalon>:/icons/images/f4_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Светофоры</string>
+   </property>
+   <property name="toolTip">
+    <string>Управление светофорами</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
+  </action>
+  <action name="action_Adch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f5_.png</normaloff>
+     <normalon>:/icons/images/f5.png</normalon>:/icons/images/f5_.png</iconset>
+   </property>
+   <property name="text">
+    <string>АДЧ</string>
+   </property>
+   <property name="toolTip">
+    <string>Автодействие четное</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="action_adn">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f6_.png</normaloff>
+     <normalon>:/icons/images/f6.png</normalon>:/icons/images/f6_.png</iconset>
+   </property>
+   <property name="text">
+    <string>АДН</string>
+   </property>
+   <property name="toolTip">
+    <string>Автодействие нечетное</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
+ <connections/>
+</ui>
