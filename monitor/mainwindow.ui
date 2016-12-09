@@ -59,7 +59,113 @@
     <addaction name="action_set"/>
     <addaction name="action_cancel"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Автодействие</string>
+    </property>
+    <addaction name="action_Adch"/>
+    <addaction name="action_adch_cancel"/>
+    <addaction name="separator"/>
+    <addaction name="action_adn"/>
+    <addaction name="action_adn_cancel"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Режимы работы</string>
+    </property>
+    <addaction name="action_su"/>
+    <addaction name="action_su_cancel"/>
+    <addaction name="separator"/>
+    <addaction name="action_МУ"/>
+    <addaction name="action_mu_cancel"/>
+    <addaction name="separator"/>
+    <addaction name="action_svtf_day"/>
+    <addaction name="action_svtf_night"/>
+    <addaction name="separator"/>
+    <addaction name="action_dsn_on"/>
+    <addaction name="action_dsn_off"/>
+    <addaction name="separator"/>
+    <addaction name="action_diskt_evn_off"/>
+    <addaction name="action_diskt_odd_off"/>
+    <addaction name="separator"/>
+    <addaction name="action_rc_ir"/>
+    <addaction name="action_locker_on"/>
+    <addaction name="separator"/>
+    <addaction name="action_otu"/>
+    <addaction name="separator"/>
+    <addaction name="action_8"/>
+   </widget>
+   <widget class="QMenu" name="menu_4">
+    <property name="title">
+     <string>Поезда</string>
+    </property>
+    <addaction name="action_trains"/>
+   </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>Сервис</string>
+    </property>
+    <addaction name="action_kp"/>
+    <addaction name="action_ts"/>
+    <addaction name="action_tu_2"/>
+    <addaction name="separator"/>
+    <addaction name="action_rc"/>
+    <addaction name="action_11"/>
+    <addaction name="action_tu_queue"/>
+    <addaction name="action_routes"/>
+    <addaction name="action_peregons"/>
+    <addaction name="action_formuls"/>
+    <addaction name="separator"/>
+    <addaction name="action_13"/>
+    <addaction name="action_14"/>
+    <addaction name="separator"/>
+    <addaction name="action_16"/>
+    <addaction name="action_17"/>
+    <addaction name="action_18"/>
+    <addaction name="action_19"/>
+    <addaction name="separator"/>
+    <addaction name="action_21"/>
+    <addaction name="action_22"/>
+   </widget>
+   <widget class="QMenu" name="menu_6">
+    <property name="title">
+     <string>Параметры</string>
+    </property>
+    <widget class="QMenu" name="menu_7">
+     <property name="title">
+      <string>Дополнительно</string>
+     </property>
+     <addaction name="action_ststusbar"/>
+     <addaction name="action_42"/>
+     <addaction name="action_43"/>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="action_23"/>
+    <addaction name="action_24"/>
+    <addaction name="action_25"/>
+    <addaction name="action_26"/>
+    <addaction name="separator"/>
+    <addaction name="action_28"/>
+    <addaction name="action_29"/>
+    <addaction name="action_30"/>
+    <addaction name="separator"/>
+    <addaction name="action_32"/>
+    <addaction name="action_33"/>
+    <addaction name="action_34"/>
+    <addaction name="action_35"/>
+    <addaction name="separator"/>
+    <addaction name="action_37"/>
+    <addaction name="separator"/>
+    <addaction name="action_39"/>
+    <addaction name="separator"/>
+    <addaction name="menu_7"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+   <addaction name="menu_4"/>
+   <addaction name="menu_5"/>
+   <addaction name="menu_6"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -74,6 +180,11 @@
    <addaction name="action_Svtf"/>
    <addaction name="action_Adch"/>
    <addaction name="action_adn"/>
+   <addaction name="action_su"/>
+   <addaction name="action_МУ"/>
+   <addaction name="action_tu"/>
+   <addaction name="action_trains"/>
+   <addaction name="action_errors"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="action_set">
@@ -162,7 +273,7 @@
      <normalon>:/icons/images/f5.png</normalon>:/icons/images/f5_.png</iconset>
    </property>
    <property name="text">
-    <string>АДЧ</string>
+    <string>Включить АДЧ</string>
    </property>
    <property name="toolTip">
     <string>Автодействие четное</string>
@@ -181,13 +292,517 @@
      <normalon>:/icons/images/f6.png</normalon>:/icons/images/f6_.png</iconset>
    </property>
    <property name="text">
-    <string>АДН</string>
+    <string>Включить АДН</string>
    </property>
    <property name="toolTip">
     <string>Автодействие нечетное</string>
    </property>
    <property name="shortcut">
     <string>F6</string>
+   </property>
+  </action>
+  <action name="action_su">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f7_.png</normaloff>
+     <normalon>:/icons/images/f7.png</normalon>:/icons/images/f7_.png</iconset>
+   </property>
+   <property name="text">
+    <string>СУ</string>
+   </property>
+   <property name="toolTip">
+    <string>Перевод на сезонное управление</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
+   </property>
+  </action>
+  <action name="action_МУ">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f8_.png</normaloff>
+     <normalon>:/icons/images/f8.png</normalon>:/icons/images/f8_.png</iconset>
+   </property>
+   <property name="text">
+    <string>МУ</string>
+   </property>
+   <property name="toolTip">
+    <string>Перевод района на местное управление</string>
+   </property>
+   <property name="shortcut">
+    <string>F8</string>
+   </property>
+  </action>
+  <action name="action_tu">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f9_.png</normaloff>
+     <normalon>:/icons/images/f9.png</normalon>:/icons/images/f9_.png</iconset>
+   </property>
+   <property name="text">
+    <string>ТУ</string>
+   </property>
+   <property name="toolTip">
+    <string>Вывод команды ТУ</string>
+   </property>
+   <property name="shortcut">
+    <string>F9</string>
+   </property>
+  </action>
+  <action name="action_trains">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f10_.png</normaloff>
+     <normalon>:/icons/images/f10.png</normalon>:/icons/images/f10_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Поезда</string>
+   </property>
+   <property name="toolTip">
+    <string>Список поездов</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="action_errors">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/icons/images/f11_.png</normaloff>
+     <normalon>:/icons/images/f11.png</normalon>:/icons/images/f11_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Ошибки ЭЦ</string>
+   </property>
+   <property name="toolTip">
+    <string>Ошибки логического контроля</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
+  </action>
+  <action name="action_su_cancel">
+   <property name="text">
+    <string>Отмена СУ</string>
+   </property>
+   <property name="toolTip">
+    <string>Отмена сезонного управления</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F7</string>
+   </property>
+  </action>
+  <action name="action_mu_cancel">
+   <property name="text">
+    <string>Отмена МУ</string>
+   </property>
+   <property name="toolTip">
+    <string>Отмена местного управления районом</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F8</string>
+   </property>
+  </action>
+  <action name="action_adch_cancel">
+   <property name="text">
+    <string>Отменить АДЧ</string>
+   </property>
+   <property name="toolTip">
+    <string>Отмена автодействия в четном направлении</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F5</string>
+   </property>
+  </action>
+  <action name="action_adn_cancel">
+   <property name="text">
+    <string>Отменить АДН</string>
+   </property>
+   <property name="toolTip">
+    <string>Отмена автодействия в нечетном направлении</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F6</string>
+   </property>
+  </action>
+  <action name="action_svtf_day">
+   <property name="text">
+    <string>Режим сигналов &quot;ДЕНЬ&quot;</string>
+   </property>
+   <property name="toolTip">
+    <string>Включить режим сигналов &quot;ДЕНЬ&quot;</string>
+   </property>
+  </action>
+  <action name="action_svtf_night">
+   <property name="text">
+    <string>Режим сигналов &quot;НОЧЬ&quot;</string>
+   </property>
+   <property name="toolTip">
+    <string>Включить режим сигналов &quot;НОЧЬ&quot;</string>
+   </property>
+  </action>
+  <action name="action_dsn_on">
+   <property name="text">
+    <string>ВКЛ двойное снижение напряжения</string>
+   </property>
+   <property name="toolTip">
+    <string>Включить режим двойного снижения напряжения</string>
+   </property>
+  </action>
+  <action name="action_dsn_off">
+   <property name="text">
+    <string>ОТКЛ двойное снижение напряжения</string>
+   </property>
+   <property name="toolTip">
+    <string>Отключить режим двойного снижения напряжения</string>
+   </property>
+  </action>
+  <action name="action_diskt_evn_off">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Сброс ДИСКЧТ</string>
+   </property>
+  </action>
+  <action name="action_diskt_odd_off">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Сброс ДИСКНТ</string>
+   </property>
+  </action>
+  <action name="action_rc_ir">
+   <property name="text">
+    <string>Посекционная искусственная разделка</string>
+   </property>
+  </action>
+  <action name="action_locker_on">
+   <property name="text">
+    <string>Установка красных колпачков на стрелки</string>
+   </property>
+  </action>
+  <action name="action_otu">
+   <property name="text">
+    <string>Ответственные команды</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть окно ввода ответственных команд телеуправления (ОТУ)</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Автопропуск</string>
+   </property>
+  </action>
+  <action name="action_kp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Состояние КП</string>
+   </property>
+   <property name="toolTip">
+    <string>Окно состояния КП</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F6</string>
+   </property>
+  </action>
+  <action name="action_ts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Состояние ТС</string>
+   </property>
+   <property name="toolTip">
+    <string>Окно состояния ТС</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F7</string>
+   </property>
+  </action>
+  <action name="action_tu_2">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Список команд ТУ</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F8</string>
+   </property>
+  </action>
+  <action name="action_rc">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Состояние РЦ</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F9</string>
+   </property>
+  </action>
+  <action name="action_11">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Сетевые клиенты</string>
+   </property>
+   <property name="toolTip">
+    <string>Просмотр списка сетевых клиентов</string>
+   </property>
+  </action>
+  <action name="action_tu_queue">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Очереди ТУ</string>
+   </property>
+   <property name="toolTip">
+    <string>Просмотр очередей ТУ</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F3</string>
+   </property>
+  </action>
+  <action name="action_routes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Описание маршрутов</string>
+   </property>
+   <property name="toolTip">
+    <string>Просмотр списка  маршрутов</string>
+   </property>
+  </action>
+  <action name="action_peregons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Состояние перегонов</string>
+   </property>
+  </action>
+  <action name="action_formuls">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Формулы</string>
+   </property>
+   <property name="toolTip">
+    <string>Окно расчета логических выражений</string>
+   </property>
+  </action>
+  <action name="action_13">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Протоколирование диагностики</string>
+   </property>
+  </action>
+  <action name="action_14">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Протокол составных команд ТУ</string>
+   </property>
+  </action>
+  <action name="action_16">
+   <property name="text">
+    <string>Просмотр настроечного файла</string>
+   </property>
+  </action>
+  <action name="action_17">
+   <property name="text">
+    <string>Протокол загрузки</string>
+   </property>
+  </action>
+  <action name="action_18">
+   <property name="text">
+    <string>Копия экрана</string>
+   </property>
+  </action>
+  <action name="action_19">
+   <property name="text">
+    <string>Тест квитанций</string>
+   </property>
+  </action>
+  <action name="action_21">
+   <property name="text">
+    <string>Загрузка обновлений НСИ</string>
+   </property>
+  </action>
+  <action name="action_22">
+   <property name="text">
+    <string>Откат к предыдущей версии НСИ</string>
+   </property>
+  </action>
+  <action name="action_23">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Подтверждение ввода команд</string>
+   </property>
+  </action>
+  <action name="action_24">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Звук</string>
+   </property>
+  </action>
+  <action name="action_25">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Закрепить размеры окна</string>
+   </property>
+  </action>
+  <action name="action_26">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Автоматически разворачивать перегон при отправлении</string>
+   </property>
+  </action>
+  <action name="action_28">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Блокировка генерации номеров на ЧДК</string>
+   </property>
+  </action>
+  <action name="action_29">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Отображение поездов</string>
+   </property>
+  </action>
+  <action name="action_30">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Скрыть брошенные</string>
+   </property>
+  </action>
+  <action name="action_32">
+   <property name="text">
+    <string>Всплывающие подписи элементов схемы</string>
+   </property>
+  </action>
+  <action name="action_33">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Показывать закрыте светофоры на Табло</string>
+   </property>
+  </action>
+  <action name="action_34">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Названия светофоров</string>
+   </property>
+  </action>
+  <action name="action_35">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Названия стрелок</string>
+   </property>
+  </action>
+  <action name="action_37">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Контроль фрикции стрелок</string>
+   </property>
+  </action>
+  <action name="action_39">
+   <property name="text">
+    <string>Параметры отображения</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+F12</string>
+   </property>
+  </action>
+  <action name="action_ststusbar">
+   <property name="text">
+    <string>Панель состояния</string>
+   </property>
+  </action>
+  <action name="action_42">
+   <property name="text">
+    <string>Панель кнопок</string>
+   </property>
+  </action>
+  <action name="action_43">
+   <property name="text">
+    <string>Панель команд</string>
    </property>
   </action>
  </widget>
