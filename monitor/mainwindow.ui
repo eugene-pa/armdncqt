@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="frame_st">
       <property name="maximumSize">
        <size>
         <width>120</width>
@@ -32,7 +32,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame_2">
+     <widget class="QFrame" name="frame_view">
       <property name="frameShape">
        <enum>QFrame::WinPanel</enum>
       </property>
@@ -76,7 +76,7 @@
     <addaction name="action_su"/>
     <addaction name="action_su_cancel"/>
     <addaction name="separator"/>
-    <addaction name="action_МУ"/>
+    <addaction name="action_mu"/>
     <addaction name="action_mu_cancel"/>
     <addaction name="separator"/>
     <addaction name="action_svtf_day"/>
@@ -181,7 +181,7 @@
    <addaction name="action_Adch"/>
    <addaction name="action_adn"/>
    <addaction name="action_su"/>
-   <addaction name="action_МУ"/>
+   <addaction name="action_mu"/>
    <addaction name="action_tu"/>
    <addaction name="action_trains"/>
    <addaction name="action_errors"/>
@@ -320,9 +320,12 @@
     <string>F7</string>
    </property>
   </action>
-  <action name="action_МУ">
+  <action name="action_mu">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="images.qrc">
@@ -340,6 +343,9 @@
    </property>
   </action>
   <action name="action_tu">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/icons/images/f9_.png</normaloff>
@@ -356,6 +362,9 @@
    </property>
   </action>
   <action name="action_trains">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/icons/images/f10_.png</normaloff>
@@ -402,6 +411,9 @@
    </property>
   </action>
   <action name="action_mu_cancel">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Отмена МУ</string>
    </property>

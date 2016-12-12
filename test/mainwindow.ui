@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>582</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>582</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action"/>
+   <addaction name="action_2"/>
+   <addaction name="action_3"/>
+   <addaction name="action_4"/>
+   <addaction name="action_5"/>
+   <addaction name="action_6"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/new/f2_.png</normaloff>
+     <normalon>:/images/new/f2.png</normalon>:/images/new/f2_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Маршрут</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/new/shiftF2_.png</normaloff>
+     <normalon>:/images/new/shiftF2.png</normalon>:/images/new/shiftF2_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Отмена</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/new/f3_.png</normaloff>
+     <normalon>../images/new/f3.png</normalon>../images/new/f3_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Светофор</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/new/f4_.png</normaloff>
+     <normalon>../images/new/f4.png</normalon>../images/new/f4_.png</iconset>
+   </property>
+   <property name="text">
+    <string>Светофор</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/new/f5_.png</normaloff>
+     <normalon>../images/new/f5.png</normalon>../images/new/f5_.png</iconset>
+   </property>
+   <property name="text">
+    <string>АДЧ</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/new/f6_.png</normaloff>
+     <normalon>../images/new/f6.png</normalon>../images/new/f6_.png</iconset>
+   </property>
+   <property name="text">
+    <string>АДН</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/new/f7_.png</normaloff>
+     <normalon>../images/new/f7.png</normalon>../images/new/f7_.png</iconset>
+   </property>
+   <property name="text">
+    <string>СУ</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
+ <connections/>
+</ui>

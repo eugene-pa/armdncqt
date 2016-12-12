@@ -349,6 +349,10 @@ void MainWindow::stationSelected(int index)
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
     if (shapeId->St() != nullptr)
         g_actualStation = shapeId->St();
+
+    if (child != nullptr)
+        delete child;
+    // 2016.12.12. Вопрос: правильно ли это - каждый раз создавать класс ShapeChild заново? Кто удаляет текущий класс ?
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
     child->setMouseTracking(tooltip);
 
