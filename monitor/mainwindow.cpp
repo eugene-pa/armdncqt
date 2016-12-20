@@ -22,7 +22,7 @@
 QString version = "1.0.1.10";                               // версия приложения
 QString title = "ДЦ ЮГ. УПРАВЛЕНИЕ. ";
 
-QString images(":/images/icons/");                          // путь к образам status/images
+QString images(":/icons/images/");                          // путь к образам status/images
 
 #ifdef Q_OS_WIN
     QString path = "C:/armdncqt/";
@@ -108,6 +108,44 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->setWindowTitle(title);
 
+    Logger::SetLoger(&logger);
+    Logger::LogStr ("Запуск приложения");
+
+    // загрузка пользовательской графики (можно вынести в глоб.функцию)
+    loadResources();
+
+    // значок приложения
+    QIcon i(QPixmap(images + "monitor.png"));
+    setWindowIcon (QIcon(QPixmap(images + "monitor2.png")));
+
+    // создаем меню ПОМОЩЬ справа (используем setCornerWidget для отдельного QMenuBar)
+    QMenuBar *bar = new QMenuBar(ui->menuBar);
+    QMenu *menu = new QMenu("Помощь", bar);
+    bar->addMenu(menu);
+
+    QAction *action1 = new QAction("О программе", bar);
+    menu->addAction(action1);
+    connect(action1, SIGNAL(triggered()), this, SLOT(on_action_About_triggered()));
+
+    ui->menuBar->setCornerWidget(bar);
+
+    // загрузка НСИ
+    KrugInfo * krug = nullptr;
+    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
+    Station::ReadBd(dbname, krug, logger);                  // станции
+    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
+    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
+    Ts::ReadBd (dbname, krug, logger);                      // ТС
+    Tu::ReadBd (dbname, krug, logger);                      // ТУ
+    Otu::ReadBd (dbname, krug, logger);
+    Rc::ReadRelations(dbname, logger);                      // связи РЦ
+    Route::ReadBd(dbname, krug, logger);                    // маршруты
+    Pereezd::ReadBd (dbname, krug, logger);                 // переезды
+
+    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
+    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
+
+    stationSelected(Station::GetById(1)->formList[0]);
 }
 
 MainWindow::~MainWindow()
@@ -123,6 +161,12 @@ void MainWindow::on_action_triggered()
 void MainWindow::on_action_2_triggered()
 {
 
+}
+
+void MainWindow::on_action_About_triggered()
+{
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. УПРАВЛЕНИЕ\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.lastModified().toString(FORMAT_DATETIME)));
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
@@ -156,3 +200,34 @@ void MainWindow::loadResources()
 
     tooltip = true;
 }
+
+void MainWindow::stationSelected(ShapeId * shapeId)
+{
+    if (shapeId->St() != nullptr)
+        g_actualStation = shapeId->St();
+    if (child != nullptr)
+        delete child;
+
+    // 2016.12.12. Вопрос: правильно ли это - каждый раз создавать класс ShapeChild заново? Кто удаляет текущий класс ?
+
+    child = new ShapeChild(shapeId->Set());
+    //ui->centralWidget->layout()->addWidget(ui->frame_st);
+    ui->centralWidget->layout()->addWidget(child);
+    //child->setMouseTracking(tooltip);
+
+//    scaleView();
+
+    child->horizontalScrollBar()->setValue(0);
+    child->verticalScrollBar()->setValue(0);
+    child->centerOn(0,0);
+
+}
+
+// масштабирование всего представления
+//void MainWindow::scaleView()
+//{
+//    qreal scale = qPow(qreal(2), (sliderScale->value()) / qreal(50));
+//    QTransform transform;
+//    transform.scale(scale, scale);
+//    child->setTransform(transform);
+//}

@@ -23,5 +23,8 @@
         <file>../images/f10_.png</file>
         <file>../images/f11.png</file>
         <file>../images/f11_.png</file>
+        <file>../images/monitor.png</file>
+        <file>../images/monitor!.png</file>
+        <file>../images/monitor2.png</file>
     </qresource>
 </RCC>

@@ -211,7 +211,7 @@ MainWindow::MainWindow(QWidget *parent) :
     calendar->hide();
     timeEdit->setDisplayFormat("hh:mm:ss");
 
-    // создаем меню ПОМОЩЬ справа
+    // создаем меню ПОМОЩЬ справа (используем setCornerWidget для отдельного QMenuBar)
     QMenuBar *bar = new QMenuBar(ui->menuBar);
     QMenu *menu = new QMenu("Помощь", bar);
     bar->addMenu(menu);

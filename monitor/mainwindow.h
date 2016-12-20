@@ -55,6 +55,7 @@ private slots:
     void on_action_triggered();
 
     void on_action_2_triggered();
+    void on_action_About_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -62,6 +63,7 @@ private:
     class ShapeChild * child;                               // активная схема
 
     void loadResources();                                   // загрузка ресурсов
+    void stationSelected(ShapeId *);                        // выбор станции
 
     // вспомогательные диалоги
     class DlgTsInfo * dlgTs;                                // состояние ТС

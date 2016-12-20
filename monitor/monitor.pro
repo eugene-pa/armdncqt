@@ -73,7 +73,7 @@ SOURCES += main.cpp\
     ../forms/dlgtuinfo.cpp \
     ../forms/qled.cpp \
     ../forms/tsstatuswidget.cpp \
-    ../armtools/shapechild.cpp
+    shapechild.cpp
 
 HEADERS  += mainwindow.h\
     ../common/archiver.h \
@@ -136,7 +136,7 @@ HEADERS  += mainwindow.h\
     ../forms/dlgtuinfo.h \
     ../forms/qled.h \
     ../forms/tsstatuswidget.h \
-    ../armtools/shapechild.h
+    shapechild.h
 
 
 FORMS    += mainwindow.ui\

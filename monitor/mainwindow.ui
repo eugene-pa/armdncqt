@@ -17,6 +17,12 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QFrame" name="frame_st">
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
         <width>120</width>
@@ -25,16 +31,6 @@
       </property>
       <property name="frameShape">
        <enum>QFrame::Panel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QFrame" name="frame_view">
-      <property name="frameShape">
-       <enum>QFrame::WinPanel</enum>
       </property>
       <property name="frameShadow">
        <enum>QFrame::Sunken</enum>
