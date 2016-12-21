@@ -129,6 +129,23 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->menuBar->setCornerWidget(bar);
 
+    // добавляем тулбар ввода ТУ
+    fontToolbar = new QFont("Segoe UI",12);
+    extBar = new QToolBar(this);
+    extBar->setFont(*fontToolbar);
+    extBar->setAllowedAreas(Qt::TopToolBarArea);
+    extBar->addWidget(new QLabel("Команда ТУ: [F9]",extBar));
+    extBar->addWidget(new QLineEdit("", extBar));
+    extBar->addAction(ui->action_Enter);
+    extBar->addAction(ui->action_mnvr_ON);
+    extBar->addAction(ui->action_var_ON);
+    extBar->addAction(ui->action_nprv_ON);
+    extBar->addAction(ui->action_checktu_OFF);
+    extBar->setIconSize(QSize(32,32));
+
+    addToolBarBreak();
+    addToolBar(extBar);
+
     // загрузка НСИ
     KrugInfo * krug = nullptr;
     Esr::ReadBd(esrdbbname, logger);                        // ЕСР

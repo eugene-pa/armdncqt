@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 
-#include <QTextCodec>
 #include <QPushButton>
 #include <QFileDialog>
 #include <QPaintEvent>
@@ -12,11 +11,13 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QDateEdit>
+#include <QTextCodec>
 #include <QTimeEdit>
 #include <QCalendarWidget>
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QtMath>
+#include <QLineEdit>
 #include <QLayout>
 #include <QProcess>
 #include <QMessageBox>
@@ -78,6 +79,9 @@ private:
     class DlgStationsInfo * dlgStations;                    // станции
     class DlgPeregonInfo* dlgPeregons;                      // перегоны
     class DlgPereezd* dlgPereezd;                           // переезды
+
+    QToolBar * extBar;                                      // доп.тулбар
+    QFont * fontToolbar;                                    // шрифт доп. тулбара
 
     bool tooltip;                                           // вкл.откл. тултипы
 };
