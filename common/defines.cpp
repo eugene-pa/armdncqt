@@ -19,7 +19,9 @@ time_t	g_TmDtServer;                                       // серверное
 time_t	g_DeltaTZ = 0;                                      // 2014.10.29.Разница времени удаленного сервера и настоящего АРМ ШН
 int  g_RealStreamTsLength;                                  // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
 bool g_QuickSearching;                                      // флаг ускорееного сканирования входного потока
+
 class Station * g_actualStation;                            // актуальная станция
+class ShapeId * g_actualForm;                               // актуальная схема
 
 QPixmap * g_green,
         * g_red,

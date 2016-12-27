@@ -81,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent) :
     dlgPeregons = nullptr;                                  // перегоны
     dlgPereezd = nullptr;                                   // переезды
 
+    g_actualStation = nullptr;
+    g_actualForm    = nullptr;
+
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
     IniReader rdr(iniFile);
     if (rdr.GetText("WORKINDIRECTORY", path))               // рабочая папка
@@ -163,21 +166,44 @@ MainWindow::MainWindow(QWidget *parent) :
     ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
 
     stationSelected(Station::GetById(1)->formList[0]);
+
+    // размещаем кнопки выбора станций в QVBoxLayout
+    // проблема: расположение кнопок в старой версии задавалось либо номером кнопки, либо перечнем станций в таблице Krugs[Контроль станций]
+    ui->frame_st->setLayout(new  QVBoxLayout(ui->frame_st));
+    for (Station * st : Station::StationsOrg)
+    {
+        for (ShapeId * id : st->formList)
+        {
+            QPushButton * button = new QPushButton(id->Name());
+            id->setButton(button);
+            button->setCheckable(true);
+            button->setProperty("shapeID", varfromptr(id));
+            ui->frame_st->layout()->addWidget(button);
+
+            connect(button, SIGNAL(released()), this, SLOT (btnStation()));
+        }
+    }
+}
+
+void MainWindow::btnStation()
+{
+    if (g_actualForm && g_actualForm->getButton())
+        g_actualForm->getButton()->setChecked(false);
+    QPushButton * btn = (QPushButton *)sender();
+    if (!btn->isChecked())
+        btn->setChecked(true);
+    else
+    {
+        g_actualForm = (ShapeId *)ptrfromvar(btn->property("shapeID"));
+        //g_actualStation = g_actualForm->St();
+        qDebug() << g_actualForm->Name();
+        stationSelected(g_actualForm);
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::on_action_triggered()
-{
-
-}
-
-void MainWindow::on_action_2_triggered()
-{
-
 }
 
 void MainWindow::on_action_About_triggered()
@@ -233,11 +259,11 @@ void MainWindow::stationSelected(ShapeId * shapeId)
     //child->setMouseTracking(tooltip);
 
 //    scaleView();
-
+/*
     child->horizontalScrollBar()->setValue(0);
     child->verticalScrollBar()->setValue(0);
     child->centerOn(0,0);
-
+*/
 }
 
 // масштабирование всего представления

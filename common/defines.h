@@ -142,7 +142,9 @@ extern time_t g_TmDtServer;                                 // серверно�
 extern time_t g_DeltaTZ;                                    // разница времени удаленного сервера и настоящего АРМ ШН
 extern int  g_RealStreamTsLength;                           // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
 extern bool g_QuickSearching;                               // флаг ускорееного сканирования входного потока
+
 extern class Station * g_actualStation;                     // актуальная станция
+extern class ShapeId * g_actualForm;                        // актуальная схема
 
 const int MAX_DATA_LEN_FROM_MONITOR = 65535;
 
@@ -181,5 +183,8 @@ typedef struct _COMMTIMEOUTS {
 
 extern void addCRC (QByteArray& data);
 extern bool makeFullPath(QString base, QString& path);
+
+#define varfromptr(x) qVariantFromValue((void *)x)
+#define ptrfromvar(x) x.value<void*>()
 
 #endif // DEFINES_H

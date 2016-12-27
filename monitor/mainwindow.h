@@ -22,6 +22,7 @@
 #include <QProcess>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QStackedLayout>
 #include <QDir>
 
 #include "../shapes/shapeset.h"
@@ -53,10 +54,8 @@ public:
     void timerEvent(QTimerEvent *event);
 
 private slots:
-    void on_action_triggered();
-
-    void on_action_2_triggered();
     void on_action_About_triggered();
+    void btnStation();
 
 private:
     Ui::MainWindow *ui;

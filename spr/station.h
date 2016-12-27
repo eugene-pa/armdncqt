@@ -330,6 +330,7 @@ public:
         this->st = st;
         this->radioid = radioid;
         this->name = name;
+        button = nullptr;
         fileName = name + ".shp";
         set = nullptr;
     }
@@ -337,9 +338,13 @@ public:
     QString Name() { return name; }
     class ShapeSet * Set() { return set; }
     void setShape(class ShapeSet *s) { set = s; }
+    void setButton (class QPushButton * btn) { button = btn; }
+    class QPushButton * getButton() { return button; }
+
 private:
     Station * st;                                           // станция-собственник
-    int radioid;                                            // кнопка
+    int radioid;                                            // номер ресурса кнопки из БД
+    class QPushButton * button;                             // указатель на кнопку или null
     QString name;                                           // наименование формы без расширения
     QString fileName;                                       // наименование формы c расширением
     class ShapeSet * set;                                   // контейнер примитивов
