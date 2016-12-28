@@ -333,6 +333,7 @@ public:
         button = nullptr;
         fileName = name + ".shp";
         set = nullptr;
+        widget = nullptr;
     }
     Station * St() { return st; }
     QString Name() { return name; }
@@ -340,6 +341,8 @@ public:
     void setShape(class ShapeSet *s) { set = s; }
     void setButton (class QPushButton * btn) { button = btn; }
     class QPushButton * getButton() { return button; }
+    void setWidget (class ShapeChild *) { widget = w; }
+    class ShapeChild * getWidget () { return widget; }
 
 private:
     Station * st;                                           // станция-собственник

@@ -133,9 +133,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->menuBar->setCornerWidget(bar);
 
     // добавляем тулбар ввода ТУ
+    addToolBarBreak();                                      // новый тулбар - с новой строки: используем addToolBarBreak
+
     fontToolbar = new QFont("Segoe UI",12);
     extBar = new QToolBar(this);
     extBar->setFont(*fontToolbar);
+
     extBar->setAllowedAreas(Qt::TopToolBarArea);
     extBar->addWidget(new QLabel("Команда ТУ: [F9]",extBar));
     extBar->addWidget(new QLineEdit("", extBar));
@@ -146,7 +149,7 @@ MainWindow::MainWindow(QWidget *parent) :
     extBar->addAction(ui->action_checktu_OFF);
     extBar->setIconSize(QSize(32,32));
 
-    addToolBarBreak();
+
     addToolBar(extBar);
 
     // загрузка НСИ
@@ -170,13 +173,15 @@ MainWindow::MainWindow(QWidget *parent) :
     // размещаем кнопки выбора станций в QVBoxLayout
     // проблема: расположение кнопок в старой версии задавалось либо номером кнопки, либо перечнем станций в таблице Krugs[Контроль станций]
     ui->frame_st->setLayout(new  QVBoxLayout(ui->frame_st));
+    ui->frame_st->layout()->setContentsMargins(2,2,2,2);
     for (Station * st : Station::StationsOrg)
     {
         for (ShapeId * id : st->formList)
         {
-            QPushButton * button = new QPushButton(id->Name());
+            QPushButton * button = new QPushButton(id->Name().left(13));
             id->setButton(button);
             button->setCheckable(true);
+            button->setMinimumHeight(28);
             button->setProperty("shapeID", varfromptr(id));
             ui->frame_st->layout()->addWidget(button);
 
@@ -251,10 +256,10 @@ void MainWindow::stationSelected(ShapeId * shapeId)
     if (child != nullptr)
         delete child;
 
-    // 2016.12.12. Вопрос: правильно ли это - каждый раз создавать класс ShapeChild заново? Кто удаляет текущий класс ?
-
-    child = new ShapeChild(shapeId->Set());
     //ui->centralWidget->layout()->addWidget(ui->frame_st);
+
+    // 2016.12.12. Вопрос: правильно ли это - каждый раз создавать класс ShapeChild заново? Кто удаляет текущий класс ?
+    child = new ShapeChild(shapeId->Set());
     ui->centralWidget->layout()->addWidget(child);
     //child->setMouseTracking(tooltip);
 
