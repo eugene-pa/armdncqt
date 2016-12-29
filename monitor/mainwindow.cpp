@@ -53,6 +53,14 @@ QString images(":/icons/images/");                          // путь к об�
     QString formDir     = path + "pictures/";
     QString iniFile     =        "monitor.ini";
 
+    QString appName      = "monitor";
+    QString companyName  = "PA";
+    QString parAck       = "VAR/ACK"          ;
+    QString parStatusbar = "VAR/STATUSBAR"    ;
+    QString parToolbar   = "VAR/TOOLBAR"      ;
+    QString parFixWindow = "VAR/FIXWINDOW"    ;
+    QString parPos       = "VAR/MAINWINDOWPOS";
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -120,6 +128,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // значок приложения
     QIcon i(QPixmap(images + "monitor.png"));
     setWindowIcon (QIcon(QPixmap(images + "monitor2.png")));
+
+    // читаем сохраненные параметры пользователя
+    readUserSettings();
 
     // создаем меню ПОМОЩЬ справа (используем setCornerWidget для отдельного QMenuBar)
     QMenuBar *bar = new QMenuBar(ui->menuBar);
@@ -209,6 +220,50 @@ void MainWindow::btnStation()
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    writeUserSettings();
+}
+
+// чтение пользовательских настроек: координаты окна, подтверждение, маршрутные опции
+// STATUSBAR    0/1
+// TOOLBAR      0/1
+// MESSAGESBAR  0/1
+// FIXWINDOW    0/1
+// MAINWINDOWPOS (x1 y1 x2 y2 через пробел)
+// ACK          0/1                             - подтверждение
+// VARIANT      0/1                             - вариантные
+// MANEVR       0/1                             - маневровые
+// NEPRAV       0/1                             - на неправ.путь
+
+//
+//
+void MainWindow::readUserSettings()
+{
+
+    QSettings settings(companyName, appName);
+    g_rqAck         = settings.value(parAck      , false).toBool();
+    showStatusBar   = settings.value(parStatusbar, true ).toBool();   // опция STATUSBAR     0/1
+    showToolbar     = settings.value(parToolbar  , true ).toBool();   // опция TOOLBAR       0/1
+    bFixWindow      = settings.value(parFixWindow, false).toBool();   // опция FIXWINDOW     0/1
+    _pos            = settings.value(parPos      , ""   ).toString();   // опция MAINWINDOWPOS (x1 y1 x2 y2 через пробел)
+}
+
+// запись пользовательских настроек: координаты окна, подтверждение, маршрутные опции
+void MainWindow::writeUserSettings()
+{
+    QSettings settings(companyName, appName);
+    settings.setValue(parAck          , g_rqAck);
+    settings.setValue(parStatusbar    , showStatusBar);
+    settings.setValue(parToolbar      , showToolbar  );
+    settings.setValue(parFixWindow    , bFixWindow   );
+
+    QRect r = this->geometry();
+    _pos = QString("%1 %2 %3 %4").arg(r.x()).arg(r.y()).arg(r.x()+r.width()).arg(r.y()+r.height());
+    settings.setValue(parPos, _pos);
 }
 
 void MainWindow::on_action_About_triggered()

@@ -341,7 +341,7 @@ public:
     void setShape(class ShapeSet *s) { set = s; }
     void setButton (class QPushButton * btn) { button = btn; }
     class QPushButton * getButton() { return button; }
-    void setWidget (class ShapeChild *) { widget = w; }
+    void setWidget (class ShapeChild * w) { widget = w; }
     class ShapeChild * getWidget () { return widget; }
 
 private:
