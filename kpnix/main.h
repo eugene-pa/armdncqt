@@ -12,6 +12,11 @@
 #include <queue>											// FIFO
 #include <cstdio>
 
+#ifdef Q_OS_WIN
+#include <io.h>
+#include <fcntl.h>
+#endif // #ifdef Q_OS_WIN
+
 #include "kp2017.h"
 
 using namespace std;
@@ -20,8 +25,11 @@ typedef unsigned char  BYTE;
 typedef unsigned short WORD;
 typedef unsigned long  DWORD;
 
-void threadsafecout(const char *);							// безопасный вывод на консоль с блокировкой строки char
-void threadsafecout(string msg);                            // безопасный вывод на консоль с блокировкой потока
+std::wstring qToStdWString(const QString &str);             // QString --> std::wstring
+QString stdWToQString(const std::wstring &str);             // std::wstring --> QString
+
+void threadsafecout(const wchar_t *);                       // безопасный (с блокировкой мьютекса) вывод строки символов на консоль с указанием потока
+void threadsafecout(wstring msg);                           // безопасный (с блокировкой мьютекса) вывод строки на консоль
 
 // Базовые потои КП
 void   ThreadTS				(long);							// функция потока опроса ТС

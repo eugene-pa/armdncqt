@@ -7,7 +7,7 @@ thread * pThreadPulse;								// указатель на поток формир
 void ThreadPulse(long)
 {
 	
-	threadsafecout("Поток программного пульса запущен!");
+    threadsafecout(L"Поток программного пульса запущен!");
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
@@ -15,6 +15,6 @@ void ThreadPulse(long)
 	}
 	exit_lock.unlock();
 
-	threadsafecout("Поток программного пульса завершен!");
+    threadsafecout(L"Поток программного пульса завершен!");
 	
 }

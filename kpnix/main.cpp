@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+﻿#include <QCoreApplication>
 #include "main.h"
 
 mutex con_lock;													// блокировка доступа к консоли
@@ -6,31 +6,26 @@ timed_mutex exit_lock;											// блокировка до выхода
 bool  rqExit = false;											// запрос выхода
 bool WaitThreadsPending();										// ожидание завершения потоков
 
-
+void threadsafecout(const wchar_t *);							// безопасный вывод на консоль с блокировкой строки char
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
-    QString s = "АБВГД";
-    qDebug() << s.toStdString().c_str();
-    cout << s.toStdString();
-
-    //setlocale(LC_CTYPE, "rus"); // вызов функции настройки локали
-
 #ifdef Q_OS_WIN
-    //char * local = setlocale(LC_CTYPE, "utf-8");					// вызов функции настройки локали
-    //char * local = setlocale(LC_ALL, "Russian");
-    //if (local != NULL)
-    //    cout << local << "\n";
-#else // Q_OS_WIN
-    set_keypress();
-#endif
+    // настраиваем консоль Windows на юникод
+    // под LINUX строки юникод отображаются на консоли нормально без всяких танцев!
+    _setmode(_fileno(stdout), _O_U16TEXT);
+    _setmode(_fileno(stdin),  _O_U16TEXT);
+    _setmode(_fileno(stderr), _O_U16TEXT);
+#endif  // #ifdef Q_OS_WIN
 
-    exit_lock.lock ();											// блокируем мьютекс завершения
+    wcout << L"Старт" << endl;
+
+    exit_lock.lock ();											// блокируем мьютекс завершения (ждем освобождения во всех потоках)
 
     // создание потоков
+
     pThreadTs			= new thread ( ThreadTS			, 0);	// поток опроса ТС
     pThreadTu			= new thread ( ThreadTU			, 0);	// поток вывода ТУ
     pThreadUpok			= new thread ( ThreadUpok		, 0);	// поток отработки ОТУ УПОК+БРОК
@@ -45,13 +40,13 @@ int main(int argc, char *argv[])
     PushTu(2);
     PushTu(3);
 
-    getchar();
+    getwchar();
+    fflush(stdin);
 
     PushTu(4);
 
-    getchar();
+    getwchar();
 // отладка **************************************************************************************************************
-
 
     exit_lock.unlock();											// разблокируем мьютекс завершения
 
@@ -62,8 +57,9 @@ int main(int argc, char *argv[])
 
 bool WaitThreadsPending()
 {
-    // ожидание завершения потоков
-    threadsafecout("Ожидаем завершения потоков и освобождаем ресурсы");
+    // ожидание завершения потоков (функция join() обеспечивает ожидание завершения потока)
+    threadsafecout(L"Ожидаем завершения потоков и освобождаем ресурсы");
+
     if (pThreadTs)
     {
         pThreadTs->join();
@@ -110,47 +106,36 @@ bool WaitThreadsPending()
     return true;
 }
 
-// безопасный вывод на консоль с блокировкой мьютекса
-void threadsafecout(const char * p)
+// безопасный (с блокировкой мьютекса) вывод строки символов на консоль с указанием потока
+void threadsafecout(const wchar_t * p)
 {
     lock_guard<mutex> locker(con_lock);
     thread::id id = this_thread::get_id();
-    cout << p << "(id=" << id << ")\n";
+    wcout << p << L"(id=" << id << L")\n";
 }
 
-// безопасный вывод на консоль с блокировкой потока
-void threadsafecout(string msg)
+// безопасный (с блокировкой мьютекса) вывод строки на консоль
+void threadsafecout(wstring msg)
 {
     lock_guard<mutex> locker(con_lock);
-    cout << msg << "\n";
+    wcout << msg << "\n";
 }
 
-#ifndef Q_OS_WIN
-#include <termios.h>
-// танцы с бубном для эмуляции поведения _getch(), дающей ввод символа без подтверждения Enter
-// (перепрограммируем режим терминала)
-static struct termios stored_settings;
-
-void set_keypress(void)
+// рекомендованные реализации для преобразования QString <-> wstring
+std::wstring qToStdWString(const QString &str)
 {
- struct termios new_settings;
-
- tcgetattr(0,&stored_settings);
-
- new_settings = stored_settings;
-
- /* Disable canonical mode, and set buffer size to 1 byte */
- new_settings.c_lflag &= (~ICANON);
- new_settings.c_cc[VTIME] = 0;
- new_settings.c_cc[VMIN] = 1;
-
- tcsetattr(0,TCSANOW,&new_settings);
- return;
+#ifdef _MSC_VER
+ return std::wstring((const wchar_t*)str.utf16());          // MSVC
+#else
+ return str.toStdWString();                                 // GCC
+#endif
 }
 
-void reset_keypress(void)
+QString stdWToQString(const std::wstring &str)
 {
- tcsetattr(0,TCSANOW,&stored_settings);
- return;
+#ifdef _MSC_VER
+ return QString::fromUtf16((const ushort*)str.c_str());     // MSVC
+#else
+ return QString::fromStdWString(str);                       // GCC
+#endif
 }
-#endif // #ifndef Q_OS_WIN

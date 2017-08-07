@@ -6,7 +6,7 @@ thread * pThreadSysCommand;							// указатель на поток испо
 
 void ThreadSysCommand(long)
 {
-	threadsafecout("Поток реализации директив управления КП запущен!");
+    threadsafecout(L"Поток реализации директив управления КП запущен!");
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
@@ -14,6 +14,6 @@ void ThreadSysCommand(long)
 	}
 	exit_lock.unlock();
 
-	threadsafecout("Поток реализации директив управления КП завершен!");
+    threadsafecout(L"Поток реализации директив управления КП завершен!");
 	
 }

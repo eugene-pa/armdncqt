@@ -13,12 +13,12 @@ queue <DWORD> listDone;											// очередь исполненных ТУ
 
 void ThreadTU (long)
 {
-	threadsafecout("Поток TU запущен!");
+    threadsafecout(L"Поток TU запущен!");
 
 	// выборка и исполнение ТУ вплоть до запроса выхода (освобождение exit_lock)
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
-		threadsafecout("Ожидание ТУ");
+        threadsafecout(L"Ожидание ТУ");
 		DWORD tu = 0;
 		size_t n = 0;
 		{
@@ -32,12 +32,12 @@ void ThreadTU (long)
 
 		if (tu)
 		{
-            string msg = "\nВ очереди " + to_string(n) + " ТУ.  Исполняем ТУ: ";
+            wstring msg = L"\nВ очереди " + to_wstring(n) + L" ТУ.  Исполняем ТУ: " + to_wstring(tu);
             threadsafecout(msg);
 
 			SleepMS(3000);										// задержка на исполнение ТУ
 
-            msg = "Исполнили ТУ: " + to_string(tu);
+            msg = L"Исполнили ТУ: " + to_wstring(tu);
             threadsafecout(msg);
 		}
 	}
@@ -54,14 +54,14 @@ void ThreadTU (long)
     while (listDone.size() > 0)
         listDone.pop();
     }
-	threadsafecout("Поток TU завершен!");
+    threadsafecout(L"Поток TU завершен!");
 
 }
 
 void PushTu(DWORD tu)
 {
-    string msg;
-    msg = "\nСтавим в очередь ТУ" + to_string(tu);
+    wstring msg;
+    msg = L"\nСтавим в очередь ТУ" + to_wstring(tu);
     threadsafecout(msg);
 
 	// lock_guard - STL класс С++, в конструкторе блокирует, в деструкторе разблокирует

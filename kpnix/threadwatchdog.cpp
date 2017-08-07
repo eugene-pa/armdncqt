@@ -6,7 +6,7 @@ thread * pThreadWatchDog;							// указатель на поток включ
 
 void ThreadWatchDog(long)
 {
-	threadsafecout("Поток управления сторожевым таймером запущен!");
+    threadsafecout(L"Поток управления сторожевым таймером запущен!");
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
@@ -14,6 +14,6 @@ void ThreadWatchDog(long)
 	}
 	exit_lock.unlock();
 
-	threadsafecout("Поток управления сторожевым таймером завершен!");
+    threadsafecout(L"Поток управления сторожевым таймером завершен!");
 	
 }

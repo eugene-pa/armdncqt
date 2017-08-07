@@ -16,14 +16,14 @@ thread * pThreadTs;											// указатель на поток опроса
 
 void ThreadTS(long)
 {
-	threadsafecout("Поток TS запущен!");
+    threadsafecout(L"Поток TS запущен!");
 
 	// Циклический опрос ТС вплоть до запроса выхода (освобождение exit_lock)
 	while (!exit_lock.try_lock_for(chronoMS(1000)))
 	{
-		threadsafecout("Опрос ТС");
+        threadsafecout(L"Опрос ТС");
 	}
 	exit_lock.unlock();
 
-	threadsafecout("Поток TS завершен!");
+    threadsafecout(L"Поток TS завершен!");
 }

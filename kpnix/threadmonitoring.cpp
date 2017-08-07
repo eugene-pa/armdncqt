@@ -6,7 +6,7 @@ thread * pThreadMonitoring;							// указатель на поток мони
 
 void ThreadMonitoring(long)
 {
-	threadsafecout("Поток мониторинга запущен!");
+    threadsafecout(L"Поток мониторинга запущен!");
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
@@ -14,6 +14,6 @@ void ThreadMonitoring(long)
 	}
 	exit_lock.unlock();
 
-	threadsafecout("Поток мониторинга завершен!");
+    threadsafecout(L"Поток мониторинга завершен!");
 	
 }
