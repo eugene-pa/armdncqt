@@ -18,7 +18,9 @@ Dialog::Dialog(QWidget *parent) :
 
 Dialog::~Dialog()
 {
+    qDebug() << "~Dialog()";
     delete ui;
+    qDebug() << "end ~Dialog()";
 }
 
 
@@ -76,7 +78,8 @@ void Dialog::on_pushButton_Open_clicked()
 
         // определяем задержки и стартуем поток
         COMMTIMEOUTS tm = { 100, 1, 3000, 1, 250 };
-        rs->startRs(settingdlg->description(), tm);
+        //rs->startRs(settingdlg->description(), tm);
+        rs->startRs("COM3,9600,N,8,1", tm);
     }
     else
     {
@@ -117,10 +120,12 @@ int MdmAgentReader::readData(QString settings/*class RsBase* serial*/)
 
 void Dialog::on_Dialog_finished(int result)
 {
+    qDebug() << "on_Dialog_finished";
     emit(exit());
     if (rs != nullptr)
         delete rs;
     rs = nullptr;
+    qDebug() << "end on_Dialog_finished";
 }
 
 QString Dialog::GetHex(QByteArray& array, int maxlength)

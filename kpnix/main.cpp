@@ -1,5 +1,6 @@
 ﻿#include <QCoreApplication>
 #include "main.h"
+#include "../common/rsproxy.h"
 
 mutex con_lock;													// блокировка доступа к консоли
 timed_mutex exit_lock;											// блокировка до выхода

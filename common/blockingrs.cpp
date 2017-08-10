@@ -24,7 +24,9 @@ BlockingRs::~BlockingRs()
     mutex.lock();
     quit = true;
     mutex.unlock();
+    qDebug() << "~BlockingRs() wait";
     wait();
+    qDebug() << "end ~BlockingRs()";
 }
 
 // запуск рабочего потока приема/передачи
@@ -46,6 +48,7 @@ void BlockingRs::startRs(const QString& settings, COMMTIMEOUTS tm)
 // рабочая функция потока
 void BlockingRs::run()
 {
+    qDebug() << "Start BlockingRs::run() thread";
     QSerialPort serial;                                     // создаем порт на стеке рабочей функции
     pSerial = &serial;
 
@@ -57,6 +60,7 @@ void BlockingRs::run()
     if (!serial.open(QIODevice::ReadWrite))                 // открываем порт
     {
         qDebug() << (lastErrorText = serial.errorString());
+        //std::wcout << qToStdWString(lastErrorText = serial.errorString());
         emit (error(UNAVAILABLE));
         return;
     }
@@ -65,11 +69,13 @@ void BlockingRs::run()
 
     if (serial.isOpen())
         serial.close();
+    pSerial = nullptr;
+    qDebug() << "End BlockingRs::run() thread";
     //emit(finished());
 }
 
 // основной цикл приема/передачи данных
-// эту функцию следует переопределять в производных классаъ для реализации логики и последовательности полудуплексного обмена
+// эту функцию следует переопределять в производных классах для реализации логики и последовательности полудуплексного обмена
 void BlockingRs::mainLoop()
 {
     while (!quit)
@@ -130,13 +136,22 @@ QByteArray BlockingRs::readData(QSerialPort& serial)
                 found = FindMarker (data, marker);          // усекаем до маркера, если задан
             if (data.count() >= maxlength)
             {
+                qDebug() << L"Overhead!";
+                //std::wcout << L"Переполнение!" << endl;
                 emit (error(L_OVER));
                 break;
             }
         }
     }
     else
+    {
+        qDebug() << "Timeout!";
+        //std::wcout << L"Timeout!" << endl;
         emit (timeout());
+    }
+    if (data.length())
+        qDebug() << "Data length: " << data.length();
+        //std::wcout << L"Длина принятых данных = " << data.length() << endl;
     return data;
 }
 
