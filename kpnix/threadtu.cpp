@@ -39,12 +39,17 @@ void ThreadTU (long)
 
             msg = L"Исполнили ТУ: " + to_wstring(tu);
             threadsafecout(msg);
+
+            lock_guard <mutex> locker(done_lock);               // помещаем ТУ в очередь исполненных
+            listDone.push(tu);
+            if (listDone.size() > 16)                           // длина исполненных <=16
+                listDone.pop();
 		}
 	}
 	exit_lock.unlock();
 
     // очищаем очереди
-    {
+    {                                                           // блок { } нужен для вызова деструктора lock_guard
     lock_guard <mutex> locker(todo_lock);
     while (listToDo.size() > 0)
         listToDo.pop();
@@ -54,6 +59,7 @@ void ThreadTU (long)
     while (listDone.size() > 0)
         listDone.pop();
     }
+
     threadsafecout(L"Поток TU завершен!");
 
 }

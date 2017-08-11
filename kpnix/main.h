@@ -1,16 +1,20 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+// QT
 #include <QIODevice>
 #include <QTextStream>
 #include <QTextCodec>
 #include <QDebug>
 
+// STL
 #include <iostream>											// std::cout
 #include <thread>											// std::thread
 #include <mutex>											// мьютексы
 #include <queue>											// FIFO
 #include <cstdio>
+#include <sstream>
+#include <iomanip>
 
 #ifdef Q_OS_WIN
 #include <io.h>
@@ -40,6 +44,7 @@ void   ThreadPulse			(long);							// функция потока формиро
 void   ThreadMonitoring		(long);							// функция потока мониторинга состояния КП
 void   ThreadTestTU			(long);							// функция потока циклического теста ТУ
 void   ThreadWatchDog		(long);							// функция потока включения и управления сторожевым таймером
+void   ThreadPolling		(long);							// функция потока опроса динии связи
 
 extern thread * pThreadTs;									// указатель на поток опроса ТС
 extern thread * pThreadTu;									// указатель на поток вывода ТУ
@@ -49,6 +54,7 @@ extern thread * pThreadPulse;								// указатель на поток фо�
 extern thread * pThreadMonitoring;							// указатель на поток мониторинга состояния КП
 extern thread * pThreadTestTU;								// указатель на поток циклического теста ТУ
 extern thread * pThreadWatchDog;							// указатель на поток включения и управления сторожевым таймером
+extern thread * pThreadPolling;                             // указатель на поток опроса динии связи
 
 extern  std::mutex con_lock;								// доступ к консоли
 extern  std::timed_mutex exit_lock;							// блокировка до выхода

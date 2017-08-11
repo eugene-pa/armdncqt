@@ -11,7 +11,8 @@ Dialog::Dialog(QWidget *parent) :
     //rs = new RsProxy("COM3,9600,N,8,1");
     rs = new RsAsinc("COM3,9600,N,8,1");
 
-    startTimer(100);
+    rs->SetTimeWaiting(10);
+    startTimer(50);
 }
 
 Dialog::~Dialog()
@@ -29,10 +30,16 @@ void Dialog::on_pushButton_clicked()
 void Dialog::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
-    int ch;
-    while ((ch = rs->GetCh(500)) >= 0)
+    try
     {
-        instr += (char)ch;
+        while (true)
+        {
+            instr += (char)rs->GetChEx();
+        }
+    }
+    catch (RsException e)
+    {
+        // нет данных; игнорируем
     }
     ui->textEdit->setText(instr);
 

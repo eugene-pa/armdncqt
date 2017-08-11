@@ -1,13 +1,18 @@
 ﻿#include <QCoreApplication>
 #include "main.h"
-#include "../common/rsproxy.h"
+#include "../common/rsasinc.h"
 
 mutex con_lock;													// блокировка доступа к консоли
 timed_mutex exit_lock;											// блокировка до выхода
 bool  rqExit = false;											// запрос выхода
 bool WaitThreadsPending();										// ожидание завершения потоков
 
-void threadsafecout(const wchar_t *);							// безопасный вывод на консоль с блокировкой строки char
+// завершающая работу функция: освобождение мьютекса, ожидание завершения потоков, очистка
+static void Cleanup()
+{
+    exit_lock.unlock();											// разблокируем мьютекс завершения
+    WaitThreadsPending();
+}
 
 int main(int argc, char *argv[])
 {
@@ -34,28 +39,39 @@ int main(int argc, char *argv[])
     pThreadPulse		= new thread ( ThreadPulse		, 0);	// поток формирования программного пульса
     pThreadSysCommand	= new thread ( ThreadSysCommand	, 0);	// поток исполнения директив управления КП
     pThreadTestTU		= new thread ( ThreadTestTU		, 0);	// поток циклического теста ТУ
-    pThreadWatchDog		= new thread ( ThreadWatchDog	, 0);	// поток поток включения и управления сторожевым таймером
+    pThreadWatchDog		= new thread ( ThreadWatchDog	, 0);	// поток включения и управления сторожевым таймером
 
 // отладка **************************************************************************************************************
     PushTu(1);
     PushTu(2);
     PushTu(3);
-
-    getwchar();
-    fflush(stdin);
-
     PushTu(4);
-
-    getwchar();
 // отладка **************************************************************************************************************
 
-    exit_lock.unlock();											// разблокируем мьютекс завершения
+// Следующий блок, обрамленный комментарием "// -------- COM-порт" можно закомментировать, чтобы проверить механизм завершения и очистки
+// Для работы COM-порта (точнее, механизма сигналов и слотов )нужен цикл обработки a.exec(),
+// после которого я не нашел пути выполнения очистки, а создавать класс ради деструктора было лень
+// -------- COM-порт ----------------------------------------------------------------------------------------------------
+    // Важно: - в консольном приложении для работы сигналов и слотов класс RsAsinc должен быть создан в основном потоке
+    //        - основной поток должен запуситить цикл обработки сообщений a.exec()
+    RsAsinc rs ("COM3,38400,N,8,1");
+    pThreadPolling		= new thread ( ThreadPolling	, (long)&rs);	// поток опроса линни связи
 
-    WaitThreadsPending();
+    // чтобы работал механизм сигналов и слотов, нужно запустить a.exec, однако при этом не получается выполнить
+    // корректное завершение приложения с корректной очисткой (Cleanup)
+    // Можно сделать обертку функуиональности main, производную от QObject и привязать к сигналу aboutToQuit:
+    // QObject::connect(&app, SIGNAL(aboutToQuit()), &wrapper, SLOT(doSomething()));
+    // Есть глоб.функция qAddPostRoutine, по идее устанавливающая функцию очистки, но до нее программа у меня никак не доходит.
+    qAddPostRoutine(Cleanup);                                       // этот механизм не срабатывает
+    return a.exec();                                                // НУЖЕН ДЛЯ COM-порта
+// -------- COM-порт ----------------------------------------------------------------------------------------------------
 
+    Cleanup();
     return a.exec();
 }
 
+
+// ожидание завершения рабочих потоков
 bool WaitThreadsPending()
 {
     // ожидание завершения потоков (функция join() обеспечивает ожидание завершения потока)
@@ -86,13 +102,11 @@ bool WaitThreadsPending()
         pThreadPulse->join();
         delete pThreadPulse;
     }
-
     if (pThreadSysCommand)
     {
         pThreadSysCommand->join();
         delete   pThreadSysCommand;
     }
-
     if (pThreadTestTU)
     {
         pThreadTestTU->join();
@@ -102,6 +116,11 @@ bool WaitThreadsPending()
     {
         pThreadWatchDog->join();
         delete pThreadWatchDog;
+    }
+    if (pThreadPolling)
+    {
+        pThreadPolling->join();
+        delete pThreadPolling;
     }
 
     return true;
