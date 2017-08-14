@@ -22,6 +22,8 @@ BYTE dataIn [4048];                                         // входные д
 BYTE dataOut[4048];                                         // выходные данные
 int MakeData();
 
+std::function<void(wstring)> rsNotifier = nullptr;
+
 // 1. Побайтовый алгоритм вычисления CRC
 //    (Р.Л.Хаммел,"Послед.передача данных", Стр.49. М.,Мир, 1996)
 const WORD CRC_POLY = 0x1021;
@@ -58,7 +60,9 @@ std::wstring GetHexW(void *data, int length)
 // В GUI приложениях класс RsAsinc логичнее создавать прямо в потоке
 void ThreadPolling(long param)
 {
-    threadsafecout(L"Поток опроса линни связи запущен!");
+    if (rsNotifier != nullptr)
+        rsNotifier(L"Поток опроса линни связи запущен!");
+    //threadsafecout(L"Поток опроса линни связи запущен!");
     RsAsinc * prs = (RsAsinc *) param;
     RsAsinc& rs = * prs;
 
@@ -100,12 +104,16 @@ void ThreadPolling(long param)
             WORD crcreal = GetCRC(dataIn, l + LEN_HEADER);
             if (crc != crcreal)
             {
-                threadsafecout(L"CRC error!");
+                if (rsNotifier != nullptr)
+                    rsNotifier(L"CRC error!");
+                //threadsafecout(L"CRC error!");
             }
             else
             {
                 wstring msg = L"Прием:  ";
-                threadsafecout (msg + GetHexW(dataIn, indx).c_str());
+                if (rsNotifier != nullptr)
+                    rsNotifier(msg + GetHexW(dataIn, indx).c_str());
+                //threadsafecout (msg + GetHexW(dataIn, indx).c_str());
 
                 int l = MakeData();
                 rs.Send(dataOut, l);
@@ -120,7 +128,9 @@ void ThreadPolling(long param)
     exit_lock.unlock();
     rs.Close();
 
-    threadsafecout(L"Поток опроса линни связи завершен!");
+    if (rsNotifier != nullptr)
+        rsNotifier(L"Поток опроса линни связи завершен!");
+    //threadsafecout(L"Поток опроса линни связи завершен!");
 }
 
 // пример ответного пакета

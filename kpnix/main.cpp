@@ -7,6 +7,7 @@ timed_mutex exit_lock;											// блокировка до выхода
 bool  rqExit = false;											// запрос выхода
 bool WaitThreadsPending();										// ожидание завершения потоков
 
+
 // завершающая работу функция: освобождение мьютекса, ожидание завершения потоков, очистка
 static void Cleanup()
 {
@@ -30,8 +31,11 @@ int main(int argc, char *argv[])
 
     exit_lock.lock ();											// блокируем мьютекс завершения (ждем освобождения во всех потоках)
 
-    // создание потоков
+    // устанавливаем функтор отображения в потоке threadpolling
+    extern std::function<void(wstring)> rsNotifier;
+    rsNotifier = threadsafecout;                                // подписываемся на уведомления от threadpolling
 
+    // создание потоков
     pThreadTs			= new thread ( ThreadTS			, 0);	// поток опроса ТС
     pThreadTu			= new thread ( ThreadTU			, 0);	// поток вывода ТУ
     pThreadUpok			= new thread ( ThreadUpok		, 0);	// поток отработки ОТУ УПОК+БРОК
@@ -126,20 +130,23 @@ bool WaitThreadsPending()
     return true;
 }
 
-// безопасный (с блокировкой мьютекса) вывод строки символов на консоль с указанием потока
-void threadsafecout(const wchar_t * p)
-{
-    lock_guard<mutex> locker(con_lock);
-    thread::id id = this_thread::get_id();
-    wcout << p << L"(id=" << id << L")\n";
-}
 
 // безопасный (с блокировкой мьютекса) вывод строки на консоль
 void threadsafecout(wstring msg)
 {
     lock_guard<mutex> locker(con_lock);
+
     wcout << msg << "\n";
 }
+
+// безопасный (с блокировкой мьютекса) вывод строки символов на консоль с указанием потока
+//void threadsafecout(const wchar_t * p)
+//{
+//    lock_guard<mutex> locker(con_lock);
+//    thread::id id = this_thread::get_id();
+//    wcout << p << L"(id=" << id << L")\n";
+//}
+
 
 // рекомендованные реализации для преобразования QString <-> wstring
 std::wstring qToStdWString(const QString &str)

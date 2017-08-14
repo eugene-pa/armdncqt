@@ -19,7 +19,9 @@ SOURCES += main.cpp \
     threadupok.cpp \
     threadwatchdog.cpp \
     ../common/rsasinc.cpp \
-    threadpolling.cpp
+    threadpolling.cpp \
+    ../common/pamessage.cpp \
+    ../common/pasender.cpp
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
@@ -35,4 +37,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += \
     main.h \
     ../common/rsasinc.h \
-    kp2017.h
+    kp2017.h \
+    ../common/pamessage.h \
+    ../common/pasender.h

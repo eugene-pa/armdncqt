@@ -22,6 +22,7 @@
 #endif // #ifdef Q_OS_WIN
 
 #include "kp2017.h"
+#include "../common/pamessage.h"
 
 using namespace std;
 
@@ -32,7 +33,6 @@ typedef unsigned long  DWORD;
 std::wstring qToStdWString(const QString &str);             // QString --> std::wstring
 QString stdWToQString(const std::wstring &str);             // std::wstring --> QString
 
-void threadsafecout(const wchar_t *);                       // безопасный (с блокировкой мьютекса) вывод строки символов на консоль с указанием потока
 void threadsafecout(wstring msg);                           // безопасный (с блокировкой мьютекса) вывод строки на консоль
 
 // Базовые потои КП
