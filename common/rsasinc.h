@@ -13,11 +13,13 @@
 
 #define CONSOLAPP                                           // определить для консольного приложения
 
+
 class RsAsinc : public QObject                              // наследуемся от QObject для поддержки сигналов и слотов
 {
     Q_OBJECT
 
 public:
+    explicit RsAsinc(QObject *parent = nullptr);
     RsAsinc(QString  settings);                             // Конструктор, на входе строка типа "COM1,9600,N,8,1"
 
     int  GetCh();                                           // получить символ с ожиданием не более timeWaiting миллисекунд, иначе возврат -1

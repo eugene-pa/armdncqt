@@ -1,7 +1,9 @@
 // поток опроса линии связи
-
+#include <functional>
 #include "main.h"
 #include "../common/rsasinc.h"
+#include "../common/pasender.h"
+#include "../common/pamessage.h"
 
 thread * pThreadPolling;                                    // указатель на поток опроса линии связи
 
@@ -22,7 +24,9 @@ BYTE dataIn [4048];                                         // входные д
 BYTE dataOut[4048];                                         // выходные данные
 int MakeData();
 
-std::function<void(wstring)> rsNotifier = nullptr;
+//
+extern PaSender paSender;
+std::function<void(PaSender&, class PaMessage *)> rsNotifier;
 
 // 1. Побайтовый алгоритм вычисления CRC
 //    (Р.Л.Хаммел,"Послед.передача данных", Стр.49. М.,Мир, 1996)
@@ -61,7 +65,7 @@ std::wstring GetHexW(void *data, int length)
 void ThreadPolling(long param)
 {
     if (rsNotifier != nullptr)
-        rsNotifier(L"Поток опроса линни связи запущен!");
+        rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsOK, L"Поток опроса линни связи запущен!"));
     //threadsafecout(L"Поток опроса линни связи запущен!");
     RsAsinc * prs = (RsAsinc *) param;
     RsAsinc& rs = * prs;
@@ -105,14 +109,17 @@ void ThreadPolling(long param)
             if (crc != crcreal)
             {
                 if (rsNotifier != nullptr)
-                    rsNotifier(L"CRC error!");
+                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsErrCRC, L"CRC error!"));
                 //threadsafecout(L"CRC error!");
             }
             else
             {
-                wstring msg = L"Прием:  ";
                 if (rsNotifier != nullptr)
-                    rsNotifier(msg + GetHexW(dataIn, indx).c_str());
+                {
+                    wstring msg = L"Прием:  ";
+                    msg += GetHexW(dataIn, indx).c_str();
+                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsOK, msg));
+                }
                 //threadsafecout (msg + GetHexW(dataIn, indx).c_str());
 
                 int l = MakeData();
@@ -127,9 +134,8 @@ void ThreadPolling(long param)
     }
     exit_lock.unlock();
     rs.Close();
-
     if (rsNotifier != nullptr)
-        rsNotifier(L"Поток опроса линни связи завершен!");
+        rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsOK, L"Поток опроса линни связи завершен!"));
     //threadsafecout(L"Поток опроса линни связи завершен!");
 }
 

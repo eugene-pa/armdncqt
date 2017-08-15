@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QTextCodec>
 #include <QDebug>
+#include <QObject>
 
 // STL
 #include <iostream>											// std::cout
@@ -23,6 +24,7 @@
 
 #include "kp2017.h"
 #include "../common/pamessage.h"
+#include "../common/pasender.h"
 
 using namespace std;
 
@@ -65,5 +67,6 @@ void PushTu(DWORD tu);										// ТУ в очередь на исполнен�
 // Макрос милисекундного Sleep
 #define chronoMS(n) std::chrono::milliseconds(n)
 #define SleepMS(n) std::this_thread::sleep_for(chronoMS(n))
+
 
 #endif // MAIN_H

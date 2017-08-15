@@ -31,6 +31,10 @@
 //      unsigned char GetChEx();  получить символ с ожиданием не более timeWaiting миллисекунд, иначе исключение RsException
 //      int  GetCh(int ms);       получить символ с ожиданием не более ms миллисекунд, иначе возврат -1
 
+RsAsinc::RsAsinc(QObject *parent)
+{
+
+}
 
 // конструктор принимает параметры COM-порта, например: "COM1,9600,N,8,1"
 RsAsinc::RsAsinc(QString  settings)

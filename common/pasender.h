@@ -10,9 +10,9 @@ class PaSender : public QObject                              // наследуе
 
 public:
     PaSender();
-    void SendMsg(paMessage *);
+    void SendMsg(PaMessage *);
 signals:
-    void SendMessage(paMessage *);
+    void SendMessage(PaMessage *);
 };
 
 #endif // PASENDER_H

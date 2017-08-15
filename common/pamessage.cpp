@@ -2,7 +2,7 @@
 
 // Класс paMessage предназначен для передачи сообщений между компонентами ПО
 // Класс создается источником в момент, когда надо передать сообщение
-// Сообщения передаются с помощью функтора  std::function<void(const SendMessage&, paMessage *)>
+// Сообщения передаются с помощью функтора  std::function<void(const PaSender&, paMessage *)>
 // Класс SendMessage реализует конкретный для используемой платформы механизм передачи
 // Так, при использовании QT рекомендуется создать его производным от QObject и связать
 // с основным виджетом отображения. Что и как ПО отображения будет делать с сообщением - не важно,
@@ -11,16 +11,17 @@
 // Хотя возможны любые варианты взаимодействия, тот же сетевой вариант
 // Главное: отправка сообщений в коде рабочих потоков будет независима от способа передачи!
 
-paMessage::paMessage(Sourcer source, Action act, Status status, void * dataptr, int length)
+PaMessage::PaMessage(Sourcer source, Action act, Status status, std::wstring text, void * dataptr, int length)
 {
     src         = source;
     action      = act;
     sts         = status;
+    msg         = text;
     data        = dataptr;
     datalength  = length;
 }
 
-std::wstring paMessage::GetSource()
+std::wstring PaMessage::GetSource()
 {
     switch(src)
     {
@@ -36,7 +37,7 @@ std::wstring paMessage::GetSource()
     }
 }
 
-std::wstring paMessage::GetType()
+std::wstring PaMessage::GetType()
 {
     switch (action)
     {
@@ -51,7 +52,7 @@ std::wstring paMessage::GetType()
     }
 }
 
-std::wstring paMessage::GetStatus()
+std::wstring PaMessage::GetStatus()
 {
     switch (sts)
     {
@@ -65,19 +66,19 @@ std::wstring paMessage::GetStatus()
     }
 }
 
-std::wstring paMessage::toWstring()
+std::wstring PaMessage::toWstring()
 {
     std::wstringstream tmp;
     tmp << "Источник: " << GetSource() << ". Тип: " << GetType() << ". Статус: " << GetStatus();
     return tmp.str();
 }
 
-void * paMessage::GetData()
+void * PaMessage::GetData()
 {
     return data;
 }
 
-int paMessage::GetDataLength()
+int PaMessage::GetDataLength()
 {
     return datalength;
 }

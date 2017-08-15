@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 
-class paMessage
+class PaMessage
 {
 public:
     // источники
@@ -19,6 +19,8 @@ public:
         srcECEMLine,
         // добавить ...
     };
+
+    // операции/действия
     enum Action
     {
         typRcv   = 1,
@@ -26,9 +28,11 @@ public:
         typeSnt  ,
         typeDown ,
         typeUp   ,
-        typeTrace,              // трассировка: вывод сообщения на консоль
+        typeTrace,                  // трассировка: вывод сообщения на консоль
         // добавить ...
     };
+
+    // состояние
     enum Status
     {
         stsOK         = 0,
@@ -39,17 +43,22 @@ public:
         // добавить ...
     };
 
-    paMessage(Sourcer, Action, Status, void * dataptr=nullptr, int length=0);
-    std::wstring GetSource();
+    // конструктор
+    PaMessage(Sourcer, Action, Status, std::wstring text = L"", void * dataptr=nullptr, int length=0);
+
+    std::wstring GetSource();       //
     std::wstring GetType();
     std::wstring GetStatus();
+    std::wstring GetText() { return msg; }
     std::wstring toWstring();
     void * GetData();
     int GetDataLength();
+
 private:
     Sourcer src;
     Action  action;
     Status  sts;
+    std::wstring msg;
     int     reserv;
     void *  data;
     int     datalength;

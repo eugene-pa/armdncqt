@@ -1,5 +1,6 @@
 ﻿#include <QCoreApplication>
 #include "main.h"
+#include "objmain.h"
 #include "../common/rsasinc.h"
 
 mutex con_lock;													// блокировка доступа к консоли
@@ -7,9 +8,12 @@ timed_mutex exit_lock;											// блокировка до выхода
 bool  rqExit = false;											// запрос выхода
 bool WaitThreadsPending();										// ожидание завершения потоков
 
+PaSender paSender;                                              // один класс для отправки сообщений
+
+ObjMain  MainObj;
 
 // завершающая работу функция: освобождение мьютекса, ожидание завершения потоков, очистка
-static void Cleanup()
+void Cleanup()
 {
     exit_lock.unlock();											// разблокируем мьютекс завершения
     WaitThreadsPending();
@@ -32,8 +36,10 @@ int main(int argc, char *argv[])
     exit_lock.lock ();											// блокируем мьютекс завершения (ждем освобождения во всех потоках)
 
     // устанавливаем функтор отображения в потоке threadpolling
-    extern std::function<void(wstring)> rsNotifier;
-    rsNotifier = threadsafecout;                                // подписываемся на уведомления от threadpolling
+    extern std::function<void(PaSender&, class PaMessage *)> rsNotifier;
+    rsNotifier = &PaSender::SendMsg;
+    QObject::connect(&paSender, SIGNAL(SendMessage(PaMessage*)), &MainObj, SLOT(GetMessage(PaMessage*)));
+    //QObject::connect(&a, SIGNAL(aboutToQuit()), &MainObj, SLOT(Quit()));
 
     // создание потоков
     pThreadTs			= new thread ( ThreadTS			, 0);	// поток опроса ТС
@@ -66,7 +72,7 @@ int main(int argc, char *argv[])
     // Можно сделать обертку функуиональности main, производную от QObject и привязать к сигналу aboutToQuit:
     // QObject::connect(&app, SIGNAL(aboutToQuit()), &wrapper, SLOT(doSomething()));
     // Есть глоб.функция qAddPostRoutine, по идее устанавливающая функцию очистки, но до нее программа у меня никак не доходит.
-    qAddPostRoutine(Cleanup);                                       // этот механизм не срабатывает
+    //qAddPostRoutine(Cleanup);                                       // этот механизм не срабатывает
     return a.exec();                                                // НУЖЕН ДЛЯ COM-порта
 // -------- COM-порт ----------------------------------------------------------------------------------------------------
 
@@ -166,3 +172,4 @@ QString stdWToQString(const std::wstring &str)
  return QString::fromStdWString(str);                       // GCC
 #endif
 }
+
