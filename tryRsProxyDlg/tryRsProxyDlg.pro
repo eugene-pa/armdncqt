@@ -6,6 +6,8 @@
 
 QT       += core gui serialport
 
+CONFIG += c++11
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = tryRsProxyDlg
@@ -26,11 +28,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         dialog.cpp \
-    ../common/rsasinc.cpp
+    ../common/rsasinc.cpp \
+    ../common/pamessage.cpp \
+    ../common/pasender.cpp \
+    threadpolling.cpp \
+    ../common/qrsasinc.cpp \
+    ../common/common.cpp
 
 HEADERS += \
         dialog.h \
-    ../common/rsasinc.h
+    ../common/rsasinc.h \
+    ../common/pamessage.h \
+    ../common/pasender.h \
+    ../common/qrsasinc.h
 
 FORMS += \
         dialog.ui

@@ -4,6 +4,8 @@
 #include <QObject>
 #include "pamessage.h"
 
+extern void Log(std::wstring);                              // прототип вывода лога
+
 class PaSender : public QObject                              // наследуемся от QObject для поддержки сигналов и слотов
 {
     Q_OBJECT

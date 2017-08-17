@@ -3,7 +3,18 @@
 
 #include <QDialog>
 
-namespace Ui {
+#include <stdio.h>
+#include <cstdio>
+#include <iostream>											// std::cout
+#include <sstream>
+#include <thread>											// std::thread
+#include <mutex>											// мьютексы
+#include <queue>											// FIFO
+#include <iomanip>
+#include <../common/rsasinc.h>
+
+namespace Ui
+{
 class Dialog;
 }
 
@@ -17,13 +28,16 @@ public:
 
 private slots:
     void on_pushButton_clicked();
-
     void on_pushButton_2_clicked();
+    void finished();
+signals:
+    void startrs();
 
 private:
     QString instr;
     //class RsProxy * rs;
-    class RsAsinc * rs;
+    //class RsAsinc * rs;
+    std::thread * pThreadPolling;
     virtual void timerEvent(QTimerEvent *event) override;
 
     Ui::Dialog *ui;

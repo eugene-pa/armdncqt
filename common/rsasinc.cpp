@@ -30,10 +30,15 @@
 //      int  GetCh();             получить символ с ожиданием не более timeWaiting миллисекунд, иначе возврат -1
 //      unsigned char GetChEx();  получить символ с ожиданием не более timeWaiting миллисекунд, иначе исключение RsException
 //      int  GetCh(int ms);       получить символ с ожиданием не более ms миллисекунд, иначе возврат -1
+//
+// *****************************************************************************************************************************
+// TODO: проверить возможность работы класса в части обмена сообщениями в GUI-приложении в отдельном потоке по аналогии с ПО КП
+// *****************************************************************************************************************************
+//
 
 RsAsinc::RsAsinc(QObject *parent)
 {
-
+    Q_UNUSED(parent)
 }
 
 // конструктор принимает параметры COM-порта, например: "COM1,9600,N,8,1"
@@ -78,9 +83,9 @@ bool RsAsinc::parse(QString str)
     serial.setStopBits(stopBits);
     //serial.setFlowControl(QSerialPort::HardwareControl);
 
-    qDebug() << "Open port";
+    Log(L"Open port");
     if (!serial.open(QIODevice::ReadWrite))
-        qDebug() << tr("Error open port");
+        Log(L"Error open port");
     else
     {
         // подключаем сигнал QSerialPort::readyRead к своему обработчику RsAsinc::readData
@@ -109,7 +114,6 @@ void RsAsinc::readData()
             buffer.pop_back();                          //      сдвигаем с потерей самого старого байта
                                                         // такое поведение - предмет обсуждения
         buffer.push_front((unsigned char)bt);           // запоминаем принятые данные
-        // qDebug() << (char)bt;
     }
     mtxBuf.unlock();                                    // разблокируем очередь
 
@@ -122,12 +126,12 @@ void RsAsinc::handleError(QSerialPort::SerialPortError error)
     if (error == QSerialPort::ResourceError)
     {
         //QMessageBox::critical(nullptr, tr("Critical Error"), serial.errorString());
-        qDebug() << "Critical error: " << serial.errorString() << error;
+        Log (std::wstring(L"Critical error: ") + serial.errorString().toStdWString() + L". #" + std::to_wstring(error));
         if (serial.isOpen())
             serial.close();
     }
     else
-        qDebug() << "Eroor COM-port: " << serial.errorString() << error;
+        Log (std::wstring(L"Eroor COM-port: ") + serial.errorString().toStdWString() + L". #" + std::to_wstring(error));
 }
 
 // получить сисвол с ожидаием не более timeWaiting миллисекунд
@@ -173,11 +177,15 @@ int RsAsinc::GetCh (int ms)
 bool RsAsinc::Send (void *p, int length)
 {
 #ifdef CONSOLAPP
-    if (serial.write((const char *)p, length) <= 0)
+    //QByteArray data((const char *)p, length);
+    //length = serial.write(data);
+    //const char * ptr = (const char *)p;
+    //length = serial.write(ptr, (qint64)length);
+    if (serial.write((const char *)p, (qint64)length) <= 0)
         return false;
     return serial.waitForBytesWritten(-1);         // только для консольных приложений!
 #else
-    return length == serial.write(const char *p, length);
+    return length == serial.write((const char *)p, length);
 #endif
 }
 

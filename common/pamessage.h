@@ -45,10 +45,12 @@ public:
 
     // конструктор
     PaMessage(Sourcer, Action, Status, std::wstring text = L"", void * dataptr=nullptr, int length=0);
-
-    std::wstring GetSource();       //
-    std::wstring GetType();
-    std::wstring GetStatus();
+    Sourcer GetSource() { return src;    }
+    Action  GetAction() { return action; }
+    Status  GetStatus() { return sts;    }
+    std::wstring GetSourceText();       //
+    std::wstring GetTypeText();
+    std::wstring GetStatusText();
     std::wstring GetText() { return msg; }
     std::wstring toWstring();
     void * GetData();

@@ -8,6 +8,7 @@ timed_mutex exit_lock;											// блокировка до выхода
 bool  rqExit = false;											// запрос выхода
 bool WaitThreadsPending();										// ожидание завершения потоков
 
+RsAsinc * pRS;
 PaSender paSender;                                              // один класс для отправки сообщений
 
 ObjMain  MainObj;
@@ -64,8 +65,8 @@ int main(int argc, char *argv[])
 // -------- COM-порт ----------------------------------------------------------------------------------------------------
     // Важно: - в консольном приложении для работы сигналов и слотов класс RsAsinc должен быть создан в основном потоке
     //        - основной поток должен запуситить цикл обработки сообщений a.exec()
-    RsAsinc rs ("COM3,38400,N,8,1");
-    pThreadPolling		= new thread ( ThreadPolling	, (long)&rs);	// поток опроса линни связи
+    pRS = new RsAsinc("COM3,38400,N,8,1");
+    pThreadPolling		= new thread ( ThreadPolling	, (long)pRS);	// поток опроса линни связи
 
     // чтобы работал механизм сигналов и слотов, нужно запустить a.exec, однако при этом не получается выполнить
     // корректное завершение приложения с корректной очисткой (Cleanup)
@@ -143,6 +144,11 @@ void threadsafecout(wstring msg)
     lock_guard<mutex> locker(con_lock);
 
     wcout << msg << "\n";
+}
+
+void Log(std::wstring msg)
+{
+    threadsafecout(msg);
 }
 
 // безопасный (с блокировкой мьютекса) вывод строки символов на консоль с указанием потока

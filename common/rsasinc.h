@@ -9,10 +9,10 @@
 
 #include <QObject>
 #include <QSerialPort>
-#include <QDebug>
 
 #define CONSOLAPP                                           // определить для консольного приложения
 
+extern void Log(std::wstring);                              // прототип вывода лога
 
 class RsAsinc : public QObject                              // наследуемся от QObject для поддержки сигналов и слотов
 {
@@ -25,7 +25,7 @@ public:
     int  GetCh();                                           // получить символ с ожиданием не более timeWaiting миллисекунд, иначе возврат -1
     unsigned char GetChEx();                                // получить символ с ожиданием не более timeWaiting миллисекунд, иначе исключение RsException
     int  GetCh(int ms);                                     // получить символ с ожиданием не более ms миллисекунд, иначе возврат -1
-    bool Send (void *, int length);                   // передача массива char заданной длины
+    bool Send (void *, int length);                         // передача массива char заданной длины
     bool Send (QByteArray& data);                           // передача массива QByteArray
     void SetTimeWaiting(int ms) { timeWaiting = ms; }       // изменение времени ожидания по умолчанию
     QSerialPort& Serial() { return serial; }                // доступ непосредственно к классу QSerialPort

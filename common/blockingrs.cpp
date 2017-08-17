@@ -1,174 +1,65 @@
+#include <mutex>                                            // std::mutex
 #include "blockingrs.h"
 
-// Конструктор
-// QObject *parent      - родитель
-// BYTE marker          - маркер начала пакета или 0
-// int maxlength        - максимальный размер пакета
-BlockingRs::BlockingRs(QObject *parent, BYTE marker, int maxlength) : QThread(parent)
-{
-    // таймауты по умолчанию
-    tm = { 100,                                             // максимальный межбайтовый интервал
-           0,
-           400,                                             // максимальное время ожидания начала приема данных
-           1, 500 };
-    quit = false;
+void Log(std::wstring);
 
-    this->parent = parent;                                  // родитель
-    this->marker = marker;                                  // маркер или 0
-    this->maxlength = maxlength;                            // максимальная длина
-    pSerial = nullptr;
+BlockingRS::BlockingRS(QString config, QObject *parent)
+{
+    // следует помнить, что код, выполняемый в конструкторе, выполняется в вызывающем потоке
+    settings = config;
+    serial = nullptr;
+    rqExit = false;
+    maxSize = 4096;
+    timeWaiting = 100;
 }
 
-BlockingRs::~BlockingRs()
+BlockingRS:: ~BlockingRS()
 {
-    mutex.lock();
-    quit = true;
-    mutex.unlock();
-    qDebug() << "~BlockingRs() wait";
-    wait();
-    qDebug() << "end ~BlockingRs()";
+    rqExit = true;
 }
 
-// запуск рабочего потока приема/передачи
-// QString& settings - строка типа: "COM1,38400,N,8,1"
-// - порт
-// - скорость
-// - четность
-// - бит данных
-// - стоп-бит
-void BlockingRs::startRs(const QString& settings, COMMTIMEOUTS tm)
+// поток работы с COM-портом.
+// здесь д.б. открытие, приема и передача
+// для этого функция SEND дожна просто формировать запрос, а передача должна производиться тут же!
+void BlockingRS::run()
 {
-    QMutexLocker locker(&mutex);
-    this->tm = tm;
     parse(settings);
-    if (!isRunning())
-        start();
-}
+    Log(L"Старт потока BlockingRS. Thread #" + (QString::number((int)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
 
-// рабочая функция потока
-void BlockingRs::run()
-{
-    qDebug() << "Start BlockingRs::run() thread";
-    QSerialPort serial;                                     // создаем порт на стеке рабочей функции
-    pSerial = &serial;
-
-    serial.setPortName(_name);                              // устанавливаем параметры порта
-    serial.setBaudRate(baudRate);
-    serial.setDataBits(dataBits);
-    serial.setParity  (parity);
-    serial.setStopBits(stopBits);
-    if (!serial.open(QIODevice::ReadWrite))                 // открываем порт
+    while (!rqExit)
     {
-        qDebug() << (lastErrorText = serial.errorString());
-        //std::wcout << qToStdWString(lastErrorText = serial.errorString());
-        emit (error(UNAVAILABLE));
-        return;
-    }
-
-    mainLoop();                                             // вызов вирт.функции реализации протокола приема/передачи вплоть до завешения
-
-    if (serial.isOpen())
-        serial.close();
-    pSerial = nullptr;
-    qDebug() << "End BlockingRs::run() thread";
-    //emit(finished());
-}
-
-// основной цикл приема/передачи данных
-// эту функцию следует переопределять в производных классах для реализации логики и последовательности полудуплексного обмена
-void BlockingRs::mainLoop()
-{
-    while (!quit)
-    {
-        // 1. Прием данных
-        QByteArray data = readData(*pSerial);
-        if (quit)   break;
-
-        // 2. разбор пакета
-        doData(data);
-
-        // тайм-ауты, например:
-        wait(500);                                          // или msleep(500);
-        if (quit)   break;
-
-        // 3. Передача ответв/запроса
-        QByteArray array("ACK!  ");
-        pSerial->write(array);
-    }
-}
-
-void BlockingRs::exit()
-{
-    QMutexLocker locker(&mutex);
-    quit = true;
-    //QThread::exit(0);
-}
-
-// поиск маркера в байтовом массиве, при необходимости усекание массива вплоть до маркера
-bool BlockingRs::FindMarker (QByteArray& data, BYTE marker)
-{
-    if (marker!=0)
-    {
-        while (data.count() > 0 && (BYTE)data[0] != marker)
+        if (serial->waitForReadyRead(timeWaiting))
         {
-            data.remove(0,1);
-        }
-    }
-    return data.count() > 0;
-}
-
-// виртуальная функция приема данных
-// если определен маркер - принимает и накапливает данные начиная с маркера
-// QSerialPort& serial  - порт,
-QByteArray BlockingRs::readData(QSerialPort& serial)
-{
-    QByteArray data;
-    if (serial.waitForReadyRead(tm.ReadTotalTimeoutConstant))
-    {
-        data = serial.readAll();                            // прием первой пачки данных
-        bool found = FindMarker (data, marker);             // усекаем до маркера, если задан
-
-        // прием потока байт до тайм-аута, если еще не нашли маркер - ищем
-        while (serial.waitForReadyRead(tm.ReadIntervalTimeout))
-        {
-            data += serial.readAll();
-            if (marker>0 && !found)
-                found = FindMarker (data, marker);          // усекаем до маркера, если задан
-            if (data.count() >= maxlength)
+            QByteArray data = serial->readAll();                 // получаем все
+            mtxBuf.lock();                                      // блокируем очередь
+            foreach (unsigned char bt, data)
             {
-                qDebug() << L"Overhead!";
-                //std::wcout << L"Переполнение!" << endl;
-                emit (error(L_OVER));
-                break;
+                if (buffer.size() >= maxSize)                   // если размер очереди превышает ограничение -
+                    buffer.pop_back();                          //      сдвигаем с потерей самого старого байта
+                                                                // такое поведение - предмет обсуждения
+                buffer.push_front((unsigned char)bt);           // запоминаем принятые данные
             }
+            mtxBuf.unlock();                                    // разблокируем очередь
         }
     }
-    else
-    {
-        qDebug() << "Timeout!";
-        //std::wcout << L"Timeout!" << endl;
-        emit (timeout());
-    }
-    if (data.length())
-        qDebug() << "Data length: " << data.length();
-        //std::wcout << L"Длина принятых данных = " << data.length() << endl;
-    return data;
-}
-
-void BlockingRs::doData(QByteArray& data)
-{
-    emit dataready(data);
+    Log(L"Завершение потока BlockingRS " + name.toStdWString());
 }
 
 // разбор строки типа "COM1,9600,N,8,1"
-bool BlockingRs::parse(QString str)
+bool BlockingRS::parse(QString str)
 {
+    serial = new QSerialPort();
+    qint32                  baudRate = 9600;                    // скорость
+    QSerialPort::Parity     parity   = QSerialPort::NoParity;   // четность
+    QSerialPort::DataBits   dataBits = QSerialPort::Data8;      // бит данных
+    QSerialPort::StopBits   stopBits = QSerialPort::OneStop;    // число стоп-бит
+
     parsed=false;
     QStringList options = str.split(",");
     if (options.length() > 0)
     {
         parsed = true;
-        _name   = options[0];
+        name   = options[0];
         if (options.length() > 0)
             baudRate = options[1].toInt(&parsed);
         if (options.length() > 1)
@@ -177,28 +68,93 @@ bool BlockingRs::parse(QString str)
             dataBits = (QSerialPort::DataBits)options[3].toInt(&parsed);
         if (options.length() > 3)
             stopBits = (QSerialPort::StopBits)options[4].toInt(&parsed);
-
     }
+
+    // устанавливаем параметры порта
+    serial->setPortName(name);
+    serial->setBaudRate(baudRate);
+    serial->setDataBits(dataBits);
+    serial->setParity  (parity);
+    serial->setStopBits(stopBits);
+    //serial.setFlowControl(QSerialPort::HardwareControl);
+
+    Log(L"Open port");
+    if (!serial->open(QIODevice::ReadWrite))
+        Log(L"Error open port");
+
     return parsed;
 }
 
-// получить строку описания ошибки по коду
-QString BlockingRs::errorText (DataError error)
+// получить сисвол с ожидаием не более timeWaiting миллисекунд
+int BlockingRS::GetCh ()
 {
-    QString ret = "?";
-    switch (error)
-    {
-        case TIMEOUT:     ret = "Нет данных в канале...";             break;
-        case CRC:         ret = "Ошибка CRC";                         break;
-        case L_OVER:      ret = "Слишком большая длина блока данных"; break;
-        case FORMAT:      ret = "Нет данных в канале...";             break;
-        case TRASH:       ret = "'Мусор' в канале...";                break;
-        case UNAVAILABLE: ret = "Ошибка открытия порта";              break;
-    }
-    return ret;
+    return GetCh (timeWaiting);
 }
 
-QString BlockingRs::errorText (int error)
+// получить символ с ожиданием не более timeWaiting миллисекунд
+unsigned char BlockingRS::GetChEx()
 {
-    return errorText((DataError)error);
+    int ch;
+    if ((ch = GetCh (timeWaiting))==-1)
+        throw RsException();
+    return (unsigned char)ch;
 }
+
+
+// получить сисвол с ожидаием не более ms миллисекунд
+// если нет данных - возвращаем -1
+int BlockingRS::GetCh (int ms)
+{
+    int ch = -1;
+    if (ms==0)
+        ms = timeWaiting;
+    mtxBuf.lock();
+    bool ready = buffer.size();
+    mtxBuf.unlock();
+    if (!ready)
+    {
+        std::unique_lock<std::mutex> lck(mtxWater);
+        std::cv_status ret = water.wait_for(lck, std::chrono::milliseconds(ms));
+        if (ret ==  std::cv_status::timeout)
+            return ch;
+    }
+
+    mtxBuf.lock();
+    if (buffer.size() >0)
+    {
+        ch = buffer.back();
+        buffer.pop_back();
+    }
+    mtxBuf.unlock();
+    return ch;
+}
+
+
+// передача массива данных по указателю заданной длины
+bool BlockingRS::Send (void *p, int length)
+{
+#ifdef CONSOLAPP
+    //QByteArray data((const char *)p, length);
+    //length = serial.write(data);
+    //const char * ptr = (const char *)p;
+    //length = serial.write(ptr, (qint64)length);
+    if (serial->write((const char *)p, (qint64)length) <= 0)
+        return false;
+    return serial->waitForBytesWritten(-1);         // только для консольных приложений!
+#else
+    return length == serial->write((const char *)p, length);
+#endif
+}
+
+// передача массива данных QByteArray
+bool BlockingRS::Send (QByteArray& data)
+{
+#ifdef CONSOLAPP
+    if (serial->write (data) <= 0)
+        return false;
+    return serial->waitForBytesWritten(-1);         // только для консольных приложений!
+#else
+    return data.length() == serial->write (data);
+#endif
+}
+

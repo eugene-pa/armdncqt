@@ -1,4 +1,3 @@
-#include <QDebug>
 #include "pasender.h"
 #include "pamessage.h"
 
@@ -21,6 +20,6 @@ PaSender::PaSender()
 // пересылаем сообщение в подключенные слоты
 void PaSender::SendMsg(class PaMessage *msg)
 {
-    qDebug() << "SendMsg";
+    Log (L"SendMsg");
     emit SendMessage(msg);
 }

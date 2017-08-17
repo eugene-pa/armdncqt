@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include <QApplication>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -8,4 +9,9 @@ int main(int argc, char *argv[])
     w.show();
 
     return a.exec();
+}
+
+void Log (std::wstring s)
+{
+    qDebug() << QString::fromStdWString(s);
 }

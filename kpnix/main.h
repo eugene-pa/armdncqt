@@ -5,7 +5,6 @@
 #include <QIODevice>
 #include <QTextStream>
 #include <QTextCodec>
-#include <QDebug>
 #include <QObject>
 
 // STL
@@ -36,6 +35,7 @@ std::wstring qToStdWString(const QString &str);             // QString --> std::
 QString stdWToQString(const std::wstring &str);             // std::wstring --> QString
 
 void threadsafecout(wstring msg);                           // безопасный (с блокировкой мьютекса) вывод строки на консоль
+void Log(std::wstring msg);
 
 // Базовые потои КП
 void   ThreadTS				(long);							// функция потока опроса ТС

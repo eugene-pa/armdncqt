@@ -1,95 +1,68 @@
 #ifndef BLOCKINGRS_H
 #define BLOCKINGRS_H
 
-#include <QSerialPort>
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
-#include "defines.h"
+#include <QSerialPort>
 
-// BlockingRs - Базовый класс для создания производных классов, реализующих
-// тот или иной протокол обмена по последовательному асинхронному интерфейсу
-// BlockingRs наследуется от QThread и работает с последовательным портом
-// с помощью класса QSerialPort в блокирующем режиме
-// ПОРЯДОК ИСПОЛЬЗОВАНИЯ В ПРОЕКТАХ:
-// - включить в проект файлы blockingrs.h, blockingrs.cpp
-// - создать клас, производный от blockingrs (см. в примере class RasRS : public BlockingRs)
-// - переопределить вирт.функцию mainLoop(), реализующую логику и последовательность протокола обмена
-// - производный класс создается в нужном классе основного потока приложения с увязкой сигналов и слотов:
-//   (в примере см. функцию MainWindow::on_action_Start_triggered()), после чего запускается раб.поток
-//   функцией startRs, в каческте параметров которой передаются конфигурация порта и тайм-ауты
-//
-// СИГНАЛЫ
-// dataready(QByteArray)    - приняты данные
-// timeout()                - нет данных
-// error(int)               - ошибка с кодом ошибки
-// started()                - старт потока
-//
-// СЛОТЫ:
-// exit()                   - завершение работы
+#include <mutex>                                            // std::mutex
+#include <queue>											// std::queue
+#include <condition_variable>                               // std::condition_variable
 
+#define CONSOLAPP
 
-class BlockingRs : public QThread
+class BlockingRS : public QThread
 {
     Q_OBJECT
 public:
-    BlockingRs(QObject *parent = 0, BYTE marker=0, int maxlength=4048);
-    ~BlockingRs();
+    explicit BlockingRS(QString config, QObject *parent = nullptr);
+    ~BlockingRS();
 
-    enum DataError
-    {
-        TIMEOUT     = 0x81,                                 // тайм аут
-        CRC         = 0x82,                                 // несовпадение CRC
-        L_OVER      = 0x83,                                 // превышен размер
-        FORMAT      = 0x84,                                 // нарушен формат
-        TRASH       = 0x85,                                 // "мусор" в канале
-        UNAVAILABLE = 0x86,                                 // ошибка открытия порта
-    };
+    void run() Q_DECL_OVERRIDE;
 
-    void startRs(const QString &settings, COMMTIMEOUTS tm);
-    void run();
-    QString& name() { return _name; }
-    static QString errorText (DataError error);
-    static QString errorText (int error);
+    int  GetCh();                                           // получить символ с ожиданием не более timeWaiting миллисекунд, иначе возврат -1
+    unsigned char GetChEx();                                // получить символ с ожиданием не более timeWaiting миллисекунд, иначе исключение RsException
+    int  GetCh(int ms);                                     // получить символ с ожиданием не более ms миллисекунд, иначе возврат -1
+    bool Send (void *, int length);                         // передача массива char заданной длины
+    bool Send (QByteArray& data);                           // передача массива QByteArray
+    void SetTimeWaiting(int ms) { timeWaiting = ms; }       // изменение времени ожидания по умолчанию
+    //QSerialPort& Serial() { return serial; }                // доступ непосредственно к классу QSerialPort
+    bool Parsed() { return parsed; }                        // проверка успешности парсинга параметров порта
+    bool CourierDetect();                                   // проверка несущей
+    bool IsOpen() { return serial!=nullptr && serial->isOpen(); } // проверка 'порт открыт'?
+    void Close();                                           // завершение работы
 
-    // виртуальные функции
-    virtual void mainLoop();                                // основной цикл
-    virtual void doData(QByteArray&);                       // можно перекрыть
+private:
+    QSerialPort * serial;                                   // экземпляр QSerialPort
 
-    QString errorText() { return lastErrorText; }
+    std::mutex mtxBuf;                                      // блокировка доступа к очереди
+    std::mutex mtxWater;                                    // мьютекс для организации ожидания поступления данных
+    std::condition_variable water;                          // условие ожидание приема данных
 
-private slots:
-    void exit();
+    int timeWaiting;                                        // время ожидания символа по умолчанию, мс
 
-signals:
-    void dataready(QByteArray);                             // сигнал-уведомление о готовности данных
-    void error    (int);                                    // сигнал-уведомление об ошибке
-    void timeout  ();                                       // сигнал-уведомление о таймауте
-
-protected:
-    virtual QByteArray readData(QSerialPort& serial);       // прием пакета данных с заданными таймаутами, маркером и максимальной длиной
-    bool parse(QString);                                    // разбор строки типа "COM1,9600,N,8,1"
-
-    QString lastErrorText;
     QString settings;                                       // настройки,например: COM1,9600,N,8,1
-    QString _name;                                          // имя порта
-    qint32 baudRate;                                        // скорость
-    QSerialPort::Parity parity;                             // четность
-    QSerialPort::DataBits dataBits;                         // бит данных
-    QSerialPort::StopBits stopBits;                         // число стоп-бит
+    QString name;                                           // имя порта
 
-    QSerialPort * pSerial;
-    QMutex mutex;
-    bool quit;
-    COMMTIMEOUTS tm;
-    bool parsed;
+    std::deque<unsigned char> buffer;                       // очередь FIFO принятых данных
+    std::size_t maxSize;                                    // максимально допустимая длина невыбранных данных,
+                                                            // после которой при приеме удаляются самые старые данные
+    bool parse(QString);                                    // разбор строки типа "COM1,9600,N,8,1"
+    bool parsed;                                            // true - описание порта корректное
+    bool rqExit;                                            // завершение работы
+};
 
-    QObject * parent;                                       // родитель
-    BYTE marker;                                            // маркер или 0
-    int maxlength;                                          // максимальная длина
-//    QSerialPort serial;
-
-    bool FindMarker (QByteArray&, BYTE marker=0);
+class RsException
+{
+public:
+    enum Error
+    {
+        timeout = 1,
+    };
+    RsException() { error = timeout; }
+private:
+    Error error;
 };
 
 #endif // BLOCKINGRS_H

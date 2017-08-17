@@ -21,7 +21,7 @@ PaMessage::PaMessage(Sourcer source, Action act, Status status, std::wstring tex
     datalength  = length;
 }
 
-std::wstring PaMessage::GetSource()
+std::wstring PaMessage::GetSourceText()
 {
     switch(src)
     {
@@ -37,7 +37,7 @@ std::wstring PaMessage::GetSource()
     }
 }
 
-std::wstring PaMessage::GetType()
+std::wstring PaMessage::GetTypeText()
 {
     switch (action)
     {
@@ -52,7 +52,7 @@ std::wstring PaMessage::GetType()
     }
 }
 
-std::wstring PaMessage::GetStatus()
+std::wstring PaMessage::GetStatusText()
 {
     switch (sts)
     {
@@ -69,7 +69,7 @@ std::wstring PaMessage::GetStatus()
 std::wstring PaMessage::toWstring()
 {
     std::wstringstream tmp;
-    tmp << "Источник: " << GetSource() << ". Тип: " << GetType() << ". Статус: " << GetStatus();
+    tmp << "Источник: " << GetSourceText() << ". Тип: " << GetTypeText() << ". Статус: " << GetStatusText();
     return tmp.str();
 }
 

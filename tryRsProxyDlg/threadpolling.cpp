@@ -1,11 +1,26 @@
 // поток опроса линии связи
 #include <functional>
-#include "main.h"
+#include <iostream>											// std::cout
+#include <thread>											// std::thread
+#include <mutex>											// мьютексы
+#include <queue>											// FIFO
+#include <cstdio>
+#include <sstream>
+#include <iomanip>
+
 #include "../common/rsasinc.h"
 #include "../common/pasender.h"
 #include "../common/pamessage.h"
+extern std::timed_mutex exit_lock;							// блокировка до выхода
+std::thread * pThreadPolling;                               // указатель на поток опроса линии связи
 
-thread * pThreadPolling;                                    // указатель на поток опроса линии связи
+typedef unsigned char  BYTE;
+typedef unsigned short WORD;
+typedef unsigned long  DWORD;
+#define chronoMS(n) std::chrono::milliseconds(n)
+#define SleepMS(n) std::this_thread::sleep_for(chronoMS(n))
+WORD GetCRC (BYTE *buf,WORD Len);
+std::wstring GetHexW(void *data, int length);
 
 const WORD LENGTH_OFFS		= 1;
 const WORD DST_OFFS			= 3;
@@ -25,40 +40,11 @@ BYTE dataOut[4048];                                         // выходные 
 int MakeData();
 
 //
+RsAsinc * pRS;
 extern PaSender paSender;
 std::function<void(PaSender&, class PaMessage *)> rsNotifier;
 
-// ВЫНЕСТИ В ОБЩИЙ ФАЙЛ
-// 1. Побайтовый алгоритм вычисления CRC
-//    (Р.Л.Хаммел,"Послед.передача данных", Стр.49. М.,Мир, 1996)
-const WORD CRC_POLY = 0x1021;
-WORD GetCRC (BYTE *buf,WORD Len)
-{
-    WORD j,w,Crc = 0;
-    while (Len--)
-    {
-        w = (WORD)(*buf++)<<8;
-        Crc ^= w;
-        for (j=0; j<8; j++)
-            if (Crc & 0x8000)
-                Crc = (Crc<<1) ^ CRC_POLY;
-            else
-                Crc = Crc << 1;
-    }
-    return Crc;
-}
 
-// ВЫНЕСТИ В ОБЩИЙ ФАЙЛ
-std::wstring GetHexW(void *data, int length)
-{
-    std::wstringstream tmp;
-
-    for (int i=0; i < length; i++)
-    {
-        tmp << std::setfill(L'0') << setw(2)<< std::hex << ((BYTE*)data)[i] << " ";
-    }
-    return tmp.str();
-}
 
 // поток опроса
 // long param - здесь - указатель на класс RsAsinc (так как приложение консольное,
@@ -69,12 +55,8 @@ void ThreadPolling(long param)
     if (rsNotifier != nullptr)
         rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsOK, L"Поток опроса линни связи запущен!"));
 
-    // ВАЖНО: класс RsAsinc надо создавать здесь, в рабочем потоке, чтобы прием и передача выполнялись в том же потоке,
-    //        где создан класс. В консольном приложении класс надо создать там, где есть обработка сообщений, поэтому он создан в main
-    //        Там же надо делать и передачу, поэтому в этом потоке не передаем. Если передать - все работает, но отладчик выдает
-    //        предкпреждение "Invalid parameter passed to C runtime function"
-    RsAsinc * prs = (RsAsinc *) param;
-    RsAsinc& rs = * prs;
+    pRS = new RsAsinc("COM3,38400,N,8,1");
+    RsAsinc& rs = * pRS;
 
     while (!exit_lock.try_lock_for(chronoMS(100)))
     {
@@ -122,15 +104,12 @@ void ThreadPolling(long param)
             {
                 if (rsNotifier != nullptr)
                 {
-                    wstring msg = L"Прием:  ";
+                    std::wstring msg = L"Прием:  ";
                     msg += GetHexW(dataIn, indx).c_str();
                     rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typRcv, PaMessage::stsOK, msg, dataIn, indx));
                 }
 
                 // формирование и передача ответного пакета
-                // передача работает, но: в отладчике получаю диагностическое сообщение:
-                // Invalid parameter passed to C runtime function.
-                // ПРИЧИНА: использование класса rs не в том потоке, гдн он был создан
                 int l = MakeData();
                 rs.Send(dataOut, l);
             }
