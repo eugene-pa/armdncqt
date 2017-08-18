@@ -16,7 +16,7 @@ extern unsigned char dataOut[];
 extern RsAsinc * pRS;
 void ObjMain::GetMessage(PaMessage *msg)
 {
-    if (msg->GetAction() == PaMessage::typRcv)
+    if (msg->GetAction() == PaMessage::eventReceive)
     {
         // ТЕСТИРУЕМ RS: если делать передачу непосредственно в рабочем потоке,
         // передача проходит, но получаю сообщение об ошибке при передаче параметра в функцию С

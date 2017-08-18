@@ -67,16 +67,16 @@ std::wstring GetHexW(void *data, int length)
 void ThreadPolling(long param)
 {
     if (rsNotifier != nullptr)
-        rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsOK, L"Поток опроса линни связи запущен!"));
+        rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, L"Поток опроса линни связи запущен!"));
 
     // ВАЖНО: класс RsAsinc надо создавать здесь, в рабочем потоке, чтобы прием и передача выполнялись в том же потоке,
     //        где создан класс. В консольном приложении класс надо создать там, где есть обработка сообщений, поэтому он создан в main
     //        Там же надо делать и передачу, поэтому в этом потоке не передаем. Если передать - все работает, но отладчик выдает
-    //        предкпреждение "Invalid parameter passed to C runtime function"
+    //        предупреждение "Invalid parameter passed to C runtime function"
     RsAsinc * prs = (RsAsinc *) param;
     RsAsinc& rs = * prs;
 
-    while (!exit_lock.try_lock_for(chronoMS(100)))
+    while (!exit_lock.try_lock_for(chronoMS(10)))
     {
         try
         {
@@ -115,7 +115,7 @@ void ThreadPolling(long param)
             if (crc != crcreal)
             {
                 if (rsNotifier != nullptr)
-                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsErrCRC, L"CRC error!"));
+                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, L"CRC error!", PaMessage::eventError, PaMessage::stsErrCRC));
 
             }
             else
@@ -124,7 +124,7 @@ void ThreadPolling(long param)
                 {
                     wstring msg = L"Прием:  ";
                     msg += GetHexW(dataIn, indx).c_str();
-                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typRcv, PaMessage::stsOK, msg, dataIn, indx));
+                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, msg, PaMessage::eventReceive, PaMessage::stsOK, dataIn, indx));
                 }
 
                 // формирование и передача ответного пакета
@@ -144,7 +144,7 @@ void ThreadPolling(long param)
     exit_lock.unlock();
     rs.Close();
     if (rsNotifier != nullptr)
-        rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsOK, L"Поток опроса линни связи завершен!"));
+        rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, L"Поток опроса линни связи завершен!"));
 
 }
 

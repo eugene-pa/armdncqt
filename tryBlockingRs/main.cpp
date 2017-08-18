@@ -3,6 +3,7 @@
 #include <mutex>                                            // std::mutex
 #include <thread>
 #include <../common/blockingrs.h>
+#include <../common/common.h>
 
 #ifdef Q_OS_WIN
 #include <io.h>
@@ -13,6 +14,7 @@ std::mutex con_lock;										// блокировка доступа к конс
 
 std::thread * pThreadPolling;                               // указатель на поток опроса линии связи
 void ThreadPolling(long param);
+std::timed_mutex exit_lock;                                 // блокировка до выхода
 
 int main(int argc, char *argv[])
 {
@@ -22,30 +24,21 @@ int main(int argc, char *argv[])
     // настраиваем консоль Windows на юникод
     // под LINUX строки юникод отображаются на консоли нормально без всяких танцев!
     _setmode(_fileno(stdout), _O_U16TEXT);
-    _setmode(_fileno(stdin),  _O_U16TEXT);
     _setmode(_fileno(stderr), _O_U16TEXT);
 #endif  // #ifdef Q_OS_WIN
 
-    std::wstring config = L"COM4,9600,N,8,1";
+    exit_lock.lock ();										// блокируем мьютекс завершения (ждем освобождения во всех потоках)
+
+    std::wstring config = L"COM4,38400,N,8,1";
     pThreadPolling = new std::thread ( ThreadPolling	, (long)&config);	// поток опроса линни связи
 
-//    BlockingRS rs ("COM4,9600,N,8,1");
-//    rs.start();
-/*
-    while (true)
-    {
-        try
-        {
-            int ch = rs.GetChEx();
-            int a = 99;
-        }
-        catch (RsException e)
-        {
+    getchar();
+    Log (L"Процесс завершения работы. Ожидание завершения потоков...");
+    exit_lock.unlock();
 
-        }
-    }
-*/
-    return a.exec();
+    QThread::sleep(2);                                      // 3 секунды на обзор результатов
+    a.quit();                                               // return QCoreApplication::exec();
+    return 0;
 }
 
 

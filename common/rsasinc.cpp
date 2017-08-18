@@ -174,13 +174,11 @@ int RsAsinc::GetCh (int ms)
 
 
 // передача массива данных по указателю заданной длины
+// ВАЖНО: работает, но выдает в трассировке сообщение: "Invalid parameter passed to C runtime function"
+// ПРИЧИНА: вызов метода QSerialPort не втом потоке, где был создан QSerialPort
 bool RsAsinc::Send (void *p, int length)
 {
 #ifdef CONSOLAPP
-    //QByteArray data((const char *)p, length);
-    //length = serial.write(data);
-    //const char * ptr = (const char *)p;
-    //length = serial.write(ptr, (qint64)length);
     if (serial.write((const char *)p, (qint64)length) <= 0)
         return false;
     return serial.waitForBytesWritten(-1);         // только для консольных приложений!
@@ -190,6 +188,8 @@ bool RsAsinc::Send (void *p, int length)
 }
 
 // передача массива данных QByteArray
+// ВАЖНО: работает, но выдает в трассировке сообщение: "Invalid parameter passed to C runtime function"
+// ПРИЧИНА: вызов метода QSerialPort не втом потоке, где был создан QSerialPort
 bool RsAsinc::Send (QByteArray& data)
 {
 #ifdef CONSOLAPP

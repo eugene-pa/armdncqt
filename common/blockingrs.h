@@ -36,7 +36,13 @@ public:
 private:
     QSerialPort * serial;                                   // экземпляр QSerialPort
 
-    std::mutex mtxBuf;                                      // блокировка доступа к очереди
+    std::deque<unsigned char> bufIn;                        // очередь FIFO принятых     данных
+    std::mutex mtxBufIn;                                    // блокировка доступа к входной очереди
+
+    std::deque<unsigned char> bufOut;                       // очередь FIFO передаваемых данных
+    std::mutex mtxBufOut;                                   // блокировка доступа к выходной очереди
+    bool errorSend;                                         // ошибка при передаче
+
     std::mutex mtxWater;                                    // мьютекс для организации ожидания поступления данных
     std::condition_variable water;                          // условие ожидание приема данных
 
@@ -45,7 +51,6 @@ private:
     QString settings;                                       // настройки,например: COM1,9600,N,8,1
     QString name;                                           // имя порта
 
-    std::deque<unsigned char> buffer;                       // очередь FIFO принятых данных
     std::size_t maxSize;                                    // максимально допустимая длина невыбранных данных,
                                                             // после которой при приеме удаляются самые старые данные
     bool parse(QString);                                    // разбор строки типа "COM1,9600,N,8,1"

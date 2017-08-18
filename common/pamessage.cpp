@@ -11,7 +11,7 @@
 // Хотя возможны любые варианты взаимодействия, тот же сетевой вариант
 // Главное: отправка сообщений в коде рабочих потоков будет независима от способа передачи!
 
-PaMessage::PaMessage(Sourcer source, Action act, Status status, std::wstring text, void * dataptr, int length)
+PaMessage::PaMessage(Sourcer source, std::wstring text, Event act, Status status, void * dataptr, int length)
 {
     src         = source;
     action      = act;
@@ -25,15 +25,18 @@ std::wstring PaMessage::GetSourceText()
 {
     switch(src)
     {
-        case srcActLine : return L"COM3";
-        case srcPsvLine : return L"COM3";
-        case srcDbgLine : return L"COMDBG";
-        case srcMpcLine : return L"Ebolock";
-        case srcRpcLine : return L"РПЦ Диалог";
-        case srcECEMLine: return L"ЭЦ ЕМ";
-
-        default:
-                          return L"Источник не определен";
+        case srcActLine   : return L"COM3";
+        case srcPsvLine   : return L"COM3";
+        case srcDbgLine   : return L"COMDBG";
+        case srcMpcLine   : return L"Ebolock";
+        case srcRpcLine   : return L"РПЦ Диалог";
+        case srcECEMLine  : return L"ЭЦ-ЕМ";
+        case srcAdkScbLine: return L"АДКСЦБ";
+        case srcApkdkLine : return L"АПКДК";
+        case srcAbtcmLine : return L"АБТЦМ";
+        case srcKabLine   : return L"КЭБ";
+        case srcKvartzLine: return L"Кварц";
+        default           : return L"Источник не определен";
     }
 }
 
@@ -41,12 +44,13 @@ std::wstring PaMessage::GetTypeText()
 {
     switch (action)
     {
-        case typRcv   : return L"Прием";
-        case typRcvBt : return L"Прием байта";
-        case typeSnt  : return L"Передано";
-        case typeDown : return L"Отказ";
-        case typeUp   : return L"Восстановление";
-        case typeTrace: return L"Лог";
+        case eventTrace     : return L"Лог";
+        case eventError     : return L"Ошибка";
+        case eventReceive   : return L"Прием";
+        case eventReceiveBt : return L"Прием байта";
+        case eventSend      : return L"Передано";
+        case eventDown      : return L"Отказ";
+        case eventUp        : return L"Восстановление";
 
         default       : return L"Тип неопределен";
     }
@@ -56,11 +60,13 @@ std::wstring PaMessage::GetStatusText()
 {
     switch (sts)
     {
-        case stsOK          : return L"Норма";
-        case stsErrTimeout  : return L"Таймаута";
-        case stsErrFormat   : return L"Ошбибка формата";
-        case stsErrCRC      : return L"Ошибка CRC";
-        case stsErrOverhead : return L"Переполнение";
+        case stsOK             : return L"Норма";
+        case stsErrTimeout     : return L"Таймаут ПРМ";
+        case stsErrTimeoutSend : return L"Таймаут ПРД";
+        case stsErrFormat      : return L"Ошбибка формата";
+        case stsErrLength      : return L"Ошбибка длины";
+        case stsErrCRC         : return L"Ошибка CRC";
+        case stsErrOverhead    : return L"Переполнение";
 
         default      : return L"Состояние неопределено";
     }
