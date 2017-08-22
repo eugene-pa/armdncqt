@@ -48,7 +48,7 @@ void BlockingRS::run()
     Log(L"Старт потока BlockingRS. Thread #" + (QString::number((int)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
     parse(settings);
 
-    while (!rqExit)
+    while (serial->isOpen() && !rqExit)
     {
         if (serial->waitForReadyRead(10))
         {

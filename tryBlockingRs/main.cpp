@@ -11,7 +11,6 @@
 #endif // #ifdef Q_OS_WIN
 
 std::mutex con_lock;										// блокировка доступа к консоли
-
 std::thread * pThreadPolling;                               // указатель на поток опроса линии связи
 void ThreadPolling(long param);
 std::timed_mutex exit_lock;                                 // блокировка до выхода
@@ -29,7 +28,7 @@ int main(int argc, char *argv[])
 
     exit_lock.lock ();										// блокируем мьютекс завершения (ждем освобождения во всех потоках)
 
-    std::wstring config = L"COM4,38400,N,8,1";
+    std::wstring config = L"COM3,38400,N,8,1";
     pThreadPolling = new std::thread ( ThreadPolling	, (long)&config);	// поток опроса линни связи
 
     getchar();

@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui serialport
+CONFIG   += console c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,10 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        threads/threadpolling.cpp \
+        ../common/common.cpp \
+        ../common/blockingrs.cpp \
+    ../common/pamessage.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+        threads/threadpolling.h \
+        ../common/common.h \
+        ../common/blockingrs.h \
+    ../common/pamessage.h
 
 FORMS += \
         mainwindow.ui

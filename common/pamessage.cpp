@@ -11,6 +11,7 @@
 // Хотя возможны любые варианты взаимодействия, тот же сетевой вариант
 // Главное: отправка сообщений в коде рабочих потоков будет независима от способа передачи!
 
+
 PaMessage::PaMessage(Sourcer source, std::wstring text, Event act, Status status, void * dataptr, int length)
 {
     src         = source;
@@ -20,6 +21,7 @@ PaMessage::PaMessage(Sourcer source, std::wstring text, Event act, Status status
     data        = dataptr;
     datalength  = length;
 }
+
 
 std::wstring PaMessage::GetSourceText()
 {

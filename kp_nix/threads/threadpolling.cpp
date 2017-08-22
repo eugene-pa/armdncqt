@@ -1,24 +1,27 @@
+// поток опроса линии связи
+#include <functional>
 #include <string>
-#include "../common/blockingrs.h"
+#include <thread>
+
+#include "threadpolling.h"
 #include "../common/common.h"
+#include "../common/blockingrs.h"
+#include "../common/pasender.h"
+#include "../common/pamessage.h"
 
-const WORD LENGTH_OFFS		= 1;
-const WORD DST_OFFS			= 3;
-const WORD SRC_OFFS			= 4;
-const WORD SEANS_OFFS		= 5;
-const WORD FRAME_DATA_OFFS	= 6;
-
-const int  LEN_CTRL_INFO    = 6;								// длина обрамления (маркер, длина, CRC, EOT)
-const int  LEN_HEADER       = 3;								// длина заголовка (маркер+поле длины)
-const int  CRC_SIZE         = 2;								//
-const BYTE SOH              = 1;
-const BYTE EOT              = 4;
-const BYTE CpuAddress       = 0;
 BYTE dataIn [4048];                                         // входные данные
 BYTE dataOut[4048];                                         // выходные данные
+int MakeData();                                             // формирование ответного пакета
 
-int MakeData();
+//
+//extern PaSender paSender;
+//std::function<void(PaSender&, class PaMessage *)> rsNotifier;
 
+
+// поток опроса
+// long param - здесь - указатель на класс RsAsinc (так как приложение консольное,
+// класс RsAsinc должен быть создан в основном потоке, иначе не будет работать
+// В GUI приложениях класс RsAsinc логичнее создавать прямо в потоке
 void ThreadPolling(long param)
 {
     Log(L"Старт потока ThreadPolling");
@@ -26,7 +29,7 @@ void ThreadPolling(long param)
     BlockingRS rs(config);
     rs.start();
 
-    while (!exit_lock.try_lock_for(std::chrono::milliseconds(10)))
+    while (!exit_lock.try_lock_for(chronoMS(10)))
     {
         try
         {
@@ -64,24 +67,15 @@ void ThreadPolling(long param)
             WORD crcreal = GetCRC(dataIn, l + LEN_HEADER);
             if (crc != crcreal)
             {
-//                if (rsNotifier != nullptr)
-//                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typeTrace, PaMessage::stsErrCRC, L"CRC error!"));
-
+                SendMessage(new PaMessage(PaMessage::srcActLine, L"CRC error!", PaMessage::eventError, PaMessage::stsErrCRC));
             }
             else
             {
-/*
-                if (rsNotifier != nullptr)
-                {
-                    wstring msg = L"Прием:  ";
-                    msg += GetHexW(dataIn, indx).c_str();
-                    rsNotifier(paSender, new PaMessage(PaMessage::srcActLine, PaMessage::typRcv, PaMessage::stsOK, msg, dataIn, indx));
-                }
-*/
+                std::wstring msg = L"Прием:  ";
+                msg += GetHexW(dataIn, indx).c_str();
+                SendMessage (new PaMessage(PaMessage::srcActLine, msg, PaMessage::eventReceive, PaMessage::stsOK, dataIn, indx));
+
                 // формирование и передача ответного пакета
-                // передача работает, но: в отладчике получаю диагностическое сообщение:
-                // Invalid parameter passed to C runtime function.
-                // ПРИЧИНА: использование класса rs не в том потоке, гдн он был создан
                 int l = MakeData();
                 rs.Send(dataOut, l);
             }
@@ -92,9 +86,9 @@ void ThreadPolling(long param)
             continue;
         }
     }
+    exit_lock.unlock();
     rs.Close();
-    QThread::sleep(1);
-    Log(L"Завершение потока ThreadPolling");
+    Log (L"Поток опроса линни связи завершен!");
 }
 
 // пример ответного пакета

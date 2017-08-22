@@ -1,4 +1,6 @@
 ﻿#include <QCoreApplication>
+#include <QDebug>
+
 #include "main.h"
 #include "objmain.h"
 #include "../common/rsasinc.h"

@@ -4,6 +4,8 @@
 #include <string>
 #include <sstream>
 
+void Log (std::wstring s);                                  // лог
+
 class PaMessage
 {
 public:
@@ -55,6 +57,11 @@ public:
 
     // конструктор
     PaMessage(Sourcer, std::wstring text, Event=eventTrace, Status=stsOK, void * dataptr=nullptr, int length=0);
+    virtual ~PaMessage()
+    {
+        Log (L"Удаляем объект PaMessage");
+    }
+
     // доступ к свойствам
     Sourcer GetSource() { return src;    }
     Event  GetAction() { return action; }

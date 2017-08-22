@@ -2,10 +2,16 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <mutex>
+#include <QString>
+#include <QTextDecoder>
+#include <QDebug>
+#include <memory>
 
 typedef unsigned char  BYTE;
 typedef unsigned short WORD;
 typedef unsigned long  DWORD;
+
 
 // ВЫНЕСТИ В ОБЩИЙ ФАЙЛ
 // 1. Побайтовый алгоритм вычисления CRC
@@ -27,7 +33,7 @@ WORD GetCRC (BYTE *buf,WORD Len)
     return Crc;
 }
 
-// ВЫНЕСТИ В ОБЩИЙ ФАЙЛ
+// получить гексадецимальное представление группы байт
 std::wstring GetHexW(void *data, int length)
 {
     std::wstringstream tmp;
@@ -38,3 +44,17 @@ std::wstring GetHexW(void *data, int length)
     }
     return tmp.str();
 }
+
+// вывод в лог; возможно, будет меняться
+static std::mutex con_lock;						// блокировка доступа к консоли
+void Log (std::wstring s)
+{
+    std::lock_guard<std::mutex> locker(con_lock);
+    QString msg = QString::fromStdWString(s);
+#ifdef Q_OS_WIN
+    QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));  // "UTF-8" у Арзуманяна корректно выводит во встроенную консоль
+#endif
+    qDebug() << msg.toStdString().c_str();
+}
+
+
