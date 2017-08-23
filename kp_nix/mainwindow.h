@@ -6,9 +6,23 @@
 #include <QMainWindow>
 #include "../common/pamessage.h"
 
-namespace Ui {
+namespace Ui
+{
 class MainWindow;
 }
+
+// класс-deleter для завершения рабочих потоков; используется в смарт-указателях std::unique_ptr
+// выполняет: ожидание завершения, вывод в лог и удаление указателя
+class ThreadTerminater
+{
+public:
+    void operator () (std::thread * p)
+    {
+        p->join();                                                      // - ожидаем завершения
+        Log(L"Удаление указателя на поток");                            // - выводим лог
+        delete p;                                                       // - удаляем указатель
+    }
+};
 
 class MainWindow : public QMainWindow
 {
@@ -28,8 +42,18 @@ public slots:
 private:
     Ui::MainWindow *ui;
     std::wstring config;
+    
+    // умные указатели на рабочие потоки с заданием делитера, обеспечивающего ожидание завершения, вывод в лог и удаление указателя
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadTs;			// указатель на поток опроса ТС
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadTu;			// указатель на поток вывода ТУ
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadUpok;			// указатель на поток обработки ОТУ УПОК+БРОК
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadSysCommand;	// указатель на поток исполнения директив управления КП
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadPulse;		// указатель на поток формирования программного пульса
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadMonitoring;	// указатель на поток мониторинга состояния КП
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadTestTU;		// указатель на поток циклического теста ТУ
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadWatchDog;		// указатель на поток включения и управления сторожевым таймером
 
-    std::shared_ptr<std::thread> pThreadPolling;                // smart-указатель на поток опроса динии связи
 };
 
 #endif // MAINWINDOW_H

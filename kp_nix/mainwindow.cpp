@@ -18,16 +18,7 @@ void   ThreadTestTU			(long);							// функция потока циклич�
 void   ThreadWatchDog		(long);							// функция потока включения и управления сторожевым таймером
 void   ThreadPolling		(long);							// функция потока опроса динии связи
 
-extern std::thread * pThreadTs;								// указатель на поток опроса ТС
-extern std::thread * pThreadTu;								// указатель на поток вывода ТУ
-extern std::thread * pThreadUpok;							// указатель на поток обработки ОТУ УПОК+БРОК
-extern std::thread * pThreadSysCommand;						// указатель на поток исполнения директив управления КП
-extern std::thread * pThreadPulse;							// указатель на поток формирования программного пульса
-extern std::thread * pThreadMonitoring;						// указатель на поток мониторинга состояния КП
-extern std::thread * pThreadTestTU;							// указатель на поток циклического теста ТУ
-extern std::thread * pThreadWatchDog;						// указатель на поток включения и управления сторожевым таймером
 
-//
 
 MainWindow * MainWindow::mainWnd;
 
@@ -45,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // создание рабочих потоков: создаем умные указатели, переопределяя действия деструктора
     // с помощью лямбда-функции, выполняющей ожидание завершения потока и удаление указателя
     config = L"COM3,38400,N,8,1";
-    pThreadPolling = std::shared_ptr<std::thread>(new std::thread(ThreadPolling, (long)&config),
-                                            [](std::thread *p) { p->join();  Log(L"*Удаление pThreadPolling*"); delete p; });
+//    pThreadPolling = std::shared_ptr<std::thread>(new std::thread(ThreadPolling, (long)&config),[](std::thread *p) { p->join();  Log(L"*Удаление pThreadPolling*"); delete p; });
+    pThreadPolling = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling, (long)&config));
 }
 
 MainWindow::~MainWindow()
