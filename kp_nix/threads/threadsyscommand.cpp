@@ -1,12 +1,16 @@
-﻿// поток опроса ТС
+﻿// поток обработки системных директив
 
-#include "main.h"
-
-thread * pThreadSysCommand;							// указатель на поток исполнения директив управления КП
+#include <string>
+#include <thread>
+#include <mutex>
+#include "common/common.h"
+#include "common/pamessage.h"
 
 void ThreadSysCommand(long)
 {
-    threadsafecout(L"Поток реализации директив управления КП запущен!");
+    std::wstringstream s;
+    s << L"Поток реализации директив управления КП запущен. threadid=" << std::this_thread::get_id();
+    SendMessage(new PaMessage(s.str()));
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
@@ -14,6 +18,7 @@ void ThreadSysCommand(long)
 	}
 	exit_lock.unlock();
 
-    threadsafecout(L"Поток реализации директив управления КП завершен!");
-	
+    s.str(std::wstring());
+    s << L"Поток реализации директив управления КП завершен. threadid=" << std::this_thread::get_id();
+    Log(s.str());                        // отправка SendMessage здесь уже не проходит, так как запущен деструктор главного окна
 }

@@ -1,6 +1,6 @@
 #ifndef THREADPOLLING_H
 #define THREADPOLLING_H
-#include "../common/common.h"
+#include "common/common.h"
 
 const WORD LENGTH_OFFS		= 1;
 const WORD DST_OFFS			= 3;

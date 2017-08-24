@@ -28,16 +28,26 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         threads/threadpolling.cpp \
-        ../common/common.cpp \
-        ../common/blockingrs.cpp \
-    ../common/pamessage.cpp
+        threads/threadmonitoring.cpp \
+        threads/threadpulse.cpp \
+        threads/threadsyscommand.cpp \
+        threads/threadtesttu.cpp \
+        threads/threadts.cpp \
+        threads/threadtu.cpp \
+        common/blockingrs.cpp \
+        common/common.cpp \
+        common/pamessage.cpp
+
 
 HEADERS += \
         mainwindow.h \
         threads/threadpolling.h \
-        ../common/common.h \
-        ../common/blockingrs.h \
-    ../common/pamessage.h
+        threads/threadts.h \
+        common/acksenum.h \
+        common/blockingrs.h \
+        common/common.h \
+        common/pamessage.h
+
 
 FORMS += \
         mainwindow.ui

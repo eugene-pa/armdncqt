@@ -1,6 +1,12 @@
 ﻿// поток опроса ТС
 
-#include "main.h"
+#include <string>
+#include <thread>
+#include <mutex>
+#include "common/common.h"
+#include "common/pamessage.h"
+#include "threadts.h"
+#include "../kp2017.h"
 
 BYTE TsStatus		[TSSIZE];								// битовый массив мгновенного состояния ТС
 BYTE PulseStatus	[TSSIZE];								// битовый массив вычисленного состояния мигания ТС
@@ -12,18 +18,20 @@ BYTE PulseStatus2	[TSSIZE];								// битовый массив вычисле
 
 BYTE CompareErrors  [TSSIZE];								// битовый массив ошибок сравнения (1-ошибка сравнения, 0 - ОК)
 
-thread * pThreadTs;											// указатель на поток опроса ТС
-
 void ThreadTS(long)
 {
-    threadsafecout(L"Поток TS запущен!");
+    std::wstringstream s;
+    s << L"Поток опроса ТС запущен. threadid=" << std::this_thread::get_id();
+    SendMessage(new PaMessage(s.str()));
 
 	// Циклический опрос ТС вплоть до запроса выхода (освобождение exit_lock)
 	while (!exit_lock.try_lock_for(chronoMS(1000)))
 	{
-        threadsafecout(L"Опрос ТС");
+        SendMessage(new PaMessage(L"Опрос ТС"));
 	}
 	exit_lock.unlock();
 
-    threadsafecout(L"Поток TS завершен!");
+    s.str(std::wstring());
+    s << L"Поток опроса ТС завершен. threadid=" << std::this_thread::get_id();
+    Log(s.str());                        // отправка SendMessage здесь уже не проходит, так как запущен деструктор главного окна
 }

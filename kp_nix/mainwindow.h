@@ -1,10 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <sstream>
 #include <thread>
 #include <mutex>
 #include <QMainWindow>
-#include "../common/pamessage.h"
+#include "common/pamessage.h"
 
 namespace Ui
 {
@@ -18,9 +19,12 @@ class ThreadTerminater
 public:
     void operator () (std::thread * p)
     {
-        p->join();                                                      // - ожидаем завершения
-        Log(L"Удаление указателя на поток");                            // - выводим лог
-        delete p;                                                       // - удаляем указатель
+        auto id = p->get_id();                                          // запоминаем id, пока поток живой
+        p->join();                                                      // ожидаем завершения потока
+        std::wstringstream s;
+        s << L"Удаление указателя на поток " << id;                   // если хотим убедиться в удалении указателя
+        Log(s.str());                                                   // выводим лог
+        delete p;                                                       // удаляем указатель
     }
 };
 

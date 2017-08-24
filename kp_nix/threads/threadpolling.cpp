@@ -3,28 +3,26 @@
 #include <string>
 #include <thread>
 
+#include "common/common.h"
+#include "common/blockingrs.h"
+#include "common/pamessage.h"
 #include "threadpolling.h"
-#include "../common/common.h"
-#include "../common/blockingrs.h"
-#include "../common/pasender.h"
-#include "../common/pamessage.h"
 
 BYTE dataIn [4048];                                         // входные данные
 BYTE dataOut[4048];                                         // выходные данные
 int MakeData();                                             // формирование ответного пакета
 
-//
-//extern PaSender paSender;
-//std::function<void(PaSender&, class PaMessage *)> rsNotifier;
-
-
 // поток опроса
-// long param - здесь - указатель на класс RsAsinc (так как приложение консольное,
-// класс RsAsinc должен быть создан в основном потоке, иначе не будет работать
-// В GUI приложениях класс RsAsinc логичнее создавать прямо в потоке
+// long param - здесь - указатель на строку конфигурации config
+//              Строку config можно не передаать в поток, а определять из глоб.параметров в самом потоке
+//    ВАЖНО:    если строку передавать в поток, в вызывающем потоке то нельзя объявлять строку config
+//              как локальный параметр на стеке, так как она будет использоваться здесь в рабочем потоке позже
 void ThreadPolling(long param)
 {
-    Log(L"Старт потока ThreadPolling");
+    std::wstringstream s;
+    s << L"Поток опроса линни связи запущен. threadid=" << std::this_thread::get_id();
+    SendMessage(new PaMessage(s.str()));
+
     QString config = QString::fromStdWString(*(std::wstring *)param);
     BlockingRS rs(config);
     rs.start();
@@ -88,7 +86,10 @@ void ThreadPolling(long param)
     }
     exit_lock.unlock();
     rs.Close();
-    Log (L"Поток опроса линни связи завершен!");
+
+    s.str(std::wstring());
+    s << L"Поток опроса линни связи завершен. threadid=" << std::this_thread::get_id();
+    Log (s.str());
 }
 
 // пример ответного пакета
