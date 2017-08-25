@@ -6,8 +6,9 @@
 #include <queue>
 #include "common/common.h"
 #include "common/pamessage.h"
-#include "threadts.h"
+#include "threadtu.h"
 #include "../kp2017.h"
+#include "../common/acksenum.h"
 
 std::mutex todo_lock;                                           // блокировка доступа к очереди TODO/DONE
 std::mutex done_lock;											// блокировка доступа к очереди DONE
@@ -24,7 +25,7 @@ void ThreadTU (long)
 	// выборка и исполнение ТУ вплоть до запроса выхода (освобождение exit_lock)
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
-        SendMessage(new PaMessage(L"Ожидание ТУ"));
+        //SendMessage(new PaMessage(L"Ожидание ТУ"));
 		DWORD tu = 0;
 		size_t n = 0;
 		{
@@ -38,19 +39,17 @@ void ThreadTU (long)
 
 		if (tu)
 		{
-            std::wstring msg = L"\nВ очереди " + std::to_wstring(n) + L" ТУ.  Исполняем ТУ: " + std::to_wstring(tu);
-            //threadsafecout(msg);
-            //SendMessage(new PaMessage(s.str()));
+            SendMessage(new PaMessage(tuAckToDo, tu, s.str())); // принята к исполнению
 
-			SleepMS(3000);										// задержка на исполнение ТУ
+            SleepMS(4000);										// задержка на исполнение ТУ
 
-            msg = L"Исполнили ТУ: " + std::to_wstring(tu);
-            //threadsafecout(msg);
-
-            std::lock_guard <std::mutex> locker(done_lock);               // помещаем ТУ в очередь исполненных
+            std::lock_guard <std::mutex> locker(done_lock);     // помещаем ТУ в очередь исполненных
             listDone.push(tu);
             if (listDone.size() > 16)                           // длина исполненных <=16
                 listDone.pop();
+
+            SendMessage(new PaMessage(tuAckDone, tu, s.str())); // принята исполнена
+
 		}
 	}
 	exit_lock.unlock();
@@ -72,13 +71,26 @@ void ThreadTU (long)
     Log(s.str());                        // отправка SendMessage здесь уже не проходит, так как запущен деструктор главного окна
 }
 
-void PushTu(DWORD tu)
+void DBG_PushTu(DWORD tu)
 {
-    std::wstring msg;
-    msg = L"\nСтавим в очередь ТУ" + std::to_wstring(tu);
-    SendMessage(new PaMessage(msg));
-
 	// lock_guard - STL класс С++, в конструкторе блокирует, в деструкторе разблокирует
+    {
     std::lock_guard<std::mutex> locker(todo_lock);
 	listToDo.push(tu);
+    }
+    std::wstring msg;
+    SendMessage(new PaMessage(tuAckRcv, tu));
+
+}
+
+int todoSize()
+{
+    std::lock_guard <std::mutex> locker(todo_lock);
+    return listToDo.size();
+}
+
+int doneSize()
+{
+    std::lock_guard <std::mutex> locker(done_lock);
+    return listDone.size();
 }

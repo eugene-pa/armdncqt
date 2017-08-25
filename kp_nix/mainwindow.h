@@ -5,7 +5,8 @@
 #include <thread>
 #include <mutex>
 #include <QMainWindow>
-#include "common/pamessage.h"
+#include "common/common.h"
+//#include "common/pamessage.h"
 
 namespace Ui
 {
@@ -38,10 +39,10 @@ public:
     static MainWindow * mainWnd;
 
 signals:
-    void SendMsg(PaMessage *);
+    void SendMsg(class PaMessage *);
 
 public slots:
-    void GetMsg (PaMessage *);
+    void GetMsg (class PaMessage *);
 
 private:
     Ui::MainWindow *ui;

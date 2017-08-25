@@ -34,20 +34,23 @@ SOURCES += \
         threads/threadtesttu.cpp \
         threads/threadts.cpp \
         threads/threadtu.cpp \
+        threads/threadupok.cpp \
+        threads/threadwatchdog.cpp \
         common/blockingrs.cpp \
         common/common.cpp \
         common/pamessage.cpp
+
 
 
 HEADERS += \
         mainwindow.h \
         threads/threadpolling.h \
         threads/threadts.h \
+        threads/threadtu.h \
         common/acksenum.h \
         common/blockingrs.h \
         common/common.h \
         common/pamessage.h
-
 
 FORMS += \
         mainwindow.ui

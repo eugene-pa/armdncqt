@@ -4,8 +4,7 @@
 #include <string>
 #include <sstream>
 #include "common/common.h"
-
-void Log (std::wstring s);                                  // лог
+#include "common/acksenum.h"
 
 class PaMessage
 {
@@ -42,8 +41,8 @@ public:
         eventSend     ,             // данные переданы
         eventDown     ,             // потеря связи
         eventUp       ,             // восстановление связи
-        eventAck      ,             // информация о квитанции
-
+        eventTu       ,             // информация о процессе исполнения ТУ
+        eventOtu      ,             // информация о процессе исполнения ОТУ
         // добавить ...
     };
 
@@ -61,9 +60,11 @@ public:
     };
 
     // конструктор
+
     PaMessage(Sourcer, std::wstring text, Event=eventTrace, Status=stsOK, void * dataptr=nullptr, int length=0);    // общий конструктор
     PaMessage(std::wstring text);                                                                                   // конструктор для лога
-    PaMessage(int ack, DWORD tu);
+    PaMessage(AckTypes ack, DWORD tu, std::wstring msg=L"");
+
     virtual ~PaMessage()
     {
         // Log (L"Удаляем объект PaMessage");   // если хотим убедиться в удалении сообщения
@@ -77,6 +78,8 @@ public:
     std::wstring GetTypeText();
     std::wstring GetStatusText();
     std::wstring GetText() { return msg; }
+    DWORD GetTu() { return tu; }
+    AckTypes GetAck() { return ack; }
     void * GetData();
     int GetDataLength();
     // полное символьное представление сообщения
@@ -87,7 +90,8 @@ private:
     Event   action;                 // событие
     Status  sts;                    // состояние
     std::wstring msg;               // строка сообщения (возможно, пустая)
-    int     ack;                    // код квитанции
+    //int     ack;                  // код квитанции
+    AckTypes ack;                   // код квитанции
     DWORD   tu;                     // код ТУ
     void *  data;                   // указатель на доп. данные
     int     datalength;             // длина доп.данных

@@ -27,7 +27,7 @@ void ThreadTS(long)
 	// Циклический опрос ТС вплоть до запроса выхода (освобождение exit_lock)
 	while (!exit_lock.try_lock_for(chronoMS(1000)))
 	{
-        SendMessage(new PaMessage(L"Опрос ТС"));
+        //SendMessage(new PaMessage(L"Опрос ТС"));
 	}
 	exit_lock.unlock();
 

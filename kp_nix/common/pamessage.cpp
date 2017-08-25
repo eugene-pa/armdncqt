@@ -20,7 +20,7 @@ PaMessage::PaMessage(Sourcer source, std::wstring text, Event act, Status status
     msg         = text;
     data        = dataptr;
     datalength  = length;
-    ack         = 0;
+    ack         = tuAckError;
     tu          = 0;
 }
 
@@ -33,17 +33,17 @@ PaMessage::PaMessage(std::wstring text)
     msg         = text;
     data        = nullptr;
     datalength  = 0;
-    ack         = 0;
+    ack         = tuAckError;
     tu          = 0;
 }
 
-// упрощенный конструктор для квитанций
-PaMessage::PaMessage(int ack, DWORD tu)
+// упрощенный конструктор для сообщений о процессе исполнения ТУ
+PaMessage::PaMessage(AckTypes ack, DWORD tu, std::wstring msg)
 {
     src         = srcTU;
-    action      = eventTrace;
+    action      = eventTu;
     sts         = stsOK;
-    msg         = L"";
+    msg         = msg;
     data        = nullptr;
     datalength  = 0;
     this->ack   = ack;

@@ -1,11 +1,17 @@
-﻿// поток отработки ОТУ УПОК+БРОК
+﻿// поток опроса УПОК+БРОК
 
-#include "main.h"
+#include <string>
+#include <thread>
+#include <mutex>
+#include "common/common.h"
+#include "common/pamessage.h"
+#include "../kp2017.h"
 
-thread * pThreadUpok;											// указатель на поток обработки ОТУ УПОК+БРОК
 void ThreadUpok(long)
 {
-    threadsafecout(L"Поток UPOK запущен!");
+    std::wstringstream s;
+    s << L"Поток опроса УПОК. threadid=" << std::this_thread::get_id();
+    SendMessage(new PaMessage(s.str()));
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
 	{
@@ -13,5 +19,7 @@ void ThreadUpok(long)
 	}
 	exit_lock.unlock();
 
-    threadsafecout(L"Поток UPOK завершен!");
+    s.str(std::wstring());
+    s << L"Поток опроса УПОК завершен. threadid=" << std::this_thread::get_id();
+    Log(s.str());                        // отправка SendMessage здесь уже не проходит, так как запущен деструктор главного окна
 }

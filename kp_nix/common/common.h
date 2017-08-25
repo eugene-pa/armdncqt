@@ -8,6 +8,8 @@
 #include <mutex>
 #include <memory>                                           // for unique_ptr
 
+#define DBG_INCLUDE
+
 extern std::timed_mutex exit_lock;							// мьютекс, разрешающий завершение приложения
 
 typedef unsigned char  BYTE;

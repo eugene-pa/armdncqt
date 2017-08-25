@@ -92,6 +92,7 @@ void ThreadPolling(long param)
     Log (s.str());
 }
 
+#ifdef DBG_INCLUDE
 // пример ответного пакета
 int MakeData()
 {
@@ -107,3 +108,4 @@ int MakeData()
     dataOut[8] = EOT;
     return 9;
 }
+#endif // #ifdef DBG_INCLUDE
