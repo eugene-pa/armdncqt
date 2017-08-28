@@ -38,7 +38,10 @@ SOURCES += \
         threads/threadwatchdog.cpp \
         common/blockingrs.cpp \
         common/common.cpp \
-        common/pamessage.cpp
+        common/pamessage.cpp \
+        qled.cpp \
+        framebase.cpp \
+    framemvv.cpp
 
 
 
@@ -50,7 +53,17 @@ HEADERS += \
         common/acksenum.h \
         common/blockingrs.h \
         common/common.h \
-        common/pamessage.h
+        common/pamessage.h \
+        qled.h \
+        framebase.h \
+    framemvv.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        framebase.ui \
+    framemvv.ui
+
+DISTFILES +=
+
+RESOURCES += \
+    images.qrc \

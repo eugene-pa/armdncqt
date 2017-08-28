@@ -57,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent) :
     DBG_PushTu(222);
     DBG_PushTu(333);
 #endif // #ifdef DBG_INCLUDE
+
+    //this->layout()->setMargin(2);
+    ui->frameBase->layout()->setMargin(4);
 }
 
 MainWindow::~MainWindow()
