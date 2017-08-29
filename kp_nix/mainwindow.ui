@@ -17,6 +17,12 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="FrameBase" name="frameBase">
+      <property name="minimumSize">
+       <size>
+        <width>780</width>
+        <height>60</height>
+       </size>
+      </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -26,6 +32,76 @@
      </widget>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
+      <item>
+       <widget class="FrameBT" name="groupBox">
+        <property name="minimumSize">
+         <size>
+          <width>350</width>
+          <height>90</height>
+         </size>
+        </property>
+        <property name="baseSize">
+         <size>
+          <width>350</width>
+          <height>90</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Состояние модулей ТУ/ТС</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="FrameMvvStatus" name="groupBox_2">
+        <property name="title">
+         <string>Состояние МВВ</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget" native="true"/>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Отладка</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="FarmeLine" name="groupBox_">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>94</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Модем COM3 (пас)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="FarmeLine" name="groupBox_3">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>94</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Модем COM4 (акт)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <spacer name="verticalSpacer">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -33,7 +109,7 @@
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>510</height>
+        <height>412</height>
        </size>
       </property>
      </spacer>
@@ -121,6 +197,24 @@
    <class>FrameBase</class>
    <extends>QFrame</extends>
    <header>framebase.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FrameBT</class>
+   <extends>QGroupBox</extends>
+   <header>framebt.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FrameMvvStatus</class>
+   <extends>QGroupBox</extends>
+   <header>framemvvstatus.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FarmeLine</class>
+   <extends>QGroupBox</extends>
+   <header>farmeline.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -59,6 +59,7 @@ void QLed::paintEvent(QPaintEvent* e)
     p.setPen(Qt::black);
     if (text.length())
     {
+        rect.setTopLeft(QPoint(rect.left()+1,rect.top()+1));
         p.setPen(textColor);
         p.setFont(QFont("Arial",-1, QFont::Bold));
         p.drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, text);

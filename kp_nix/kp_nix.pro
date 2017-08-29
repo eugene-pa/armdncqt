@@ -41,7 +41,10 @@ SOURCES += \
         common/pamessage.cpp \
         qled.cpp \
         framebase.cpp \
-    framemvv.cpp
+    framemvv.cpp \
+    framebt.cpp \
+    framemvvstatus.cpp \
+    farmeline.cpp
 
 
 
@@ -56,12 +59,18 @@ HEADERS += \
         common/pamessage.h \
         qled.h \
         framebase.h \
-    framemvv.h
+    framemvv.h \
+    framebt.h \
+    framemvvstatus.h \
+    farmeline.h
 
 FORMS += \
         mainwindow.ui \
         framebase.ui \
-    framemvv.ui
+    framemvv.ui \
+    framebt.ui \
+    framemvvstatus.ui \
+    farmeline.ui
 
 DISTFILES +=
 

@@ -1,6 +1,8 @@
 #include "framebase.h"
 #include "ui_framebase.h"
 
+// Панель "Настройки и состояние КП" (для компактности без названия на основе Frame, а не GrouBox)
+
 FrameBase::FrameBase(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::FrameBase)

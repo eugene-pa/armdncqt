@@ -35,7 +35,7 @@ public:
 
     void setText (QString value) { text = value; }          // установка/изменение текста напдписи
     void setTextColor (QColor value) { textColor = value; } // цвет текста
-    void setBorderColor (QColor value) { textColor = value; }// цвет окантовки
+    void setBorderColor (QColor value) { borderColor = value; }// цвет окантовки
     void setToolTipMode (bool s) { setMouseTracking(s); }   // показ/отмена тултипов
 
 signals:
