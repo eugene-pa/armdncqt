@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>109</width>
-    <height>75</height>
+    <width>118</width>
+    <height>76</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>9</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>GroupBox</string>
@@ -16,18 +21,18 @@
   <property name="title">
    <string>Состояние МВВ</string>
   </property>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>93</width>
-     <height>65</height>
+     <width>101</width>
+     <height>71</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="topMargin">
-     <number>6</number>
+     <number>12</number>
     </property>
     <property name="horizontalSpacing">
      <number>8</number>

@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>100</height>
+    <height>120</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>390</width>
-    <height>100</height>
+    <height>120</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -21,6 +21,11 @@
     <width>390</width>
     <height>120</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>9</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>GroupBox</string>
@@ -34,7 +39,7 @@
      <x>0</x>
      <y>10</y>
      <width>381</width>
-     <height>81</height>
+     <height>91</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -45,7 +50,7 @@
      <number>10</number>
     </property>
     <property name="topMargin">
-     <number>4</number>
+     <number>12</number>
     </property>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,0,0,0">

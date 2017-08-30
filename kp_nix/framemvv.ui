@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>168</width>
-    <height>64</height>
+    <width>186</width>
+    <height>65</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,9 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>168</width>
+    <width>186</width>
     <height>64</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>9</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Frame</string>
@@ -36,7 +41,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>164</width>
+     <width>171</width>
      <height>61</height>
     </rect>
    </property>

@@ -22,6 +22,11 @@
     <height>90</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>GroupBox</string>
   </property>
