@@ -44,6 +44,21 @@ signals:
 public slots:
     void GetMsg (class PaMessage *);
 
+private slots:
+    void on_action_Lock_triggered();
+
+    void on_action_Refresh_triggered();
+
+    void on_action_TS_triggered();
+
+    void on_action_Clear_triggered();
+
+    void on_action_Ini_triggered();
+
+    void on_action_Log_triggered();
+
+    void on_action_TU_triggered();
+
 private:
     Ui::MainWindow *ui;
     std::wstring config;

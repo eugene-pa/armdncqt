@@ -42,9 +42,10 @@ SOURCES += \
         qled.cpp \
         framebase.cpp \
     framemvv.cpp \
-    framebt.cpp \
     framemvvstatus.cpp \
-    farmeline.cpp
+    farmeline.cpp \
+    frametu.cpp \
+    frameplugin.cpp
 
 
 
@@ -60,17 +61,19 @@ HEADERS += \
         qled.h \
         framebase.h \
     framemvv.h \
-    framebt.h \
     framemvvstatus.h \
-    farmeline.h
+    farmeline.h \
+    frametu.h \
+    frameplugin.h
 
 FORMS += \
         mainwindow.ui \
         framebase.ui \
     framemvv.ui \
-    framebt.ui \
     framemvvstatus.ui \
-    farmeline.ui
+    farmeline.ui \
+    frametu.ui \
+    frameplugin.ui
 
 DISTFILES +=
 

@@ -60,6 +60,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //this->layout()->setMargin(2);
     ui->frameBase->layout()->setMargin(4);
+
+    setIconSize(QSize(32,20));
+
+    // Инициализируем номера МВВ во фреймах
+    ui->frameMVV1->SetNo(1);
+    ui->frameMVV2->SetNo(2);
+
+    // инициализируем классы фреймов пассивного и активного модемов
+    // нужно привязать к фреймам классы, отвечающие за работу соответствующих каналов
+    // ui->groupBox_ACT
+    // ui->groupBox_PSV
 }
 
 MainWindow::~MainWindow()
@@ -68,6 +79,52 @@ MainWindow::~MainWindow()
     // ВАЖНО: ожидание заершения потоков делать не надо - делается автоматически в делитерах смарт-указателя
     delete ui;
 }
+
+// =============================== Обработчики опций меню =================================
+
+// Обработчик "1. Заблокировать/разблокировать"
+void MainWindow::on_action_Lock_triggered()
+{
+
+}
+
+// Обработчик "2.Обновить"
+void MainWindow::on_action_Refresh_triggered()
+{
+
+}
+
+// Обработчик "3.ТС"
+void MainWindow::on_action_TS_triggered()
+{
+
+}
+
+// Обработчик "4.очистить"
+void MainWindow::on_action_Clear_triggered()
+{
+
+}
+
+// Обработчик "5.Настройки"
+void MainWindow::on_action_Ini_triggered()
+{
+
+}
+
+// Обработчик "6.Протокол"
+void MainWindow::on_action_Log_triggered()
+{
+
+}
+
+// Обработчик "7.ТУ"
+void MainWindow::on_action_TU_triggered()
+{
+
+}
+// =================================================================================================
+
 
 // слот приема сообщения (работает в основном потоке) поэтому можно пользоваться элементами GUI!
 // здесь инициируется вся обработка окна GUI по уведомлениям от рабочих потоков
@@ -91,6 +148,16 @@ void MainWindow::GetMsg(PaMessage * pMsg)
                                                    << L".  В очереди " << todoSize() << L" ТУ";
             Log (tmp.str());                                                            // лог
             ui->statusBar->showMessage(QString::fromStdWString(tmp.str()));             // GUI - строка состояния окна
+            // обновление очередей
+            ui->frameTU->UpdateQueues(pMsg);
+
+            // IMHO: имеет смысл отображать исполняемую ТУ в строке статуса
+            if (pMsg->GetAck() == tuAckToDo)
+                ;   // отобразить в статусе
+            else
+            if (pMsg->GetAck() == tuAckDone)
+                ;   // очистить статус и добавить в DONE
+
             break;
         default:
             break;
@@ -112,4 +179,5 @@ void SendMessage (PaMessage * pMsg)
     std::lock_guard <std::mutex> locker(sendMutex);
     emit MainWindow::mainWnd->SendMsg(pMsg);
 }
+
 

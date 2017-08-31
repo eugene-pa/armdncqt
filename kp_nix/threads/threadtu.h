@@ -1,10 +1,14 @@
 #ifndef THREADTU_H
 #define THREADTU_H
 
+#include <mutex>
+#include <queue>
+#include "common/common.h"
+
 extern std::mutex todo_lock;                                // блокировка доступа к очереди TODO/DONE
 extern std::mutex done_lock;								// блокировка доступа к очереди DONE
-//extern std::queue<DWORD> listToDo;							// очередь ТУ на исполнение
-//extern std::queue<DWORD> listDone;							// очередь исполненных ТУ
+extern std::queue<DWORD> listToDo;							// очередь ТУ на исполнение
+extern std::queue<DWORD> listDone;							// очередь исполненных ТУ
 
 extern int todoSize();                                      // размер очереди на выполнение
 extern int doneSize();                                      // размер очереди выполненных ТУ

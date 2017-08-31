@@ -2,9 +2,9 @@
 
 #include <string>
 #include <thread>
-#include <mutex>
-#include <queue>
-#include "common/common.h"
+//#include <mutex>
+//#include <queue>
+//#include "common/common.h"
 #include "common/pamessage.h"
 #include "threadtu.h"
 #include "../kp2017.h"
