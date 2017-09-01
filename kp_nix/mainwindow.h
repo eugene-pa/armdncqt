@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <sstream>
@@ -58,6 +58,8 @@ private slots:
     void on_action_Log_triggered();
 
     void on_action_TU_triggered();
+
+    void on_action_Toolbar_triggered();
 
 private:
     Ui::MainWindow *ui;

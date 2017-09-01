@@ -1,4 +1,4 @@
-// поток опроса линии связи
+﻿// поток опроса линии связи
 #include <functional>
 #include <string>
 #include <thread>

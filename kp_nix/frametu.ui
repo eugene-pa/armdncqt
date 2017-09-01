@@ -41,7 +41,7 @@
       <number>2</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
        <property name="spacing">
         <number>2</number>
        </property>
@@ -53,15 +53,18 @@
          <item alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>ТУ в очереди</string>
+            <string>ТУ</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QTableWidget" name="table_TODO">
+          <widget class="QTableWidget" name="table_TU">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
-             <pointsize>8</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="showGrid">
@@ -100,26 +103,20 @@
          <item alignment="Qt::AlignHCenter">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Исполненные ТУ</string>
+            <string>Директивы</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QTableWidget" name="table_DONE"/>
+          <widget class="QTableWidget" name="table_SYS">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
       </layout>
-     </item>
-     <item alignment="Qt::AlignHCenter">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Исполненные директивы</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QTableWidget" name="table_SYS"/>
      </item>
     </layout>
    </item>

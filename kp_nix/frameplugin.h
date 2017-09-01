@@ -17,6 +17,7 @@ public:
 
 private:
     Ui::FramePlugin *ui;
+    class QLed * modules[11];                       // массив укзателей на классы для индикаторов
 };
 
 #endif // FRAMEPLUGIN_H

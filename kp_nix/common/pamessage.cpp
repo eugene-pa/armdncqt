@@ -1,3 +1,4 @@
+﻿#include "threads/threadtu.h"
 #include "pamessage.h"
 
 // Класс paMessage предназначен для передачи сообщений между компонентами ПО
@@ -38,7 +39,7 @@ PaMessage::PaMessage(std::wstring text)
 }
 
 // упрощенный конструктор для сообщений о процессе исполнения ТУ
-PaMessage::PaMessage(AckTypes ack, DWORD tu, std::wstring msg)
+PaMessage::PaMessage(AckTypes ack, std::shared_ptr<Tu> tu, std::wstring msg)
 {
     src         = srcTU;
     action      = eventTu;

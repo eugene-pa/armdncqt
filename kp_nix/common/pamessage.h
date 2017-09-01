@@ -63,7 +63,7 @@ public:
 
     PaMessage(Sourcer, std::wstring text, Event=eventTrace, Status=stsOK, void * dataptr=nullptr, int length=0);    // общий конструктор
     PaMessage(std::wstring text);                                                                                   // конструктор для лога
-    PaMessage(AckTypes ack, DWORD tu, std::wstring msg=L"");
+    PaMessage(AckTypes ack, std::shared_ptr<class Tu>, std::wstring msg=L"");
 
     virtual ~PaMessage()
     {
@@ -78,7 +78,7 @@ public:
     std::wstring GetTypeText();
     std::wstring GetStatusText();
     std::wstring GetText() { return msg; }
-    DWORD GetTu() { return tu; }
+    std::shared_ptr<class Tu> GetTu() { return tu; }
     AckTypes GetAck() { return ack; }
     void * GetData();
     int GetDataLength();
@@ -92,7 +92,7 @@ private:
     std::wstring msg;               // строка сообщения (возможно, пустая)
     //int     ack;                  // код квитанции
     AckTypes ack;                   // код квитанции
-    DWORD   tu;                     // код ТУ
+    std::shared_ptr<class Tu> tu;   // команда ТУ               вместо DWORD
     void *  data;                   // указатель на доп. данные
     int     datalength;             // длина доп.данных
 };

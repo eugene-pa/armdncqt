@@ -1,4 +1,4 @@
-#include <mutex>
+﻿#include <mutex>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "common/common.h"
@@ -52,11 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
     pThreadUpok       = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadUpok      , 0));
     pThreadWatchDog   = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadWatchDog  , 0));
 
-#ifdef DBG_INCLUDE
-    DBG_PushTu(111);
-    DBG_PushTu(222);
-    DBG_PushTu(333);
-#endif // #ifdef DBG_INCLUDE
+    ui->mainToolBar->setHidden(true);
 
     //this->layout()->setMargin(2);
     ui->frameBase->layout()->setMargin(4);
@@ -71,6 +67,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // нужно привязать к фреймам классы, отвечающие за работу соответствующих каналов
     // ui->groupBox_ACT
     // ui->groupBox_PSV
+
+#ifdef DBG_INCLUDE
+    Tu::PushTu(111);
+    Tu::PushTu(222);
+    Tu::PushTu(333);
+#endif // #ifdef DBG_INCLUDE
+
 }
 
 MainWindow::~MainWindow()
@@ -121,8 +124,17 @@ void MainWindow::on_action_Log_triggered()
 // Обработчик "7.ТУ"
 void MainWindow::on_action_TU_triggered()
 {
-
+#ifdef DBG_INCLUDE
+    Tu::PushTu(0);
+#endif // #ifdef DBG_INCLUDE
 }
+
+// скрыть/показать тулбар
+void MainWindow::on_action_Toolbar_triggered()
+{
+    ui->mainToolBar->setHidden(ui->mainToolBar->isHidden() ? false : true);
+}
+
 // =================================================================================================
 
 
@@ -141,23 +153,15 @@ void MainWindow::GetMsg(PaMessage * pMsg)
             break;
 
         case PaMessage::eventTu:
-            tmp << L"Команда ТУ " << pMsg->GetTu() << (pMsg->GetAck() == tuAckRcv    ?  L" принята" :
-                                                       pMsg->GetAck() == tuAckToDo   ?  L" принята к исполнению" :
-                                                       pMsg->GetAck() == tuAckIgnore ?  L" отвергнута" :
-                                                       pMsg->GetAck() == tuAckDone   ?  L" исполнена" : L"")
-                                                   << L".  В очереди " << todoSize() << L" ТУ";
+            tmp << L"Команда ТУ " << pMsg->GetTu()->GetTu() << (pMsg->GetAck() == tuAckRcv    ?  L" принята" :
+                                                                pMsg->GetAck() == tuAckToDo   ?  L" принята к исполнению" :
+                                                                pMsg->GetAck() == tuAckIgnore ?  L" отвергнута" :
+                                                                pMsg->GetAck() == tuAckDone   ?  L" исполнена" : L"")
+                                                            << L".  В очереди " << Tu::todoSize() << L" ТУ";
             Log (tmp.str());                                                            // лог
             ui->statusBar->showMessage(QString::fromStdWString(tmp.str()));             // GUI - строка состояния окна
-            // обновление очередей
-            ui->frameTU->UpdateQueues(pMsg);
 
-            // IMHO: имеет смысл отображать исполняемую ТУ в строке статуса
-            if (pMsg->GetAck() == tuAckToDo)
-                ;   // отобразить в статусе
-            else
-            if (pMsg->GetAck() == tuAckDone)
-                ;   // очистить статус и добавить в DONE
-
+            ui->frameTU->UpdateQueues(pMsg);                                            // обновление очередей
             break;
         default:
             break;
@@ -179,5 +183,6 @@ void SendMessage (PaMessage * pMsg)
     std::lock_guard <std::mutex> locker(sendMutex);
     emit MainWindow::mainWnd->SendMsg(pMsg);
 }
+
 
 

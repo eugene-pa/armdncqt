@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,1">
+    <property name="verticalSpacing">
+     <number>2</number>
+    </property>
     <item row="0" column="0">
      <widget class="FrameBase" name="frameBase">
       <property name="minimumSize">
@@ -192,8 +195,15 @@
     <addaction name="action_TU"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Вид</string>
+    </property>
+    <addaction name="action_Toolbar"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -308,6 +318,17 @@
    </property>
    <property name="shortcut">
     <string>7</string>
+   </property>
+  </action>
+  <action name="action_Toolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Тулбар</string>
+   </property>
+   <property name="shortcut">
+    <string>0</string>
    </property>
   </action>
  </widget>

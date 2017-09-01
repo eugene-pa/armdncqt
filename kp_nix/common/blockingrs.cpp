@@ -1,4 +1,4 @@
-#include <mutex>                                            // std::mutex
+﻿#include <mutex>                                            // std::mutex
 #include "blockingrs.h"
 
 // Блокирующий класс работы с COM-портом на основе QSerialPort
