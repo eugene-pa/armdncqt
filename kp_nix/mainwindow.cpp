@@ -5,6 +5,7 @@
 #include "common/acksenum.h"
 #include "common/pamessage.h"
 #include "threads/threadtu.h"
+#include "jsonireader.h"
 
 std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
 
@@ -29,6 +30,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     Log(L"Запуск");
+    Log(L"Чтение настроечного файла");
+
+    const char * filename = "C:\\json\\iniJson_nix.txt";    // имя настроечного файла для примера (будет определяться переключателями по номеру участка)
+    int nost = 2;                                           // номер станции для примера
+    JsoniReader(filename, nost);                            // читаем настройки из настроечного файла для указанного адреса
+
+    extern QString    krugName;                             // глоб.переменные должны быть объявлены
+    extern QString    stName;                               // глоб.переменные должны быть объявлены
+    // заголовок окна
+    QString t = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss  ");
+    this->setWindowTitle(QString("ДЦ ЮГ. Участок '%1'. Станция %2. Запуск %3 (%4)").arg(krugName).arg(stName).arg(t).arg(filename));
 
     // подключаем сигнал SendMsg, посылаемый из глобальной статической функции SendMessage, к слоту MainWindow::GetMsg
     connect(this, SIGNAL(SendMsg(PaMessage*)), this, SLOT(GetMsg(PaMessage*)));

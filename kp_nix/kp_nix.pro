@@ -6,6 +6,7 @@
 
 QT       += core gui serialport
 CONFIG   += console c++11
+INCLUDEPATH += c:/rapidjson/include
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -45,7 +46,8 @@ SOURCES += \
     framemvvstatus.cpp \
     farmeline.cpp \
     frametu.cpp \
-    frameplugin.cpp
+    frameplugin.cpp \
+    jsonireader.cpp
 
 
 
@@ -64,7 +66,8 @@ HEADERS += \
     framemvvstatus.h \
     farmeline.h \
     frametu.h \
-    frameplugin.h
+    frameplugin.h \
+    jsonireader.h
 
 FORMS += \
         mainwindow.ui \

@@ -1,7 +1,12 @@
+#include <bitset>
 #include "framemvv.h"
 #include "ui_framemvv.h"
 
 // Панель состояния модулей одного МВВ 8 * 3 = 24 модуля
+
+extern std::bitset<48> tsModules;                                      // модули ТС (битовый массив)
+extern std::bitset<48> tuModules;                                      // модули ТУ (битовый массив)
+
 
 FrameMVV::FrameMVV(QWidget *parent) :
     QFrame(parent),
@@ -57,21 +62,18 @@ void FrameMVV::SetNo(int n)
     // инициализация должна выполняться с учетом номера МВВ и реальных модулей
     for (int i=0; i< 24; i++)
     {
-       modules[i]->set (QLed::ledShape::box  , QLed::ledStatus::on, Qt::green);
-       modules[i]->setTextColor(Qt::black);
+        int indx = (no-1) * 24 + i;                         // индекс модуля в битовом массиве
+        bool present = tsModules[indx] | tuModules[indx];
+        modules[i]->set (QLed::ledShape::box  , present ? QLed::ledStatus::on : QLed::ledStatus::off, Qt::green);
+        modules[i]->setTextColor(Qt::black);
+        if (tuModules[indx])
+            modules[i]->setText("У");                       // если ТУ - подписываем
     }
-
-    // пример модулей ТУ
-    if (no==1)
-    {
-        modules[0]->setText("У");
-        modules[1]->setText("У");
-    }
-
+/*
     // пример отображения ошибки
     if (no==1)
         modules[1]->set (QLed::ledShape::box  , QLed::ledStatus::blink, Qt::red, Qt::yellow);
     if (no==2)
         modules[3]->set (QLed::ledShape::box  , QLed::ledStatus::blink, Qt::red, Qt::yellow);
-
+*/
 }

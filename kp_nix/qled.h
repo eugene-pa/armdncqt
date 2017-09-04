@@ -33,7 +33,7 @@ public:
     QLed(QWidget * p,ledShape shape=round, ledStatus status=on, QBrush fore=Qt::green, QBrush back = Qt::gray);
     void set (ledShape shape=round, ledStatus = on, QBrush fore=Qt::green, QBrush back = Qt::gray);
 
-    void setText (QString value) { text = value; }          // установка/изменение текста напдписи
+    void setText (QString value) { text = value; }          // установка/изменение текста надписи
     void setTextColor (QColor value) { textColor = value; } // цвет текста
     void setBorderColor (QColor value) { borderColor = value; }// цвет окантовки
     void setToolTipMode (bool s) { setMouseTracking(s); }   // показ/отмена тултипов
@@ -51,7 +51,7 @@ private:
     ledShape  shape;                                        // форма
     ledStatus status;                                       // состояние
     int       timerId;                                      // таймер
-    bool      pulse;                                        // флаг пульсации (механизм не задействоыван)
+    bool      pulse;                                        // флаг пульсации
     QBrush    fore;                                         // актуальный цвет
     QBrush    back;                                         // цвет фона при мигании
 
