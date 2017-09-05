@@ -64,7 +64,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    std::wstring config;
+    std::wstring config;                                                // конфигурация
+    std::wstring configRpc;                                             // конфигурация РПЦ
     
     // умные указатели на рабочие потоки с заданием делитера, обеспечивающего ожидание завершения, вывод в лог и удаление указателя
     std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
@@ -76,6 +77,7 @@ private:
     std::unique_ptr<std::thread, ThreadTerminater> pThreadMonitoring;	// указатель на поток мониторинга состояния КП
     std::unique_ptr<std::thread, ThreadTerminater> pThreadTestTU;		// указатель на поток циклического теста ТУ
     std::unique_ptr<std::thread, ThreadTerminater> pThreadWatchDog;		// указатель на поток включения и управления сторожевым таймером
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadRpc;          // указатель на поток опроса РПЦ Диалог
 
 };
 

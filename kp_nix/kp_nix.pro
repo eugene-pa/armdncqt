@@ -26,52 +26,56 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-        threads/threadpolling.cpp \
-        threads/threadmonitoring.cpp \
-        threads/threadpulse.cpp \
-        threads/threadsyscommand.cpp \
-        threads/threadtesttu.cpp \
-        threads/threadts.cpp \
-        threads/threadtu.cpp \
-        threads/threadupok.cpp \
-        threads/threadwatchdog.cpp \
-        common/blockingrs.cpp \
-        common/common.cpp \
-        common/pamessage.cpp \
-        qled.cpp \
-        framebase.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    threads/threadpolling.cpp \
+    threads/threadmonitoring.cpp \
+    threads/threadpulse.cpp \
+    threads/threadsyscommand.cpp \
+    threads/threadtesttu.cpp \
+    threads/threadts.cpp \
+    threads/threadtu.cpp \
+    threads/threadupok.cpp \
+    threads/threadwatchdog.cpp \
+    common/blockingrs.cpp \
+    common/common.cpp \
+    common/pamessage.cpp \
+    qled.cpp \
+    framebase.cpp \
     framemvv.cpp \
     framemvvstatus.cpp \
     farmeline.cpp \
     frametu.cpp \
     frameplugin.cpp \
-    jsonireader.cpp
+    jsonireader.cpp \
+    subsys/rpc.cpp \
+    subsys/rpcpacker.cpp
 
 
 
 HEADERS += \
-        mainwindow.h \
-        threads/threadpolling.h \
-        threads/threadts.h \
-        threads/threadtu.h \
-        common/acksenum.h \
-        common/blockingrs.h \
-        common/common.h \
-        common/pamessage.h \
-        qled.h \
-        framebase.h \
+    mainwindow.h \
+    threads/threadpolling.h \
+    threads/threadts.h \
+    threads/threadtu.h \
+    common/acksenum.h \
+    common/blockingrs.h \
+    common/common.h \
+    common/pamessage.h \
+    qled.h \
+    framebase.h \
     framemvv.h \
     framemvvstatus.h \
     farmeline.h \
     frametu.h \
     frameplugin.h \
-    jsonireader.h
+    jsonireader.h \
+    subsys/rpc.h \
+    subsys/rpcpacker.h
 
 FORMS += \
-        mainwindow.ui \
-        framebase.ui \
+    mainwindow.ui \
+    framebase.ui \
     framemvv.ui \
     framemvvstatus.ui \
     farmeline.ui \

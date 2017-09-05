@@ -19,6 +19,7 @@ void   ThreadTS				(long);							// функция потока опроса Т�
 void   ThreadTU				(long);							// функция потока вывода ТУ
 void   ThreadUpok			(long);							// функция потока обработки ОТУ УПОК+БРОК
 void   ThreadWatchDog		(long);							// функция потока включения и управления сторожевым таймером
+void   ThreadRpc            (long);							// функция потока опроса РПЦ Диалог
 
 MainWindow * MainWindow::mainWnd;                           // экземпляр главного окна
 
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Log(L"Чтение настроечного файла");
 
     const char * filename = "C:\\json\\iniJson_nix.txt";    // имя настроечного файла для примера (будет определяться переключателями по номеру участка)
-    int nost = 2;                                           // номер станции для примера
+    int nost = 5;                                           // номер станции для примера Кашпир
     JsoniReader(filename, nost);                            // читаем настройки из настроечного файла для указанного адреса
 
     extern QString    krugName;                             // глоб.переменные должны быть объявлены
@@ -53,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //    ВАЖНО: если передавать пармаетр, например, строку конфигурации, то нельзя объявлять строку
     //           как локальный параметр на стеке, так как она будет использоваться в рабочем потоке позже,
     //           скорее всего, когда данная функция завершит работу и объект будет разрушен
-    config = L"COM3,38400,N,8,1";
+    config = L"COM1,38400,N,8,1";
     pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling   , (long)&config));
     pThreadMonitoring = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadMonitoring, 0));
     pThreadPulse      = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPulse     , 0));
@@ -63,6 +64,12 @@ MainWindow::MainWindow(QWidget *parent) :
     pThreadTu         = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadTU        , 0));
     pThreadUpok       = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadUpok      , 0));
     pThreadWatchDog   = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadWatchDog  , 0));
+
+    // опрос РПЦ Диалог
+    extern QString rpcPort;     // параметры должны быть обявлны где-то и доступны
+    extern int     rpcSpeed;
+    configRpc = rpcPort.toStdWString() + L"." + std::to_wstring(rpcSpeed) + L",N,8,1";
+    pThreadRpc        = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadRpc   , (long)&configRpc));
 
     ui->mainToolBar->setHidden(true);
 

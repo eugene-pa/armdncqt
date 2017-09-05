@@ -4,16 +4,18 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include "jsonireader.h"
+#include "subsys/rpc.h"
 
 // глобальные переменные, извлекаемые из настроечного файла (пристроить в нужное место!)
-QString    krugName;
-int        krugId;
-bool       debug;
-QString    debugPort;
-QString    testConfig;
-bool       fullPolling;
-bool       retrans;
-QString    stName;
+QString    krugName;                                            // имя круга
+int        krugId;                                              // идентификатор круга
+bool       debug;                                               // отладка
+QString    debugPort;                                           // описание подключения отладочного порта
+QString    testConfig;                                          // описание тестовой конфигурации
+bool       fullPolling;                                         // полный опрос
+bool       retrans;                                             // ретрансляция
+
+QString    stName;                                              // имя станции
 QString    com3;                                                // описание пассивного модема
 QString    com4;                                                // описание активного  модема
 
@@ -25,7 +27,8 @@ QString    comAPKDK;
 int        speedAPKDK;
 
 bool       rpcDialog;
-
+QString    rpcPort;
+int        rpcSpeed;
 
 JsoniReader::JsoniReader(const char * file, int addr)
 {
@@ -79,14 +82,7 @@ void JsoniReader::Read()
         com3   = st["COM3"].toString();
         com4   = st["COM4"].toString();
 
-        QJsonObject item = st["АПКДК"].toObject();
-        if (!item.isEmpty())
-        {
-            apkdk = true;
-            comAPKDK   = item["порт" ].toString();
-            speedAPKDK = item["speed"].toInt();
-        }
-
+        // Разбор МТС
         QJsonArray mts = st["МТС"].toArray();
         if (!mts.isEmpty())
         {
@@ -100,6 +96,7 @@ void JsoniReader::Read()
             }
         }
 
+        // Разбор МТУ
         QJsonArray mtu = st["МТУ"].toArray();
         if (!mtu.isEmpty())
         {
@@ -112,5 +109,35 @@ void JsoniReader::Read()
                     Log (L"Ошибочный номер модуля МТУ: " + std::to_wstring(m)); // ошибка описания
             }
         }
+
+        // разбор описания подключения различных подсистем
+
+        // разбор описания "АПКДК"
+        QJsonObject item = st["АПКДК"].toObject();
+        if (!item.isEmpty())
+        {
+            apkdk = true;
+            comAPKDK   = item["порт" ].toString();
+            speedAPKDK = item["speed"].toInt();
+        }
+
+
+        // разбор описания "РПЦДИАЛОГ"
+        item = st["РПЦДИАЛОГ"].toObject();
+        if (!item.isEmpty())
+        {
+            rpcDialog = true;
+            rpcPort  = item["порт"].toString();
+            rpcSpeed = item["speed"].toInt();
+            QJsonArray bms = item["БМ"].toArray();
+            for (int i=0; i<bms.size(); i++)
+            {
+                QJsonObject bm = bms[i].toObject();
+                int     addr   = bm["адрес"].toInt();
+                int     groups = bm["групп"].toInt();
+                new RpcBM ((DWORD)addr, groups);
+            }
+        }
+
     }
 }
