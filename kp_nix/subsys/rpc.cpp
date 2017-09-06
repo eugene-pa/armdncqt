@@ -5,6 +5,9 @@
 #include "rpcpacker.h"
 
 
+std::queue <std::shared_ptr<Tu>> rpcToDo;   // очередь ТУ РПЦ на исполнение
+std::mutex rpc_lock;                        // блокировка доступа к очереди rpcToDo
+
 // Для хранения данных РПЦ (ТС, диагностика) используем глоб.переменные
 // (нет смысла делать их членами класса RpcBM)
 BYTE TsStatusRpc   [RpcPacker::MAX_LEN];	// массив состояний ТС(РПЦ)
@@ -78,7 +81,7 @@ BYTE rpcGetOutFromTu  (WORD tu)
 //             Таким образом под задержку тспользуется 5 битов с шагом 500мс.Максимальная задержка = 15,5 сек
 BYTE rpcGetDelpcFromTu(WORD tu)
 {
-    byte delay = (tu & 0xf000) >> 12;			// выделяем младшие 4 бита задержки
+    BYTE delay = (tu & 0xf000) >> 12;			// выделяем младшие 4 бита задержки
     if (tu & 0x0800)							// если установлен бит d11
         delay |= 0x10;							// добавляем старший бит задержки
     return (delay * 10 ) / 2;					// преобразуем единицы измерения 0.5 сек в 100мс.
@@ -108,8 +111,8 @@ void RpcBM::PollingLine(BlockingRS& rs)             // реализация оп
             }
 
             // вычисляем номер модуля и отдельно отрабатываем виртуальные команды с номером модуля = 0
-            byte noMdl = rpcGetMdlFromTu (tu);
-            byte noOut;
+            BYTE noMdl = rpcGetMdlFromTu (tu);
+            BYTE noOut;
             // ======================================================================================
             if (noMdl == 0)
             {
@@ -197,6 +200,7 @@ void ThreadRpc(long param)
         RpcBM::PollingLine(rs);
     }
     exit_lock.unlock();
+    rs.Close();
 
     s.str(std::wstring());
     s << L"Поток опроса опроса РПЦ Диалог завершен. threadid=" << std::this_thread::get_id();

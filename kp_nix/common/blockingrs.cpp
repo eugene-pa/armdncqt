@@ -100,13 +100,13 @@ bool BlockingRS::parse(QString str)
     {
         parsed = true;
         name   = options[0];
-        if (options.length() > 0)
-            baudRate = options[1].toInt(&parsed);
         if (options.length() > 1)
-          parity =   options[2] == "E" ? QSerialPort::EvenParity : options[2] == "O" ? QSerialPort::OddParity : QSerialPort::NoParity;
+            baudRate = options[1].toInt(&parsed);
         if (options.length() > 2)
-            dataBits = (QSerialPort::DataBits)options[3].toInt(&parsed);
+          parity =   options[2] == "E" ? QSerialPort::EvenParity : options[2] == "O" ? QSerialPort::OddParity : QSerialPort::NoParity;
         if (options.length() > 3)
+            dataBits = (QSerialPort::DataBits)options[3].toInt(&parsed);
+        if (options.length() > 4)
             stopBits = (QSerialPort::StopBits)options[4].toInt(&parsed);
     }
 

@@ -1,4 +1,4 @@
-﻿// поток опроса УПОК+БРОК
+﻿// поток работы с ОТУ УПОК+БРОК
 
 #include <string>
 #include <thread>
@@ -10,7 +10,7 @@
 void ThreadUpok(long)
 {
     std::wstringstream s;
-    s << L"Поток опроса УПОК. threadid=" << std::this_thread::get_id();
+    s << L"Поток реализации ОТУ запущен. threadid=" << std::this_thread::get_id();
     SendMessage(new PaMessage(s.str()));
 
 	while (!exit_lock.try_lock_for(chronoMS(100)))
@@ -20,6 +20,6 @@ void ThreadUpok(long)
 	exit_lock.unlock();
 
     s.str(std::wstring());
-    s << L"Поток опроса УПОК завершен. threadid=" << std::this_thread::get_id();
+    s << L"Поток реализации ОТУ завершен. threadid=" << std::this_thread::get_id();
     Log(s.str());                        // отправка SendMessage здесь уже не проходит, так как запущен деструктор главного окна
 }

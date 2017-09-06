@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // опрос РПЦ Диалог
     extern QString rpcPort;     // параметры должны быть обявлны где-то и доступны
     extern int     rpcSpeed;
-    configRpc = rpcPort.toStdWString() + L"." + std::to_wstring(rpcSpeed) + L",N,8,1";
+    configRpc = rpcPort.toStdWString() + L"," + std::to_wstring(rpcSpeed) + L",N,8,1";
     pThreadRpc        = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadRpc   , (long)&configRpc));
 
     ui->mainToolBar->setHidden(true);
@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 #ifdef DBG_INCLUDE
     Tu::PushTu(111);
-    Tu::PushTu(222);
+    Tu::PushTu(222, SYS_RPC);
     Tu::PushTu(333);
 #endif // #ifdef DBG_INCLUDE
 

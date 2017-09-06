@@ -13,8 +13,8 @@ FrameTU::FrameTU(QWidget *parent) :
 
     QTableWidget * t = ui->table_TU;                            // заполнение таблицы описания ТY
 
-    t->setColumnCount(3);
-    t->setHorizontalHeaderLabels(QStringList() << "Мод" << "Вых" << "t,сек");
+    // t->setColumnCount(4);
+    t->setHorizontalHeaderLabels(QStringList() << "Мод" << "Вых" << "Тип" << "t,сек");
     t->setSortingEnabled(false);                                // запрещаем сортировку
 //    t->resizeColumnsToContents();
 //    t-setDefaultSectionSize ( verticalHeader()->minimumSectionSize () );
@@ -36,7 +36,8 @@ void FrameTU::UpdateQueues(class PaMessage * pMsg)
             t->insertRow(0);
             t->setItem(0,0, new QTableWidgetItem(QString::number(tu->GetMod  ())));
             t->setItem(0,1, new QTableWidgetItem(QString::number(tu->GetOut  ())));
-            t->setItem(0,2, new QTableWidgetItem(QString::number(tu->GetDelay())));
+            t->setItem(0,2, new QTableWidgetItem(QString::fromStdWString(tu->GetSysName())));
+            t->setItem(0,3, new QTableWidgetItem(QString::number(tu->GetDelay())));
             t->item(0,0)->setData(Qt::UserRole,qVariantFromValue(tu->GetId()));    // запомним id
             SelectRow(0,Qt::darkGreen);
             break;

@@ -32,5 +32,33 @@ extern void Log(std::wstring);
 void Log (std::wstring s);                                  // лог
 void SendMessage (class PaMessage *);                       // отправка сообщения главному окну (см.mainwindow.cpp)
 
+// типы микропроцессорных МПЦ/РПЦ (используются для идентификации ТУ)
+enum SUBSYSTYPE
+{
+    SYS_KP,
+    SYS_RPC,
+    SYS_EBL,
+    SYS_EM,
+    SYS_MZF,
+    SYS_MPK,
+    SYS_MAX,
+};
+
+// типы АРМ, подключаемых к КП (используются для идентификации ТУ)
+enum ARM_TYPE
+{
+    ARM_DNC,
+    ARM_DSP,
+    ARM_DBG,
+    ARM_MAX,
+};
+
+// тип канала (используются для идентификации канала ТУ ЭЦ-МПК)
+enum CANAL_TYPE
+{
+    CANAL_1,
+    CANAL_2,
+};
+
 
 #endif // COMMON_H
