@@ -1,6 +1,7 @@
 #include <thread>
 #include "common/common.h"
 #include "common/pamessage.h"
+#include "common/tu.h"
 #include "rpc.h"
 #include "rpcpacker.h"
 
@@ -49,7 +50,8 @@ RpcBM::RpcBM(DWORD addr, int n)
 
 int HowManyToDo()
 {
-    return 0;
+    std::lock_guard <std::mutex> locker(rpc_lock); // блокировка rpc_lock
+    return (int)rpcToDo.size();
 }
 
 bool IsTimeToTU()
@@ -59,9 +61,17 @@ bool IsTimeToTU()
     return dt >= tickBetweenTu;
 }
 
-WORD GetTuRpc()
+// лучше получать коман
+std::shared_ptr<Tu> GetTuRpc()
 {
-    return 0;
+    std::shared_ptr<Tu> tu = nullptr;
+    std::lock_guard <std::mutex> locker(rpc_lock); // блокировка rpc_lock
+    if (rpcToDo.size() > 0)
+    {
+        tu = rpcToDo.front();
+        rpcToDo.pop();
+    }
+    return tu;
 }
 
 // 2013.07.16. выделение номера модуля в формате НСИ ДЦ из кода IJ (биты d10-d6)
@@ -99,9 +109,9 @@ void RpcBM::PollingLine(BlockingRS& rs)             // реализация оп
 
         if (HowManyToDo() && IsTimeToTU())          // есть команды ТУ    ?
         {
-            WORD tu = GetTuRpc();
+            std::shared_ptr<Tu> tu = GetTuRpc();
 
-            if ( !tu )                              // команда с кодом 00 - недопустимая; игннорируем
+            if ( tu==nullptr || tu->GetTu()==0 )    // команда с кодом 00 - недопустимая; игннорируем
             {
                 bNextTuSolo = bOtu1 = bOtu2 = false;// сброс флагов вирт.ТУ
                 bmMask   = 0;
@@ -110,8 +120,10 @@ void RpcBM::PollingLine(BlockingRS& rs)             // реализация оп
                 break;
             }
 
+            SendMessage(new PaMessage(tuAckToDo, tu));  // принята к исполнению
+/*
             // вычисляем номер модуля и отдельно отрабатываем виртуальные команды с номером модуля = 0
-            BYTE noMdl = rpcGetMdlFromTu (tu);
+            BYTE noMdl = rpcGetMdlFromTu (tu->GetTu());
             BYTE noOut;
             // ======================================================================================
             if (noMdl == 0)
@@ -125,7 +137,7 @@ void RpcBM::PollingLine(BlockingRS& rs)             // реализация оп
                 //  ВЫХОД = 6	 - "ТУБМ2"		 след.ТУ выдается на БМ2
                 //	ВЫХОД = 11...- "ПАУЗАx"      задержка в цикле выдачи ТУ на указанное время
 
-                noOut = rpcGetOutFromTu (tu);
+                noOut = rpcGetOutFromTu (tu->GetTu());
                 // МОДУЛЬ = 0, ВЫХОД = ВИРТ
                 switch (noOut)
                 {
@@ -168,17 +180,18 @@ void RpcBM::PollingLine(BlockingRS& rs)             // реализация оп
                     // МОДУЛЬ = 0, ВЫХОД > 1 - задержка в цикле выдачи ТУ на указанное время
                     default:								// 0:3 и т.д. - "ПАУЗА"
                     {
-                        tickBetweenTu = rpcGetDelpcFromTu(tu) * 100;
+                        tickBetweenTu = rpcGetDelpcFromTu(tu->GetTu()) * 100;
                         Log(RpcPacker::VirtTuText(RpcPacker::VRT_PAUSE));
                         break;
                     }
                 }
             }
+*/
+            SleepMS(500);										// задержка на исполнение ТУ
+            SendMessage(new PaMessage(tuAckDone, tu));          // принята исполнена
 
         }
-
     }
-
 }
 
 

@@ -49,15 +49,15 @@ SOURCES += \
     frameplugin.cpp \
     jsonireader.cpp \
     subsys/rpc.cpp \
-    subsys/rpcpacker.cpp
+    subsys/rpcpacker.cpp \
+    common/tu.cpp \
+    dbgtu.cpp
 
 
 
 HEADERS += \
     mainwindow.h \
     threads/threadpolling.h \
-    threads/threadts.h \
-    threads/threadtu.h \
     common/acksenum.h \
     common/blockingrs.h \
     common/common.h \
@@ -71,7 +71,10 @@ HEADERS += \
     frameplugin.h \
     jsonireader.h \
     subsys/rpc.h \
-    subsys/rpcpacker.h
+    subsys/rpcpacker.h \
+    common/tu.h \
+    kp2017.h \
+    dbgtu.h
 
 FORMS += \
     mainwindow.ui \
@@ -80,9 +83,11 @@ FORMS += \
     framemvvstatus.ui \
     farmeline.ui \
     frametu.ui \
-    frameplugin.ui
+    frameplugin.ui \
+    dbgtu.ui
 
-DISTFILES +=
+DISTFILES += \
+    du.ini
 
 RESOURCES += \
     images.qrc \

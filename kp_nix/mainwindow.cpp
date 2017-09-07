@@ -4,8 +4,9 @@
 #include "common/common.h"
 #include "common/acksenum.h"
 #include "common/pamessage.h"
-#include "threads/threadtu.h"
+#include "common/tu.h"
 #include "jsonireader.h"
+#include "dbgtu.h"
 
 std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
 
@@ -33,7 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Log(L"Запуск");
     Log(L"Чтение настроечного файла");
 
-    const char * filename = "C:\\json\\iniJson_nix.txt";    // имя настроечного файла для примера (будет определяться переключателями по номеру участка)
+    //const char * filename = "C:\\json\\iniJson_nix.txt";    // имя настроечного файла для примера (будет определяться переключателями по номеру участка)
+    const char * filename = "du.ini";                       // имя настроечного файла для примера (будет определяться переключателями по номеру участка)
     int nost = 5;                                           // номер станции для примера Кашпир
     JsoniReader(filename, nost);                            // читаем настройки из настроечного файла для указанного адреса
 
@@ -88,9 +90,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // ui->groupBox_PSV
 
 #ifdef DBG_INCLUDE
-    Tu::PushTu(111);
-    Tu::PushTu(222, SYS_RPC);
-    Tu::PushTu(333);
+    Tu::PushTu(1);
+    Tu::PushTu(2, SYS_RPC);
+    Tu::PushTu(3);
+    Tu::PushTu(4);
 #endif // #ifdef DBG_INCLUDE
 
 }
@@ -144,7 +147,9 @@ void MainWindow::on_action_Log_triggered()
 void MainWindow::on_action_TU_triggered()
 {
 #ifdef DBG_INCLUDE
-    Tu::PushTu(0);
+    //Tu::PushTu(0);
+    DbgTu * dlg = new DbgTu();
+    dlg->show();
 #endif // #ifdef DBG_INCLUDE
 }
 

@@ -5,7 +5,6 @@
 #include <mutex>
 #include "common/common.h"
 #include "common/pamessage.h"
-#include "threadts.h"
 #include "../kp2017.h"
 
 BYTE TsStatus		[TSSIZE];								// битовый массив мгновенного состояния ТС

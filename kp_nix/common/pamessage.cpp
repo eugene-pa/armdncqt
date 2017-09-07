@@ -1,4 +1,4 @@
-﻿#include "threads/threadtu.h"
+﻿#include "common/tu.h"
 #include "pamessage.h"
 
 // Класс paMessage предназначен для передачи сообщений между компонентами ПО

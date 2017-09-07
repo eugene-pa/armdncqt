@@ -1,6 +1,6 @@
 #include "frametu.h"
 #include "ui_frametu.h"
-#include "threads/threadtu.h"
+#include "common/tu.h"
 #include "common/acksenum.h"
 #include "common/pamessage.h"
 #include "common/acksenum.h"

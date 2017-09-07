@@ -1,5 +1,5 @@
-#ifndef THREADTU_H
-#define THREADTU_H
+#ifndef TU_H
+#define TU_H
 
 #include <mutex>
 #include <queue>
@@ -28,7 +28,7 @@ public:
     time_t GetTbeg   () { return tBeg;    }
     time_t GetTend   () { return tEnd;    }
     SUBSYSTYPE GetSys() { return sysType; }
-    std::wstring GetSysName();                              // получить имя подсистемы
+    std::wstring GetSysName(){ return ::GetSysName(sysType); }    // получить имя подсистемы
 
 private:
     DWORD id;                                               // порядковый номер ТУ
@@ -45,6 +45,5 @@ private:
     ARM_TYPE   armType;                                     // тип АРМ, выдавший ТУ
     CANAL_TYPE canalType;                                   // тип канала (используются для идентификации канала ТУ ЭЦ-МПК)
 };
+#endif // TU_H
 
-
-#endif // THREADTU_H

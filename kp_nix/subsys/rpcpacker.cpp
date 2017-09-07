@@ -109,8 +109,8 @@ WORD RpcPacker::GetTuDiagBlocksLen()
 // Получить число групп в пакете
 WORD RpcPacker::GetTsGroups()
 {
-	WORD l1 = GetTuDiagBlocksLen(),
-		 l2 = ADDLEN;
+//	WORD l1 = GetTuDiagBlocksLen(),
+//		 l2 = ADDLEN;
 	return (len - GetTuDiagBlocksLen() - ADDLEN) / 2;
 }
 
@@ -118,7 +118,7 @@ WORD RpcPacker::GetTsGroups()
 bool RpcPacker::IsPackTsCorrect (int& error)
 {
 	WORD crcOrg  = GetCrcFromPack();
-	WORD crcReal = GetCrc();
+//	WORD crcReal = GetCrc();
 	if (crcOrg != GetCrc())
 	{
 		error = ERRCRC;

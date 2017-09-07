@@ -112,3 +112,18 @@ WORD GetCrcRPC( WORD wCrc, BYTE* pBuf, int nSize)
     return MAKEWORD(hb, lb);
 }
 
+// получить символьное имя системы ЭЦ/МПЦ/РПЦ
+std::wstring GetSysName(SUBSYSTYPE sysType)
+{
+    switch (sysType)                          // выбор по типу первой ТУ в очереди
+    {
+        case SYS_KP:    return L"ЭЦ"   ;    break;
+        case SYS_RPC:   return L"РПЦ"  ;    break;
+        case SYS_EBL:   return L"ЕБЛК" ;    break;
+        case SYS_EM:    return L"ЭЦЕМ" ;    break;
+        case SYS_MZF:   return L"МЗ-Ф" ;    break;
+        case SYS_MPK:   return L"ЭЦМПК";    break;
+        default:        return L" - "  ;    break;
+    }
+}
+
