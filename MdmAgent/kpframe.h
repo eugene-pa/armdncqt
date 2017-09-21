@@ -17,6 +17,7 @@ public:
 
 private:
     Ui::kpframe *ui;
+    class  Station * pst;
 };
 
 #endif // KPFRAME_H

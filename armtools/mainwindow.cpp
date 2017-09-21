@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // устанавливаем кодировку для отладочного окна вывода
 #ifdef Q_OS_WIN
-    QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
+    //QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
 #endif
 
     modulType=APP_ARMUTILS;                                 // тип приложения

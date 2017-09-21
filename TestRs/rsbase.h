@@ -29,7 +29,7 @@ private slots:
 
 private:
     QString settings;                                       // настройки,например: COM1,9600,N,8,1
-    QString _name;                                           // имя порта
+    QString _name;                                          // имя порта
     qint32 baudRate;                                        // скорость
     QSerialPort::Parity parity;                             // четность
     QSerialPort::DataBits dataBits;                         // бит данных

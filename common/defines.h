@@ -29,6 +29,11 @@
 #include "QRegularExpression"
 #include <QByteArray>
 
+#ifdef Q_OS_WIN
+#include <io.h>
+#include <fcntl.h>
+#endif // #ifdef Q_OS_WIN
+
 //#include <QWidget>
 //#include <QGraphicsView>
 
@@ -188,5 +193,8 @@ extern bool makeFullPath(QString base, QString& path);
 
 #define varfromptr(x) qVariantFromValue((void *)x)
 #define ptrfromvar(x) x.value<void*>()
+
+std::wstring qToStdWString(const QString &str);
+QString stdWToQString(const std::wstring &str);
 
 #endif // DEFINES_H
