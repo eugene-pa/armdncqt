@@ -6,7 +6,6 @@
 
 QT       += core gui serialport
 CONFIG   += console c++11
-INCLUDEPATH += c:/rapidjson/include
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
