@@ -41,10 +41,12 @@ public:
     static Strl * GetById(int no);                          // получить справочник по номеру стрелки
     static void AcceptTS (class Station *);                 // обработка объектов по станции
 
+    QString About() Q_DECL_OVERRIDE;
+
 private:
-    static QHash <int, Strl *> strlhash;                    // СТРЛ , индексированные по индексу ТС
-    static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СТРЛ
-    static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов СТРЛ
+    static std::unordered_map<int, Strl *> strlhash;        // СТРЛ , индексированные по индексу ТС
+    static std::unordered_map<std::string, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СТРЛ
+    static std::unordered_map<std::string, class IdentityType *> methodIds;  //  множество шаблонов возможных методов СТРЛ
 
     // свойства
 
@@ -132,7 +134,7 @@ public:
     QString& Name() { return name; }                        // имя: "1/3+"
 
     // статическая функция проверка валидности списка связей
-    static bool checkList(QVector<LinkedStrl*> list, Logger* logger)
+    static bool checkList(std::vector<LinkedStrl*> list, Logger* logger)
     {
         bool ret = true;
         foreach (LinkedStrl * l, list)
@@ -149,7 +151,7 @@ public:
 
     // статическая функция проверка соответствия фактического положения стрелок требуемому положению списка связей
     // функция возвращает 0, если все ОК, или номер первой наайденной стрелки в неправильном положении
-    static int checkRqSts(QVector<LinkedStrl*> list)
+    static int checkRqSts(std::vector<LinkedStrl*> list)
     {
         foreach (LinkedStrl * l, list)
         {

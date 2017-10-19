@@ -34,7 +34,7 @@ private:
 class Property
 {
 public:
-    Property (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
+    Property (QString name, std::unordered_map<std::string, class IdentityType *> hash, Logger& logger);
     bool Valid() { return ts != nullptr; }                  // валидность свойства
     bool Value();                                           // состояние
     QString& NameTs  ();                                    // имя ТС
@@ -43,6 +43,7 @@ public:
     bool Parse (class Ts * ts, Logger& logger);             // разбор ТС на принадлежность свойству
     class Ts * Ts() { return ts; }                          // указатель на класс ТС свойства или NULL
     void SetTs(class Ts * ptr) { ts = ptr; }                // назначить ТС
+    QString About();                                        // если свойство определено - вернуть описание свойства, ТС и состояние, иначе - пустая строка
 private:
 static QString empty;                                       // пустая строка
 
@@ -55,7 +56,7 @@ static QString empty;                                       // пустая ст
 class Method
 {
 public:
-    Method (QString name, QHash<QString, class IdentityType *> hash, Logger& logger);
+    Method (QString name, std::unordered_map<std::string, class IdentityType *> hash, Logger& logger);
 
     bool Valid() { return tu != nullptr; }                  // валидность свойства
     bool Sts();
@@ -64,7 +65,7 @@ public:
     QString& NameProp() { return type->Name(); }
     bool Parse (class Tu * tu, Logger& logger);             // разбор ТС на принадлежность свойству
     class Tu * Tu() { return tu; }                          // указатель на класс ТС свойства или NULL
-
+    QString About();                                        // если метод определен - вернуть описание, ТУ, иначе - пустая строка
 private:
     static QString empty;                                       // пустая строка
 

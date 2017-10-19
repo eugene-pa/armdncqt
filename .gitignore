@@ -52,3 +52,6 @@ VSS_BD/
 __WPF__/
 Векторная графика/
 
+*.autosave
+pictures/log/*
+

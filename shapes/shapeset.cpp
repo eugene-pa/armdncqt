@@ -17,6 +17,7 @@ float ShapeSet::X0 = 0.0,
 
 ShapeSet::ShapeSet(QString path, Logger * logger, bool bTablo/*=false*/)
 {
+    ok = false;
     plog = logger;
     bTabloShape = bTablo;
     xMin = yMin = 999999.;									// Минимальная ккордината примитива
@@ -70,24 +71,25 @@ void ShapeSet::ScanFile()
                 {
                     case BOX_COD :      shape = new ShapeBox  (str,this);   /*setText .append(shape);*/ break;
                     case SEGMENT_COD:
-                    case ANGLE_COD:     shape = new ShapeRc   (str,this);   setRc   .append(shape); break;
-                    case STRL_COD:      shape = new ShapeStrl (str,this);   setStrl .append(shape); break;
-                    case SVTF_COD:      shape = new ShapeSvtf (str,this);   setSvtf .append(shape); break;
-                    case MODE_COD:      shape = new ShapeTrnsp(str,this);   setTrnsp.append(shape); break;
+                    case ANGLE_COD:     shape = new ShapeRc   (str,this);   setRc   .push_back(shape); break;
+                    case STRL_COD:      shape = new ShapeStrl (str,this);   setStrl .push_back(shape); break;
+                    case SVTF_COD:      shape = new ShapeSvtf (str,this);   setSvtf .push_back(shape); break;
+                    case MODE_COD:      shape = new ShapeTrnsp(str,this);   setTrnsp.push_back(shape); break;
                     case PRZD_COD:      shape = new ShapePrzd (str,this);   /*setPrzd .append(shape);*/ break;
                     case NAME_COD:      shape = new ShapeText (str,this);   /*setName .append(shape);*/ break;
                     case TEXT_COD:      shape = new ShapeText (str,this);   /*setText .append(shape);*/ break;
                 }
                 if (shape != 0)
                 {
-                    set.append(shape);
+                    set.push_back(shape);
                 }
             }
         }
 
         // проблема: номера поездов не отрисовываются при масштабе > 1:1
-        set.append(new ShapeTrain(this));
+        set.push_back(new ShapeTrain(this));
         //set.append(new ShapeTrain(this));
+        ok = true;
     }
     else
     {
@@ -103,12 +105,15 @@ void ShapeSet::MoveRel (float x0, float y0)
 }
 
 
-// чтение форм
+// чтение форм всех станций
+// указатели на формы запоминаются в справочниках станций в std::vector <class ShapeId*> formList
 void ShapeSet::ReadShapes(QString dir, Logger * logger)
 {
-    foreach (Station * st, Station::Stations)
+    for (auto rec : Station::Stations)
     {
-        foreach (ShapeId * p, st->formList)
+        Station * st = rec.second;
+
+        for (ShapeId * p : st->formList)
         {
             p->set = new ShapeSet(dir + p->fileName, logger);
         }
@@ -126,3 +131,25 @@ void ShapeSet::Activate()
         ((ShapeRc *)shape)->AddAndMerge();
     }
 }
+
+
+// поиск ближайшего к заданной точке примитива
+// std::vector<ShapeType>* types - указатель на вектор нужных типов, если nullptr (по умолчанию) - ищем любой примитив
+DShape * ShapeSet::GetNearestShape(QPoint pnt, std::vector<ShapeType>* types)
+{
+    for (DShape * shape : set)
+    {
+        ShapeType t = shape->GetType();
+        if (t == TRAIN_COD || t ==END_COD)
+            continue;
+        //if ((type ==END_COD || t==type) && shape->boundingRect().contains(pnt))
+        if (types==nullptr || find(types->begin(), types->end(), t) != types->end())
+        {
+            if (shape->boundingRect().contains(pnt))
+                return shape;
+        }
+    }
+
+    return nullptr;
+}
+

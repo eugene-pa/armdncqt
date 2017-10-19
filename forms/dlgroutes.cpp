@@ -22,7 +22,7 @@ DlgRoutes::~DlgRoutes()
 // смена станции
 void DlgRoutes::changeStation(class Station * p)
 {
-    if (p!=st)
+    if (p!=st && p!=nullptr)
     {
         ui->tableRoutes->clear();
         st = p;
@@ -47,12 +47,14 @@ void DlgRoutes::closeEvent(QCloseEvent * e)
 // - поезд
 void DlgRoutes::FillData()
 {
+    if (st==nullptr)
+        return;
     setWindowTitle("Маршруты по ст." + st->Name());
 
     QTableWidget * t = ui->tableRoutes;
     t->setSortingEnabled(false);                             // запрещаем сортировку
     t->setColumnCount(13);
-    t->setRowCount(st->Allroute().count());
+    t->setRowCount((int)st->Allroute().size());
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "#" << "Наименование" << "Тип" << "Светофор" << "РЦ в маршруте" << "Стрелки в маршруте" << "ТУ установки" << "ТУ отмены" << "Замыкание" << "Набор" << "Отмена набора" << "ТС перегон" << "ТУ разворот" );
@@ -60,8 +62,10 @@ void DlgRoutes::FillData()
     int row = 0;
     int errors = 0;
 
-    foreach (Route *route, st->Allroute().values())
+    for (auto rec : st->Allroute())
     {
+        Route *route = rec.second;
+
         // 0 - номер (форматируем с ведущими пробелами)
         t->setItem(row,0, new QTableWidgetItem (QString("%1").arg(route->RelNo(),5,10,QChar(' '))));
 

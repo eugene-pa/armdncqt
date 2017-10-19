@@ -33,6 +33,7 @@ ShapePrzd::ShapePrzd(QString& src, class ShapeSet* parent) : DShape (src, parent
 {
     for (int i=0; i<exprAll; i++)
         formulas[i] = nullptr;
+    pereerd = nullptr;
 
     try
     {
@@ -116,6 +117,7 @@ void ShapePrzd::Parse(QString& src)
             }
         }
     }
+    Pereezd::findByShape(this);
 }
 
 
@@ -199,4 +201,10 @@ void ShapePrzd::Draw (QPainter* painter)
             painter->drawText(rectText, s, option);
         }
     }
+}
+
+QString ShapePrzd::Dump()
+{
+    return pereerd != nullptr ? pereerd->About() :
+           QString ("%1  source='%2'").arg(StationName()).arg(source);
 }

@@ -165,7 +165,7 @@ void ShapeSvtf::Parse(QString& src)
         tSize = QSize(50,20);                               // макс.размер поля для номера
         bool left = (((int) subtype)%2) > 0;                // направление
         xyText = XY + (left ? QPointF(23, offset_y) : QPointF(offset_x - tSize.width(), offset_y));// точка написания номера
-        boundRect = QRectF(xyText, tSize);
+        rect = boundRect = QRectF(xyText, tSize);
         // опции выравнивания текста
         option = new QTextOption((left ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignTop);
 
@@ -219,11 +219,16 @@ void ShapeSvtf::Draw(QPainter* painter)
     QPen * pen1 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : state->isExpire() ? PenExpired : MainPen;   // перо одинарной линии
     QPen * pen2 = (svtf == nullptr && svtfM == nullptr) || state->isUndefined() ? PenUndefined : state->isExpire() ? PenExpired : MainPen2;  // перо двойной линии
 
+    QBrush nullBrush(Qt::transparent);                      // прозрачная кисть
+
     bool compact = this->set->compactSvtf;
+
+    bool disabled = (svtf && svtf->Disabled()) || (!svtf && svtfM && svtfM->Disabled());
 
     // кисть основная
     QBrush * brush= state->isUndefined()                ? BrushUndefined:
-                    state->isExpire ()                  ? BrushExpired  :  // нет данных
+                    disabled                            ? &nullBrush :      // отключен в БД
+                    state->isExpire ()                  ? BrushExpired  :   // нет данных
                     isOpenPzd       ()                  ? BrushPzdOn    :
                     isOpenMnv() && (isMnv() || compact) ? BrushMnvOn    :  // маневровый открыт и светофор маневровый, либо режим совмещения при закрытом поездном
                     isPrgls         ()                  ? (DShape::globalPulse ? BrushMnvOn : BrushPzdOff) :
@@ -231,13 +236,24 @@ void ShapeSvtf::Draw(QPainter* painter)
                     svtf && svtf->IsTypeIn()            ? BrushPzdInOff :
                                                           BrushPzdOff;
     // кисть маневровая
-    QBrush * brushM = svtfM==nullptr || state->isUndefined() ? BrushUndefined :
-                      isOpenMnv()                            ? BrushMnvOn     :
+    QBrush * brushM = disabled                               ? &nullBrush       :
+                      svtfM==nullptr || state->isUndefined() ? BrushUndefined   :
+                      isOpenMnv()                            ? BrushMnvOn       :
                                                               BrushMnvOff;
+
+    // отрисовываю РЦ меняя прозрачность для заблокированных РЦ, чтобы показать состояние
+    // можно такой способ применить также для заблокированных стрелок и светофоров
+    QColor clr = pen1->color();
+    int alpha = 255;
+    if (disabled)
+        alpha = 60;
+    clr.setAlpha(alpha);
+    pen1->setColor(clr);
+    pen2->setColor(clr);
 
     // основание
     //painter->setRenderHint(QPainter::Antialiasing, false);
-    if (subtype != Pzdn && subtype != Mnvr)
+    if (subtype != Pzdn && subtype != Mnvr)                 // фикс 2016.07.28. Если без ножек - не рисуем основание
     {
         painter->setPen(*pen2);
         painter->drawLine(base);
@@ -327,7 +343,7 @@ void ShapeSvtf::Draw(QPainter* painter)
         // текст
         painter->setFont(*font);
         if (!(state->isExpire() || state->isUndefined()))
-            painter->setPen(*PenText);
+            painter->setPen(disabled ? *PenUndefined : *PenText);
         painter->drawText(boundRect, name, *option);
     }
 
@@ -364,7 +380,7 @@ void ShapeSvtf::Prepare()
 
 QString ShapeSvtf::Dump()
 {
-    return "СВТФ";
+    return (svtf == nullptr ? "" : svtf->About()) + (svtfM == nullptr ? "" : "\r\n\r\n" + svtfM->About());
 }
 
 QString  ShapeSvtf::ObjectInfo()

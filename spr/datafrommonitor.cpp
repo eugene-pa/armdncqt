@@ -1,6 +1,7 @@
 #include "streamts.h"
 #include "krug.h"
 #include "train.h"
+//#include "QThread"
 
 // Класс DDataFromMonitor вместе со вспомогательными классами DStDataFromMonitor,DOptionsDataFromMonitor,DRcDataFromMonitor,DTrainsDataFromMonitor
 // инкапсулируют содержательную частьпротокола обмена по сети между MONITOR и его клиентами (TABLO, АРМ ШНЦ и т.д.)
@@ -21,16 +22,17 @@ BYTE DDataFromMonitor::DataBuf[MAX_DATA_LEN_FROM_MONITOR];
 // сигнатуру можно не проверять, так как весь блок - обрамлен обязательно
 void DDataFromMonitor::Extract(UINT length, KrugInfo * krug)
 {
+//    qDebug() << "Receive data thread: " << QThread::currentThreadId ();
     if (length)
     {
         if (Signature == SIGNATURE)
         {
             if (ExtractOptionsInfo())                       // 1. Общие параметры
             {
+                Train::ClearAllRc();                        // 3. очистить списки РЦ
                 ExtractStInfo(krug);                        // 2. Информация по станциям
                 if (!(IsArmTools() && g_QuickSearching))    // Если не включен режим ускорееного просмотра АРМ ШН - обрабатываем РЦ и поезда
                 {
-                    Train::ClearAllRc();                    // 3. очистить списки РЦ
                     ExtractRcInfo	 (krug);                // 4. информация по РЦ
                     ExtractTrainsInfo(krug);                // 5. информация по поездам
                 }
@@ -56,7 +58,7 @@ void DDataFromMonitor::ExtractStInfo (KrugInfo * krug)
 {
     int stationInfoLength = nSt * LenOneSt;                 // 1. длина блока информации по станциям в блоке StInfo
 
-    BYTE * dataptr;
+    BYTE * dataptr = nullptr;
     // 1. обработка информации по станциям
     if (GetLenStInfo() >= stationInfoLength)
     {

@@ -29,20 +29,21 @@ DlgTuInfo::~DlgTuInfo()
 // слот обработки события смена станции
 void DlgTuInfo::changeStation(Station *pst)
 {
-    if (pSt == pst || pst==nullptr)
-        return;
+    if (pst!=pSt && pst!=nullptr)
+    {
+        pSt = pst;
+        setWindowTitle("ТУ по станции " + pst->Name());
 
-    pSt = pst;
-    setWindowTitle("ТУ по станции " + pst->Name());
+        ui->SliderDelay->setMaximum(pst->Kp2000() ? 6 : 15);
 
-    ui->SliderDelay->setMaximum(pst->Kp2000() ? 6 : 15);
-
-    fillTable();                                            // заполнить таблицу имен ТС
+        fillTable();                                            // заполнить таблицу имен ТС
+    }
 }
 
-void DlgTuInfo::closeEvent(QCloseEvent *)
+void DlgTuInfo::closeEvent(QCloseEvent *e)
 {
-
+    setVisible(false);
+    e->ignore();
 }
 
 // заполнить таблицу имен ТС
@@ -52,13 +53,15 @@ void DlgTuInfo::fillTable()
 
     t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
-    t->setRowCount(pSt->Tu.count());
+    t->setRowCount((int)pSt->Tu.size());
 
     int row = 0;
-    foreach (Tu * tu, pSt->Tu.values())
+    for (auto rec : pSt->Tu)
     {
+        class Tu * tu = rec.second;
+
         // 0 - имя ТУ
-        t->setItem(row,0, new QTableWidgetItem (tu->Name()));
+        t->setItem(row,0, new QTableWidgetItem (QString("%1    %2").arg(tu->Name()).arg(tu->extTuSrc)));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)tu));// запомним ТУ
         t->item(row,0)->setBackground(tu->delay<0.5 ? QBrush(QColor(224,224,224)) : Qt::white);
 

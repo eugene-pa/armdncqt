@@ -5,6 +5,8 @@
 #include <../common/defines.h>
 #include <../common/logger.h>
 
+void Log (std::wstring);
+
 namespace Ui {
 class MainWindow;
 }

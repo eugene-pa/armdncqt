@@ -10,9 +10,12 @@ DlgStationsInfo::DlgStationsInfo(QWidget *parent) :
 
     QTableWidget * t = ui->tableStations;
     t->setColumnCount(8);
-    t->setRowCount(Station::Stations.count());
+    t->setRowCount((int)Station::Stations.size());
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setHorizontalHeaderLabels(QStringList() << "Станция   " << " # " << " Ras " << "Адрес" << " Версия " << "ОТУ" << "КП ID" << "Конфигурация" );
+
+    // автоматически растягтваем 8-й столбец
+    t->horizontalHeader()->setSectionResizeMode(7, QHeaderView::Stretch);
 
     // заполнение таблицы информацией о станциях
     // сортировка выполняется автоматически
@@ -26,8 +29,10 @@ DlgStationsInfo::DlgStationsInfo(QWidget *parent) :
     // - обобщенная диагностика КП
     int row = 0;
 
-    foreach (Station *st, Station::Stations.values())
+    for (auto rec : Station::Stations)
     {
+        Station * st = rec.second;
+
         t->setItem(row,0, new QTableWidgetItem (*g_green, st->Name()));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)st));    // запомним станцию
         // так можно извлечь:

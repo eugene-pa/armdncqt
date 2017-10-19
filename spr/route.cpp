@@ -1,7 +1,9 @@
 #include "route.h"
 #include "krug.h"
 
-QHash <int, Route *> Route::routes;                             // маршруты, индексированные по индексу ТС
+std::unordered_map <int, Route *> Route::routes;                // маршруты, индексированные по индексу ТС
+
+int svtfEndExist = -1;
 
 Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
 {
@@ -57,10 +59,17 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
         if (tmp.length() > 0)
             svtfBeg = st->GetSvtfByName(tmp);
 
-        tmp     = query.value("SvtfEnd").toString().trimmed();  // необязательное имя светофора, ограждающего конец маршрута
-        if (tmp.length() > 0)
-            svtfEnd = st->GetSvtfByName(tmp);
-
+        if (svtfEndExist==-1)
+        {
+            QVariant vt = query.value("SvtfEnd");               // проверяем наличие поля SvtfEnd
+            svtfEndExist = vt.isValid();
+        }
+        if (svtfEndExist)
+        {
+            tmp     = query.value("SvtfEnd").toString().trimmed();  // необязательное имя светофора, ограждающего конец маршрута
+            if (tmp.length() > 0)
+                svtfEnd = st->GetSvtfByName(tmp);
+        }
         // [STRL] чтение и разбор списка стрелок в заданном положении [Strl]
         srcStrl     = query.value("Strl").toString().trimmed();
         if (srcStrl.length() > 0)
@@ -71,7 +80,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
                 // в общем случае нужно уметь задавать индексированные описания, например: 221+[Минводы]
                 LinkedStrl * lnk = new LinkedStrl(st, list[i]);
                 if (lnk->strl != nullptr)
-                    listStrl.append(lnk);
+                    listStrl.push_back(lnk);
                 else
                 {
                     logger.log(QString("Маршрут %1. Ошибка описания стрелки %2 в маршруте: '%3'").arg(nameLog()).arg(list[i]).arg(srcStrl));
@@ -89,7 +98,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
             {
                 Rc * rc = st->GetRcByName(s);
                 if (rc != nullptr)
-                    listRc.append(rc);
+                    listRc.push_back(rc);
                 else
                 {
                     logger.log(QString("Маршрут %1. Ошибка описания РЦ %2 в маршруте: '%3'").arg(nameLog()).arg(s).arg(srcRc));
@@ -124,17 +133,17 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
             // если 0 - нет выражения
             if (indxTsZmk)
             {
-                srcZzmk = indxTsZmk == 0 ? "" : st->TsByIndxTsName.contains(indxTsZmk) ? st->TsByIndxTsName[indxTsZmk]->Name() : "";
+                srcZzmk = indxTsZmk == 0 ? "" : st->TsByIndxTsName.count(indxTsZmk) ? st->TsByIndxTsName[indxTsZmk]->Name() : "";
                 if (srcZzmk.length() == 0)
-                    logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk в маршруте: '%2'").arg(nameLog()).arg(srcZzmk));
+                    logger.log(QString("Маршрут %1. Ошибка описания поля CodZmk: '%2'").arg(nameLog()).arg(srcZzmk));
             }
             else
-                srcZzmk.clear();
+                srcZzmk.clear();            // поле обработано!
         }
+        // если поле необработано (см.выше) и srcZzmk непустая - генерим выражение
         if (srcZzmk.length() > 0)
         {
-            zmkExpr = new BoolExpression(srcZzmk);
-            srcZzmkError = !zmkExpr->Valid();
+            srcZzmkError = !parseExpression(query, "CodZmk", srcZzmk, zmkExpr, logger);
         }
 
         // [Complex] - перечисление составных маршрутов через + (или пробел)
@@ -148,7 +157,7 @@ Route::Route(QSqlQuery& query, KrugInfo* krug, Logger& logger) : SprBase()
 
         // ПРОБЛЕМА: при импорте/экспорте пробел в имени поля "Враждебные маршруты" заменяется подчеркиванием!
         // [Враждебные маршруты] - перечисление через пробел (или запятую)
-        // читаем строку, разбор строки выполняется на "втором проходе" после чтения всей таблицы, чтобы не зависить от порядка описания маршрутов в таблице
+        // читаем строку, разбор строки выполняется на "втором проходе" после чтения всей таблицы, чтобы не зависеть от порядка описания маршрутов в таблице
         // чм. static public void CheckOpponents(paLog logger)
         srcOpponentRoutes = query.value("Враждебные_маршруты").toString();
         if (srcOpponentRoutes.length() > 0 && srcOpponentRoutes=="-")
@@ -183,7 +192,7 @@ Route::~Route()
 Route * Route::GetById(int no, KrugInfo * krug)
 {
     int id = krug==nullptr ? no : krug->key(no);
-    return routes.contains(id) ? routes[id] : nullptr;
+    return routes.count(id) ? routes[id] : nullptr;
 }
 
 // получить справочник по уникальному ключу(номеру) маршрута
@@ -229,8 +238,9 @@ bool Route::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
 // обработать списки составных
 void Route::checkComplex  (class KrugInfo* krug, Logger& logger)
 {
-    foreach (Route * route, routes.values())
+    for (auto rec : routes)
     {
+        Route * route = rec.second;
         if (krug==nullptr || krug==route->krug)
         {
             route->checkComplex(logger);
@@ -241,8 +251,9 @@ void Route::checkComplex  (class KrugInfo* krug, Logger& logger)
 // обработать списки враждебных
 void Route::checkOpponents(class KrugInfo* krug, Logger& logger)
 {
-    foreach (Route * route, routes.values())
+    for (auto rec : routes)
     {
+        Route * route = rec.second;
         if (krug==nullptr || krug==route->krug)
         {
             route->checkOpponents(logger);
@@ -269,7 +280,7 @@ bool Route::checkComplex (Logger& logger)
             Route * route = st->GetRouteByNo(no);
             if (route != nullptr)
             {
-                listRoutes.append(route);
+                listRoutes.push_back(route);
                 // - светофор либо не задается вообще, либо должен совпадать со светофором первого маршрута в списке
                 if (indx == 0)
                 {
@@ -305,7 +316,7 @@ bool Route::checkOpponents (Logger& logger)
             {
                 Route * route = st->GetRouteByNo(no);
                 if (route != nullptr)
-                    listCrossRoutes.append(route);
+                    listCrossRoutes.push_back(route);
                 else
                     ret = false;
             }
@@ -323,7 +334,7 @@ QString Route::nameLog()
 }
 
 // чтение последовательности ТУ, проверка синтаксиса и запись в список
-bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, QVector <Tu*> list, Logger& logger)
+bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, std::vector <Tu*> list, Logger& logger)
 {
     bool ret = true;
     src = query.value(field).toString().trimmed();
@@ -341,7 +352,7 @@ bool Route::parseTuList (QSqlQuery& query, QString field, QString& src, QVector 
             }
             Tu * tu = st->GetTuByName(s);
             if (tu != nullptr)
-                list.append(tu);                            // список ТУ установки маршрута
+                list.push_back(tu);                            // список ТУ установки маршрута
             else
             {
                 logger.log(QString("Маршрут %1. Ошибка описания ТУ %2 в маршруте: [%3]='%4'").arg(nameLog()).arg(s).arg(field).arg(src));
@@ -415,7 +426,7 @@ bool Route::IsOpen()
 }
 
 // проверка полного соответствия заданного положения стрелок маршрута заданному положению списка направляюших стрелок
-bool Route::CheckRqState (QVector<LinkedStrl*> list)
+bool Route::CheckRqState (std::vector<LinkedStrl*>& list)
 {
     foreach (LinkedStrl* link, listStrl)
     {

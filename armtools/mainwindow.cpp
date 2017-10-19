@@ -4,34 +4,37 @@
 
 #include "../forms/dlgrcinfo.h"
 #include "../forms/dlgstrlinfo.h"
+#include "../forms/dlgsvtfinfo.h"
 #include "../forms/dlgstationsinfo.h"
 #include "../forms/dlgtsinfo.h"
 #include "../forms/dlgtuinfo.h"
+#include "../forms/dlgotu.h"
 #include "../forms/dlgkpinfo.h"
 #include "../forms/dlgroutes.h"
 #include "../forms/dlgtrains.h"
+#include "../forms/dlgperegoninfo.h"
+#include "../forms/dlgpereezd.h"
 #include "../common/inireader.h"
 #include "../spr/streamts.h"
+#include "../spr/train.h"
+#include "../shapes/shapetrain.h"
 
-//QVector<ShapeSet *> sets;                                 // массив форм
 
-//QString server_ipport = "192.168.0.101:1010";             // подключение к потоку ТС из настроечного файла
-QString server_ipport = "192.168.0.100:1013";               // подключение к потоку ТС из настроечного файла
-QString baseDir;
+QString server_ipport = "127.0.0.1:1010";                   // подключение к потоку ТС из настроечного файла
+QString version = "1.0.1.10";                               // версия приложения
 
-//bool MainWindow::blackBoxMode;                              // включен режима просмотра архива
+QStringList extVideos;                                      // доп.видеоформы
+QString title = "АРМ ШН. ";
 bool blackBoxMode;                                          // включен режима просмотра архива
 
 #ifdef Q_OS_WIN
     QString path = "C:/armdncqt/";
-    QString images(":/status/images/");                     // путь к образам
     QString compressor = "c:/armdncqt/bin/zip.exe";         // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "c:/armdncqt/bin/unzip.exe";     // утилита для распаковки архивов
-    QString editor = "notepad.exe";     // блокнот
+    QString editor = "notepad.exe";                         // блокнот
 #endif
 #ifdef Q_OS_MAC
     QString path = "/Users/evgenyshmelev/armdncqt/";
-    QString images(path + "images/");                       // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "TextEdit";                             // блокнот
@@ -39,19 +42,22 @@ bool blackBoxMode;                                          // включен р
 #endif
 #ifdef Q_OS_LINUX
     QString path = "/home/dc/armdncqt/";
-    QString images("../images/");                           // путь к образам
     QString compressor = "zip";                             // утилита для сжатия файлов в архивы (zip АРХИВ ШАБЛОН_ИЛИ_СПИСОК)
     QString decompressor = "unzip";                         // утилита для распаковки архивов
     QString editor = "gedit";                               // блокнот
 #endif
-    Logger logger(path + "Log/armtools.log", true, true);
+    Logger logger(path + "log/armtools.log", true, true);
+
+    QString images(":/status/images/");                     // путь к образам status/images
+    QString imagesEx(":/images/images/");                   // путь к образам images/images
+
     QString dbname = path + "bd/arm.db";
+    QString esrdbbname = "bd/arm.db";
     QString extDb  = path + "bd/armext.db";
     QString pathTemp=path + "bd/temp/";
     QString pathSave=path + "bd/save/";
-    QString form    =path + "pictures/Назаровский.shp";
     QString formDir =path + "pictures/";
-    QString iniFile =path + "armtools/armtools.ini";
+    QString iniFile =       "armtools.ini";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -63,94 +69,217 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // устанавливаем кодировку для отладочного окна вывода
 #ifdef Q_OS_WIN
-    QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
+    //QTextCodec::setCodecForLocale( QTextCodec::codecForName("CP866"));
 #endif
 
-    modulType=APP_ARMUTILS;                                             // тип приложения
+    modulType=APP_ARMUTILS;                                 // тип приложения
 
-    dlgTs = nullptr;                                                    // состояние ТС
-    dlgTu = nullptr;                                                    // состояние ТУ
-    dlgRc = nullptr;                                                    // состояние РЦ
-    dlgStrl = nullptr;                                                  // состояние стрелок
-    dlgKp = nullptr;                                                    // диалог КП
-    dlgRoutes = nullptr;                                                // диалог маршрутов
-    dlgTrains = nullptr;                                                // поезда
-    dlgStations = nullptr;                                              // станции
+    dlgTs = nullptr;                                        // состояние ТС
+    dlgTu = nullptr;                                        // список ТУ
+    dlgOtu = nullptr;                                       // список ОТУ
+    dlgRc = nullptr;                                        // состояние РЦ
+    dlgStrl = nullptr;                                      // состояние стрелок
+    dlgSvtf = nullptr;                                      // состояние светофоров
+    dlgKp = nullptr;                                        // диалог КП
+    dlgRoutes = nullptr;                                    // диалог маршрутов
+    dlgTrains = nullptr;                                    // поезда
+    dlgStations = nullptr;                                  // станции
+    dlgPeregons = nullptr;                                  // перегоны
+    dlgPereezd = nullptr;                                   // переезды
 
     reader = nullptr;
 
+    bPlay = false;
+    bPlayBack = false;
+
     // если задан конфигурационный файл, читаем настройки и подстраиваем пути
+    // pathQDir::currentPath();                             // текущий каталог - по умолчанию
+    // iniFile = "armtoola.ini";                            // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
     IniReader rdr(iniFile);
-    if (rdr.GetText("WORKINDIRECTORY", path))
+    if (rdr.GetText("WORKINDIRECTORY", path))               // рабочая папка
     {
         dbname = path + "bd/arm.db";
         extDb  = path + "bd/armext.db";
         pathTemp=path + "bd/temp/";
         pathSave=path + "bd/save/";
-        form    =path + "pictures/Назаровский.shp";
         formDir =path + "pictures/";
 
-        logger.ChangeActualFile(path + "Log/armtools.log");
+        logger.ChangeActualFile(path + "log/armtools.log");
     }
 
+    QString tmp;
 
-//    QByteArray src(10,0x55);
-//    QByteArray dst = qCompress(src);
-//    dst[3] = 0x0;
-//    QByteArray src2 = qUncompress(dst);
+    // опция ESRDBNAME
+    if (rdr.GetText("ESRDBNAME", tmp))
+        esrdbbname = QFileInfo(tmp).isAbsolute() ? tmp : path + tmp;
+    else
+        esrdbbname = path + esrdbbname;
+
+    // если задана опция FORMNAME, принимаем доп.формы
+    if (rdr.GetText("FORMNAME", tmp))
+    {
+        extVideos = tmp.split(QRegExp("[\\s,]+"));
+        for (QString& s : extVideos)
+        {
+            makeFullPath(path, s);
+        }
+    }
+
+    // опция TITLE
+    if (rdr.GetText("TITLE", tmp))
+        title += tmp;
+
+    this->setWindowTitle(title);
+
+    // создаем папки temp, save, если их нет
+    QDir temp(pathTemp);
+    if (!temp.exists())
+        temp.mkdir(".");
+    QDir save(pathSave);
+    if (!save.exists())
+        save.mkdir(".");
+
+    rdr.GetText("SERVER", server_ipport);                   // подключение
+
+
+    if (rdr.GetText("ZIP", tmp))
+        compressor = tmp;
+    if (rdr.GetText("UNZIP", tmp))
+        decompressor = tmp;
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
     // загрузка пользовательской графики (можно вынести в глоб.функцию)
     loadResources();
+    // значок приложения
+    setWindowIcon (QIcon(QPixmap(imagesEx + "Config-Tools.png")));
 
     // добавляем в статус бар поля "IP_ПОРТ" и индикатор соединения
     ui->statusBar->addPermanentWidget(new QLabel(server_ipport));   //
     hostStatus.setPixmap(*g_yellow);
     ui->statusBar->addPermanentWidget(&hostStatus);
 
-    // загрузка НСИ
-    KrugInfo * krug = nullptr;
-    Esr::ReadBd(dbname, logger);                            // ЕСР
-    Station::ReadBd(dbname, krug, logger);                  // станции
-    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
-    Ts::ReadBd (dbname, krug, logger);                      // ТС
-    Tu::ReadBd (dbname, krug, logger);                      // ТУ
-    Rc::ReadRelations(dbname, logger);                      // связи РЦ
-    Route::ReadBd(dbname, krug, logger);                    // маршруты
-    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
-
-    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
-
     // динамическое формирование элементов тулбара
     // создаем комбо бокс выбора станций, заполняем и привязываем сигнал currentIndexChanged к слоту-обработчику
     ui->mainToolBar->insertWidget(ui->actionBlackbox, StationsCmb = new QComboBox);                 // "Черный ящик"
+    StationsCmb->setMaxVisibleItems(50);
     ui->mainToolBar->insertWidget(ui->actionPrev, dateEdit = new QDateEdit(QDate::currentDate()));  // Дата
     dateEdit->setCalendarWidget(calendar = new QCalendarWidget());                                  // Календарь
     dateEdit->setCalendarPopup(true);
     ui->mainToolBar->insertWidget(ui->actionPrev,new QLabel(" "));                                  // Пробнл
     ui->mainToolBar->insertWidget(ui->actionPrev, timeEdit = new QTimeEdit(QTime::currentTime()));  // Время
 
-
-
     ui->mainToolBar->addWidget(labelStep = new QLabel("  Шаг, мин: "));                             // Шаг по минутам
     ui->mainToolBar->addWidget(stepValue = new QSpinBox(ui->mainToolBar));
 
-    ui->mainToolBar->addWidget(labelTemp = new QLabel("     Темп,X:  1:1 "));                       // Темп
-    ui->mainToolBar->addWidget(sliderTemp = new QSlider(Qt::Horizontal));                           // Задатчик-слайдер
-    ui->mainToolBar->addWidget(labelTemp2 = new QLabel(" 10:1"));
-    sliderTemp->setTickPosition(QSlider::TicksAbove);
-    sliderTemp->setFixedWidth(180);
-    sliderTemp->setRange(1,10);
-    sliderTemp->setValue(1);
-    sliderTemp->setTickInterval(1);
+    // 2 - флажок "Изменения ТС" и список ТС
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(checkFindTs = new QCheckBox("ТС", ui->mainToolBar));
+    checkFindTs->setLayoutDirection(Qt::RightToLeft);
+    QObject::connect(checkFindTs, SIGNAL(toggled(bool)), SLOT(tsToggled(bool)));        // флажок ТС
+
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(cmbTs = new QComboBox);
+    cmbTs->setMaxVisibleItems(30);
+    cmbTs->setEnabled(false);
+
+    // 3 - флажок "Ош.связи"
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(checkFindLink = new QCheckBox(" Ош.связи", ui->mainToolBar));
+    checkFindLink->setLayoutDirection(Qt::RightToLeft);
+
+    // 1 - масштабирование
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(labelZoom = new QLabel("Масштаб: ", ui->mainToolBar));
+    ui->mainToolBar->addWidget(sliderScale = new QSlider(Qt::Horizontal, ui->mainToolBar));
+    sliderScale->setMinimum(-50);
+    sliderScale->setMaximum(100);
+    sliderScale->setValue(0);
+    sliderScale->setTickPosition(QSlider::TicksAbove);
+    sliderScale->setFixedWidth(180);
+    connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
+
+    ui->mainToolBar->addWidget(new QLabel("    ", ui->mainToolBar));
+    QPushButton * scale11 = new QPushButton("1:1", ui->mainToolBar);
+    ui->mainToolBar->addWidget(scale11);
+    scale11->setFixedWidth(32);
+    connect(scale11, SIGNAL(pressed()), this, SLOT(on_action_ZoomOff_triggered()));
 
     ui->mainToolBar->setBaseSize(800,36);
 
     calendar->hide();
     timeEdit->setDisplayFormat("hh:mm:ss");
 
+    // создаем меню ПОМОЩЬ справа (используем setCornerWidget для отдельного QMenuBar)
+    QMenuBar *bar = new QMenuBar(ui->menuBar);
+    QMenu *menu = new QMenu("Помощь", bar);
+    bar->addMenu(menu);
+
+    QAction *action1 = new QAction("О программе", bar);
+    menu->addAction(action1);
+    connect(action1, SIGNAL(triggered()), this, SLOT(on_action_About_triggered()));
+
+    QAction *action2 = new QAction("Протокол загрузки", bar);
+    menu->addAction(action2);
+    connect(action2, SIGNAL(triggered()), this, SLOT(action_load_log()));
+
+    QAction *action3 = new QAction("О QT", bar);
+    menu->addAction(action3);
+    connect(action3, SIGNAL(triggered()), this, SLOT(on_action_QtAbout_triggered()));
+
+    ui->menuBar->setCornerWidget(bar);
+
+//    scale = 1;
+    // загрузка НСИ
+    KrugInfo * krug = nullptr;
+    Esr::ReadBd(esrdbbname, logger);                        // ЕСР
+    Station::ReadBd(dbname, krug, logger);                  // станции
+    Peregon::ReadBd(dbname, krug, logger);                  // перегоны
+    IdentityType::ReadBd (extDb, logger);                   // описание свойств и методов объектов (таблица Properties)
+    Ts::ReadBd (dbname, krug, logger);                      // ТС
+    Tu::ReadBd (dbname, krug, logger);                      // ТУ
+    Otu::ReadBd (dbname, krug, logger);
+    Rc::ReadRelations(dbname, logger);                      // связи РЦ
+    Route::ReadBd(dbname, krug, logger);                    // маршруты
+    Pereezd::ReadBd (dbname, krug, logger);                 // переезды
+
+    DShape::InitInstruments(extDb, logger);                 // инициализация графических инструментов
+    ShapeSet::ReadShapes(formDir, &logger);                 // чтение форм
+
+    on_actionBlackbox_triggered();
+
+    // сначала добавляем доп.формы
+    for (QString& form : extVideos)
+    {
+        ShapeSet * set = new ShapeSet(form, &logger);
+        if (set->isok())
+        {
+            QFileInfo fi(form);
+            ShapeId * pid = new ShapeId(nullptr, fi.baseName(), 0);
+            pid->setShape(set);
+            StationsCmb->addItem(fi.baseName(), qVariantFromValue((void *)pid));
+        }
+    }
+    for (Station * st : Station::StationsOrg)
+    {
+        for (ShapeId * p : st->formList)
+        {
+            StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
+        }
+    }
+    QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
+    //StationsCmb->model()->sort(0);
+
+    idTimer = startTimer(1000);
+    arhDateTime = QDateTime::currentDateTime();
+    reader = new ArhReader(pathTemp,"@_");
+
+    ui->action_VisibleTrains->setChecked(ShapeTrain::bShowTrains);
+    ui->action_VisibleNonregTrains->setChecked(ShapeTrain::bShowNonregTrains);
+
+    StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
+    stationSelected(0);
 
     // инициализация сетевых клиентов для подключения к серверу потока ТС
     clientTcp = new ClientTcp(server_ipport, &logger, false, "АРМ ШН");
@@ -160,56 +289,6 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(clientTcp, SIGNAL(dataready   (ClientTcp*)), this, SLOT(dataready   (ClientTcp*)));
     QObject::connect(clientTcp, SIGNAL(rawdataready(ClientTcp*)), this, SLOT(rawdataready(ClientTcp*)));
     clientTcp->start();
-//    scale = 1;
-
-
-    // динамическое формирование расширенного тулбара
-    // 1 - масштабирование
-    // 2 - поиск изменений ТС
-    // 3 - поиск ошибок связи
-    ui->toolBar2->addWidget(new QLabel("Масштаб:  ", ui->toolBar2));
-    ui->toolBar2->addWidget(sliderScale = new QSlider(Qt::Horizontal, ui->toolBar2));
-    sliderScale->setMinimum(-50);
-    sliderScale->setMaximum(100);
-    sliderScale->setValue(0);
-    sliderScale->setTickPosition(QSlider::TicksAbove);
-    sliderScale->setFixedWidth(180);
-    connect(sliderScale, SIGNAL(valueChanged(int)), this, SLOT(scaleView()));
-
-    // 2 - флажок "Изменения ТС" и список ТС
-    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
-    ui->toolBar2->addWidget(checkFindTs = new QCheckBox(" Изменение ТС", ui->toolBar2));
-    checkFindTs->setLayoutDirection(Qt::RightToLeft);
-    QObject::connect(checkFindTs, SIGNAL(toggled(bool)), SLOT(tsToggled(bool)));        // флажок ТС
-
-    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
-    ui->toolBar2->addWidget(cmbTs = new QComboBox);
-    cmbTs->setMaxVisibleItems(30);
-    cmbTs->setEnabled(false);
-
-    // 3 - флажок "Ош.связи"
-    ui->toolBar2->addWidget(new QLabel("    ", ui->toolBar2));
-    ui->toolBar2->addWidget(checkFindLink = new QCheckBox(" Ош.связи", ui->toolBar2));
-    checkFindLink->setLayoutDirection(Qt::RightToLeft);
-
-    ui->toolBar2->setVisible(false);
-
-    on_actionBlackbox_triggered();
-
-    foreach (Station * st, Station::Stations.values())
-    {
-        foreach (ShapeId * p, st->formList)
-          {
-              StationsCmb->addItem(p->Name(), qVariantFromValue((void *) p));
-          }
-    }
-    QObject::connect(StationsCmb, SIGNAL(currentIndexChanged(int)), SLOT(stationSelected(int)));
-    StationsCmb->model()->sort(0);
-    StationsCmb->setCurrentIndex(0);                        // выбор первой станции в списке
-
-    idTimer = startTimer(1000);
-    arhDateTime = QDateTime::currentDateTime();
-    reader = new ArhReader(pathTemp,"@_");
 
     Logger::LogStr ("Конструктор MainWindow завершил работу");
 }
@@ -221,16 +300,14 @@ MainWindow::~MainWindow()
     delete clientTcp;
     delete reader;
 
-    delete StationsCmb;
-    delete dateEdit;
-    delete calendar;
-    delete stepValue;
+//    delete StationsCmb;
+//    delete dateEdit;
+//    delete calendar;
+//    delete stepValue;
 
-    delete labelTemp;
-    delete sliderTemp;
-    delete labelTemp2;
-    delete sliderScale;
-    delete checkFindLink;
+//    delete labelZoom;
+//    delete sliderScale;
+//    delete checkFindLink;
 
     delete ui;
 }
@@ -259,6 +336,7 @@ void MainWindow::loadResources()
     g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
     g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
 
+    tooltip = true;
 }
 
 
@@ -266,16 +344,35 @@ void MainWindow::loadResources()
 void MainWindow::stationSelected(int index)
 {
     Q_UNUSED(index)
+    if (StationsCmb->currentIndex() < 0)
+        return;
     ShapeId * shapeId = (ShapeId *)StationsCmb->currentData().value<void *>();
-    g_actualStation = shapeId->St();
+    if (shapeId->St() != nullptr)
+        g_actualStation = shapeId->St();
+
+    if (child != nullptr)
+        delete child;
+    // 2016.12.12. Вопрос: правильно ли это - каждый раз создавать класс ShapeChild заново? Кто удаляет текущий класс ?
     setCentralWidget(child = new ShapeChild(shapeId->Set()));
+    child->setMouseTracking(tooltip);
+
+    scaleView();
+
+    child->horizontalScrollBar()->setValue(0);
+    child->verticalScrollBar()->setValue(0);
+    child->centerOn(0,0);
 
     cmbTs->clear();
-    foreach (Ts *ts, g_actualStation->TsSorted)
-        cmbTs->addItem(ts->Name());
-    cmbTs->setCurrentIndex(-1);
 
-    emit changeStation(g_actualStation);
+    if (g_actualStation != nullptr)
+    {
+        for (Ts *ts : g_actualStation->TsSorted)
+            cmbTs->addItem(ts->Name());
+
+        cmbTs->setCurrentIndex(-1);
+
+        emit changeStation(g_actualStation);
+    }
 }
 
 // обработка уведомлений ClientTcp потока ТС
@@ -323,7 +420,7 @@ void MainWindow::rawdataready(ClientTcp *client)
 }
 
 
-
+// ТС
 void MainWindow::on_action_TS_triggered()
 {
     if (dlgTs==nullptr)
@@ -336,7 +433,7 @@ void MainWindow::on_action_TS_triggered()
         dlgTs->setVisible(!dlgTs->isVisible());
 }
 
-
+// ТУ
 void MainWindow::on_action_TU_triggered()
 {
     if (dlgTu==nullptr)
@@ -349,11 +446,20 @@ void MainWindow::on_action_TU_triggered()
         dlgTu->setVisible(!dlgTu->isVisible());
 }
 
+// ОТУ
 void MainWindow::on_action_OTU_triggered()
 {
-
+    if (dlgOtu==nullptr)
+    {
+        dlgOtu = new DlgOtu(this, g_actualStation);
+        dlgOtu->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgOtu, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgOtu->setVisible(!dlgOtu->isVisible());
 }
 
+// Маршруты
 void MainWindow::on_action_Routes_triggered()
 {
     if (dlgRoutes==nullptr)
@@ -366,6 +472,7 @@ void MainWindow::on_action_Routes_triggered()
         dlgRoutes->setVisible(!dlgRoutes->isVisible());
 }
 
+// КП
 void MainWindow::on_action_KP_triggered()
 {
     if (dlgKp==nullptr)
@@ -378,6 +485,7 @@ void MainWindow::on_action_KP_triggered()
         dlgKp->setVisible(!dlgKp->isVisible());
 }
 
+// РЦ
 void MainWindow::on_action_RC_triggered()
 {
     if (dlgRc==nullptr)
@@ -390,6 +498,7 @@ void MainWindow::on_action_RC_triggered()
         dlgRc->setVisible(!dlgRc->isVisible());
 }
 
+// стрелки
 void MainWindow::on_action_STRL_triggered()
 {
     if (dlgStrl == nullptr)
@@ -402,11 +511,20 @@ void MainWindow::on_action_STRL_triggered()
         dlgStrl->setVisible(!dlgStrl->isVisible());
 }
 
+// светофоры
 void MainWindow::on_action_SVTF_triggered()
 {
-
+    if (dlgSvtf == nullptr)
+    {
+        dlgSvtf = new DlgSvtfInfo(g_actualStation, this);
+        dlgSvtf->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgSvtf, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgSvtf->setVisible(!dlgSvtf->isVisible());
 }
 
+// станции
 void MainWindow::on_action_Stations_triggered()
 {
     if (dlgStations == nullptr)
@@ -418,18 +536,57 @@ void MainWindow::on_action_Stations_triggered()
         dlgStations->setVisible(!dlgStations->isVisible());
 }
 
+// перегоны
+void MainWindow::on_action_Peregons_triggered()
+{
+    if (dlgPeregons == nullptr)
+    {
+        dlgPeregons = new DlgPeregonInfo(this);
+        dlgPeregons->show();
+    }
+    else
+        dlgPeregons->setVisible(!dlgPeregons->isVisible());
+}
 
+// переезды
+void MainWindow::on_action_Pereezd_triggered()
+{
+    if (dlgPereezd == nullptr)
+    {
+        dlgPereezd = new DlgPereezd(this);
+        dlgPereezd->show();
+    }
+    else
+        dlgPereezd->setVisible(!dlgPereezd->isVisible());
+}
+
+
+// поезда
+void MainWindow::on_action_DlgTrains_triggered()
+{
+
+    if (dlgTrains == nullptr)
+    {
+        dlgTrains = new DlgTrains(this);
+        dlgTrains->show();
+    }
+    else
+        dlgTrains->setVisible(!dlgTrains->isVisible());
+}
+
+// крупнее
 void MainWindow::on_action_More_triggered()
 {
     sliderScale->setValue(sliderScale->value() + 1);
     scaleView();                                    // масштабирование всего представления
 }
+// мельче
 void MainWindow::on_action_Less_triggered()
 {
     sliderScale->setValue(sliderScale->value() - 1);
     scaleView();
 }
-
+// масштаб 1:1
 void MainWindow::on_action_ZoomOff_triggered()
 {
     sliderScale->setValue(0);
@@ -440,9 +597,16 @@ void MainWindow::on_action_ZoomOff_triggered()
 void MainWindow::scaleView()
 {
     qreal scale = qPow(qreal(2), (sliderScale->value()) / qreal(50));
-    QMatrix matrix;
-    matrix.scale(scale, scale);
-    child->setMatrix(matrix);
+    QTransform transform;
+    transform.scale(scale, scale);
+    child->setTransform(transform);
+
+//    child->horizontalScrollBar()->setValue(0);
+//    child->verticalScrollBar()->setValue(0);
+
+    //QMatrix matrix;
+    //matrix.scale(scale, scale);
+    //child->setMatrix(matrix);
 }
 
 // вкл/откл тулбар
@@ -451,11 +615,6 @@ void MainWindow::on_action_Toolbar_triggered()
     ui->mainToolBar->setVisible(ui->action_Toolbar->isChecked());
 }
 
-// вкл/откл панели масштабирования
-void MainWindow::on_action_ToolBar2_triggered()
-{
-    ui->toolBar2->setVisible(ui->action_ToolBar2->isChecked());
-}
 
 QProcess process;
 // протокол работы модуля
@@ -467,8 +626,45 @@ void MainWindow::on_action_15_triggered()
 //    process.waitForFinished(-1);
 }
 
+// О программе
+void MainWindow::on_action_About_triggered()
+{
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("ДЦ ЮГ. АРМ ШН\n%1\n\nФайл: %2.\nДата сборки: %3\n© ООО НПЦ Промавтоматика, 2016").arg(version).arg(info.filePath()).arg(info.lastModified().toString(FORMAT_DATETIME)));
+}
 
-// --------------------------------------------- Работа с архивом ----------------------------
+void MainWindow::on_action_QtAbout_triggered()
+{
+    QMessageBox::aboutQt(this, "Версия QT");
+}
+
+void MainWindow::action_load_log()
+{
+    QStringList params;
+    params << logger.GetActualFile();
+    process.start(editor, params);
+}
+
+
+// Вкл/откл тултипы
+void MainWindow::on_action_Tooltip_triggered()
+{
+    child->setMouseTracking(tooltip = ui->action_Tooltip->isChecked());
+}
+
+void MainWindow::on_action_VisibleTrains_triggered()
+{
+    ShapeTrain::bShowTrains = !ShapeTrain::bShowTrains;
+}
+
+void MainWindow::on_action_VisibleNonregTrains_triggered()
+{
+    ShapeTrain::bShowNonregTrains = !ShapeTrain::bShowNonregTrains;
+}
+
+
+
+// -------------------------------------------------------------- Работа с архивом ---------------------------------------------------------------------
 //                                           можно вынести в отд.файл
 // щелчок флажка поиск изменений ТС; если сняли флажок - очистить поле выбора искомого ТС в списке
 void MainWindow::tsToggled(bool checked)
@@ -493,9 +689,7 @@ void MainWindow::on_actionBlackbox_triggered()
     ui->action_Stop  ->setEnabled(blackBoxMode);
     stepValue        ->setEnabled(blackBoxMode);
     labelStep        ->setEnabled(blackBoxMode);
-    labelTemp        ->setEnabled(blackBoxMode);
-    labelTemp2       ->setEnabled(blackBoxMode);
-    sliderTemp       ->setEnabled(blackBoxMode);
+//  labelZoom        ->setEnabled(blackBoxMode);
     checkFindTs      ->setEnabled(blackBoxMode);
     cmbTs            ->setEnabled(blackBoxMode && checkFindTs->isChecked());
     checkFindLink    ->setEnabled(blackBoxMode);
@@ -541,6 +735,37 @@ void MainWindow::on_actionPlay_triggered()
         on_action_Stop_triggered();
 }
 
+// нажатие кнопки "Воспроизведение назад" ("<")
+// надо воспроизводить архив с заданного времени
+void MainWindow::on_actionReverce_triggered()
+{
+    bPlayBack = ui->actionReverce->isChecked();
+    if (bPlayBack)
+    {
+        arhDateTime = QDateTime(dateEdit->date(),timeEdit->time());
+        reader->setArhName(arhDateTime);                    // определение файла для чтения и инициализация
+        int ret = readPrev(&arhDateTime);
+        if (ret == -1)
+        {
+            // не нашли; проблема с датой, нужна подкачка нужного файла
+            ui->actionReverce->setChecked(false);
+            bPlayBack = false;
+            return;
+        }
+
+        bPlay = false;
+        ui->actionNext->setEnabled(false);
+        ui->actionPrev->setEnabled(false);
+        ui->actionReverce->setEnabled(false);
+        ui->action_Stop->setEnabled(true);
+        dateEdit->setEnabled(false);
+        timeEdit->setEnabled(false);
+    }
+    else
+        on_action_Stop_triggered();
+}
+
+
 // нажатие кнопки "СТОП" ("||")
 void MainWindow::on_action_Stop_triggered()
 {
@@ -574,6 +799,21 @@ void MainWindow::timerEvent(QTimerEvent *event)
         dateEdit->setDate(QDate::currentDate());
         timeEdit->setTime(QTime::currentTime());
     }
+
+    // отслеживаем сосотояние диалогов и приводим в соотвествие состояние опций меню
+    ui->action_TS       ->setChecked(dlgTs      != nullptr && dlgTs     ->isVisible());
+    ui->action_TU       ->setChecked(dlgTu      != nullptr && dlgTu     ->isVisible());
+    ui->action_OTU      ->setChecked(dlgOtu     != nullptr && dlgOtu    ->isVisible());
+    ui->action_Routes   ->setChecked(dlgRoutes  != nullptr && dlgRoutes ->isVisible());
+    ui->action_RC       ->setChecked(dlgRc      != nullptr && dlgRc     ->isVisible());
+    ui->action_STRL     ->setChecked(dlgStrl    != nullptr && dlgStrl   ->isVisible());
+    ui->action_SVTF     ->setChecked(dlgSvtf    != nullptr && dlgSvtf   ->isVisible());
+    ui->action_Stations ->setChecked(dlgStations!= nullptr && dlgStations->isVisible());
+    ui->action_Peregons ->setChecked(dlgPeregons!= nullptr && dlgPeregons->isVisible());
+    ui->action_Pereezd  ->setChecked(dlgPereezd != nullptr && dlgPereezd ->isVisible());
+    ui->action_KP       ->setChecked(dlgKp      != nullptr && dlgKp     ->isVisible());
+    ui->action_DlgTrains->setChecked(dlgTrains  != nullptr && dlgTrains ->isVisible());
+
 }
 
 // прочитать и отобразить след.запись в архиве
@@ -582,11 +822,11 @@ void MainWindow::timerEvent(QTimerEvent *event)
 // если задано условие поиска (ТС или связь) - ищем изменение конкретного ТС или состояния связи
 bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 {
-    int sts;
+    int sts = 0;
     int ret = 0;
 
     if (findChanges && isFindTsChanges())
-        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText());
+        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString());
 
     qDebug() << "Следующая запись";
     if (reader != nullptr)
@@ -659,6 +899,10 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
                 // if (ошибка)
                 //     уведомление о невозможности
 
+                // позиционируемся на заданное время, если требуется
+                if (rqDate != nullptr)
+                    ret = reader->Read(*rqDate);
+
                 // если ничего никак не нашли (ret=-1) и это не поиск изменений - выход
                 if (ret < 0 || !findChanges)
                     break;
@@ -678,7 +922,7 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
             // поиск изменения статуса связи
             if (findChanges && isFindLinkErrors() && g_actualStation->IsLinkStatusChanged())
                 break;
-            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText()))
+            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString()))
                  break;
         }
 
@@ -692,9 +936,121 @@ bool MainWindow::readNext(QDateTime* rqDate, bool findChanges)     // =false
 }
 
 // прочитать и отобразить пред.запись в архиве
-void MainWindow::readPrev()
+bool MainWindow::readPrev(QDateTime* rqDate, bool findChanges)
 {
+    int sts = 0;
+    int ret = 0;
+
+    if (findChanges && isFindTsChanges())
+        sts = g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString());
     qDebug() << "Предыдущая запись";
+
+    if (reader != nullptr)
+    {
+        Station::FastScanArchive = isExtFind();
+        while (true)
+        {
+            // если задан шаг смещения - смещение на заданное задатчиком время dt
+            int dt = stepValue->value();
+            if (dt > 0)
+                ret = reader->Read(QDateTime::fromTime_t(reader->time() - dt*60));  // время с учетом задатчика
+            else
+            // если не задан шаг задатчиком dt, но в функцию передано конкретное требуемое время rqDate - пытаемся позиционируовать на это время
+            if (rqDate != nullptr)
+                ret = reader->Read(*rqDate);                                        // явно заданное время
+
+            // если время не задано и шаг не задан - просто читаем след.запись
+            ret = reader->Prev();                                               // пред.запись
+            //ret = reader->Prev();                                               // пред.запись
+
+            // не нашли в текущем файле нужного времени
+            if (ret==-1)
+            {
+                // надо переместить время на конец предыдущего часа
+                // можно проверить dt на допустимое значение
+                if (reader->isExist() && reader->isBegOfFile())
+                {
+                    if (reader->setPrevHour(QDateTime::fromTime_t(reader->time())))
+                    {
+                        qDebug() << reader->getFileName();
+                        ret = reader->Last();
+                    }
+                }
+                else
+                {
+                    QString zipFile = pathSave + reader->getZipName(reader->rqt());
+                    if (QFile::exists(zipFile))
+                    {
+                        qDebug() << "Извлекаем файл из архива " << zipFile;
+                        reader->close();
+                        QProcess process;
+                        QStringList params;
+                        params << "-o" << zipFile << reader->getFileName() << "-d" << pathTemp;
+                        process.start(decompressor, params);
+                        if (process.waitForFinished())
+                        {
+                            reader->setArhName(reader->rqt());
+                            if ((ret =reader->First()) ==-1)
+                            {
+                                // чужое время, лажа; запросить архив снова
+                            }
+                        }
+                        else
+                        {
+                            // проблемы завершения процесса разархивирования
+                        }
+                    }
+                    else
+                    {
+                        // подкачка
+                        break;
+                    }
+                }
+                // if (нет след файла)
+                // {
+                //     if (нет архива)
+                //        подкачка (если нет возможности подкачки - уведомление о фатальной ошибке)
+                //     разархивирование (если нет возможности разархивирования - уведомление о фатальной ошибке))
+                // }
+                // читаем первую запись
+                // if (ошибка)
+                //     уведомление о невозможности
+
+                // позиционируемся на заданное время, если требуется
+                if (rqDate != nullptr)
+                    ret = reader->Read(*rqDate);
+
+                // если ничего никак не нашли (ret=-1) и это не поиск изменений - выход
+                if (ret < 0 || !findChanges)
+                    break;
+            }
+
+            // обработать данные
+            DDataFromMonitor * data = (DDataFromMonitor *)reader->Data();
+            QDateTime t = QDateTime::fromTime_t(reader->time());
+            dateEdit->setDate(t.date());
+            timeEdit->setTime(t.time());
+            data->Extract(reader->Length());
+            QApplication::processEvents();
+
+            // если шаг по времени или не ищем изменения или изменения есть - выход из цикла
+            if (dt || !findChanges || (!isExtFind() && g_actualStation->IsTsChanged()))
+                break;                                      // нашли измененные ТС
+            // поиск изменения статуса связи
+            if (findChanges && isFindLinkErrors() && g_actualStation->IsLinkStatusChanged())
+                break;
+            if (findChanges && isFindTsChanges() && sts != g_actualStation->GetTsStsByNameEx(cmbTs->currentText().toStdString()))
+                 break;
+        }
+
+        if (Station::FastScanArchive)
+        {
+            Station::FastScanArchive = false;
+            g_actualStation->AcceptTS();
+        }
+    }
+    return ret > 0;
+
 }
 
 
@@ -703,12 +1059,16 @@ void MainWindow::on_actionNext_triggered()
 {
     if (!readNext(nullptr, true))
     {
-        // не согли найти очередной архив
+        // не смогли найти очередной архив
     }
 }
 
 // обработка кнопки шаг назад
 void MainWindow::on_actionPrev_triggered()
 {
-
+    readPrev(nullptr, true);
 }
+// -------------------------------------------------------------- end Работа с архивом ---------------------------------------------------------------------
+
+
+

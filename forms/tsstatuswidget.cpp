@@ -8,7 +8,7 @@ TsStatusWidget::TsStatusWidget(QWidget *parent) : QWidget(parent)
 {
     dxy = 16;
     page = 1;
-    pSt = nullptr;
+    st = nullptr;
     normal = false;
     actualNode = -1;
     setMouseTracking(true);
@@ -26,7 +26,8 @@ void TsStatusWidget::paintEvent(QPaintEvent* e)
     Q_UNUSED(e)
     QPainter p(this);
     DrawGrid(&p);
-    DrawTs  (&p);
+    if (st != nullptr)
+        DrawTs  (&p);
 }
 
 void TsStatusWidget::DrawGrid(QPainter *p)
@@ -50,9 +51,9 @@ void TsStatusWidget::DrawGrid(QPainter *p)
 
 void TsStatusWidget::updateWidget (class Station * pst, int p)
 {
-    if (pSt != pst || page != p)
+    if (st != pst || page != p)
     {
-        pSt = pst;
+        st = pst;
         page = p;
         update();
     }
@@ -60,6 +61,7 @@ void TsStatusWidget::updateWidget (class Station * pst, int p)
 
 void TsStatusWidget::DrawTs  (QPainter *p)
 {
+
     for (int i = 0; i < 32*32 ; i++)
     {
         int row         = i / 32,                               // строка в матрице
@@ -73,7 +75,7 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         QBrush brush(bck);
         p->setPen(bck);
         p->setBrush(brush);
-        if (pSt==nullptr)
+        if (st==nullptr)
         {
             p->drawRect(r);
             continue;
@@ -86,10 +88,10 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         indxByte += (page - 1) * (1024 / 8);
         int indxBit = indxByte*8 + j;
 
-        Ts * ts = pSt->GetTsByIndex(indxBit);
+        Ts * ts = st->GetTsByIndex(indxBit);
         // состояние берем из массива ТС, так как в одном узле может быть несколько логических сигналов
-        sts      = normal ? pSt->GetTsStsByIndex(indxBit) : pSt->GetTsStsRawByIndex(indxBit);
-        stsPulse = /*ts!=nullptr ? ts->StsPulse() :*/ pSt->GetTsPulseStsByIndex(indxBit);
+        sts      = normal ? st->GetTsStsByIndex(indxBit) : st->GetTsStsRawByIndex(indxBit);
+        stsPulse = /*ts!=nullptr ? ts->StsPulse() :*/ st->GetTsPulseStsByIndex(indxBit);
 
         // 0
         //   - светло-серый фон
@@ -122,7 +124,7 @@ void TsStatusWidget::DrawTs  (QPainter *p)
         if (sts && stsPulse==false)                              // 1
         {
             if (ts==nullptr)
-                clr = pSt->Kp2000() && (indxByte % 8) == (j % 8) ? Qt::darkGray : Qt::yellow;
+                clr = st->Kp2000() && (indxByte % 8) == (j % 8) ? Qt::darkGray : Qt::yellow;
             p->setPen(clr);
             p->setBrush(clr);
             p->fillRect(r, clr);
@@ -176,6 +178,6 @@ void TsStatusWidget::mousePressEvent(QMouseEvent * event)
 void TsStatusWidget::mouseMoveEvent(QMouseEvent * event)
 {
     QPoint point = event->pos();
-    Ts * ts = pSt->GetTsByIndex((point.y() / 16) * 32 + point.x() / 16 + (page - 1) * 1024);
+    Ts * ts = st->GetTsByIndex((point.y() / 16) * 32 + point.x() / 16 + (page - 1) * 1024);
     QToolTip::showText(event->globalPos(), ts==nullptr ? "" : ts->GetTooltip());
 }

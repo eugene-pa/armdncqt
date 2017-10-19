@@ -9,12 +9,13 @@ public:
     ShapeTrain(ShapeSet* parent);
     ~ShapeTrain();
 
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    virtual void  Draw (QPainter*);                         // функция рисования
-
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
+    virtual void  Draw (QPainter*) override;                // функция рисования
+    virtual QRectF boundingRect() const override;
 
     static bool bShowTrains;
     static bool bShowNonregTrains;
+    static void drawTrain(QPainter* painter, class Train*train, bool oddevnorient, QPointF pLft, QPointF pRht);
 
     static QBrush GetBrush(int no);
 };

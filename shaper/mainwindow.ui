@@ -13,7 +13,19 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QWidget" name="formLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>370</y>
+      <width>160</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout"/>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -126,7 +138,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNewForm">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/new.png</normaloff>:/images/images/new.png</iconset>
    </property>
    <property name="text">
@@ -141,7 +153,7 @@
   </action>
   <action name="actionOpenForm">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/open.png</normaloff>:/images/images/open.png</iconset>
    </property>
    <property name="text">
@@ -156,7 +168,7 @@
   </action>
   <action name="actionSaveForm">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/save.png</normaloff>:/images/images/save.png</iconset>
    </property>
    <property name="text">
@@ -171,7 +183,7 @@
   </action>
   <action name="actionSaveFormAs">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/saveas.png</normaloff>:/images/images/saveas.png</iconset>
    </property>
    <property name="text">
@@ -180,7 +192,7 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/quit.png</normaloff>:/images/images/quit.png</iconset>
    </property>
    <property name="text">
@@ -195,7 +207,7 @@
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/undo.png</normaloff>:/images/images/undo.png</iconset>
    </property>
    <property name="text">
@@ -210,7 +222,7 @@
   </action>
   <action name="actionSelectAll">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/star_yellow.png</normaloff>:/images/images/star_yellow.png</iconset>
    </property>
    <property name="text">
@@ -225,7 +237,7 @@
   </action>
   <action name="actionUnselectAll">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/star_grey.png</normaloff>:/images/images/star_grey.png</iconset>
    </property>
    <property name="text">
@@ -237,7 +249,7 @@
   </action>
   <action name="actionInvertSelection">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/star_yellow_new.png</normaloff>:/images/images/star_yellow_new.png</iconset>
    </property>
    <property name="text">
@@ -249,7 +261,7 @@
   </action>
   <action name="actionSelectErrors">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/star_red.png</normaloff>:/images/images/star_red.png</iconset>
    </property>
    <property name="text">
@@ -261,7 +273,7 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/Recycle Bin Empty.png</normaloff>:/images/images/Recycle Bin Empty.png</iconset>
    </property>
    <property name="text">
@@ -273,7 +285,7 @@
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/index_add.png</normaloff>:/images/images/index_add.png</iconset>
    </property>
    <property name="text">
@@ -288,7 +300,7 @@
   </action>
   <action name="actionPaste">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/index_down.png</normaloff>:/images/images/index_down.png</iconset>
    </property>
    <property name="text">
@@ -365,7 +377,7 @@
   </action>
   <action name="actionEdit">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset>
      <normaloff>:/images/images/icon-283.png</normaloff>:/images/images/icon-283.png</iconset>
    </property>
    <property name="text">
@@ -462,8 +474,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

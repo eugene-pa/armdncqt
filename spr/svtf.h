@@ -5,6 +5,7 @@
 
 class Svtf : public SprBase
 {
+    friend class DlgSvtfInfo;
 public:
 
     enum SVTF_CLASS
@@ -55,10 +56,12 @@ public:
     bool IsMnvrEx   () { return SafeValue(manevr); }        // доп.контроль маневрового сигнала
     bool IsAlarm    () { return formula_er && formula_er->ValueBool(); }
 
+    QString About() Q_DECL_OVERRIDE;
+
 private:
-    static QHash <int, Svtf *> svtfhash;                     // СВТФ , индексированные по индексу ТС
-    static QHash<QString, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СВТФ
-    static QHash<QString, class IdentityType *> methodIds;  //  множество шаблонов возможных методов СВТФ
+    static std::unordered_map <int, Svtf *> svtfhash;       // СВТФ , индексированные по индексу ТС
+    static std::unordered_map<std::string, class IdentityType *> propertyIds;//  множество шаблонов возможных свойств СВТФ
+    static std::unordered_map<std::string, class IdentityType *> methodIds;  //  множество шаблонов возможных методов СВТФ
 
     // свойства
     Property * opened;                                      // открыт

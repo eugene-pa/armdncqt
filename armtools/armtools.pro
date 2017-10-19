@@ -5,9 +5,8 @@
 #-------------------------------------------------
 
 QT       += core gui widgets sql
-CONFIG   += console
+CONFIG   += console c++11
 QT       += network
-
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -68,7 +67,13 @@ SOURCES += main.cpp\
     ../forms/qled.cpp \
     ../forms/dlgroutes.cpp \
     ../forms/dlgtuinfo.cpp \
-    ../forms/dlgtrains.cpp
+    ../forms/dlgtrains.cpp \
+    ../forms/dlgsvtfinfo.cpp \
+    ../spr/otu.cpp \
+    ../forms/dlgotu.cpp \
+    ../forms/dlgperegoninfo.cpp \
+    ../spr/pereezd.cpp \
+    ../forms/dlgpereezd.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -125,7 +130,13 @@ HEADERS  += mainwindow.h \
     ../forms/tsstatuswidget.h \
     ../forms/dlgkpinfo.h \
     ../forms/bminfoframe.h \
-    ../forms/qled.h
+    ../forms/qled.h \
+    ../forms/dlgsvtfinfo.h \
+    ../spr/otu.h \
+    ../forms/dlgotu.h \
+    ../forms/dlgperegoninfo.h \
+    ../spr/pereezd.h \
+    ../forms/dlgpereezd.h
 
 
 FORMS    += mainwindow.ui \
@@ -137,10 +148,16 @@ FORMS    += mainwindow.ui \
     ../forms/bminfoframe.ui \
     ../forms/dlgroutes.ui \
     ../forms/dlgtuinfo.ui \
-    ../forms/dlgtrains.ui
+    ../forms/dlgtrains.ui \
+    ../forms/dlgsvtfinfo.ui \
+    ../forms/dlgotu.ui \
+    ../forms/dlgperegoninfo.ui \
+    ../forms/dlgpereezd.ui
 
 RESOURCES += \
     images.qrc
 
 DISTFILES += \
+    history.txt \
+    ../todo.txt \
     armtools.ini

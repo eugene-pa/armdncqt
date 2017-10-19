@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,1">
+    <property name="verticalSpacing">
+     <number>2</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="FrameBase" name="frameBase">
+      <property name="minimumSize">
+       <size>
+        <width>780</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
+      <item>
+       <widget class="QGroupBox" name="groupBox_MT">
+        <property name="minimumSize">
+         <size>
+          <width>350</width>
+          <height>90</height>
+         </size>
+        </property>
+        <property name="baseSize">
+         <size>
+          <width>350</width>
+          <height>90</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Состояние модулей ТУ/ТС</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
+          <number>2</number>
+         </property>
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_MT">
+           <item>
+            <widget class="FrameMVV" name="frameMVV1">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="FrameMVV" name="frameMVV2">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="FrameMvvStatus" name="groupBox_MVV">
+        <property name="title">
+         <string>Состояние МВВ</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget" native="true"/>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_DBG">
+        <property name="title">
+         <string>Отладка</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="FarmeLine" name="groupBox_PSV">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>94</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Модем COM3 (пас)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="FarmeLine" name="groupBox_ACT">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>94</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Модем COM4 (акт)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,3">
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <item>
+       <widget class="FrameTU" name="frameTU">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="FramePlugin" name="groupBox">
+        <property name="title">
+         <string>Сопряжение с системами ЖАТ</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Просмотр</string>
+    </property>
+    <addaction name="action_TS"/>
+    <addaction name="action_Log"/>
+    <addaction name="action_Ini"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Выполнить</string>
+    </property>
+    <addaction name="action_Lock"/>
+    <addaction name="action_Refresh"/>
+    <addaction name="action_Clear"/>
+    <addaction name="action_TU"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>Вид</string>
+    </property>
+    <addaction name="action_Toolbar"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Lock"/>
+   <addaction name="action_Refresh"/>
+   <addaction name="action_TS"/>
+   <addaction name="action_Clear"/>
+   <addaction name="action_Ini"/>
+   <addaction name="action_Log"/>
+   <addaction name="action_TU"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_TS">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/3.ico</normaloff>:/images/images/3.ico</iconset>
+   </property>
+   <property name="text">
+    <string>ТС</string>
+   </property>
+   <property name="shortcut">
+    <string>3</string>
+   </property>
+  </action>
+  <action name="action_Log">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/6.ico</normaloff>:/images/images/6.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Протокол</string>
+   </property>
+   <property name="shortcut">
+    <string>6</string>
+   </property>
+  </action>
+  <action name="action_Ini">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/5.ico</normaloff>:/images/images/5.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Настройки</string>
+   </property>
+   <property name="shortcut">
+    <string>5</string>
+   </property>
+  </action>
+  <action name="action_Lock">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/1.ico</normaloff>:/images/images/1.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Заблокировать</string>
+   </property>
+   <property name="shortcut">
+    <string>1</string>
+   </property>
+  </action>
+  <action name="action_Refresh">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/2.ico</normaloff>:/images/images/2.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Обновить</string>
+   </property>
+   <property name="shortcut">
+    <string>2</string>
+   </property>
+  </action>
+  <action name="action_Clear">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/4.ico</normaloff>:/images/images/4.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Очистить</string>
+   </property>
+   <property name="shortcut">
+    <string>4</string>
+   </property>
+  </action>
+  <action name="action_TU">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/images/images/7.ico</normaloff>:/images/images/7.ico</iconset>
+   </property>
+   <property name="text">
+    <string>ТУ</string>
+   </property>
+   <property name="shortcut">
+    <string>7</string>
+   </property>
+  </action>
+  <action name="action_Toolbar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Тулбар</string>
+   </property>
+   <property name="shortcut">
+    <string>0</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>FrameBase</class>
+   <extends>QFrame</extends>
+   <header>framebase.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FrameMvvStatus</class>
+   <extends>QGroupBox</extends>
+   <header>framemvvstatus.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FarmeLine</class>
+   <extends>QGroupBox</extends>
+   <header>farmeline.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FrameMVV</class>
+   <extends>QFrame</extends>
+   <header>framemvv.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FrameTU</class>
+   <extends>QFrame</extends>
+   <header>frametu.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FramePlugin</class>
+   <extends>QGroupBox</extends>
+   <header>frameplugin.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
+ <connections/>
+</ui>

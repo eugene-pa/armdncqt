@@ -9,9 +9,10 @@
 #include "shapeset.h"
 #include "../common/boolexpression.h"
 #include "../spr/sprbase.h"
+#include "../spr/peregon.h"
+#include "shapetrain.h"
 
-//QVector<TrnspDescription *> TrnspDescription::descriptions; // массив описателей
-QHash<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
+std::unordered_map<int, TrnspDescription *> TrnspDescription::descriptions;// массив описателей
 bool TrnspDescription::loaded = false;
 
 QBrush ShapeTrnsp::brushUndefined;                          // общая кисть неопределенного состояния
@@ -21,6 +22,8 @@ QPen   ShapeTrnsp::whitePen;                                // общее бел
 ShapeTrnsp::ShapeTrnsp(QString& src, ShapeSet* parent) : DShape (src, parent)
 {
     pulsing = false;
+    noprg = 0;
+    prg = nullptr;
     // обнуление массива формул
     for (int i=0; i<maxStates; i++)
     {
@@ -88,7 +91,7 @@ void ShapeTrnsp::Parse(QString& src)
     roundedTuRect = QRectF(XY + QPointF(-3, -3), QSizeF(width+6, height + 6));
 
     // ищем описатель свойств и рассчитываем графику с учетом координат транспаранта
-    prop = idObj>=0 && idObj<TrnspDescription::descriptions.count() ? TrnspDescription::descriptions[idObj] : nullptr;
+    prop = idObj>=0 && idObj<(int)TrnspDescription::descriptions.size() ? TrnspDescription::descriptions[idObj] : nullptr;
     if (prop == nullptr)
         set->logger()->log(QString("ShapeTrnsp. Не найдено описание транспаранта с типом #%1: '%2'").arg(idObj).arg(src));
     else
@@ -154,6 +157,31 @@ void ShapeTrnsp::Parse(QString& src)
         i++;
     }
 
+    // обраюотаем направление и номер перегона на транспарнтах слепых перегонов
+    if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
+    {
+        dir = 0;
+        QString s = stsExpr[0]->Source();
+        if (s.indexOf("Ч") ==0)
+            dir = 1;
+        if (s.indexOf("Н") ==0 || s.indexOf("H") ==0)
+            dir = -1;
+        QRegularExpression regexEx("\\A[ЧН]\\[#\\d+\\]");
+        QRegularExpressionMatch match = regexEx.match(s);
+        if (match.hasMatch())
+        {
+            QRegularExpression regexExN("\\d");
+            QRegularExpressionMatch match = regexExN.match(s);
+            if (match.hasMatch())
+            {
+                noprg = match.captured().toInt();
+                prg = Peregon::GetById(noprg);
+            }
+        }
+        else
+            log (QString("ShapeTrnsp. Ошибка выражения в описании транспаранта 'Поезда на перегоне': %1").arg(src));
+    }
+
     if (index > lexems.length() - 1)    return;
 
     // проверяем опциональное наличие тильды [~]
@@ -191,6 +219,7 @@ void ShapeTrnsp::Parse(QString& src)
 
     // далее может идти признак привязки транспаранта к следующему текстовому примитиву
     //bool bLink = lexems[index++].toInt(&ret) != 0 ? true : false;
+    index++;                                                // игнорирую привязку
     if (index > lexems.length() - 1)    return;             //
 
     // далее может идти либо комментарий, либо описание транспаранта в кавычках
@@ -221,6 +250,9 @@ void ShapeTrnsp::Parse(QString& src)
     //    XY_titleOff = XY + new Vector((Width - TitleOff.Width)/2, (Height - TitleOff.Height)/2);
     //    XY_titleExt = XY + new Vector((Width - TitleExt.Width)/2, (Height - TitleExt.Height)/2);
 
+
+    if (!toolTipText.length() && prop!=nullptr && prop->description.length())
+        toolTipText = prop->description;
 }
 
 
@@ -254,7 +286,32 @@ void ShapeTrnsp::Prepare()
 
 QString ShapeTrnsp::Dump()
 {
-    return "ТРАНСП";
+    QString s = "Ст." + StationName();
+    if (toolTipText.length())
+        s += "\r\n" + toolTipText;
+    else
+    if (prop->description.length())
+        s += "\r\n" + prop->description;
+
+    // ТС
+    for (int i=1; i<=3; i++)
+    {
+        if (stsExpr[i-1] != nullptr && stsExpr[i-1]->Source().length())
+        {
+            s += "\r\nТС" + QString::number(i) + ": " + stsExpr[i-1]->Source();
+            if (stsPulseExpr[i-1]!=nullptr && stsPulseExpr[i-1]->Source().length())
+                s += ",   " + stsPulseExpr[i-1]->Source();
+            s += " = " + QString::number(stsExpr[i-1]->ValueBool());
+        }
+    }
+
+    if (tuNames.length() > 0)
+        s += "\r\nТУ ВКЛ: " + tuNames[0];
+    if (tuNames.length() > 1)
+        s += "\r\nТУ ВЫКЛ: " + tuNames[1];
+
+
+    return s;
 }
 
 QString  ShapeTrnsp::ObjectInfo()
@@ -370,7 +427,8 @@ void ShapeTrnsp::Draw(QPainter* painter)
     if (blinking && DShape::globalPulse)
         return;
 
-    if ((*state)[StsOn] || (*state)[StsOff] | (*state)[StsExt])
+    // отрисовка если транспарант MUST DRAW всегда или есть активные состояния
+    if (prop->drawOffState || (*state)[StsOn] || (*state)[StsOff] || (*state)[StsExt])
     {
 //        bool on = (*state)[StsOn],
 //             off = (*state)[StsOff],
@@ -412,19 +470,60 @@ void ShapeTrnsp::Draw(QPainter* painter)
         }
         else
         {
+            QTextOption op(Qt::AlignCenter);
+
             if (path.length() != 0)                         // геометрия пути
             {
-                painter->drawPath(path);
+                painter->drawPath(path);                    // некоторые транспаранты могут иметь геометрию + текст, например ЧКЖ/НКЖ
+                                                            // можно опционировать в поле БД, можно зашить в код
+                if (idObj==TRNSP_CHKZH || idObj==TRNSP_NKZH)
+                {
+                    if (!palitra.suited)
+                        suiteFont (painter, palitra);
+                    QRectF r = rect;
+                    if (idObj==TRNSP_NKZH)
+                        r.moveTopLeft (QPointF(rect.x() - 8, rect.y()-8));
+                    else
+                        r.moveTopLeft (QPointF(rect.x() + 8, rect.y()-8));
+                    painter->drawText(r, palitra.text, op);
+                }
+            }
+            else                                            // поезда на слепых перегонах отрисовываем отдельно
+            if (prop->id==TRNSP_BLIND_L || prop->id==TRNSP_BLIND_R)
+            {
+                if (prg != nullptr)
+                {
+                    // нужно уметь отображать несколько поездов со сдвигом
+                    if (isEvn() && prg->evnTrains.size())
+                    {
+                        for (uint i=0; i<prg->evnTrains.size(); i++)
+                        {
+                            float dx = (prg->leftOddOrient ? 10 : -10)*(int)i;
+                            float dy = (prg->leftOddOrient ? -18 : 18)*(int)i;
+                            ShapeTrain::drawTrain(painter, prg->evnTrains[i], prg->leftOddOrient, xy() + QPointF(dx,dy+24), x2y2() + QPointF(dx,dy+24));
+                        }
+                    }
+                    else
+                    // нужно уметь отображать несколько поездов со сдвигом
+                    if (isOdd() && prg->oddTrains.size())
+                    {
+                        for (uint i=0; i<prg->oddTrains.size(); i++)
+                        {
+                            float dx = (prg->leftOddOrient ? -10 : 10)*(int)i;
+                            float dy = (prg->leftOddOrient ? 18 : -18)*(int)i;
+                            ShapeTrain::drawTrain(painter, prg->oddTrains[i], prg->leftOddOrient , xy() + QPointF(dx,dy+24), x2y2() + QPointF(dx,dy));
+                        }
+                    }
+                }
             }
             else                                            // окантовка с текстом
             {
                 painter->drawRect(rect);
 
                 painter->setFont(palitra.font);
-                QTextOption op(Qt::AlignCenter);
 
                 // особо обрабатываю транспарант 25 - TRNSP_TEXT, выводим имя сигнала вместо названия транспаранта
-                if (prop->id==TRNSP_TEXT)
+                if (prop->id==TRNSP_TEXT || palitra.text.length()==0)
                 {
                     painter->drawText(rect, stsExpr[0]->Source(), op);
                 }

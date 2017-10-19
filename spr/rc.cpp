@@ -1,9 +1,9 @@
 #include "station.h"
 #include "krug.h"
 
-QHash<QString, class IdentityType *> Rc::propertyIds;       // множество шаблонов возможных свойств РЦ
-QHash<QString, class IdentityType *> Rc::methodIds;         // множество шаблонов возможных методов РЦ
-QHash <int, Rc *> Rc::rchash;                               // РЦ , индексированные по индексу ТС
+std::unordered_map<std::string, class IdentityType *> Rc::propertyIds;  // множество шаблонов возможных свойств РЦ
+std::unordered_map<std::string, class IdentityType *> Rc::methodIds;    // множество шаблонов возможных методов РЦ
+std::unordered_map <int, Rc *> Rc::rchash;                              // РЦ , индексированные по индексу ТС
 
 Rc::Rc(SprBase * tuts, Logger& logger)
 {
@@ -78,7 +78,7 @@ Rc::~Rc()
 Rc * Rc::GetById(int no, KrugInfo * krug)
 {
     int id = krug==nullptr ? no : krug->key(no);
-    return rchash.contains(id) ? rchash[id] : nullptr;
+    return rchash.count(id) ? rchash[id] : nullptr;
 }
 
 
@@ -88,9 +88,9 @@ bool Rc::AddTemplate(IdentityType * ident)
     if (ident->ObjType() == "РЦ")
     {
         if (ident->PropType() == "ТС")
-            propertyIds[ident->Name()] = ident;
+            propertyIds[ident->Name().toStdString()] = ident;
         else
-            methodIds[ident->Name()] = ident;
+            methodIds[ident->Name().toStdString()] = ident;
         return true;
     }
     return false;
@@ -104,16 +104,17 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
     // ищем существующую РЦ или добавляем новую
     int id = ts->IdRc();
-    Rc * rc = rchash.contains(id) ? rchash[id] : new Rc(ts, logger);
+    Rc * rc = rchash.count(id) ? rchash[id] : new Rc(ts, logger);
 
     bool busy = query.value("Occupation").toBool();
 
     // теперь нужно выполнить привязку свойства
     if (busy)
     {
-        rc->allts.append(ts);
+        rc->allts.push_back(ts);
         rc->busy->SetTs(ts);
         rc->name = ts->Name();                              // имя РЦ определяем по имени сигнала занятости
+        rc->disabled = ts->disabled;
         rc->tpoint = rc->name.indexOf("Т")==0;              // признак того, что это перегонная точка (имя сигнала начинается с "Т")
 
         // читаем специфические для РЦ данные из таблицы ТС (только для сигналов занятости)
@@ -137,7 +138,7 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     }
     else
     {
-        rc->tsList.append(ts);
+        rc->tsList.push_back(ts);
         rc->locked      ->Parse(ts, logger);
         rc->unlocking   ->Parse(ts, logger);
         rc->selected_ir ->Parse(ts, logger);
@@ -152,7 +153,7 @@ Rc * Rc::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
             logger.log(QString("%1: не идентифицирован контроль РЦ").arg(ts->NameEx()));
         }
         else
-            rc->allts.append(ts);
+            rc->allts.push_back(ts);
     }
 
     return rc;
@@ -165,8 +166,8 @@ Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 
     // ищем существующую РЦ или добавляем новую
     int id = tu->IdRc();
-    Rc * rc = rchash.contains(id) ? rchash[id] : new Rc(tu, logger);
-    rc->tuList.append(tu);
+    Rc * rc = rchash.count(id) ? rchash[id] : new Rc(tu, logger);
+    rc->tuList.push_back(tu);
 
     rc->tulock      ->Parse(tu, logger);
     rc->tuunlock    ->Parse(tu, logger);
@@ -177,7 +178,7 @@ Rc * Rc::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
         logger.log(QString("%1: не идентифицирована ТУ для РЦ").arg(tu->NameEx()));
     }
     else
-        rc->alltu.append(tu);
+        rc->alltu.push_back(tu);
     return rc;
 }
 
@@ -277,11 +278,11 @@ bool Rc::ReadRelations(QString& dbpath, Logger& logger)
                         no = query.value(id).toInt(&ret);
                         bool sign = query.value(sts).toBool();
                         if (no)
-                            lnk->strl.append(new LinkedStrl(sign ? -no : no));
+                            lnk->strl.push_back(new LinkedStrl(sign ? -no : no));
                     }
 
-                    l->nxt.append(lnk);
-                    r->prv.append(lnk);
+                    l->nxt.push_back(lnk);
+                    r->prv.push_back(lnk);
                 }
             }
         }
@@ -298,17 +299,18 @@ bool Rc::ReadRelations(QString& dbpath, Logger& logger)
 // обработка объектов по станции
 void Rc::AcceptTS (Station *st)
 {
-    foreach(Rc * rc, st->Allrc().values())
+    for(auto map : st->Allrc())
     {
-        rc->Accept();
+        map.second->Accept();
     }
 }
 
 // очистка списка примитивов РЦ
 void Rc::ClearShapes()
 {
-    foreach(Rc * rc, Rc::AllRc().values())
+    for(auto rec : Rc::AllRc())
     {
+        Rc * rc = rec.second;
         rc->shapes.clear();
     }
 
@@ -351,3 +353,24 @@ SprBase::UniStatusRc Rc::GetUniStatus()
     return SprBase::StsFreeUnlocked;
 }
 
+QString Rc::About()
+{
+    QString s = "Ст." + StationName();
+    s += ". РЦ " + Name();
+
+    s += busy       ->About();
+    s += zmk        ->About();
+    s += ir         ->About();
+    s += selected_ir->About();
+    s += uri        ->About();
+    s += locked     ->About();
+    s += unlocking  ->About();
+    s += falsebusy  ->About();
+    s += mu         ->About();
+
+    s += tuir       ->About();
+    s += tulock     ->About();
+    s += tuunlock   ->About();
+
+    return s;
+}

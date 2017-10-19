@@ -19,7 +19,11 @@ time_t	g_TmDtServer;                                       // серверное
 time_t	g_DeltaTZ = 0;                                      // 2014.10.29.Разница времени удаленного сервера и настоящего АРМ ШН
 int  g_RealStreamTsLength;                                  // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
 bool g_QuickSearching;                                      // флаг ускорееного сканирования входного потока
+
+bool g_rqAck;                                               // требовать явное подтверждение ввода команд нажатием кнопки
+
 class Station * g_actualStation;                            // актуальная станция
+class ShapeId * g_actualForm;                               // актуальная схема
 
 QPixmap * g_green,
         * g_red,
@@ -112,3 +116,37 @@ bool loadResources(QString dir)
             g_strl_minus     ->isNull() ||
             g_strl_plus      ->isNull());
 }
+
+// формирование полного пути из относительного
+// если путь относительный - меняем и возвращаем true
+// если путь полный - ничего не менять и вернуть false
+bool makeFullPath(QString base, QString& path)
+{
+    QFileInfo fi(path);
+    if (fi.isRelative())
+    {
+        path = base + "/" + path;
+        return true;
+    }
+    return false;
+}
+
+// рекомендованные реализации для преобразования QString <-> wstring
+std::wstring qToStdWString(const QString &str)
+{
+#ifdef _MSC_VER
+ return std::wstring((const wchar_t*)str.utf16());          // MSVC
+#else
+ return str.toStdWString();                                 // GCC
+#endif
+}
+
+QString stdWToQString(const std::wstring &str)
+{
+#ifdef _MSC_VER
+ return QString::fromUtf16((const ushort*)str.c_str());     // MSVC
+#else
+ return QString::fromStdWString(str);                       // GCC
+#endif
+}
+

@@ -128,15 +128,15 @@ public:
 
     inline QString Name() { return name; }                  // имя
 
-    virtual void  Draw (QPainter*);                         // функция рисования
-    virtual void  Parse(QString&);                          // разбор строки описания
-    virtual bool  CheckIt();
-    virtual void    FixUpUnsafe();
-    virtual QString Dump();
-    virtual QString ObjectInfo();
-    virtual void    Prepare();
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    virtual void accept();                                  // вычисление состояния примитива
+    virtual void  Draw (QPainter*) override;                // функция рисования
+    virtual void  Parse(QString&) override;                 // разбор строки описания
+    virtual bool  CheckIt() override;
+    virtual void    FixUpUnsafe() override;
+    virtual QString Dump() override;
+    virtual QString ObjectInfo() override;
+    virtual void    Prepare() override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
+    virtual void accept() override;                          // вычисление состояния примитива
 
 static	inline short GetThick() { return mThick;	}
 static	void  SetThick(short w, bool bUpdateDefault = true);

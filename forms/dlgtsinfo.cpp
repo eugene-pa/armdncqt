@@ -11,6 +11,7 @@ DlgTsInfo::DlgTsInfo(QWidget *parent, class Station * pst) :
 {
     ui->setupUi(this);
 
+    st = nullptr;
     ui->spinBox->setRange(1,4);                             // страницы 1-4
 
     QTableWidget * t = ui->tableWidget;                     // заполнение таблицы описания ТС
@@ -19,6 +20,9 @@ DlgTsInfo::DlgTsInfo(QWidget *parent, class Station * pst) :
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "№" << "Сигнал" << "Место" << "M/I/J");
+
+    // автоматически растягтваем 2-й столбец
+    t->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
     // привязываем обработчик выбора сигнала виджета widgetTs
     QObject::connect(ui->widgetTs, SIGNAL(tsSelected (int)), this, SLOT(on_tsSelected(int)));
@@ -35,15 +39,15 @@ DlgTsInfo::~DlgTsInfo()
 // слот обработки события смена станции
 void DlgTsInfo::changeStation(class Station *pst)
 {
-    if (pSt == pst)
-        return;
+    if (pst!=st && pst!=nullptr)
+    {
+        st = pst;
+        ui->labelSt->setText(pst->Name());                      // имя станции
+        ui->widgetTs->setNormal(ui->checkBox->isChecked());     // состояние нормализации
 
-    pSt = pst;
-    ui->labelSt->setText(pst->Name());                      // имя станции
-    ui->widgetTs->setNormal(ui->checkBox->isChecked());     // состояние нормализации
-
-    fillTable();                                            // заполнить таблицу имен ТС
-    ui->widgetTs->updateWidget(pSt = pst);                  // отрисовка ТС
+        fillTable();                                            // заполнить таблицу имен ТС
+        ui->widgetTs->updateWidget(st = pst);                  // отрисовка ТС
+    }
 }
 
 // получить значок состояния ТС
@@ -60,11 +64,13 @@ void DlgTsInfo::fillTable()
 
     t->clearContents();                                     // не обязательно, ресурсы освобождаются автоматически
     t->setSortingEnabled(false);
-    t->setRowCount(pSt->Ts.count());
+    t->setRowCount((int)st->Ts.size());
 
     int row = 0;
-    foreach (Ts * ts, pSt->Ts.values())
+    for (auto rec : st->Ts)
     {
+
+        Ts * ts = rec.second;
         // 1 столбец - номер сигнала = индекс+1
         t->setItem(row,0, new QTableWidgetItem (getStsImage(ts), QString("%1").arg(ts->GetIndex() + 1,5,10,QChar(' '))));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)ts));// запомним ТС
@@ -126,7 +132,7 @@ void DlgTsInfo::on_checkBox_toggled(bool checked)
 // слот обработки поля смены страницы
 void DlgTsInfo::on_spinBox_valueChanged(int arg1)
 {
-    ui->widgetTs->updateWidget(pSt, arg1);
+    ui->widgetTs->updateWidget(st, arg1);
 }
 
 // слот обработки уведомления о выборе ТС

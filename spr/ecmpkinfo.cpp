@@ -22,7 +22,7 @@ ecMpkInfo::~ecMpkInfo()
 // Формат: ЭЦ-МПК[(ГГ[,ГГ])]   (без пробелов, разделитель групп разных блоков - запятая)
 //			ГГ     - число групп
 // ЭЦ-МПК(186,188) - Кинель-1
-bool ecMpkInfo::Parse(QVector<ecMpkInfo*>& list, QString& config,Logger& logger)
+bool ecMpkInfo::Parse(std::vector<ecMpkInfo*>& list, QString& config,Logger& logger)
 {
     bool ret = false;
 
@@ -44,7 +44,7 @@ bool ecMpkInfo::Parse(QVector<ecMpkInfo*>& list, QString& config,Logger& logger)
                 while ((match2 = QRegularExpression ("\\d+").match(match1.captured(), pos)).hasMatch())
                 {
                     UINT length = match2.captured().toUInt();           // обработка блока - выжеление длины данных
-                    list.append(new ecMpkInfo(length, sumLength(list)));
+                    list.push_back(new ecMpkInfo(length, sumLength(list)));
                     pos = match2.capturedEnd();
                 }
             }
@@ -56,7 +56,7 @@ bool ecMpkInfo::Parse(QVector<ecMpkInfo*>& list, QString& config,Logger& logger)
 }
 
 // подсчет общей длины данных по всем блокам
-UINT ecMpkInfo::sumLength(QVector<ecMpkInfo*>& list)
+UINT ecMpkInfo::sumLength(std::vector<ecMpkInfo*>& list)
 {
     UINT length = 0;
     foreach (ecMpkInfo* rpc, list)

@@ -2,16 +2,13 @@
 #include "ui_mainwindow.h"
 #include "kpframe.h"
 
-#include "rasrs.h"
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
-    kpframe * kp = new kpframe(this);
-    ui->gridLayout_kp->addWidget(kp,0,0);
+    ui->gridLayout_kp->addWidget(new kpframe(this),0,0);
     ui->gridLayout_kp->addWidget(new kpframe(this),0,1);
     ui->gridLayout_kp->addWidget(new kpframe(this),0,2);
     ui->gridLayout_kp->addWidget(new kpframe(this),0,3);
@@ -22,8 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout_kp->addWidget(new kpframe(this),0,8);
     ui->gridLayout_kp->addWidget(new kpframe(this),0,9);
     ui->gridLayout_kp->addWidget(new kpframe(this),0,10);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,11);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,12);
+    //ui->gridLayout_kp->addWidget(new kpframe(this),0,11);
+    //ui->gridLayout_kp->addWidget(new kpframe(this),0,12);
 
     ui->gridLayout_kp->addWidget(new kpframe(this),1,0);
     ui->gridLayout_kp->addWidget(new kpframe(this),1,1);
@@ -44,17 +41,17 @@ MainWindow::~MainWindow()
 void MainWindow::on_action_triggered()
 {
     // 1. создаем класс
-    rasRs = new RasRs(this, 1, 600);
-    connect(rasRs, SIGNAL(dataready(QByteArray)), this, SLOT(dataready(QByteArray)));
-    connect(rasRs, SIGNAL(timeout()), this, SLOT(timeout()));
-    connect(rasRs, SIGNAL(error(int)), this, SLOT(error(int)));
-    connect(rasRs, SIGNAL(started() ), this, SLOT(rsStarted()));
+    //rasRs = new RasRs(this, 1, 600);
+    //connect(rasRs, SIGNAL(dataready(QByteArray)), this, SLOT(dataready(QByteArray)));
+    //connect(rasRs, SIGNAL(timeout()), this, SLOT(timeout()));
+    //connect(rasRs, SIGNAL(error(int)), this, SLOT(error(int)));
+    //connect(rasRs, SIGNAL(started() ), this, SLOT(rsStarted()));
     //connect(rasRs, SIGNAL(finished()), this, SLOT(rsFinished));
-    connect(this, SIGNAL(exit()), rasRs, SLOT(exit()));
+    //connect(this, SIGNAL(exit()), rasRs, SLOT(exit()));
 
     // 2. определяем задержки и стартуем поток
     COMMTIMEOUTS tm = { 10, 1, 3000, 1, 250 };
-    rasRs->startRs("COM3,57600,N,8,1", tm);
+    //rasRs->startRs("COM3,57600,N,8,1", tm);
 
 }
 
@@ -73,13 +70,13 @@ void MainWindow::timeout()
 // обработка сигнала-уведомления об ошибке
 void MainWindow::error  (int error)
 {
-    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
+//    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
 }
 
 // обработка сигнала-уведомления от старте потока RS
 void MainWindow::rsStarted()
 {
-    qDebug() << "Старт рабочего потока " << rasRs->name();
+//    qDebug() << "Старт рабочего потока " << rasRs->name();
 }
 
 
@@ -144,6 +141,11 @@ void MainWindow::on_pushButtonResetRsrv_clicked()
 }
 
 void MainWindow::on_pushButtonWatchdog_clicked()
+{
+
+}
+
+void Log (std::wstring s)
 {
 
 }

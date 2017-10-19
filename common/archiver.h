@@ -57,11 +57,13 @@ public:
 
     bool setArhName(QDateTime);                             // установить новое имя часового архива по дате
     bool setNextHour(QDateTime);                            // перейти на начало следующего часа и установить новое имя часового архива по дате
+    bool setPrevHour(QDateTime);                            // перейти на начало предыдущего часа и установить новое имя часового архива по дате
     QString getZipName(QDateTime);                          // получить имя суточного ZIP-архива по дате
     QDateTime rqt() { return _rqt; }                        // запрашиваемое время архива
     QString getFileName() { return filename; }              // получить имя арх.файла
     bool isExist() { return file.isOpen(); }
     bool isEndOfFile() { return file.atEnd(); }
+    bool isBegOfFile() { return file.pos() == 0; }
     void close() { file.close(); }
 private:
     ArchiveHeader header;                                   // заголовок

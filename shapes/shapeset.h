@@ -16,12 +16,12 @@ class ShapeSet
 protected:
     QString filePath;                                       // полный пкть к файлу формы
     QString formname;                                       // имя
-    QVector<class DShape *> set;                            // массив примитивов
-    QVector<class DShape *> setRc;                          // массив отрезков
-    QVector<class DShape *> setStrl;                        // массив стрелок
-    QVector<class DShape *> setSvtf;                        // массив светофоров
-    QVector<class DShape *> setTrnsp;                       // массив транспарантов
-    QVector<class DShape *> setPrzd;                        // массив переездов
+    std::vector<class DShape *> set;                        // массив примитивов
+    std::vector<class DShape *> setRc;                      // массив отрезков
+    std::vector<class DShape *> setStrl;                    // массив стрелок
+    std::vector<class DShape *> setSvtf;                    // массив светофоров
+    std::vector<class DShape *> setTrnsp;                   // массив транспарантов
+    std::vector<class DShape *> setPrzd;                    // массив переездов
 
     bool   bTabloShape;                                     // Обзорный кадр
     float  xMin;                                            // Минимальная ккордината примитива по оси X
@@ -33,8 +33,10 @@ protected:
     int	   nDiameter;					                    // индивидуальная установка диаметра светофора для формы
     int	   nThick;                                          // индивидуальная установка толщины линий
     Logger * plog;
+    bool   ok;                                              // форма загружена
 
     void ScanFile();                                        // Сканирование/загрузка файла
+
 public:
     ShapeSet(QString path, Logger * logger, bool bTablo=false);
     ~ShapeSet();
@@ -47,21 +49,21 @@ public:
     void MoveRel (float,float);				    // перемещение на заданное расстояние
     void Prepare ();
 
-    DShape * GetNearestShape(QPoint Pnt, ShapeType type=END_COD);
-    DShape * GetNearestShape(QPoint Pnt, ShapeType *type, int n);
+    DShape * GetNearestShape(QPoint Pnt, std::vector<ShapeType>* = nullptr);
 
     float   GetxMin() { return xMin; }			    // Минимальная координата примитива по оси X
     float   GetyMin() { return yMin; }		            // Минимальная координата примитива по оси Y
     float   GetxMax() { return xMax; }		            // Максимальная координата примитива по оси X
     float   GetyMax() { return yMax; }		            // Максимальная координата примитива по оси Y
 
-    inline QVector<DShape *>  GetSet() { return set; }
+    inline std::vector<DShape *>  GetSet() { return set; }
     inline QString GetFileName() { return filePath;	}   // путь к файлу
     inline QString Name	      () { return formname; }   // имя без пути и расширения
-    inline int count          () { return set.size();	}           // всего примитивов
+    inline int count          () { return (int)set.size();	} // всего примитивов
     inline bool IsTabloShape  () { return bTabloShape;}
     inline Logger * logger    () { return plog; }               // базовый логгер
     static float X0,Y0;					    // общее смещение схем, задавыаемое опцией X0=, Н0=
+    bool isok() { return ok; }
 
     //static int nTabloDiameter;			    // опционируемая установка диаметра светофора ТАБЛО
     //static int nTabloThick;				    // опционируемая установка толщины линий ТАБЛО

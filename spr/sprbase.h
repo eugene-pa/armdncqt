@@ -7,9 +7,6 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QDateTime>
-#include <QHash>
-#include <QVector>
-#include <QStack>
 
 #include "../common/logger.h"
 
@@ -32,10 +29,11 @@ public:
         BaseUnknown = 0,
         BaseTs,                                             // = 1
         BaseTu,                                             // = 2
-        BaseRc,                                             // = 3
-        BaseSvtf,                                           // = 4
-        BaseStrl,                                           // = 5
-        BaseMax,                                            // = 6
+        BaseOtu,                                            // = 3
+        BaseRc,                                             // = 4
+        BaseSvtf,                                           // = 5
+        BaseStrl,                                           // = 6
+        BaseMax,                                            // = 7
     };
 
     enum UniType
@@ -148,7 +146,7 @@ public:
         StsClosedUzpOn  = 7,                                // Переезд закрыт, шлагбаум закрыт и УЗП поднят
     };
 
-    static QVector<QString> BaseNames;                      // имена типов
+    static std::vector<std::string> BaseNames;              // имена типов
 
     // нужно более четко определиться с No и Id. Можно так: No - номер из БД, Id - ключ с учетом круга,
     // однако, в коде уже используется No как ключ, например, в конструкторе Rc: no = tuts->IdRc();
@@ -178,7 +176,7 @@ public:
 
     virtual QString ToString()                              // сообщение формата "(#номер_объекта) имя_объекта"
         { return QString(" (#%1)").arg(no); }
-    virtual QString About() { return "Класс Spr"; }         // коротко о классе
+    virtual QString About() { return "Класс Spr"; }         // информация об объекте
     virtual QString ObjectType()  { return ""; }            // тип объекта (РЦ/СТРЕЛКА/СВЕТОФОР)
     virtual UniType GetUniType()  { return Unknown;}        // виртуальная функци, возвращает тип объекта в терминах универсального протокола
     int GetUniSts() { return uniSts; }
@@ -190,7 +188,7 @@ public:
 
     BaseType GetBaseType() { return basetype; }             // тип объекта
     void SetBaseType(BaseType t) { basetype = t; }
-    QString& GetBaseName();
+    QString GetBaseName();
 
     void * Tag() { return tag; }                            // объект пользователя
 
@@ -210,8 +208,8 @@ protected:
 
     bool   disabled;                                        // объект заблокирован
 
-    QVector <class Ts*> tsList;                             // список всех ТС объекта
-    QVector <class Tu*> tuList;                             // список всех ТУ объекта
+    std::vector <class Ts*> tsList;                         // список всех ТС объекта
+    std::vector <class Tu*> tuList;                         // список всех ТУ объекта
 
     bool    enabled;                                        // включен (не отключен)
     void * tag;                                             // пользовательский объект по анлогии C#

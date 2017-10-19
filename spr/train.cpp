@@ -2,26 +2,49 @@
 #include "krug.h"
 #include "rc.h"
 
-QHash  <int, Train *> Train::Trains;                        // поезда , индексированные по системному номеру
-QStack <Train*> Train::FreeTrains;                          // пул удаленных справочников для повторного использования
+std::unordered_map <int, Train *> Train::Trains;            // поезда , индексированные по системному номеру
+std::stack <Train*> Train::FreeTrains;                          // пул удаленных справочников для повторного использования
 
 
 Train::Train()
 {
-    nrc = 0;
+    zero();
 }
 
 Train::Train(int sno, int no, class KrugInfo * krug)
 {
-    nrc = 0;
+    zero();
     update(sno, no, krug);
-    Train::Trains[key(sno)] = this;
+    Trains[key(sno)] = this;
+}
+
+void Train::zero()
+{
+    nrc = 0;
+    ind1 = ind2 = ind3 = 0;
+    st = nullptr;
+    prg = nullptr;
+    tBlindPrgnOn = 0;
+    marked = false;
+    guColor = 0;
+    guType = 0;
+    guCars = 0;
+    guBrutto = 0;
+    guLokser = 0;
+    guLokno = 0;
 }
 
 Train * Train::restore(int sno, int no, class KrugInfo * krug)
 {
-    qDebug() << "Добавляем поезд в Trains:  Sno=" << sno << "  No=" << no;
-    Train * train = FreeTrains.length() ? FreeTrains.pop() : new Train(sno, no, krug);
+    qDebug() << "Добавляем поезд в Trains:  Sno=" << sno << "  No=" << no << " всего:" << Trains.size();
+    Train * train;
+    if (FreeTrains.size())
+    {
+        train = FreeTrains.top();
+        FreeTrains.pop();
+    }
+    else
+        train = new Train(sno, no, krug);
     train->update(sno, no, krug);
     return train;
 }
@@ -33,7 +56,7 @@ void Train::update(int sno, int no, class KrugInfo * krug)
     this->krug = krug;
     krugno = krug==nullptr ? 0 : krug->no();
     tmdt = QDateTime::currentDateTime();
-    ClearRc();
+//  ClearRc();
 }
 
 Train::~Train()
@@ -45,25 +68,30 @@ Train::~Train()
 Train * Train::GetBySysNo(int sno, KrugInfo * krug)
 {
     Q_UNUSED(krug)
-    return Trains.contains(sno) ? Trains[sno] : nullptr;
+    int key = krug==nullptr ? sno : krug->no() << 16 | sno;    // формируем ключ
+    return Trains.count(key) ? Trains[key] : nullptr;
 }
 
 // добавить поезд
 Train * Train::AddTrain(int sno, int no, KrugInfo * krug)
 {
     int key = krug==nullptr ? sno : krug->no() << 16 | sno;    // формируем ключ
-    return Trains.contains(key) ? Trains[key] : restore(sno, no, krug);
+    if (Trains.count(key))
+        Trains[key]->update(sno, no, krug);
+    else
+        restore(sno, no, krug);
+    return Trains[key];
 }
 
 // добавить занятую РЦ
 // механизм повторного использования места в массие QVector Rc не срабатывает (по крайне мере в эмуляторе LINUX, имеем первый элемент = 0, потом значащий)
-// причем nrc не соответствкет размерности Rc
+// причем nrc не соответствует размерности Rc
 void Train::AddRc(class Rc* rc)
 {
-    if (nrc < Rc.length())
+    if (nrc < (int)Rc.size())
         Rc[nrc] = rc;
     else
-        Rc.append(rc);
+        Rc.push_back(rc);
     nrc++;
 }
 
@@ -71,12 +99,27 @@ void Train::AddRc(class Rc* rc)
 void Train::ClearRc()
 {
     nrc = 0;
-    for (int i=0; i<Rc.length(); i++)
-        Rc[i] = nullptr;
+    for (class Rc *& rc : Rc)
+        rc = nullptr;
 }
 
+
+// очистить ссылки на РЦ
 void Train::ClearAllRc()
 {
-    foreach (Train * train, Trains)
+    for (auto rec : Trains)
+    {
+        Train * train = rec.second;
         train->ClearRc();
+        train->prg = nullptr;
+    }
+}
+
+void Train::ClearMark()
+{
+    for (auto rec : Trains)
+    {
+        Train * train = rec.second;
+        train->marked = false;
+    }
 }

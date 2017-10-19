@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QTextCodec>
+#include <QPushButton>
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QPaintEvent>
@@ -17,6 +18,9 @@
 #include <QtMath>
 #include <QLayout>
 #include <QProcess>
+#include <QMessageBox>
+#include <QScrollBar>
+#include <QDir>
 
 #include "../shapes/shapeset.h"
 #include "../shapes/shapetrnsp.h"
@@ -26,6 +30,7 @@
 #include "../spr/station.h"
 #include "../spr/ts.h"
 #include "../spr/tu.h"
+#include "../spr/otu.h"
 #include "../spr/krug.h"
 #include "../spr/properties.h"
 #include "../spr/esr.h"
@@ -82,8 +87,6 @@ private slots:
 
     void on_action_ZoomOff_triggered();
 
-    void on_action_ToolBar2_triggered();
-
     void scaleView();
 
     void on_actionPlay_triggered();
@@ -97,6 +100,26 @@ private slots:
     void on_actionPrev_triggered();
 
     void on_action_15_triggered();
+
+    void on_action_About_triggered();
+
+    void on_action_QtAbout_triggered();
+
+    void on_action_Tooltip_triggered();
+
+    void on_action_VisibleTrains_triggered();
+
+    void on_action_VisibleNonregTrains_triggered();
+
+    void on_action_DlgTrains_triggered();
+
+    void action_load_log();
+
+    void on_action_Peregons_triggered();
+
+    void on_actionReverce_triggered();
+
+    void on_action_Pereezd_triggered();
 
 signals:
     void changeStation(class Station *);                    // смена станции
@@ -113,9 +136,7 @@ private:
     QCalendarWidget* calendar;                              // пристегиваемый календарь выбора даты
     QSpinBox * stepValue;                                   // задание шага смещений в архиве, мин
     QLabel   * labelStep;
-    QLabel   * labelTemp;                                   // Темп и диапазон
-    QLabel   * labelTemp2;
-    QSlider  * sliderTemp;                                  // слайдер темпа воспроизведения
+    QLabel   * labelZoom;                                   // Зум
     QSlider  * sliderScale;                                 // слайдер масштабирования
 
     QCheckBox* checkFindTs;                                 // флажок Поиск изменений ТС
@@ -128,13 +149,18 @@ private:
     void loadResources();
 
     class DlgTsInfo * dlgTs;                                // состояние ТС
-    class DlgTuInfo * dlgTu;                                // состояние ТС
+    class DlgTuInfo * dlgTu;                                // список ТY
+    class DlgOtu    * dlgOtu;                               // список ОТУ
     class DlgRcInfo * dlgRc;                                // состояние РЦ
     class DlgStrlInfo * dlgStrl;                            // состояние стрелок
+    class DlgSvtfInfo * dlgSvtf;                            // состояние светофоров
     class DlgKPinfo * dlgKp;                                // состояние  КП
     class DlgRoutes * dlgRoutes;                            // состояние  маршрутов
     class DlgTrains * dlgTrains;                            // поезда
     class DlgStationsInfo * dlgStations;                    // станции
+    class DlgPeregonInfo* dlgPeregons;                      // перегоны
+    class DlgPereezd* dlgPereezd;                           // переезды
+
 
     // работа с архивом
     QDateTime arhDateTime;                                  // дата/время архивного файла
@@ -142,8 +168,10 @@ private:
     bool bPlay;                                             // воспроизведение вперед
     bool bPlayBack;                                         // воспроизведение назад
     int  idTimer;                                           // таймер воспроизведения
+    bool tooltip;                                           // вкл.откл. тултипы
+
     bool readNext(QDateTime* dt=nullptr, bool findChanges=false);// прочитать и отобразить след.запись в архиве
-    void readPrev();                                        // прочитать и отобразить пред.запись в архиве
+    bool readPrev(QDateTime* dt=nullptr, bool findChanges=false);// прочитать и отобразить пред.запись в архиве
 
     bool isExtFind() { return isFindTsChanges() || isFindLinkErrors(); }
     bool isFindTsChanges() { return checkFindTs->isChecked(); }     // режим поиска ТС ?

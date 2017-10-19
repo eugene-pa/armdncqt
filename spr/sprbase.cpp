@@ -1,10 +1,9 @@
 #include "sprbase.h"
 #include "station.h"
 #include "ts.h"
-#include <QVector>
 
 QString SprBase::buf;                                       // статический буфер для формирования сообщений
-QVector <QString> SprBase::BaseNames;
+std::vector<std::string> SprBase::BaseNames;
 /* =                                                        // не везде проходит инициализация!
 {
     "?", "ТС", "ТУ", "РЦ", "СВТФ", "СТРЛ",
@@ -26,12 +25,13 @@ SprBase::SprBase()
     basetype = BaseUnknown;
     unitype = Unknown;
 
-    BaseNames.append("?"    );
-    BaseNames.append("ТС"   );
-    BaseNames.append("ТУ"   );
-    BaseNames.append("РЦ"   );
-    BaseNames.append("СВТФ" );
-    BaseNames.append("СТРЛ" );
+    BaseNames.push_back("?"    );
+    BaseNames.push_back("ТС"   );                           // 1 - BaseTs
+    BaseNames.push_back("ТУ"   );                           // 2 - BaseTu
+    BaseNames.push_back("ОТУ"  );                           // 3 - BaseOtu
+    BaseNames.push_back("РЦ"   );                           // 4 - BaseRc
+    BaseNames.push_back("СВТФ" );                           // 5 - BaseSvtf
+    BaseNames.push_back("СТРЛ" );                           // 6 - BaseStrl
 }
 
 SprBase::~SprBase()
@@ -53,9 +53,9 @@ QString& SprBase::NameEx()
     return buf = no ? QString("%1 %2='%3'(#%4)").arg(StMessage()).arg(GetBaseName()).arg(name).arg(no) :
                       QString("%1 %2='%3'").arg(StMessage()).arg(GetBaseName()).arg(name);
 }
-QString& SprBase::GetBaseName()
+QString SprBase::GetBaseName()
 {
-    return basetype > BaseUnknown && basetype < BaseMax ? BaseNames[basetype] : BaseNames[BaseUnknown];
+    return QString::fromStdString(basetype > BaseUnknown && basetype < BaseMax ? BaseNames[basetype] : BaseNames[BaseUnknown]);
 }
 
 //--------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,12 @@
 ﻿#ifndef DEFINES_H
 #define DEFINES_H
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <queue>
+
 #include <QDebug>
 #include <QFile>
 #include <QFileInfo>
@@ -14,7 +20,6 @@
 #include <QPen>
 
 #include <time.h>
-#include <QHash>
 #include <QList>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -23,6 +28,11 @@
 #include "QDateTime"
 #include "QRegularExpression"
 #include <QByteArray>
+
+#ifdef Q_OS_WIN
+#include <io.h>
+#include <fcntl.h>
+#endif // #ifdef Q_OS_WIN
 
 //#include <QWidget>
 //#include <QGraphicsView>
@@ -136,8 +146,12 @@ extern bool g_bNoSetServerTime ;                            // флаг ТОЛЬ
 extern time_t g_TmDtServer;                                 // серверное время
 extern time_t g_DeltaTZ;                                    // разница времени удаленного сервера и настоящего АРМ ШН
 extern int  g_RealStreamTsLength;                           // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
-extern bool g_QuickSearching;                               // флаг ускорееного сканирования входного потока
+extern bool g_QuickSearching;                               // флаг ускоренного сканирования входного потока
+
+extern bool g_rqAck;                                        // требовать явное подтверждение ввода команд нажатием кнопки
+
 extern class Station * g_actualStation;                     // актуальная станция
+extern class ShapeId * g_actualForm;                        // актуальная схема
 
 const int MAX_DATA_LEN_FROM_MONITOR = 65535;
 
@@ -175,5 +189,12 @@ typedef struct _COMMTIMEOUTS {
 #endif // #ifndef _COMMTIMEOUTS
 
 extern void addCRC (QByteArray& data);
+extern bool makeFullPath(QString base, QString& path);
+
+#define varfromptr(x) qVariantFromValue((void *)x)
+#define ptrfromvar(x) x.value<void*>()
+
+std::wstring qToStdWString(const QString &str);
+QString stdWToQString(const std::wstring &str);
 
 #endif // DEFINES_H

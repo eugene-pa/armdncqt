@@ -104,7 +104,7 @@ void ShapeRc::Parse(QString& src)
         {
             int nostrl = lexems[i].toInt(&ret);
             if (nostrl && ret)
-                strl.append(new LinkedStrl(nostrl));
+                strl.push_back(new LinkedStrl(nostrl));
             ok &= ret;
         }
 
@@ -133,10 +133,11 @@ void ShapeRc::normalize()
     float R = (x2 - x1) / 2;
     switch (subtype)
     {
+        case Vert:  y2 = y1 + (x2-x1); x2 = x1;             break;
         case ArcNW: y2 = y1;    y1 = y1-R;  x2 = x1-R;      break;
         case ArcNE: x2 = x1;    x1 += R;    y2 = y1 - R;    break;
-        case ArcSE: x2 = 1 + R; y2 = y1;    y1 += R;        break;
-        case ArcSW: x2 = x1;    x1 -= R;    y2 = y1 + R;    break;
+        case ArcSE: x2 = x1 + R; y2 = y1;    y1 += R;        break;
+        case ArcSW:x2 = x1;    x1 -= R;    y2 = y1 + R;     break;
         case ArcSWN:y2 = y1 - R;y1 += R;    x2 = x1;        break;
         case ArcNES:y2 = y1 - R;y1 += R;    x2 = x1;        break;
 
@@ -246,6 +247,7 @@ void ShapeRc::Draw(QPainter* painter)
 
     QPen *pen =
             sprRc == nullptr                        ?   PenUndefined    :       // не привязана
+//          sprRc->disabled                         ?   PenUndefined    :       // заблокирована
             state->isExpire ()                      ?   PenExpired      :       // нет данных
             isIr() && DShape::globalPulse           ?   PenIr           :       // ИР в активной фазе
             isBusy()                                ?   PenBusy         :       // занята
@@ -255,6 +257,15 @@ void ShapeRc::Draw(QPainter* painter)
             isZmk      ()                           ?   PenZmk          :       // замкнута
             state->isUndefined()                    ?   PenUndefined    :
                                                         PenFree;
+
+    // отрисовываю РЦ меняя прозрачность для заблокированных РЦ, чтобы показать состояние
+    // можно такой способ применить также для заблокированных стрелок и светофоров
+    QColor clr = pen->brush().color();
+    int alpha = 255;
+    if (sprRc && sprRc->disabled)
+        alpha = 60;
+    clr.setAlpha(alpha);
+    pen->setColor(clr);
 
     QColor color(Qt::black);
 
@@ -309,7 +320,7 @@ void ShapeRc::Prepare()
 
 QString ShapeRc::Dump()
 {
-    return "РЦ";
+    return sprRc == nullptr ? "?" : sprRc->About();
 }
 
 QString  ShapeRc::ObjectInfo()
@@ -327,7 +338,7 @@ void ShapeRc::AddAndMerge()
 
     if (sprRc)
     {
-        for (int i=0; i<sprRc->shapes.length(); i++)
+        for (int i=0; i<(int)sprRc->shapes.size(); i++)
         {
             ShapeRc * prv = (ShapeRc *)sprRc->shapes[i];
             if (prv->combined)
@@ -410,7 +421,7 @@ bool ShapeRc::compareStrl(ShapeRc *shape)
 //    if (sprRc->No()==18)
 //        int a = 99;
 
-    if (strl.count() == shape->strl.count())
+    if (strl.size() == shape->strl.size())
     {
         foreach (LinkedStrl* link, strl)
         {
@@ -435,3 +446,10 @@ void ShapeRc::makePolygon(QPointF p1, QPointF p2, QPointF p3, ShapeRc * shapeTo)
     combined = shapeTo->combined = true;
 }
 
+QRectF ShapeRc::boundingRect() const
+{
+    QRectF r = rect;
+    r.setTopLeft(QPointF(r.x()-1,r.y()-2));
+    r.setBottomRight(QPointF(r.x()+r.width() + 2, r.y()+r.height() + 4 ));
+    return r;
+}

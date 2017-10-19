@@ -15,6 +15,7 @@ QPen * ShapeStrl::PenZmk;                                   // замкнута�
 QPen * ShapeStrl::PenIr;                                    // искусственная разделка (мигает поверх других состояний)
 QPen * ShapeStrl::PenMuRect;                                // окантовка стрелки на МУ
 QPen * ShapeStrl::PenUndefined;                             // объект неопределен - пассивная отрисовка
+QPen * ShapeStrl::PenUndefined1;                            // объект неопределен - пассивная отрисовка толщиной 1 пиксель
 QPen * ShapeStrl::PenNormalOk;                              // тонкая линия нормали, корректное состояние
 QPen * ShapeStrl::PenNormalAlarm;                           // тонкая линия нормали, взрез
 QPen * ShapeStrl::PenAlarmPulse1;                           // авария (1-я фаза мигания)
@@ -85,6 +86,7 @@ void ShapeStrl::InitInstruments()
     PenIr           = new QPen (QBrush(colorScheme->GetColor("Ir"             )), mThick);// искусственная разделка (мигает поверх других состояний)
     PenMuRect       = new QPen (QBrush(colorScheme->GetColor("StrlMuRect"     )), 1     );// окантовка стрелки на МУ
     PenUndefined    = new QPen (QBrush(colorScheme->GetColor("Undefined"      )), mThick);// объект неопределен - пассивная отрисовка
+    PenUndefined1   = new QPen (QBrush(colorScheme->GetColor("Undefined"      )), 1);     // объект неопределен - пассивная отрисовка
     PenAlarmPulse1  = new QPen (QBrush(colorScheme->GetColor("StrlAlarmPulse1")), mThick);// авария (1-я фаза мигания)
     PenAlarmPulse2  = new QPen (QBrush(colorScheme->GetColor("StrlAlarmPulse2")), mThick);// авария (2-я фаза мигания)
     PenNormalOk     = new QPen (QBrush(colorScheme->GetColor("Normal"         )), 1     );// тонкая линия нормали, корректное состояние
@@ -144,7 +146,7 @@ void ShapeStrl::Parse(QString& src)
         {
             int nostrl = lexems[i].toInt(&ret);
             if (nostrl && ret)
-                strl.append(new LinkedStrl(nostrl));
+                strl.push_back(new LinkedStrl(nostrl));
             ok &= ret;
         }
         if (!LinkedStrl::checkList(strl, set->logger()))
@@ -202,7 +204,7 @@ void ShapeStrl::Parse(QString& src)
 
         // дял отрисовеи окантовки расширяем прямоугольник rect на dxy пикселей
         int dxy = 7;
-        boundRect = QRect(rect.x()-dxy, rect.y()-dxy, width + dxy*2, height + dxy*2);
+        rect = boundRect = QRect(rect.x()-dxy, rect.y()-dxy, width + dxy*2, height + dxy*2);
 
         if (!ok)
         {
@@ -284,10 +286,12 @@ void ShapeStrl::Draw(QPainter* painter)
     accept();
 
     blinking = isIr() || isAlarm() || isOtu();
-
+    bool rcLocked   = sprRc && sprRc->Disabled(),             // законсервирована РЦ
+         strlLocked = sprStrl && sprStrl->Disabled();         // законсервирована стрелка
     // 1. отрисовка непосредственно стрелки
     QPen *pen =
             state->isUndefined()                    ?   PenUndefined    :
+            rcLocked                                ?   PenUndefined    :       // если РЦ заблокирована в БД - неопред.положение стрелки и неопред.цвет
             state->isExpire ()                      ?   PenExpired      :       // нет данных
             isAlarm()                               ?   (DShape::globalPulse ? PenAlarmPulse1 : PenAlarmPulse2) :
             isIr() && DShape::globalPulse           ?   PenIr           :       // ИР в активной фазе
@@ -298,7 +302,7 @@ void ShapeStrl::Draw(QPainter* painter)
             isRqRoute  ()                           ?   PenRqRoute      :       // устанавливается маршрут
                                                         PenFree;
     painter->setPen(*pen);
-    if (state->isUndefined() || isPlus() == isMinus())
+    if (state->isUndefined() || isPlus() == isMinus() || rcLocked)
     {
         painter->drawPolyline(pathForPlus);
         painter->drawPolyline(pathForMinus);
@@ -310,15 +314,18 @@ void ShapeStrl::Draw(QPainter* painter)
 
     // 2. отрисовка штриха нормального (плюсового) положения
     if (!state->isUndefined() && !state->isExpire ())
-        painter->setPen(isAlarm() ? *PenNormalAlarm : *PenNormalOk);
+        painter->setPen(strlLocked ? *PenUndefined1 : isAlarm() ? *PenNormalAlarm : *PenNormalOk);
     painter->drawPolyline(plusNormal ? pathNormalPlus : pathNormalMinus);
 
 
     // 3. окантовки рисуем только при наличии актуальных данных
     if (!state->isUndefined() && !state->isExpire ())
     {
-        if (sprStrl && sprStrl->Disabled())                 // законсервирована
-            drawRect(painter, *PenIzsRound);
+        if (strlLocked)                                     // законсераирована в БД
+        {
+            blinking = false;
+            drawRect(painter, *PenUndefined1);
+        }
         if (isMu())                                         // МУ
             drawRect(painter, *PenMuRect);
         if (isMu())                                         // МУ
@@ -332,10 +339,12 @@ void ShapeStrl::Draw(QPainter* painter)
     // 4. имя стрелки; перо меняем если данные актуальные
     if (!state->isUndefined() && !state->isExpire ())
     {
-        pen = isAlarm           ()  ? PenBusy         :     // №стрелкм: авария - красный
+        pen = rcLocked || strlLocked ? PenUndefined   :     // если РЦ заблокирована в БД - неопред.положение стрелки и неопред.цвет
+              isAlarm           ()  ? PenBusy         :     // №стрелкм: авария - красный
               isOtu             ()  ? PenOtuRect      :     // ОТУ - желтый
               isIzs             ()  ? PenBusy         :     // искусств.замыкание - красный
               isMinus           ()  ? PenOtuRect      :     // по минусу - желтый  (2016.02.09)
+
                                       PenFree;              // в норме - черный,
     }
     painter->setPen(*pen);
@@ -380,7 +389,7 @@ void ShapeStrl::Prepare()
 
 QString ShapeStrl::Dump()
 {
-    return "СТРЛ";
+    return (sprStrl == nullptr ? "" : sprStrl->About()) + (sprRc == nullptr ? "" : "\r\n\r\n" + sprRc->About());
 }
 
 QString  ShapeStrl::ObjectInfo()

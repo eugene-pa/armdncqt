@@ -16,7 +16,7 @@ enum
 class TrnspDescription
 {
 public:
-static QHash<int, TrnspDescription *> descriptions;            // массив описателей
+static std::unordered_map<int, TrnspDescription *> descriptions;            // массив описателей
 static bool loaded;
     TrnspDescription(QSqlQuery& query, Logger& logger);
     ~TrnspDescription();

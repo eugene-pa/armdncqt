@@ -10,8 +10,8 @@ public:
     AbtcmInfo(UINT addr, UINT length, UINT offset);
     ~AbtcmInfo();
 
-    static bool Parse(QVector<AbtcmInfo*>& list, QString& s,Logger& logger); // разбор строки
-    static UINT sumLength(QVector<AbtcmInfo*>& list);       // подсчет общей длины данных по всем блокам
+    static bool Parse(std::vector<AbtcmInfo*>& list, QString& s,Logger& logger); // разбор строки
+    static UINT sumLength(std::vector<AbtcmInfo*>& list);       // подсчет общей длины данных по всем блокам
 
 private:
     UINT    addr;                                           // адрес блока

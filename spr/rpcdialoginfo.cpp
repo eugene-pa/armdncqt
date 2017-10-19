@@ -18,7 +18,7 @@ rpcDialogInfo::~rpcDialogInfo()
 //          АААААА - адрес БМ
 //			ГГ     - число групп
 // Кашпир:  РПЦДИАЛОГ(БМ06361101:64,БМ06361102:64)
-bool rpcDialogInfo::Parse(QVector<rpcDialogInfo*>& list, QString& config,Logger& logger)
+bool rpcDialogInfo::Parse(std::vector<rpcDialogInfo*>& list, QString& config,Logger& logger)
 {
     bool ret = false;
 
@@ -46,7 +46,7 @@ bool rpcDialogInfo::Parse(QVector<rpcDialogInfo*>& list, QString& config,Logger&
                     UINT addr   = match3.captured().toUInt(&ret, 16);
                     UINT length = QRegularExpression("\\d+").match(s,match3.capturedEnd()).captured().toUInt();
 
-                    list.append(new rpcDialogInfo(addr, length, sumLength(list)));
+                    list.push_back(new rpcDialogInfo(addr, length, sumLength(list)));
 
                     pos = match2.capturedEnd();
                 }
@@ -59,7 +59,7 @@ bool rpcDialogInfo::Parse(QVector<rpcDialogInfo*>& list, QString& config,Logger&
 }
 
 // подсчет общей длины данных по всем блокам
-UINT rpcDialogInfo::sumLength(QVector<rpcDialogInfo*>& list)
+UINT rpcDialogInfo::sumLength(std::vector<rpcDialogInfo*>& list)
 {
     UINT length = 0;
     foreach (rpcDialogInfo* rpc, list)

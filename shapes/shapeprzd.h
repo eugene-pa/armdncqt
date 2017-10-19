@@ -2,9 +2,11 @@
 #define SHAPEPRZD_H
 
 #include "shape.h"
+#include "../spr/pereezd.h"
 
 class ShapePrzd : public DShape
 {
+    friend class Pereezd;
 protected:
     enum
     {
@@ -27,6 +29,7 @@ protected:
 
     class BoolExpression * formulas[exprAll];               // формулы
 
+    class Pereezd * pereerd;                                // справочник переезда
     static QBrush BrushOpen;                                // открыт
     static QBrush BrushClose;                               // закрыт
     static QBrush BrushUndef;                               // неизвестно
@@ -49,13 +52,13 @@ public:
     ShapePrzd(QString& src, ShapeSet* parent);
     ~ShapePrzd();
     static void InitInstruments();                          // инициализация статических инструментов отрисовки
-    virtual void  Draw (QPainter*);                         // функция рисования
+    virtual void  Draw (QPainter*) override;                // функция рисования
 
 protected:
-    void accept();                                          // вычисление состояния примитива
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    virtual void  Parse(QString&);                          // разбор строки описания
-
+    void accept() override;                                 // вычисление состояния примитива
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
+    virtual void  Parse(QString&) override;                 // разбор строки описания
+    virtual QString Dump() override;
 };
 
 #endif // SHAPEPRZD_H

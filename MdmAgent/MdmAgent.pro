@@ -45,10 +45,9 @@ SOURCES += main.cpp\
     ../spr/ecmpkinfo.cpp \
     ../spr/krug.cpp \
     ../common/blockingrs.cpp \
-    rasrs.cpp \
     kpframe.cpp \
     ../forms/qled.cpp \
-    ../common/qled.cpp
+    ../spr/pereezd.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -81,10 +80,9 @@ HEADERS  += mainwindow.h \
     ../spr/ecmpkinfo.h \
     ../spr/krug.h \
     ../common/blockingrs.h \
-    rasrs.h \
     kpframe.h \
     ../forms/qled.h \
-    ../common/qled.h
+    ../spr/pereezd.h
 
 
 FORMS    += mainwindow.ui \

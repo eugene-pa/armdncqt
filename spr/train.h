@@ -1,6 +1,7 @@
 #ifndef TRAIN_H
 #define TRAIN_H
 
+#include <stack>
 #include "../common/logger.h"
 #include "sprbase.h"
 
@@ -9,8 +10,10 @@ class Train : public SprBase
 {
     friend class DStDataFromMonitor;                        // для формирования и извлечения информации в потоке ТС
     friend class DDataFromMonitor;
+    friend class DPrgDataFromMonitor;
     friend class DlgTrains;
     friend class ShapeTrain;
+    friend class DlgPeregonInfo;
 public:
 
     // открытые статические функции
@@ -19,6 +22,7 @@ public:
     static Train * restore(int sno, int no, class KrugInfo * krug);
     static void ClearAllRc();
     static void AcceptTS (class Station *);                 // обработка объектов по станции
+    static void ClearMark();                                // очистить пометки
 
     Train();
     Train(int sno, int no=0, class KrugInfo * krug = nullptr);
@@ -29,36 +33,42 @@ public:
     void AddRc(class Rc * rc);                              // добавить занятую РЦ
     void ClearRc();                                         // очистить список РЦ
     bool IsEvn() { return ((no > 0 ? no : sno) % 2) == 0; } // четный ?
+
 private:
     // учитывая динамический характер объекта "поезд" можно было бы организовать пул справочников поездов таким образом,
     // чтобы не возвращать однажды выделеннную память, а повторно использовать ее после удаления поезда
     // ВАРИАНТ: сохранять удаленные справочники в отдельном списке и брать по возможности их оттуда.
     //          Можно было бы просто помечать справочник как "пустой", но тогда нельзя организовать хэш-таблицу по ключу sno
-    static QHash <int, Train *> Trains;                     // поезда , индексированные по ключу: круг + системный номер
-    static QStack <Train *> FreeTrains;                     // пул удаленных справочников для повторного использования
+    static std::unordered_map <int, Train *> Trains;        // поезда , индексированные по ключу: круг + системный номер
+    static std::stack <Train *> FreeTrains;                 // пул удаленных справочников для повторного использования
 
-    int     sno;                                            // ключ: krug + системный номер
-    int     no;                                             // номер
-    short   Ind1;                                           // индекс
-    short   Ind2;
-    short   Ind3;
+    uint     sno;                                           // ключ: krug + системный номер
+    uint     no;                                            // номер
+    short   ind1;                                           // индекс
+    short   ind2;
+    short   ind3;
 
-    float	XMin;										    // миним.абсцисса
-    float	YMin; 										    // максим.абсцисса
-    float	XMax;										    // миним.абсцисса
-    float	YMax; 										    // максим.абсцисса
+    float	xMin;										    // миним.абсцисса
+    float	yMin; 										    // максим.абсцисса
+    float	xMax;										    // миним.абсцисса
+    float	yMax; 										    // максим.абсцисса
 
-    int	    RcMin;										    // РЦ с миним.абсциссой
-    int	    RcMax;										    // РЦ с максим.абсциссой
+    int	    rcMin;										    // РЦ с миним.абсциссой
+    int	    rcMax;										    // РЦ с максим.абсциссой
 
     // нужно иметь список РЦ под поездом;
     // дилемма: использовать динамические массивы или статический под максимальное число
 
     class Station * st; 								    // вычисленная станция нахождения поезда
+    class Peregon * prg;                                    // слепой перегон нахождения поезда
     QDateTime tmdt;                                         // Время последней операции
 
     int     nrc;                                            // число занятых поездом РЦ
-    QVector <class Rc *> Rc;                                // массив указателей на справочники занятых РЦ (не используемые обнуляются)
+    std::vector <class Rc *> Rc;                            // массив указателей на справочники занятых РЦ (не используемые обнуляются)
+
+    time_t  tBlindPrgnOn;                                   // время вступления поезда на слепой перегон
+    bool    marked;                                         // пометка при отображении
+
 // хочу сделать более осмысленной модель
 //	short	NoRc;										    // номер последней занятой РЦ
 //	BOOL	EraseMark;									    // Пометка для удаления
@@ -124,6 +134,8 @@ private:
     short	saveNo;										// номер поезда до наложения информации ГИД-УРАЛ
 //	bool	bKeyAlarmInformed;
 // -----------------------------------------------------------------------------------------------
+
+    void zero();
 };
 
 #endif // TRAIN_H

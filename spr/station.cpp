@@ -9,6 +9,7 @@
 #include "rc.h"
 #include "svtf.h"
 #include "strl.h"
+#include "pereezd.h"
 #include "esr.h"
 #include "dstdatafromfonitor.h"
 #include "abtcminfo.h"
@@ -17,7 +18,8 @@
 
 //#include "tu.h"
 
-QHash<int, Station*> Station::Stations;                     // хэш-таблица указателей на справочники станций
+std::unordered_map<int, Station*> Station::Stations;        // хэш-таблица указателей на справочники станций
+std::vector<Station*> Station::StationsOrg;                 // массив станций в порядке чтения из БД
 bool    Station::LockLogicEnable;                           // включен логический контроль
 bool    Station::InputStreamRss = false;                    // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
 
@@ -113,11 +115,15 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
         mpcEbilock = rpcMpcMPK = rpcDialog = false;
 
         extForms = query.value("ExtFormList").toString();   // доп.формы, формат: 'имя_без_расширения' RADIOID ['имя_без_расширения' RADIOID]...
+        typeEC = query.value("ObjectType").toString();      // тип ЭЦ
+
         ParseExtForms();                                    // разбор строки
 
         ParseConfigKP2007(logger);                          // разбор конфигурации
 
+
         Stations[no] = this;
+        StationsOrg.push_back(this);
     }
     catch(...)
     {
@@ -148,15 +154,26 @@ void Station::GetValue(QString& name, int& ret)
         tsname = tsname.replace("~", "");
     }
 
-    if (st != nullptr && Ts.contains(tsname))
+    if (st != nullptr && st->Ts.count(tsname.toStdString()))
     {
-        class Ts * ts = Ts[tsname];
+        class Ts * ts = st->Ts[tsname.toStdString()];
         ret =  ts->Disabled() ? false :                         // Для блокированных ТС возвращаем false в выражениях (Решение не однозначное...)
                pulse ? ts->StsPulse() : ts->Sts();
     }
     else
     {
-        qDebug() << QString("Ошибка идентификации сигнала %1").arg(name);
+        // 2016.09.02. Обрабатываю неявные виртуальные сигналы МДМ1 и МДМ2
+        if (name=="МДМ1")
+        {
+            ret = st->IsCom3On() ? 1 : 0;
+        }
+        else
+        if (name=="МДМ2")
+        {
+            ret = st->IsCom4On() ? 1 : 0;
+        }
+        else
+            qDebug() << QString("Ошибка идентификации сигнала %1").arg(name);
     }
 }
 
@@ -210,16 +227,16 @@ bool Station::parseNames (QString& srcname, Station*& st, QString& name)
 Station * Station::GetById(int no, class KrugInfo * krug)
 {
     int id = krug==nullptr ? no : krug->key(no);
-    return Stations.contains(id ) ? Stations[id] : nullptr;
+    return Stations.count(id ) ? Stations[id] : nullptr;
 }
 
 // поучить справочник по номеру станции
 Station * Station::GetByName(QString stname)
 {
-    foreach (Station * st, Stations.values())
+    for (auto rec : Stations)
     {
-        if (st->name == stname)
-            return st;
+        if (rec.second->name == stname)
+            return rec.second;
     }
     return nullptr;
 }
@@ -258,14 +275,14 @@ bool Station::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
 void Station::AddTs (class Ts* ts, Logger& logger)
 {
     // таблица, индексированная по текстовому имени ТС
-    if (!Ts.contains(ts->Name()))
-        Ts[ts->Name()] = ts;
+    if (!Ts.count(ts->Name().toStdString()))
+        Ts[ts->Name().toStdString()] = ts;
     else
         logger.log(QString("Дублирование имен ТС: %1").arg(ts->NameEx()));
 
     // таблица, индексированая по индексу ТС в поле ТС (порядковый номер 0...n-1)
     int index = ts->GetIndex();
-    if (!TsIndexed.contains(index))
+    if (!TsIndexed.count(index))
         TsIndexed[index] = ts;
     else
     {
@@ -287,7 +304,7 @@ void Station::AddTs (class Ts* ts, Logger& logger)
 
     // таблица, индексированая по индексу имени в таблице TsNames
     index = ts->GetIndexOfName();
-    if (!TsByIndxTsName.contains(index))
+    if (!TsByIndxTsName.count(index))
         TsByIndxTsName[index] = ts;
     else
     {
@@ -295,52 +312,61 @@ void Station::AddTs (class Ts* ts, Logger& logger)
     }
 
     // таблица ТС, отсортированная по имени ТС (сортируем после чтения всех ТС)
-    TsSorted.append(ts);
+    //TsSorted.append(ts);
+    TsSorted.push_back(ts);
 }
 
 // сортировака списка TsSorted
 void Station::SortTs()
 {
-    foreach (Station * st, Stations.values())
+    for (auto rec : Stations)
     {
-        qSort(st->TsSorted.begin(), st->TsSorted.end(),Ts::CompareByNames);
+        Station * st = rec.second;
+        std::sort(st->TsSorted.begin(), st->TsSorted.end(),Ts::CompareByNames);
     }
 }
 
 // сортировка спимка ТУ
 void Station::SortTu()
 {
-    foreach (Station * st, Stations.values())
+    for (auto rec : Stations)
     {
-        qSort(st->TuSorted.begin(), st->TuSorted.end(),Tu::CompareByNames);
+        Station * st = rec.second;
+        std::sort(st->TuSorted.begin(), st->TuSorted.end(),Tu::CompareByNames);
     }
+}
+
+void Station::countMTUMTS()
+{
+    // считаем модули ТС/ТУ
+    for (int i=0; i<mts.count(); i++)
+    {
+        if (IsTsPresent(i))
+            mtsCount++;
+        if (IsTuPresent(i))
+            mtuCount++;
+    }
+
+    // для КП2000 сдвигаем пометки МТС на число модулей ТУ
+    if (Kp2000())
+    {
+        // просмотр с конца, чтобы не мшать просмотру внесением изменений
+        for (int i=mts.count()-1; i>=0; i--)
+            if (IsTsPresent(i))
+                SetBit(mts, i + mtuCount);
+        for (int i=0; i<mtu.count(); i++)
+            if (IsTuPresent(i))
+                SetBit(mts, i, false);
+    }
+
 }
 
 // сдвинуть пометки МТС для КП2000 на число ТУ
 void Station::CountMT()
 {
-    foreach (Station * st, Stations.values())
+    for (auto rec : Stations)
     {
-        // считаем модули ТСб ТУ
-        for (int i=0; i<st->mts.count(); i++)
-        {
-            if (st->IsTsPresent(i))
-                st->mtsCount++;
-            if (st->IsTuPresent(i))
-                st->mtuCount++;
-        }
-
-        // для КП2000 сдвигаем пометки МТС на число модулей ТУ
-        if (st->Kp2000())
-        {
-            // просмотр с конца, чтобы не мшать просмотру внесением изменений
-            for (int i=st->mts.count()-1; i>=0; i--)
-                if (st->IsTsPresent(i))
-                    st->SetBit(st->mts, i + st->mtuCount);
-            for (int i=0; i<st->mtu.count(); i++)
-                if (st->IsTuPresent(i))
-                    st->SetBit(st->mts, i, false);
-        }
+        rec.second->countMTUMTS();
     }
 }
 
@@ -356,14 +382,17 @@ void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule
     if (mpcEbilock)
     {
         maxModul = 1;
-        maxI = 0;
+        maxI = 1;
+        maxJ = 4096;
         tsPerModule = 4096;
     }
     else
     if (rpcDialog)
     {
+        // нюанс: при описании ст.РПЦ Диалог, например, ст.Новообразцовое, сиртуальные сигналы описываются начиная с 70-й строки
+        //        без изменения номера; то есть допустимая размерность > 64
         maxModul = 2;
-        maxI = 64;
+        maxI = 64 * 2;
         maxJ = 16;
         tsPerModule = 64 * 16;                              // 1024
     }
@@ -403,16 +432,16 @@ void Station::GetTsParams (int& maxModul, int& maxI, int& maxJ, int& tsPerModule
 void Station::AddTu (class Tu* tu, Logger& logger)
 {
     // таблица, индексированная по текстовому имени ТС
-    if (!Tu.contains(tu->Name()))
-        Tu[tu->Name()] = tu;
+    if (!Tu.count(tu->Name().toStdString()))
+        Tu[tu->Name().toStdString()] = tu;
     else
         logger.log(QString("Дублирование имен ТУ: %1").arg(tu->NameEx()));
 
-    TuSorted.append(tu);
+    TuSorted.push_back(tu);
 
     ushort ij = tu->IJ();
     class Tu * prev;
-    if (TuByIJ.contains(ij))
+    if (TuByIJ.count(ij))
     {
         prev = TuByIJ[ij];
         buf = QString("ТУ %1 добавлена в цепочку за ТУ %2").arg(tu->NameEx()).arg(prev->Name());
@@ -442,7 +471,7 @@ bool Station::TestBit (QBitArray& bits, int index)
 // добавить РЦ
 void Station::AddRc(class Rc * obj, Logger& logger)
 {
-    if (allrc.contains(obj->No()))
+    if (allrc.count(obj->No()))
         logger.log(QString("Создание дублирующего объекта РЦ: %1").arg(obj->ToString()));
     else
         allrc[obj->No()] = obj;
@@ -451,7 +480,7 @@ void Station::AddRc(class Rc * obj, Logger& logger)
 // добавить СВТФ
 void Station::AddSvtf(class Svtf * obj, Logger& logger)
 {
-    if (allsvtf.contains(obj->No()))
+    if (allsvtf.count(obj->No()))
         logger.log(QString("Создание дублирующего объекта СВТФ: %1").arg(obj->ToString()));
     else
         allsvtf[obj->No()] = obj;
@@ -460,7 +489,7 @@ void Station::AddSvtf(class Svtf * obj, Logger& logger)
 // добавить СТРД
 void Station::AddStrl(class Strl * obj, Logger& logger)
 {
-    if (allstrl.contains(obj->No()))
+    if (allstrl.count(obj->No()))
         logger.log(QString("Создание дублирующего объекта СТРЛ: %1").arg(obj->ToString()));
     else
         allstrl[obj->No()] = obj;
@@ -475,7 +504,7 @@ void Station::AddRoute(Route* route)
 // получить маршрут по номеру маршрута на станции
 Route * Station::GetRouteByNo(int no)
 {
-    return routes.contains(no) ? routes[no] : nullptr;
+    return routes.count(no) ? routes[no] : nullptr;
 }
 
 // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
@@ -483,15 +512,18 @@ Route * Station::GetRouteByNo(int no)
 // поэтому поиск ТУ выполняется по имени в хэш-таблицах Tu класса Station
 void Station::ParsePrologEpilog(Logger& logger)
 {
-    foreach (Station * st, Stations.values())
+    for (auto rec : Stations)
     {
-        foreach (class Tu * tu, st->Tu.values())
+        Station * st = rec.second;
+
+        for (auto rec : st->Tu)
         {
+            class Tu * tu = rec.second;
             QString name = tu->Prolog();
             if (name.length() > 0)
             {
-                if (st->Tu.contains(name))
-                    tu->SetProlog(st->Tu[name]);
+                if (st->Tu.count(name.toStdString()))
+                    tu->SetProlog(st->Tu[name.toStdString()]);
                 else
                     logger.log(QString("Не найдена ТУ пролога %1 для ТУ %2").arg(name).arg(tu->NameEx()));
             }
@@ -499,8 +531,8 @@ void Station::ParsePrologEpilog(Logger& logger)
             name = tu->Epilog();
             if (name.length() > 0)
             {
-                if (st->Tu.contains(name))
-                    tu->SetEpilog(st->Tu[name]);
+                if (st->Tu.count(name.toStdString()))
+                    tu->SetEpilog(st->Tu[name.toStdString()]);
                 else
                     logger.log(QString("Не найдена ТУ эпилога %1 для ТУ %2").arg(name).arg(tu->NameEx()));
             }
@@ -508,13 +540,31 @@ void Station::ParsePrologEpilog(Logger& logger)
             name = tu->Polus();
             if (name.length() > 0)
             {
-                if (st->Tu.contains(name))
-                    tu->SetPolus(st->Tu[name]);
+                if (st->Tu.count(name.toStdString()))
+                    tu->SetPolus(st->Tu[name.toStdString()]);
                 else
                     logger.log(QString("Не найдена ТУ полюса %1 для ТУ %2").arg(name).arg(tu->NameEx()));
             }
 
             tu->setTuEnum();
+
+            if (tu->extTuSrc.length())
+            {
+                QRegularExpression RgxTu ("(?<=[=,])[^ ^,]+");
+                QRegularExpressionMatchIterator m = RgxTu.globalMatch(tu->extTuSrc);
+                while (m.hasNext())
+                {
+                    QString tusrc = m.next().captured();
+                    Station * sttu;
+                    QString name;
+                    st->parseNames (tusrc, sttu, name); // разбор индексированных имен ТУ/ТС
+                    if (sttu->Tu.count(name.toStdString()))
+                    {
+                        tu->extTu.push_back(sttu->Tu[name.toStdString()]);
+                    }
+                }
+            }
+
         }
     }
 }
@@ -528,7 +578,7 @@ void Station::ParseExtForms()
 {
     if (forms > 0)
     {
-        formList.append(new ShapeId(this, name, radioIdMnt));
+        formList.push_back(new ShapeId(this, name, radioIdMnt));
 
         if (forms > 1)
         {
@@ -542,7 +592,7 @@ void Station::ParseExtForms()
 
                 QString form = rgxNames.match(pare).captured();
                 int radioid  = rgxRadio.match(pare).captured().toInt();
-                formList.append(new ShapeId(this, form, radioid));
+                formList.push_back(new ShapeId(this, form, radioid));
             }
         }
     }
@@ -551,7 +601,7 @@ void Station::ParseExtForms()
 // получить ТС по индексу
 Ts * Station::GetTsByIndex(int indx)
 {
-    return TsIndexed.contains(indx) ? TsIndexed[indx] : nullptr;
+    return TsIndexed.count(indx) ? TsIndexed[indx] : nullptr;
 }
 
 // получить состояние сигнала в марице ТС
@@ -579,21 +629,21 @@ void Station::MarkInverse(int index)
 
 
 // получить состояние сигнала по имени
-bool Station::GetTsStsByName (QString name)
+bool Station::GetTsStsByName (std::string name)
 {
-    return Ts.contains(name) ? Ts[name]->Sts() : false;
+    return Ts.count(name) ? Ts[name]->Sts() : false;
 }
 
 // получить состояние мигания сигнала по имени
-bool Station::GetTsPulseStsByName (QString name)
+bool Station::GetTsPulseStsByName (std::string name)
 {
-    return Ts.contains(name) ? Ts[name]->StsPulse() : false;
+    return Ts.count(name) ? Ts[name]->StsPulse() : false;
 }
 
 // d0 - состояние, d1 - мигание
-int Station::GetTsStsByNameEx (QString name)
+int Station::GetTsStsByNameEx (std::string name)
 {
-   return  GetTsStsByName (name) | (GetTsPulseStsByName (name) << 1);
+   return  GetTsStsByName (name) | ((GetTsPulseStsByName (name) << 1)!=0);
 }
 
 
@@ -722,10 +772,10 @@ QDateTime Station::GetLastTime (bool rsrv)
 // найти светофор по имени; используется при парсинге справочника маршрутов
 Svtf * Station::GetSvtfByName(QString& name)
 {
-    foreach(Svtf * svtf, allsvtf)
+    for(auto rec : allsvtf)
     {
-        if (svtf->Name() == name)
-            return svtf;
+        if (rec.second->Name() == name)
+            return rec.second;
     }
     return nullptr;
 }
@@ -738,8 +788,9 @@ Strl * Station::GetStrlByName(QString& name, int& no)
     parseNames (name, st, tsname);
 
     no = 0;
-    foreach(Strl * strl, st->allstrl)
+    for(auto rec : st->allstrl)
     {
+        Strl * strl = rec.second;
         if (strl->plus != nullptr && strl->plus ->NameTs() == tsname)
         {
             no = strl->No(); return strl;
@@ -759,11 +810,11 @@ Rc * Station::GetRcByName  (QString& name)
     QString tsname;
     parseNames (name, st, tsname);
 
-    no = 0;
-    foreach(Rc * rc, st->allrc)
+    //no = 0;
+    for (auto map : st->allrc)
     {
-        if (rc->Name()==tsname)
-            return rc;
+        if (map.second->Name()==tsname)
+            return map.second;
     }
     return nullptr;
 }
@@ -775,8 +826,9 @@ Tu * Station::GetTuByName (QString& name)
     QString tuname;
     parseNames (name, st, tuname);
 
-    foreach (class Tu* tu, Tu)
+    for (auto rec : Tu)
     {
+        class Tu * tu = rec.second;
         if (tu->Name() == tuname)
             return tu;
     }
@@ -786,16 +838,16 @@ Tu * Station::GetTuByName (QString& name)
 // очистка информации о состоянии РЦ и маршрутов перед приемом данных из потока
 void Station::ClearRcAndRouteInfo()
 {
-    foreach (Rc * rc, allrc)
+    for (auto map : allrc)
     {
-        rc->actualRoute = nullptr;
-        rc->actualtrain = nullptr;
-        rc->stsPassed   = false;
+        map.second->actualRoute = nullptr;
+        map.second->actualtrain = nullptr;
+        map.second->stsPassed   = false;
     }
 
-    foreach (Route * route, routes)
+    for (auto map : routes)
     {
-        route->sts = Route::PASSIVE;
+        map.second->sts = Route::PASSIVE;
     }
 }
 
@@ -807,7 +859,7 @@ bool Station::IsUndefinedTsPresrnt()
     for (int i = 0; i < TsMaxLengthBits; i++)
     {
         // если 1 или мигает и это не диагональ матрицы
-        if ((tsStsRaw[i] || tsStsPulse[i]) && !TsIndexed.contains(i))
+        if ((tsStsRaw[i] || tsStsPulse[i]) && !TsIndexed.count(i))
         {
             if (Kp2000())
             {
@@ -877,6 +929,9 @@ void Station::ParseConfigKP2007(Logger& logger)
     // МТС,МТУ
     ParseMT (false);
     ParseMT (true);
+
+    // подсчет числа модулей
+    countMTUMTS();
 
     // явное опсание исключений ТУ для разных режимов управления
     ParseTuEclusion();
@@ -1051,6 +1106,7 @@ void Station::AcceptTS   ()
     Strl::AcceptTS (this);									// состояние стрелок
     Rc  ::AcceptTS (this);                                  // состояние РЦ
     Svtf::AcceptTS (this);									// состояние светофоров	2014.10.22 перенес ДО МАРШРУТОВ
+    Pereezd::AcceptTS (this);
 
     //DPereezd	  ::AcceptTS (NoSt);											// 2015.01.22 переезды
     //DPeregon	  ::AcceptTS ();												// 2015.01.22 все перегоны

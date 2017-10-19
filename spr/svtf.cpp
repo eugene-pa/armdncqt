@@ -3,9 +3,9 @@
 #include "svtf.h"
 #include "properties.h"
 
-QHash<QString, class IdentityType *> Svtf::propertyIds;     //  множество шаблонов возможных свойств СВТФ
-QHash<QString, class IdentityType *> Svtf::methodIds;       //  множество шаблонов возможных методов СВТФ
-QHash <int, Svtf *> Svtf::svtfhash;                         // СВТФ , индексированные по индексу ТС
+std::unordered_map<std::string, class IdentityType *> Svtf::propertyIds;    //  множество шаблонов возможных свойств СВТФ
+std::unordered_map<std::string, class IdentityType *> Svtf::methodIds;      //  множество шаблонов возможных методов СВТФ
+std::unordered_map<int, Svtf *> Svtf::svtfhash;                             // СВТФ , индексированные по индексу ТС
 
 Svtf::Svtf(SprBase * tuts, Logger& logger)
 {
@@ -61,9 +61,9 @@ bool Svtf::AddTemplate(IdentityType * ident)
     if (ident->ObjType() == "СВТФ")
     {
         if (ident->PropType() == "ТС")
-            propertyIds[ident->Name()] = ident;
+            propertyIds[ident->Name().toStdString()] = ident;
         else
-            methodIds[ident->Name()] = ident;
+            methodIds[ident->Name().toStdString()] = ident;
         return true;
     }
     return false;
@@ -72,7 +72,7 @@ bool Svtf::AddTemplate(IdentityType * ident)
 bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
 {
     int id = ts->IdSvtf();
-    Svtf * svtf = svtfhash.contains(id) ? svtfhash[id] : new Svtf(ts, logger);
+    Svtf * svtf = svtfhash.count(id) ? svtfhash[id] : new Svtf(ts, logger);
 
     // добираем нужные поля
     svtf->svtfdiag      = query.value("SvtfDiag"  ).toString();     // тип диагностического контроля
@@ -84,6 +84,7 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     if (svtfmain && tname!="ПРС")
     {
         svtf->svtftypename = tname;
+        svtf->disabled |= ts->disabled;
         svtf->svtftype= tname == "ВХ"  ? SVTF_IN  :         // входной
                         tname == "ВЫХ" ? SVTF_OUT :         // выходной
                         tname == "МРШ" ? SVTF_OUT :         // маршрутный
@@ -93,6 +94,7 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
                                          SVTF_X;
         if (svtf->svtftype != SVTF_PRLS)
         {
+            svtf->tsList.push_back(ts);
             svtf->name = ts->Name();
             svtf->opened->SetTs(ts);
             svtf->svtferror     = query.value("SvtfError" ).toString(); // выражение ошибки светофора
@@ -111,7 +113,7 @@ bool Svtf::AddTs (QSqlQuery& query, Ts * ts, Logger& logger)
     }
     else
     {
-        svtf->tsList.append(ts);
+        svtf->tsList.push_back(ts);
         svtf->manevr      ->Parse(ts, logger);
         svtf->calling     ->Parse(ts, logger);
         svtf->pzdM        ->Parse(ts, logger);
@@ -142,8 +144,8 @@ bool Svtf::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
     Q_UNUSED(query)
 
     int id = tu->IdSvtf();
-    Svtf * svtf = svtfhash.contains(id) ? svtfhash[id] : new Svtf(tu, logger);
-    svtf->tuList.append(tu);
+    Svtf * svtf = svtfhash.count(id) ? svtfhash[id] : new Svtf(tu, logger);
+    svtf->tuList.push_back(tu);
 
     // выполняем привязку метода
     svtf->open     ->Parse(tu, logger);
@@ -160,16 +162,16 @@ bool Svtf::AddTu (QSqlQuery& query, Tu * tu, Logger& logger)
 // получить справочник по номеру светофора
 Svtf * Svtf::GetById(int no)
 {
-    return svtfhash.contains(no) ? svtfhash[no] : nullptr;
+    return svtfhash.count(no) ? svtfhash[no] : nullptr;
 }
 
 
 // обработка объектов по станции
 void Svtf::AcceptTS (Station *st)
 {
-    foreach(Svtf * svtf, st->Allsvtf().values())
+    for(auto rec : st->Allsvtf())
     {
-        svtf->Accept();
+        rec.second->Accept();
     }
 }
 
@@ -185,6 +187,38 @@ void Svtf::Accept()
         uniStsChanged = true;                               // пометка изменения состояния в терминах унифицированного состояния
     }
 }
+
+QString Svtf::About()
+{
+
+    QString s = "Ст." + StationName();
+    s += ". Свтф " + Name();
+
+    s += opened       ->About();
+    s += manevr       ->About();
+    s += calling      ->About();
+    s += pzdM         ->About();
+    s += mnvM         ->About();
+    s += locked       ->About();
+    s += ad           ->About();
+    s += seltounlock  ->About();
+    s += yelllow      ->About();
+    s += ko           ->About();
+    s += blinking     ->About();
+    s += canceling    ->About();
+
+    s += open         ->About();
+    s += close        ->About();
+    s += lock         ->About();
+    s += unlock       ->About();
+    s += adon         ->About();
+    s += adoff        ->About();
+    s += mm           ->About();
+    s += cancel       ->About();
+
+    return s;
+}
+
 
 // получить статус UNI
 SprBase::UniStatusRc Svtf::GetUniStatus()

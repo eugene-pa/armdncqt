@@ -9,6 +9,7 @@
 #include "../common/logger.h"
 #include "ts.h"
 #include "tu.h"
+#include "otu.h"
 #include "rc.h"
 #include "strl.h"
 #include "svtf.h"
@@ -34,7 +35,8 @@ class Station : public QObject
 
 public:
     // открытые статические члены
-    static QHash<int, Station*> Stations;                   // хэш-таблица указателей на справочники станций
+    static std::unordered_map<int, Station*> Stations;      // хэш-таблица указателей на справочники станций, индексированная по ключу "номер станции"
+    static std::vector<Station*> StationsOrg;               // массив станций в порядке чтения из БД
     static bool LockLogicEnable;                            // включен логический контроль
     static bool InputStreamRss;                             // тип входного потока: InputStreamRss=true-Станция связи, false-Управление
     static short	MainLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
@@ -51,6 +53,7 @@ public:
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
     static void CountMT();                                  // посчитать модули и сдвинуть пометки МТС для КП2000 на число ТУ
+    void countMTUMTS();                                     // посчитать модули и сдвинуть пометки МТС для КП2000 на число ТУ
 
     // открытые функции
     Station(QSqlQuery&, class KrugInfo* , Logger& );        // конструктор на базе записи в БД
@@ -142,32 +145,35 @@ public:
 
     Route * GetRouteByNo(int no);                           // получить маршрут по номеру маршрута на станции
 
-    QHash <int, class Rc  *> & Allrc  () { return allrc;  } // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Svtf*> & Allsvtf() { return allsvtf;} // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Strl*> & Allstrl() { return allstrl;} // РЦ станции, индексированные по индексу ТС
-    QHash <int, class Route*>& Allroute(){ return routes; } // маршруты на станции, индексированные по номеру маршрута на станции
+    std::unordered_map <int, class Rc  *> & Allrc  () { return allrc;  } // РЦ станции, индексированные по индексу ТС
+    std::unordered_map <int, class Svtf*> & Allsvtf() { return allsvtf;} // светофоры станции, индексированные по индексу ТС
+    std::unordered_map <int, class Strl*> & Allstrl() { return allstrl;} // стрелки станции, индексированные по индексу ТС
+    std::unordered_map <int, class Route*>& Allroute(){ return routes; } // маршруты на станции, индексированные по номеру маршрута на станции
 
     class Ts * GetTsByIndex(int indx);                      // получить ТС по индексу
     bool GetTsStsByIndex     (int indx);                    // получить состояние сигнала в марице ТС
     bool GetTsPulseStsByIndex(int indx);                    // получить состояние мигания сигнала в марице ТС
     bool GetTsStsRawByIndex  (int indx);                    // получить оригинальное состояние сигнала в марице ТС
 
-    bool GetTsStsByName      (QString name);                // получить состояние сигнала по имени
-    bool GetTsPulseStsByName (QString name);                // получить состояние мигания сигнала по имени
-    int  GetTsStsByNameEx    (QString name);                // d0 - состояние, d1 - мигание
+    bool GetTsStsByName      (std::string name);            // получить состояние сигнала по имени
+    bool GetTsPulseStsByName (std::string name);            // получить состояние мигания сигнала по имени
+    int  GetTsStsByNameEx    (std::string name);            // d0 - состояние, d1 - мигание
 
     // таблицы ТС по станции (перенести в protected)
-    QHash <QString, class Ts*> Ts;                          // индексированы по текстовому имени ТС
-    QHash <int, class Ts*> TsIndexed;                       // индексированы по индексу ТС
-    QHash <int, class Ts*> TsByIndxTsName;                  // индексированы по индексу имени
-    QVector <class Ts*> TsSorted;                           // отсортированы по имени
+    std::unordered_map <std::string, class Ts*> Ts;         // индексированы по текстовому имени ТС
+    std::unordered_map <int, class Ts*> TsIndexed;          // индексированы по индексу ТС
+    std::unordered_map <int, class Ts*> TsByIndxTsName;     // индексированы по индексу имени
+    std::vector <class Ts*> TsSorted;                       // отсортированы по имени
 
     // таблицы ТУ по станции
-    QHash <QString, class Tu*> Tu;                          // индексированы по текстовому имени ТУ
-    QHash <int    , class Tu*> TuByIJ;                      // индексированы по IJ
-    QVector <class Tu*> TuSorted;                           // отсортированы по имени
+    std::unordered_map <std::string, class Tu*> Tu;         // индексированы по текстовому имени ТУ
+    std::unordered_map <int    , class Tu*> TuByIJ;         // индексированы по IJ
+    std::vector <class Tu*> TuSorted;                       // отсортированы по имени
 
-    QVector <class ShapeId*> formList;                      // список классов-идентификаторов форм
+    std::unordered_map <std::string, class Otu*> Otu;       // ОТУ по станции, отсортированне по имени
+    std::unordered_map <int, class Otu*> OtuByNo;           // ОТУ по станции, отсортированне по номеру ОТУ
+
+    std::vector <class ShapeId*> formList;                  // список классов-идентификаторов форм
 
 
     bool IsTsPresent(int i) { return i>=0 && i<MaxModule && mts[i]; }
@@ -186,18 +192,22 @@ public:
     bool IsLinkOk();                                        // состояние связи в последнем циклн опроса ОК
     bool IsLinkStatusChanged();                             // проверка изменения состояния связи со станцией с пред.цикла опроса
 
+    QString& TypeEC() { return typeEC; }
+
+    bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
+
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
 
 // закрытые члены
 private:
-   QHash <int, class Rc  *> allrc;                         // РЦ        станции, индексированные по номеру объекта
-   QHash <int, class Svtf*> allsvtf;                       // Стрелки   станции, индексированные по номеру объекта
-   QHash <int, class Strl*> allstrl;                       // Светофоры станции, индексированные по номеру объекта
-   QHash <int, class Route*>routes;                        // маршруты на станции, индексированные по номеру маршрута на станции
+   std::unordered_map <int, class Rc  *> allrc;             // РЦ        станции, индексированные по номеру объекта
+   std::unordered_map <int, class Svtf*> allsvtf;           // Стрелки   станции, индексированные по номеру объекта
+   std::unordered_map <int, class Strl*> allstrl;           // Светофоры станции, индексированные по номеру объекта
+   std::unordered_map <int, class Route*>routes;            // маршруты на станции, индексированные по номеру маршрута на станции
 
-    class KrugInfo* krug;                                  // класс круга
+    class KrugInfo* krug;                                   // класс круга
     int     no;                                             // номер
     QString noext;                                          // конфигурация подслушек (номер или номер и IP, например: 15 [192.168.1.13 1051]
     QString name;
@@ -220,6 +230,7 @@ private:
     int     forms;                                          // число форм
     QString extForms;                                       // доп.формы
     QString orient;                                         // ориентация
+    QString typeEC;                                         // тип ЭЦ
 
     //	АДКСЦБ  EBILOCK АПКДК  РПЦДИАЛОГ  МПЦДИАЛОГ  МТУ=1(1)  МТС=19(2-20)  АБТЦМ
     bool    mpcEbilock;                                     // конфигурация с Ebilock950, а также ЭЦ ЕМ, РПЦ/МПЦ МПК + rpcMpcMPK
@@ -290,12 +301,11 @@ private:
     int       lenDk;                                        // длина последних принятых данных ДК
     int       offsetDk;                                     // смещение данных ДК в массивах
 
-    QVector<class AbtcmInfo    *> abtcms;                   // описание подключений АБТЦМ
-    QVector<class rpcDialogInfo*> rpcDialogs;               // описание подключений РПЦ Диалог
-    QVector<class ecMpkInfo    *> ecMpks;                   // описание подключений ЭЦ-МПК
+    std::vector<class AbtcmInfo    *> abtcms;               // описание подключений АБТЦМ
+    std::vector<class rpcDialogInfo*> rpcDialogs;           // описание подключений РПЦ Диалог
+    std::vector<class ecMpkInfo    *> ecMpks;               // описание подключений ЭЦ-МПК
 
     // закрытые функции
-    bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
     bool TestBit (QBitArray& bits, int index);              // проверка бита в битовом массиве
     void ParseExtForms();                                   // разбор доп.форм
     void ParseConfigKP2007(Logger& logger);                 // разбор строки конфигурации КП станции
@@ -315,21 +325,29 @@ class ShapeId
 {
     friend class ShapeSet;
 public:
-    ShapeId(Station * st, QString& name, int radioid)
+    ShapeId(Station * st, QString name, int radioid)
     {
         this->st = st;
         this->radioid = radioid;
         this->name = name;
+        button = nullptr;
         fileName = name + ".shp";
         set = nullptr;
+        widget = nullptr;
     }
     Station * St() { return st; }
     QString Name() { return name; }
     class ShapeSet * Set() { return set; }
+    void setShape(class ShapeSet *s) { set = s; }
+    void setButton (class QPushButton * btn) { button = btn; }
+    class QPushButton * getButton() { return button; }
+    void setWidget (class ShapeChild * w) { widget = w; }
+    class ShapeChild * getWidget () { return widget; }
 
 private:
     Station * st;                                           // станция-собственник
-    int radioid;                                            // кнопка
+    int radioid;                                            // номер ресурса кнопки из БД
+    class QPushButton * button;                             // указатель на кнопку или null
     QString name;                                           // наименование формы без расширения
     QString fileName;                                       // наименование формы c расширением
     class ShapeSet * set;                                   // контейнер примитивов

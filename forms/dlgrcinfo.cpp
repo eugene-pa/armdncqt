@@ -25,7 +25,7 @@ DlgRcInfo::~DlgRcInfo()
 // смена станции
 void DlgRcInfo::changeStation(class Station * p)
 {
-    if (p!=st)
+    if (p!=st && p!=nullptr)
     {
         ui->tableRc->clear();
         st = p;
@@ -64,12 +64,14 @@ void DlgRcInfo::updateStatus()
 // - поезд
 void DlgRcInfo::fillData()
 {
+    if (st==nullptr)
+        return;
     setWindowTitle("Состояние РЦ по ст." + st->Name());
 
     QTableWidget * t = ui->tableRc;
     t->setSortingEnabled(false);                             // запрещаем сортировку
     t->setColumnCount(10);
-    t->setRowCount(st->Allrc().count());
+    t->setRowCount((int)st->Allrc().size());
     t->verticalHeader()->setDefaultSectionSize(20);
     t->setEditTriggers(QAbstractItemView::NoEditTriggers);
     t->setHorizontalHeaderLabels(QStringList() << "Имя РЦ" << "#" << "Маршрут" << "Поезд" << "ТС" << "ТУ" << "Слева" << "Справа" << "Свтф >>" << "Свтф <<");
@@ -78,9 +80,12 @@ void DlgRcInfo::fillData()
     t->setSelectionMode(QAbstractItemView::SingleSelection);
 
     int row = 0;
-    foreach (Rc *rc, st->Allrc().values())
+    for (auto map : st->Allrc())
     {
+        Rc * rc = map.second;
+
         // РЦ
+
         t->setItem(row,0, new QTableWidgetItem (/**g_green,*/ rc->Name()));
         t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)rc));    // запомним РЦ
         t->item(row,0)->setBackground(getBackground(rc));
@@ -98,7 +103,7 @@ void DlgRcInfo::fillData()
 
         // ТС
         QString s;
-        foreach (Ts *ts, rc->Allts())
+        for (Ts *ts : rc->Allts())
         {
             s += ts->Name() + "   ";
         }
@@ -106,7 +111,7 @@ void DlgRcInfo::fillData()
 
         // ТУ
         s.clear();
-        foreach (Tu *tu, rc->Alltu())
+        for (Tu *tu : rc->Alltu())
         {
             s += tu->Name() + "   ";
         }
@@ -114,10 +119,10 @@ void DlgRcInfo::fillData()
 
         // Слева
         s.clear();
-        foreach (NxtPrv * lnk, rc->prv)
+        for (NxtPrv * lnk : rc->prv)
         {
             s += lnk->lft->Name();
-            if (lnk->strl.count())
+            if (lnk->strl.size())
             {
                 s += " [";
                 foreach (LinkedStrl * lstrl, lnk->strl)
@@ -131,10 +136,10 @@ void DlgRcInfo::fillData()
 
         // Справа
         s.clear();
-        foreach (NxtPrv * lnk, rc->nxt)
+        for (NxtPrv * lnk : rc->nxt)
         {
             s += lnk->rht->Name();
-            if (lnk->strl.count())
+            if (lnk->strl.size())
             {
                 s += " [";
                 foreach (LinkedStrl * lstrl, lnk->strl)

@@ -8,6 +8,8 @@ class Ts : public SprBase
     friend class Rc;
     friend class Strl;
     friend class Svtf;
+    friend class Station;
+    friend class DlgStrlInfo;
 
 public:
 

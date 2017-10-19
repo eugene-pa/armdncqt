@@ -163,7 +163,7 @@ bool Ts::ReadBd (QString& dbpath, KrugInfo * krug, Logger& logger)
 int Ts::getIndex(Logger& logger)
 {
     // в конфигурациях МПЦ можем иметь свои модули ТС для контроля ОТУ
-    // при этом сигналы Ebilock щписываются традиционно координатой  J (0...n-1)
+    // при этом сигналы Ebilock описываются традиционно координатой  J (0...n-1)
     // поэтому смещаем ккординату на размер "наших" ТС
     if (st->IsMpcEbilock() && st->MtsCount() > 0)
         _j += st->MtsCount() * 32;

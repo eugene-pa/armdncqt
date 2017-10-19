@@ -93,6 +93,7 @@ protected:
     static QPen * PenIr;                                    // искусственная разделка (мигает поверх других состояний)
     static QPen * PenMuRect;                                // окантовка стрелки на МУ
     static QPen * PenUndefined;                             // объект неопределен - пассивная отрисовка
+    static QPen * PenUndefined1;                            // объект неопределен - пассивная отрисовка толщиной 1 пиксель
     static QPen * PenNormalOk;                              // тонкая линия нормали, корректное состояние
     static QPen * PenNormalAlarm;                           // тонкая линия нормали, взрез
     static QPen * PenAlarmPulse1;                           // авария (1-я фаза мигания)
@@ -110,7 +111,7 @@ protected:
     struct   StrlShapeProp * prop;                          // описание актуального набора геометрии
     class   Strl* sprStrl;                                  // стрелка
     class   Rc  * sprRc;                                    // РЦ под стрелкой
-    QVector<class LinkedStrl*> strl;                        // определяющие стрелки
+    std::vector<class LinkedStrl*> strl;                    // определяющие стрелки
     bool	plusNormal;         							// TRUE - плюс по основному ходу, FALSE - ответвление
     QString name;                                           // имя (обозначение) стрелки
     int     idrc;											// N РЦ стрелки
@@ -158,15 +159,15 @@ public:
     inline short GetIdRc() {return idrc; }                  // РЦ
     class Route * ActualRoute() { return sprRc == nullptr ? nullptr : sprRc->ActualRoute(); }
 
-    virtual void Draw(QPainter* pDC);						// функция рисования
-    virtual void  Parse(QString&);
-    virtual bool  CheckIt();
-    virtual void  FixUpUnsafe();
-    virtual QString Dump();
-    virtual QString ObjectInfo();
-    virtual void  Prepare();
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
-    virtual void accept();                                  // вычисление состояния примитива
+    virtual void Draw(QPainter* pDC) override;              // функция рисования
+    virtual void  Parse(QString&) override;
+    virtual bool  CheckIt() override;
+    virtual void  FixUpUnsafe() override;
+    virtual QString Dump() override;
+    virtual QString ObjectInfo() override;
+    virtual void  Prepare() override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
+    virtual void accept() override;                         // вычисление состояния примитива
 };
 
 #endif // SHAPESTRL_H

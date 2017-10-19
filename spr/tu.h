@@ -5,6 +5,7 @@
 
 class Tu : public SprBase
 {
+    friend class Station;
     friend class DlgTuInfo;
 
 public:
@@ -65,6 +66,9 @@ private:
 
     QString kontact;                                        // контакт
     int    KontactInt;                                      // контакт целочисленный
+
+    QString extTuSrc;
+    std::vector <class Tu*> extTu;
 
     QString tuEnum;                                         // перечисление ТУ
     QString place;                                          // KNN:MM

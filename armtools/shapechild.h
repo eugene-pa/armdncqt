@@ -17,8 +17,9 @@ public:
     void clear() { scene->clear(); }
 
 protected:
-    virtual void closeEvent(QCloseEvent *event);
-    virtual void timerEvent(QTimerEvent *event);
+    void closeEvent(QCloseEvent *event) override;
+    void timerEvent(QTimerEvent *event) override;
+    void mouseMoveEvent(QMouseEvent  *) override;
 
 private slots:
 
@@ -34,6 +35,8 @@ private:
 
     QGraphicsScene * scene;
     class ShapeSet * shapeSet;
+
+    QFont tooltipFont;
 };
 
 #endif

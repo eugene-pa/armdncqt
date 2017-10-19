@@ -36,10 +36,12 @@
     <addaction name="action_RC"/>
     <addaction name="action_STRL"/>
     <addaction name="action_SVTF"/>
-    <addaction name="action_7"/>
+    <addaction name="action_Pereezd"/>
     <addaction name="separator"/>
     <addaction name="action_Stations"/>
-    <addaction name="action_8"/>
+    <addaction name="action_Peregons"/>
+    <addaction name="separator"/>
+    <addaction name="action_DlgTrains"/>
    </widget>
    <widget class="QMenu" name="menu_6">
     <property name="title">
@@ -59,16 +61,19 @@
     <property name="title">
      <string>Обновления</string>
     </property>
-    <addaction name="action_12"/>
+    <addaction name="action_UpdateNsi"/>
     <addaction name="separator"/>
-    <addaction name="action_18"/>
+    <addaction name="action_RestoreNsi"/>
    </widget>
    <widget class="QMenu" name="menu_9">
     <property name="title">
      <string>Вид</string>
     </property>
+    <addaction name="action_Tooltip"/>
     <addaction name="action_Toolbar"/>
-    <addaction name="action_ToolBar2"/>
+    <addaction name="separator"/>
+    <addaction name="action_VisibleTrains"/>
+    <addaction name="action_VisibleNonregTrains"/>
     <addaction name="separator"/>
     <addaction name="action_More"/>
     <addaction name="action_Less"/>
@@ -106,17 +111,6 @@
    <addaction name="action_Stop"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QToolBar" name="toolBar2">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>true</bool>
-   </attribute>
-  </widget>
   <action name="action_RC">
    <property name="checkable">
     <bool>true</bool>
@@ -149,12 +143,18 @@
     <string>Станции</string>
    </property>
   </action>
-  <action name="action_7">
+  <action name="action_Pereezd">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Переезды</string>
    </property>
   </action>
-  <action name="action_8">
+  <action name="action_Peregons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Перегоны</string>
    </property>
@@ -291,12 +291,12 @@
     <string>Удаление временных файлов</string>
    </property>
   </action>
-  <action name="action_12">
+  <action name="action_UpdateNsi">
    <property name="text">
     <string>Обновление БД и схем станций</string>
    </property>
   </action>
-  <action name="action_18">
+  <action name="action_RestoreNsi">
    <property name="text">
     <string>Откат к предыдущей версии</string>
    </property>
@@ -314,7 +314,7 @@
   </action>
   <action name="action_More">
    <property name="text">
-    <string>Масштаб +</string>
+    <string>Масштаб + (Ctrl + '+')</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -322,7 +322,7 @@
   </action>
   <action name="action_Less">
    <property name="text">
-    <string>Масштаб -</string>
+    <string>Масштаб -  (Ctrl + '-')</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
@@ -330,15 +330,10 @@
   </action>
   <action name="action_ZoomOff">
    <property name="text">
-    <string>Масштаб 1:1</string>
+    <string>Масштаб 1:1  (Ctrl + '*')</string>
    </property>
-  </action>
-  <action name="action_ToolBar2">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Расширенная панель управления</string>
+   <property name="shortcut">
+    <string>Ctrl+*</string>
    </property>
   </action>
   <action name="action_Stop">
@@ -350,6 +345,51 @@
      <family>Consolas</family>
      <pointsize>12</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>О программе</string>
+   </property>
+  </action>
+  <action name="action_QtAbout">
+   <property name="text">
+    <string>О Qt</string>
+   </property>
+  </action>
+  <action name="action_Tooltip">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Всплывающие подсказки</string>
+   </property>
+  </action>
+  <action name="action_VisibleTrains">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Показывать поезда</string>
+   </property>
+  </action>
+  <action name="action_VisibleNonregTrains">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Показывать незарегистрированные поезда</string>
+   </property>
+  </action>
+  <action name="action_DlgTrains">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Поезда</string>
    </property>
   </action>
  </widget>

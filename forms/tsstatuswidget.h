@@ -33,7 +33,7 @@ private:
     int page;
     void DrawGrid(QPainter *p);                             // отрисовка окантовки
     void DrawTs  (QPainter *p);                             // отрисовка ТС
-    Station * pSt;                                          // указатель на класс станции
+    Station * st;                                          // указатель на класс станции
     int actualNode;                                         // актуальный узел матрицы
     void timerEvent(QTimerEvent *event);
 };

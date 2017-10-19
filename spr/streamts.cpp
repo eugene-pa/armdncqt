@@ -84,6 +84,7 @@ bool DOptionsDataFromMonitor::Extract(UINT length)
 // ==============================================================================================================================================================
 //								class DPrgDataFromMonitor
 // ==============================================================================================================================================================
+// записываем номера четных и нечетных поездов на слепых перегонов в очереди перегонов
 void DPrgDataFromMonitor::Extract(KrugInfo * krug)
 {
     if (Signature != SIGNATURE)
@@ -92,14 +93,37 @@ void DPrgDataFromMonitor::Extract(KrugInfo * krug)
         return;
     }
 
-    Peregon *prg = Peregon::GetById (NoPrg, krug);
+
+    Peregon *prg = Peregon::GetById (NoPrg, krug);          // поиск перегона по номеру
     if (prg)
     {
-//        prg->ChdkOn		 = ChdkOn;              // вкл/окл контроль поездов по ЧДК
-//        prg->AllEvnTrains= AllEvnTrains;		// число поездов в четном напр.
-//        prg->AllOddTrains= AllOddTrains;		// число поездов в нечетном напр.
-//        memmove(pPrg->EvnTrains,EvnTrains,sizeof(EvnTrains));
-//        memmove(pPrg->OddTrains,OddTrains,sizeof(OddTrains));
+        prg->chdkOn		 = ChdkOn > 0;                      // вкл/окл контроль поездов по ЧДК
+
+        prg->evnTrains.clear();
+        short * p = &EvnTrains[0];
+        for (int i=0; i<AllEvnTrains; i++)                  // число поездов в четном напр.
+        {
+            int sno = p[i];
+            Train * train = Train::GetBySysNo(sno, krug);
+            if (train != nullptr)
+            {
+                train->prg = prg;                           // обратная ссылка в поезде на слепой перегон
+                prg->evnTrains.push_back(train);            // поезд - в очередь на перегоне
+            }
+        }
+
+        prg->oddTrains.clear();
+        p = &OddTrains[0];
+        for (int i=0; i<AllOddTrains; i++)                  // число поездов в четном напр.
+        {
+            int sno = p[i];
+            Train * train = Train::GetBySysNo(sno, krug);
+            if (train != nullptr)
+            {
+                train->prg = prg;                           // обратная ссылка в поезде на слепой перегон
+                prg->oddTrains.push_back(train);            // поезд - в очередь на перегоне
+            }
+        }
     }
 
 }

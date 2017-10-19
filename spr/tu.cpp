@@ -46,13 +46,17 @@ Tu::Tu(QSqlQuery& query, class KrugInfo* krug, Logger& logger)
         if (polus .indexOf("-")==0 && polus .length()==1) polus .clear();
 
         st = Station::GetById(nost);
-        // поле ОТУ импользуется только для ДЦ МПК и Ретайм
-        otu     = st->IsRpcMpcMPK() || st->Retime() ? query.value("OTU").toFloat() : false;
 
         ij = GetIJ();                                       // cформировать IJ
 
         if (st != nullptr)
         {
+            // поле ОТУ импользуется только для ДЦ МПК и Ретайм
+            otu     = st->IsRpcMpcMPK() || st->Retime() ? query.value("OTU").toFloat() : false;
+
+            // сопряженные и составные ТУ в поле Question
+            extTuSrc = query.value("Question").toString();
+
             if (validIJ)
             {
                 // добавляем ТУ в справочники Tu, TuByIJ, TsSorted
@@ -118,6 +122,19 @@ ushort Tu::GetIJ()
     validIJ = false;
     if (st)
     {
+        // вирт.ТУ "ПАУЗА"
+        if (modul==0 && _i==0 && _j==0)
+        {
+            validIJ = true;
+            return ij;
+        }
+
+        if (st && st->IsMpcEbilock())                       // МПЦ:        №ТУ
+        {
+            validIJ = _j>0 && _j<=4096;
+            ij = _j;
+        }
+        else
         if (st->Kp2007())
         {
             validIJ = _i>0 && _i<=48 && _j>0 && _j<=32;
@@ -132,12 +149,6 @@ ushort Tu::GetIJ()
             if (validIJ && st->Kp2000() && _kolodka > 0)
                 st->MarkTu(modul);
 
-        }
-        else
-        if (st && st->IsMpcEbilock())                       // МПЦ:        №ТУ
-        {
-            validIJ = _j>0 && _j<=4096;
-            ij = _j;
         }
     }
     return ij;
@@ -191,7 +202,7 @@ bool Tu::ReadBd (QString& dbpath, class KrugInfo* krug, Logger& logger)
 
     logger.log("Сортировка списка ТУ TuSorted");
     Station::SortTu();
-    Station::CountMT();
+    //Station::CountMT();
 
     return true;
 

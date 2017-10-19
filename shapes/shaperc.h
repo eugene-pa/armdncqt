@@ -10,7 +10,7 @@ class ShapeRc : public DShape
     friend class ShapeTrain;
 protected:
     class Rc * sprRc;                                       // указатель на справочник РЦ
-    QVector<class LinkedStrl*> strl;                        // определяющие стрелки
+    std::vector<class LinkedStrl*> strl;                    // определяющие стрелки
     //QPainterPath path;                                    // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
     QPolygonF poly;                                         // путь для отрисовки смежных отрезков, реально хранится в одном из смежных отрезков
 
@@ -63,19 +63,21 @@ public:
     ~ShapeRc();
     static void InitInstruments();                          // инициализация статических инструментов отрисовки
 
-    virtual void  Draw (QPainter*);                         // функция рисования
-    virtual void  Parse(QString&);                          // разбор строки описания
-    virtual bool  CheckIt();
-    virtual void  FixUpUnsafe();
-    virtual QString Dump();
-    virtual QString ObjectInfo();
-    virtual void  Prepare();
+    virtual void  Draw (QPainter*) override;                         // функция рисования
+    virtual void  Parse(QString&) override;                          // разбор строки описания
+    virtual bool  CheckIt() override;
+    virtual void  FixUpUnsafe() override;
+    virtual QString Dump() override;
+    virtual QString ObjectInfo() override;
+    virtual void  Prepare() override;
+
+    QRectF boundingRect() const Q_DECL_OVERRIDE;
 
     void AddAndMerge();
 
 protected:
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,QWidget *widget) override;
 
     void normalize();
 
@@ -88,7 +90,7 @@ protected:
     bool isPassed   () { return (*state)[StsPassed  ]; }    // пройдена
     bool isIr       () { return (*state)[StsIr      ]; }    // ИР
 
-    void accept();                                          // вычисление состояния примитива
+    void accept()  override;                                // вычисление состояния примитива
     bool isStrlOk();                                        // проверка нахождения определяющих стрелок в требуемом положении    
     bool isStrlInRoute(Route* route);                       // проверка, удовлетворяет ли положение направляющих стрелок отрезка ЗАДАННОМУ положению стрелок указанного маршрута
                                                             // функция используется для прокладки трассы устанавливаемого маршрута, при этом фактическое положение стрелок может отличаться от заданного

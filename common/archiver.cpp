@@ -69,15 +69,30 @@ int ArhReader::Next()
 // чтение записи по дате >= заданной
 int ArhReader::Read (QDateTime t)
 {
-    do
+    if (t.toTime_t() < time())
     {
-        if (Next() < 0)
-            return -1;
-        // если разница более 1 часа - не найдем
-        if (qAbs((long)t.toTime_t() - (long)time()) > 3600)
-            return -1;
+        do
+        {
+            if (Prev() < 0)
+                return -1;
+            // если разница более 1 часа - не найдем
+            if (qAbs((long)t.toTime_t() - (long)time()) > 3600)
+                return -1;
+        }
+        while (header.time > t.toTime_t());
     }
-    while (header.time < t.toTime_t());
+    else
+    {
+        do
+        {
+            if (Next() < 0)
+                return -1;
+            // если разница более 1 часа - не найдем
+            if (qAbs((long)t.toTime_t() - (long)time()) > 3600)
+                return -1;
+        }
+        while (header.time < t.toTime_t());
+    }
     return Length();
 }
 
@@ -98,11 +113,15 @@ int ArhReader::Last()
 // чтение записи от текущего положения указателя
 int ArhReader::Prev()
 {
-    file.seek(file.pos() - 4);
-    int pos;
+    int pos = file.pos();
+    if (pos==0)
+        return -1;
+    file.seek(pos - 4);
     file.read((char *)&pos, 4);
     file.seek(pos);
-    return Next();
+    int ret = Next();
+    file.seek(pos);
+    return ret == -1 ? ret : Length();
 }
 
 // получить архивное имя по дате и времени
@@ -124,6 +143,13 @@ QString ArhReader::getZipName(QDateTime t)
 // перейти на начало следующего часа и установить новое имя часового архива по дате
 bool ArhReader::setNextHour(QDateTime t)
 {
-    int dt = 59 - t.time().minute() + 60 - t.time().second();
+    int dt = (60 - t.time().minute())*60 + 60 - t.time().second();
     return setArhName(QDateTime::fromTime_t(t.toTime_t() + dt));
+}
+
+// перейти на начало предыдущего часа и установить новое имя часового архива по дате
+bool ArhReader::setPrevHour(QDateTime t)
+{
+    int dt = t.time().minute()*60 + t.time().second() + 1;
+    return setArhName(QDateTime::fromTime_t(t.toTime_t() - dt));
 }
