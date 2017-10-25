@@ -28,7 +28,7 @@ public:
     QString toString();
 
     ResponceErrorType error() { return _error; }
-    void setErrorText(QString& s) { _errorText = s; }
+    void setErrorText(QString s) { _errorText = s; }
 
 protected:
     RemoteRq        _rq;                                    // исходный запрос
