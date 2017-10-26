@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QHostInfo>
 #include <QBuffer>
+#include <QDataStream>
 
 class BriefFileInfo
 {
