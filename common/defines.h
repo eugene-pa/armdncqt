@@ -81,16 +81,17 @@ typedef const char *    LPCTSTR;
 
 class DStation;
 
-enum ProgrammType
+enum AppTypes
 {
-    APP_MONITOR		= 1,
-    APP_MDMAGENT	= 2,        // 2
-    APP_TABLO		= 3,        // 3
-    APP_ARMUTILS	= 4,        // 4
-    APP_PROTOCOL	= 5,        // 5
-    APP_ARM32		= 6,        // 6
-    APP_ARMENERGY	= 7,        // 7
-    APP_BRIDGEASOUP	= 8         // 8
+    APP_MDMAGENT	= 1,        // Станция связи
+    APP_MONITOR		= 2,        // Управление
+    APP_TABLO		= 3,        // Табло
+    APP_TABLOM		= 4,        // Табло многооконное
+    APP_ARM32		= 5,        // График
+    APP_RSSMPK      = 6,        // РСС МПК
+    APP_ARMUTILS	= 7,        // АРМ ШН
+    APP_BRIDGETCP	= 8,        // Шлюз СПД
+    APP_GIDURAL     = 9,        // Шлюз ГИДУРАЛ
 };
 
 enum LogSourcer
@@ -112,7 +113,7 @@ enum LogSourcer
     LOG_BLANK                   // 14 -Пусто
 };
 
-enum LogTypes
+enum EventTypes
 {
     TYP_UNDEFINED = 0,
     LOG_ALARM = 1,              // 1 - Аварийное
@@ -128,7 +129,7 @@ enum LogTypes
 //------------------------------------------------------------------------------------------------------------------------
 };
 
-extern ProgrammType modulType;     // тип приложения
+extern AppTypes modulType;     // тип приложения
 
 extern bool IsMonitor  ();
 extern bool IsArmTools ();

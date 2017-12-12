@@ -20,7 +20,7 @@ public:
 
     // статические открытые функции
     static void SetLoger(Logger * p) { logger = p; }            // установить активный статический логгер
-    static void LogStr (QString str, LogSourcer = SRC_UNDEFINED, LogTypes = TYP_UNDEFINED); // протоколирование строки в SQL и логе; если сохраняем в SQL, отображаем в строке сообщений
+    static void LogStr (QString str, LogSourcer = SRC_UNDEFINED, EventTypes = TYP_UNDEFINED); // протоколирование строки в SQL и логе; если сохраняем в SQL, отображаем в строке сообщений
     static QString GetHex(char * data, int maxlength=16);
     static QString GetHex(QByteArray& array, int maxlength=16);
 

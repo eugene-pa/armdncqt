@@ -104,7 +104,7 @@ QString Logger::log (QString str)
 
 // статическая функция протоколирования строки в SQL и логе; если сохраняем в SQL, отображаем в строке сообщений
 // странно, но такое решение приводит к искажению кодировки входной строки при вызове функции из другого потока
-void Logger::LogStr (QString str, LogSourcer source, LogTypes type)
+void Logger::LogStr (QString str, LogSourcer source, EventTypes type)
 {
     if (source!=SRC_UNDEFINED && type!=TYP_UNDEFINED)
     {

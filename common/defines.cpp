@@ -1,7 +1,7 @@
 // файл с глобальными переменными группы проектов QtArmDnc
 #include "defines.h"
 
-ProgrammType modulType;                                     // тип приложения
+AppTypes modulType;                                     // тип приложения
 
 bool IsMonitor  () { return modulType==APP_MONITOR  ; }
 bool IsArmTools () { return modulType==APP_ARMUTILS ; }
