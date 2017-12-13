@@ -3,11 +3,6 @@
 
 AppTypes modulType;                                     // тип приложения
 
-bool IsMonitor  () { return modulType==APP_MONITOR  ; }
-bool IsArmTools () { return modulType==APP_ARMUTILS ; }
-bool IsRss      () { return modulType==APP_MDMAGENT ; }
-bool IsTablo    () { return modulType==APP_TABLO    ; }
-
 // глобальные переменные
 bool g_ShowStrlText     = true;                             // отображение надписей на стрелках
 bool g_ShowSvtfText     = true;                             // отображение надписей на светофорах
@@ -24,6 +19,33 @@ bool g_rqAck;                                               // требоват�
 
 class Station * g_actualStation;                            // актуальная станция
 class ShapeId * g_actualForm;                               // актуальная схема
+
+const char * AppNamesStr[] = {
+                                "-",                        // 0
+                                "Станция связи",            // 1
+                                "Управление",               // 2
+                                "Табло",                    // 3
+                                "ТаблоМ",                   // 4
+                                "График",                   // 5
+                                "РСС МПК",                  // 6
+                                "АРМ ШН",                   // 7
+                                "Шлюз СПД",                 // 8
+                                "Шлюз ГИД-УРАЛ",            // 9
+                               };
+
+const char * EventNames[] =   {
+                                "-",                        // 0
+                                "Аварийное",                // 1
+                                "Технологическое",          // 2
+                                "Системное",                // 3
+                                "Диагностическое",          // 4
+                                "Программное",              // 5
+                                "Фатальная ошибка",         // 6
+                                "Уведомление",              // 7
+                                "Телеуправление",           // 8
+                                "ОТУ",                      // 9
+                               };
+
 
 QPixmap * g_green,
         * g_red,
@@ -48,6 +70,16 @@ QPixmap * g_green,
 
 //  COMMTIMEOUTS tm = { 10,0,400,1,500};
 
+
+bool IsMonitor  () { return modulType==APP_MONITOR  ; }
+bool IsArmTools () { return modulType==APP_ARMUTILS ; }
+bool IsRss      () { return modulType==APP_MDMAGENT ; }
+bool IsTablo    () { return modulType==APP_TABLO    ; }
+
+const char * GetAppNameById(int id)
+{
+    return (id>=0 || id <= APP_GIDURAL) ? AppNamesStr[id] : AppNamesStr[0];
+}
 
 // 1. Побайтовый алгоритм вычисления CRC
 //    (Р.Л.Хаммел,"Послед.передача данных", Стр.49. М.,Мир, 1996)

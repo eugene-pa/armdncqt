@@ -1,5 +1,4 @@
-#include <thread>
-#include <mutex>
+#include "logger.h"
 #include "sqlblackbox.h"
 
 // концепция, принятая в C#-реализации:
@@ -11,30 +10,20 @@
 // на время недоступности сервера
 //
 
-std::queue<SqlBlackBox*> SqlBlackBox::Messages;
-extern std::timed_mutex exit_lock;
 
-SqlBlackBox::SqlBlackBox(int krug, int st, QString& ip, int app, int event, QDateTime tmdt, QString& s)
+
+SqlBlackBox::SqlBlackBox (QString mainstr, QString rsrvstr, Logger *logger)
 {
-    idKrug  = krug;
-    idSt    = st;
-    host    = ip;
-    idApp   = app;
-    idEvent = event;
-    t       = tmdt;
-    msg     = s;
-    Messages.push(this);
+    servers.push_back(new SqlServer (this, mainstr, logger));       // добавляем основной сервер
+    if (rsrvstr != nullptr && rsrvstr.length())                     // если определен резервный
+        servers.push_back(new SqlServer (this, rsrvstr, logger));   // добавляем резервный сервер
 }
 
-
-void ThreadDoSql(long)
+SqlBlackBox::~SqlBlackBox()
 {
-    //Log("Запуск потока ThreadSql");
-    while (!exit_lock.try_lock_for(std::chrono::milliseconds(100)))
+    while (servers.size())
     {
 
     }
-    exit_lock.unlock();
-    //Log("Завершение потока ThreadSql");
 }
 

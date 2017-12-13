@@ -27,14 +27,18 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     ../common/sqlblackbox.cpp \
+    ../common/defines.cpp \
+    ../common/sqlmessage.cpp \
     ../common/logger.cpp \
-    ../common/defines.cpp
+    ../common/sqlserver.cpp
 
 HEADERS += \
         mainwindow.h \
     ../common/sqlblackbox.h \
+    ../common/defines.h \
+    ../common/sqlmessage.h \
     ../common/logger.h \
-    ../common/defines.h
+    ../common/sqlserver.h
 
 FORMS += \
         mainwindow.ui

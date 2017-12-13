@@ -129,6 +129,7 @@ enum EventTypes
 //------------------------------------------------------------------------------------------------------------------------
 };
 
+extern const char * AppNamesStr[];
 extern AppTypes modulType;     // тип приложения
 
 extern bool IsMonitor  ();
