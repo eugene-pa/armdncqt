@@ -1,8 +1,6 @@
 #ifndef SQLMESSAGE_H
 #define SQLMESSAGE_H
 
-#include "QDateTime"
-
 class SqlMessage
 {
 public:

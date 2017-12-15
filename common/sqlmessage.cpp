@@ -1,3 +1,4 @@
+#include "QDateTime"
 #include "sqlmessage.h"
 
 //std::queue<SqlMessage*> SqlMessage::Messages;

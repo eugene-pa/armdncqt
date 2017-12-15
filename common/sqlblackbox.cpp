@@ -1,5 +1,12 @@
+#include "QDateTime"
 #include "logger.h"
+#include "vector"
+#include "defines.h"
+#include "logger.h"
+#include "sqlmessage.h"
+#include "sqlserver.h"
 #include "sqlblackbox.h"
+
 
 // концепция, принятая в C#-реализации:
 // класс "сообщение"    описывает одну запись, создается при вызове функции запись сообщения
@@ -12,7 +19,7 @@
 
 
 
-SqlBlackBox::SqlBlackBox (QString mainstr, QString rsrvstr, Logger *logger)
+SqlBlackBox::SqlBlackBox (QString& mainstr, QString& rsrvstr, Logger *logger)
 {
     servers.push_back(new SqlServer (this, mainstr, logger));       // добавляем основной сервер
     if (rsrvstr != nullptr && rsrvstr.length())                     // если определен резервный
@@ -23,7 +30,11 @@ SqlBlackBox::~SqlBlackBox()
 {
     while (servers.size())
     {
-
+        SqlServer * p = servers.back();
+        servers.pop_back();
+        delete p;
     }
 }
+
+
 

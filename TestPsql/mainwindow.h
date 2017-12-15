@@ -17,6 +17,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    class Logger * logger;
+    class SqlBlackBox * blackbox;
 };
+
+
 
 #endif // MAINWINDOW_H
