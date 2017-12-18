@@ -14,3 +14,7 @@ SqlMessage::SqlMessage(int krug, int st, QString& s, int app, int event, QString
 //    Messages.push(this);
 }
 
+QString SqlMessage::sql()
+{
+    return QString("INSERT INTO messages(idst, idkrug, host, app, msgtype, dttm,  message) VALUES (%1, %2, %3, %4, %5, '%6', '%7')").arg(idSt).arg(idKrug).arg(host).arg(idApp).arg(idEvent).arg(t.toString().arg(msg));
+}

@@ -49,13 +49,13 @@ public:
 
     std::mutex queue_lock;
     std::queue <std::shared_ptr<SqlMessage>> Messages;                  // очередь сообщений для записи в сервер
-    SqlParams * GetParams() { return params; }
+    void Log(QString s) { if (logger) logger->log(s); }
+    static void ThreadDoSql(long param);
 private:
-
+    int    counter;
     QString connStr;                                                    // строка подключения
     class SqlBlackBox * parent;                                         // родительсий класс
     Logger * logger;
-    ulong counter;                                                      // счетчик обоаюотанных сообщений
     SqlParams * params;
     std::thread * pthread;
     std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;

@@ -68,11 +68,17 @@ SqlServer::~SqlServer()
 // время блокирования мьютекса exit_lock соответствует времени работы программы
 // мьютекс блокируется в начале работы приложения, разблокируется при завершении
 extern std::timed_mutex exit_lock;
-void ThreadDoSql(long param)
-{
-    SqlServer * server = (SqlServer*) param;
 
-    //Log("Запуск потока ThreadSql");
+void SqlServer::ThreadDoSql(long param)
+{
+    if (param==nullptr)
+    {
+        return;
+    }
+    SqlServer * server = (SqlServer*) param;
+    server->counter = -1;
+
+    server->Log("Запуск потока ThreadDoSql для сервера: " + server->connStr);
     while (!exit_lock.try_lock_for(std::chrono::milliseconds(1000)))
     {
         {
@@ -92,26 +98,38 @@ void ThreadDoSql(long param)
         //if (tmp.size())
         {
             // 1. Подключаемся к серверу
-            QSqlDatabase db = QSqlDatabase::addDatabase(server->GetParams()->driver);
-            db.setHostName      (server->GetParams()->host);
-            db.setDatabaseName  (server->GetParams()->bd);
-            db.setUserName      (server->GetParams()->user);
-            db.setPassword      (server->GetParams()->pwd);
-            db.setPort          (server->GetParams()->port);
+            QSqlDatabase db = QSqlDatabase::addDatabase(server->params->driver);
+            db.setHostName      (server->params->host);
+            db.setDatabaseName  (server->params->bd);
+            db.setUserName      (server->params->user);
+            db.setPassword      (server->params->pwd);
+            db.setPort          (server->params->port);
             if (db.open())
             {
-                // 2. Если подключены - пишем
+                if (server->counter==-1)
+                {
+                    QString s = QString("Успешное подключение к серверу: '%1'").arg(server->connStr);
+                    server->Log(s);
+                    server->counter = 0;
+                }
+                // 2. Если успешно подключены - пишем
                 while (tmp.size())
                 {
                     std::shared_ptr<SqlMessage> p = tmp.front();
                     tmp.pop();
                     // пишем p
+                    server->counter++;
                 }
             }
             else
             {
-                // проблемы открытия БД
-                qDebug() << "Error Open BD";
+                if (server->counter!=-1)
+                {
+                    // проблемы открытия БД
+                    QString s = QString("Проблемы подключения к серверу: '%1'").arg(server->connStr);
+                    server->Log(s);
+                }
+                server->counter = -1;
             }
         }
 
@@ -119,5 +137,6 @@ void ThreadDoSql(long param)
     }
     exit_lock.unlock();
     //Log("Завершение потока ThreadSql");
+
 }
 
