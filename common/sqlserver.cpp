@@ -1,3 +1,5 @@
+#include <QSqlQuery>
+#include <QSqlError>
 #include "QDateTime"
 #include <thread>
 #include <mutex>
@@ -65,13 +67,22 @@ SqlServer::~SqlServer()
 //    }
 }
 
+
+// добавить сообщение
+void SqlServer::Add (std::shared_ptr<SqlMessage> msg)
+{
+    std::lock_guard <std::mutex> locker(queue_lock); // блокировка todo_lock
+    Messages.push(msg);
+}
+
 // время блокирования мьютекса exit_lock соответствует времени работы программы
 // мьютекс блокируется в начале работы приложения, разблокируется при завершении
 extern std::timed_mutex exit_lock;
 
+// поток выборки и записи сообщений
 void SqlServer::ThreadDoSql(long param)
 {
-    if (param==nullptr)
+    if (param==0)
     {
         return;
     }
@@ -95,7 +106,7 @@ void SqlServer::ThreadDoSql(long param)
         // освобождаем queue_lock
 
         // если выбрали сообщения - пишем их в сервер
-        //if (tmp.size())
+        if (tmp.size())
         {
             // 1. Подключаемся к серверу
             QSqlDatabase db = QSqlDatabase::addDatabase(server->params->driver);
@@ -117,8 +128,16 @@ void SqlServer::ThreadDoSql(long param)
                 {
                     std::shared_ptr<SqlMessage> p = tmp.front();
                     tmp.pop();
-                    // пишем p
-                    server->counter++;
+                    QString sql = p->sql();
+                    //server->Log(sql);
+                    db.exec(sql);
+                    if (db.lastError().isValid())
+                    {
+                        QString txt = QString("Ошибка '%1' при выполнения запроса: %2").arg(db.lastError().text()).arg(sql);
+                        server->Log(txt);
+                    }
+                    else
+                        server->counter++;
                 }
             }
             else

@@ -37,7 +37,7 @@
 //#include <QWidget>
 //#include <QGraphicsView>
 
-#define nullptr 0
+//#define nullptr 0
 
 // определения, облегчающие перенос кода с MSVC&MFC в QT
 typedef unsigned char   BYTE;
@@ -76,6 +76,7 @@ typedef const char *    LPCTSTR;
 #define FORMAT_DATETIME "dd.MM.yy hh:mm:ss"
 #define FORMAT_TIME     "hh:mm:ss"
 #define FORMAT_DATE     "dd.MM.yy"
+#define FORMAT_DT_PSQL  "yyyy-MM-dd hh:mm:ss.z"
 
 #define byteof(p,i) *(((BYTE *)&p)+i)                       // получить i-й байт области по произвольному указателю
 
@@ -92,6 +93,22 @@ enum AppTypes
     APP_ARMUTILS	= 7,        // АРМ ШН
     APP_BRIDGETCP	= 8,        // Шлюз СПД
     APP_GIDURAL     = 9,        // Шлюз ГИДУРАЛ
+};
+
+enum EventTypes
+{
+    TYP_UNDEFINED = 0,
+    LOG_ALARM = 1,              // 1 - Аварийное
+    LOG_TECH,                   // 2 - Технологическое
+    LOG_SYS,                    // 3 - Системное
+    LOG_DIAG,                   // 4 - Диагностическое
+    LOG_PROGRAMM,               // 5 - Программное
+    LOG_FATAL_ERROR,            // 6 - Фатальная ошибка
+    LOG_NOTIFY,                 // 7 - Уведомление
+    LOG_TU,                     // 8 - Команда телеуправления
+//------------------------------------------------------------------------------------------------------------------------
+    LOG_SUPERALARM,             // 9 - Критическая ошибка. ВАЖНО: этого типа нет в SQL, поэтому вместо него пишется LOG_ALARM
+//------------------------------------------------------------------------------------------------------------------------
 };
 
 enum LogSourcer
@@ -113,21 +130,6 @@ enum LogSourcer
     LOG_BLANK                   // 14 -Пусто
 };
 
-enum EventTypes
-{
-    TYP_UNDEFINED = 0,
-    LOG_ALARM = 1,              // 1 - Аварийное
-    LOG_TECH,                   // 2 - Технологическое
-    LOG_SYS,                    // 3 - Системное
-    LOG_DIAG,                   // 4 - Диагностическое
-    LOG_PROGRAMM,               // 5 - Программное
-    LOG_FATAL_ERROR,            // 6 - Фатальная ошибка
-    LOG_NOTIFY,                 // 7 - Уведомление
-    LOG_TU,                     // 8 - Команда телеуправления
-//------------------------------------------------------------------------------------------------------------------------
-    LOG_SUPERALARM,             // 9 - Критическая ошибка. ВАЖНО: этого типа нет в SQL, поэтому вместо него пишется LOG_ALARM
-//------------------------------------------------------------------------------------------------------------------------
-};
 
 extern const char * AppNamesStr[];
 extern AppTypes modulType;     // тип приложения

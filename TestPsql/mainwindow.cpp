@@ -18,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     blackbox = new SqlBlackBox (mainstr, rsrvstr, logger = new Logger("LOG/trstpsql.log", true, true));
+    blackbox->putMsg(1, "Тест записи 1", APP_MONITOR , LOG_TU);
+    blackbox->putMsg(3, "Тест записи 3", APP_MDMAGENT, LOG_NOTIFY);
+
 }
 
 MainWindow::~MainWindow()

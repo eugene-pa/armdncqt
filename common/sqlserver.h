@@ -43,9 +43,9 @@ public:
 class SqlServer
 {
 public:
-    SqlServer(class SqlBlackBox *, QString&, Logger * );                 // конструктор подключения к серверу
+    SqlServer(class SqlBlackBox *, QString&, Logger * );                // конструктор подключения к серверу
     ~SqlServer();
-    void Add (std::shared_ptr<SqlMessage> msg) { Messages.push(msg); }  // добавить сообщение
+    void Add (std::shared_ptr<SqlMessage> msg);                         // добавить сообщение
 
     std::mutex queue_lock;
     std::queue <std::shared_ptr<SqlMessage>> Messages;                  // очередь сообщений для записи в сервер

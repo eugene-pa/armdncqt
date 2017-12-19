@@ -71,6 +71,6 @@ public:
     char data[maxSize];
 };
 
-
+QString GetHostIp();
 
 #endif // TCPHEADER_H

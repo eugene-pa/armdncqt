@@ -6,6 +6,7 @@
 #include "sqlmessage.h"
 #include "sqlserver.h"
 #include "sqlblackbox.h"
+#include "tcpheader.h"
 
 
 // концепция, принятая в C#-реализации:
@@ -18,9 +19,10 @@
 //
 
 
-
-SqlBlackBox::SqlBlackBox (QString& mainstr, QString& rsrvstr, Logger *logger)
+SqlBlackBox::SqlBlackBox (QString mainstr, QString rsrvstr, Logger *logger)
 {
+    if (logger==nullptr)
+        logger = new Logger("LOG/trstpsql.log", true, true);
     servers.push_back(new SqlServer (this, mainstr, logger));       // добавляем основной сервер
     if (rsrvstr != nullptr && rsrvstr.length())                     // если определен резервный
         servers.push_back(new SqlServer (this, rsrvstr, logger));   // добавляем резервный сервер
@@ -36,5 +38,22 @@ SqlBlackBox::~SqlBlackBox()
     }
 }
 
+// запись сообщения
+void SqlBlackBox::putMsg(int krug, int st, QString msg, int app, int event, QString ip)
+{
+    std::shared_ptr<SqlMessage> mes(new SqlMessage(krug, st, msg, app, event, ip));
+    for (auto val : servers)
+    {
+        val->Add(mes);
+    }
+}
+
+// запись сообщения (перегруженная)
+void SqlBlackBox::putMsg(int st, QString msg, int app, int event)
+{
+    if (localhost.length()==0)
+        localhost = GetHostIp();
+    putMsg(0, st, msg, app, event, localhost);
+}
 
 

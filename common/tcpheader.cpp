@@ -1,5 +1,8 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include "QHostAddress"
+#include "QHostInfo"
+#include "QNetworkInterface"
 #include "tcpheader.h"
 
 TcpHeader::TcpHeader()
@@ -130,3 +133,18 @@ bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, int& port)
     return ret;
 }
 
+QString GetHostIp()
+{
+    QList< QHostAddress > addresses = QNetworkInterface::allAddresses();
+
+    foreach ( const QHostAddress & a, addresses )
+    {
+        if ( a.protocol() == QAbstractSocket::IPv4Protocol && a.toString() != "127.0.0.1")
+        {
+            QRegularExpressionMatch match = QRegularExpression("\\b([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\b").match(a.toString());
+            if (match.hasMatch())
+                return a.toString();
+        }
+    }
+    return "127.0.0.1";
+}

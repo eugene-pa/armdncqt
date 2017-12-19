@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,7 +30,8 @@ SOURCES += \
     ../common/defines.cpp \
     ../common/sqlmessage.cpp \
     ../common/logger.cpp \
-    ../common/sqlserver.cpp
+    ../common/sqlserver.cpp \
+    ../common/tcpheader.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,7 +39,8 @@ HEADERS += \
     ../common/defines.h \
     ../common/sqlmessage.h \
     ../common/logger.h \
-    ../common/sqlserver.h
+    ../common/sqlserver.h \
+    ../common/tcpheader.h
 
 FORMS += \
         mainwindow.ui
