@@ -15,10 +15,15 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_pushButtoWrite_clicked();
+
 private:
     Ui::MainWindow *ui;
     class Logger * logger;
     class SqlBlackBox * blackbox;
+
+    void UpdateList();
 };
 
 

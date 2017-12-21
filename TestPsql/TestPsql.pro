@@ -31,7 +31,8 @@ SOURCES += \
     ../common/sqlmessage.cpp \
     ../common/logger.cpp \
     ../common/sqlserver.cpp \
-    ../common/tcpheader.cpp
+    ../common/tcpheader.cpp \
+    ../spr/stationbase.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     ../common/sqlmessage.h \
     ../common/logger.h \
     ../common/sqlserver.h \
-    ../common/tcpheader.h
+    ../common/tcpheader.h \
+    ../spr/stationbase.h
 
 FORMS += \
         mainwindow.ui

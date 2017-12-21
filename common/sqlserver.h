@@ -1,6 +1,7 @@
 #ifndef SQLSERVER_H
 #define SQLSERVER_H
 
+#include "QSqlDatabase"
 #include "memory"
 #include "mutex"
 #include "thread"
@@ -51,14 +52,17 @@ public:
     std::queue <std::shared_ptr<SqlMessage>> Messages;                  // очередь сообщений для записи в сервер
     void Log(QString s) { if (logger) logger->log(s); }
     static void ThreadDoSql(long param);
+    QString Name() { return name; }
 private:
-    int    counter;
+    int    counter;                                                     // счетчик успешных записей
     QString connStr;                                                    // строка подключения
     class SqlBlackBox * parent;                                         // родительсий класс
-    Logger * logger;
-    SqlParams * params;
-    std::thread * pthread;
-    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;
+    Logger * logger;                                                    // логгер
+    SqlParams * params;                                                 // параметры соединения
+    QString name;                                                       // имя соединения: IP:порт
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // указатель на рабочий поток записи сообщений
+
+    QSqlDatabase open();                                                // открытие БД
 };
 
 

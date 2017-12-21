@@ -50,6 +50,9 @@ SqlServer::SqlServer(SqlBlackBox * parent, QString& connstr, Logger * logger)
 
     // инициализация параметров
     params = new SqlParams(connstr);
+    name = QString("%1:%2").arg(params->host).arg(params->port);
+
+    open();
 
     // создаем поток записи
     // pthread = new std::thread(ThreadDoSql, (long)this);
@@ -78,6 +81,23 @@ void SqlServer::Add (std::shared_ptr<SqlMessage> msg)
 // время блокирования мьютекса exit_lock соответствует времени работы программы
 // мьютекс блокируется в начале работы приложения, разблокируется при завершении
 extern std::timed_mutex exit_lock;
+
+// открытие БД
+QSqlDatabase SqlServer::open()
+{
+    QSqlDatabase db = QSqlDatabase::database(name);
+    if (!db.isOpen())
+    {
+        db = QSqlDatabase::addDatabase(params->driver, name);
+        db.setHostName      (params->host);
+        db.setDatabaseName  (params->bd);
+        db.setUserName      (params->user);
+        db.setPassword      (params->pwd);
+        db.setPort          (params->port);
+        db.open();
+    }
+    return db;
+}
 
 // поток выборки и записи сообщений
 void SqlServer::ThreadDoSql(long param)
@@ -108,14 +128,11 @@ void SqlServer::ThreadDoSql(long param)
         // если выбрали сообщения - пишем их в сервер
         if (tmp.size())
         {
-            // 1. Подключаемся к серверу
-            QSqlDatabase db = QSqlDatabase::addDatabase(server->params->driver);
-            db.setHostName      (server->params->host);
-            db.setDatabaseName  (server->params->bd);
-            db.setUserName      (server->params->user);
-            db.setPassword      (server->params->pwd);
-            db.setPort          (server->params->port);
-            if (db.open())
+            // ВАЖНО: так как возможно подключение к нексольким серверам (например, основной и резервный),
+            //        нельзя работать с соединением по умолчанию: надо именовать соединения, например blackbox1,blackbox2 и т.д.
+            // 1. Запрашиваем соединение по умолчанию
+            QSqlDatabase db = server->open();
+            if (db.isOpen())
             {
                 if (server->counter==-1)
                 {
@@ -123,7 +140,7 @@ void SqlServer::ThreadDoSql(long param)
                     server->Log(s);
                     server->counter = 0;
                 }
-                // 2. Если успешно подключены - пишем
+                // Записываем в БД все сообщения из временной очереди
                 while (tmp.size())
                 {
                     std::shared_ptr<SqlMessage> p = tmp.front();
@@ -155,7 +172,8 @@ void SqlServer::ThreadDoSql(long param)
         }
     }
     exit_lock.unlock();
-    //Log("Завершение потока ThreadSql");
-
+    server->Log("Завершение потока ThreadSql для сервера: " + server->connStr);
 }
+
+
 

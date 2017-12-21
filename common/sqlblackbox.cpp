@@ -38,6 +38,11 @@ SqlBlackBox::~SqlBlackBox()
     }
 }
 
+SqlServer* SqlBlackBox::GetSvr(int indx)
+{
+    return servers.size() >= indx ? servers[indx] : nullptr;
+}
+
 // запись сообщения
 void SqlBlackBox::putMsg(int krug, int st, QString msg, int app, int event, QString ip)
 {

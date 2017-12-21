@@ -10,6 +10,8 @@ public:
     void putMsg(int krug, int st, QString msg, int app, int event, QString ip); // запись сообщения
     void putMsg(int st, QString msg, int app, int event);                       // запись сообщения (перегруженная)
 
+    class SqlServer* GetSvr(int indx);
+
 private:
     std::vector<class SqlServer*> servers;
     QString localhost;
