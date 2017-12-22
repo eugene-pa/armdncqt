@@ -4,6 +4,9 @@
 #include "../common/logger.h"
 #include "stationbase.h"
 
+// облегченный класс-описатель станции для приложений, где нужна информация о станцийх,
+// но не нужна полная информация об объекте
+
 std::unordered_map<int, StationBase*> StationBase::Stations;// хэш-таблица указателей на справочники станций
 std::vector<StationBase*> StationBase::StationsOrg;         // массив станций в порядке чтения из БД
 
@@ -87,7 +90,7 @@ bool StationBase::ReadBd (QString& dbpath, int krug, Logger& logger)
         {
             db = QSqlDatabase::addDatabase("QSQLITE", dbalias);
             db.setDatabaseName(dbpath);
-            bool s = db.open();
+            db.open();
         }
         if (db.isOpen())
         {
@@ -99,6 +102,10 @@ bool StationBase::ReadBd (QString& dbpath, int krug, Logger& logger)
                     new StationBase(query, krug, logger);
                 }
             }
+        }
+        else
+        {
+            logger.log("Проблема открытия БД " + dbpath);
         }
     }
     catch(...)

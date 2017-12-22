@@ -1,7 +1,8 @@
 #ifndef SQLSERVER_H
 #define SQLSERVER_H
 
-#include "QSqlDatabase"
+#include <QSqlDatabase>
+#include <QDebug>
 #include "memory"
 #include "mutex"
 #include "thread"
@@ -31,11 +32,9 @@ class ThreadTerminater
 public:
     void operator () (std::thread * p)
     {
-        auto id = p->get_id();                                          // запоминаем id, пока поток живой
+        //auto id = p->get_id();                                          // запоминаем id, пока поток живой
         p->join();                                                      // ожидаем завершения потока
-        //std::wstringstream s;
-        //s << L"Удаление указателя на поток " << id;                     // если хотим убедиться в удалении указателя
-        //Log(s.str());                                                   // выводим лог
+        qDebug() << "Удаление указателя на поток ";                     // если хотим убедиться в удалении указателя
         delete p;                                                       // удаляем указатель
     }
 };

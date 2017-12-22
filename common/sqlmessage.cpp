@@ -2,8 +2,11 @@
 #include "QDateTime"
 #include "sqlmessage.h"
 
+// класс "сообщение"    SqlMessage
+// описывает одну запись, создается при вызове функции запись сообщения SqlBlackBox::putMsg
+// при создании сообщения создается разделяемый указатель
 
-//std::queue<SqlMessage*> SqlMessage::Messages;
+// конструктор сообщения
 SqlMessage::SqlMessage(int krug, int st, QString& str, int app, int event, QString ip)
 {
     idKrug  = krug;
@@ -15,7 +18,7 @@ SqlMessage::SqlMessage(int krug, int st, QString& str, int app, int event, QStri
     msg     = str;
 }
 
-
+// формирование SQL запроса на запись сообщения
 QString SqlMessage::sql()
 {
     // 1999-01-08 04:05:06
