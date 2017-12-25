@@ -76,10 +76,18 @@ bool IsArmTools () { return modulType==APP_ARMUTILS ; }
 bool IsRss      () { return modulType==APP_MDMAGENT ; }
 bool IsTablo    () { return modulType==APP_TABLO    ; }
 
+// имя приложения по коду
 const char * GetAppNameById(int id)
 {
     return (id>=0 || id <= APP_GIDURAL) ? AppNamesStr[id] : AppNamesStr[0];
 }
+
+// тип события по коду
+const char * GetEventTypeNameById(int id)
+{
+    return (id>=0 || id <= APP_GIDURAL) ? EventNames[id] : EventNames[0];
+}
+
 
 // 1. Побайтовый алгоритм вычисления CRC
 //    (Р.Л.Хаммел,"Послед.передача данных", Стр.49. М.,Мир, 1996)

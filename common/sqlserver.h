@@ -52,6 +52,7 @@ public:
     void Log(QString s) { if (logger) logger->log(s); }
     static void ThreadDoSql(long param);
     QString Name() { return name; }
+    bool  GetHosts(std::vector<QString>& hosts);
 private:
     int    counter;                                                     // счетчик успешных записей
     QString connStr;                                                    // строка подключения

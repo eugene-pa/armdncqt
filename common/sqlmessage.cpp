@@ -18,6 +18,21 @@ SqlMessage::SqlMessage(int krug, int st, QString& str, int app, int event, QStri
     msg     = str;
 }
 
+// конструктор по запросу
+SqlMessage::SqlMessage(QSqlQuery q)
+{
+    bool ret;
+    idKrug  = q.value("idkrug"   ).toInt (&ret);
+    idSt    = q.value("idst"     ).toInt (&ret);
+    host    = q.value("host"     ).toString  ();
+    idApp   = q.value("app"      ).toInt (&ret);
+    idEvent = q.value("msgtype"  ).toInt (&ret);
+    t       = q.value("dttm"     ).toDateTime();
+    tsaved  = q.value("dttmsaved").toDateTime();
+    msg     = q.value("message"  ).toString  ();
+}
+
+
 // формирование SQL запроса на запись сообщения
 QString SqlMessage::sql()
 {

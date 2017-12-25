@@ -78,6 +78,24 @@ void SqlServer::Add (std::shared_ptr<SqlMessage> msg)
     Messages.push(msg);
 }
 
+//
+bool SqlServer::GetHosts(std::vector<QString>& hosts)
+{
+    QSqlDatabase db = open();
+    if (db.isOpen())
+    {
+        QSqlQuery q("SELECT DISTINCT host FROM public.messages;", db);
+        int row = 0;
+        while (q.next())
+        {
+            hosts.push_back(q.value("host").toString());
+        }
+        return true;
+    }
+    return false;
+}
+
+
 // время блокирования мьютекса exit_lock соответствует времени работы программы
 // мьютекс блокируется в начале работы приложения, разблокируется при завершении
 extern std::timed_mutex exit_lock;
@@ -174,6 +192,5 @@ void SqlServer::ThreadDoSql(long param)
     exit_lock.unlock();
     server->Log("Завершение потока ThreadSql для сервера: " + server->connStr);
 }
-
 
 

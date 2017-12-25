@@ -17,4 +17,6 @@ private:
     QString localhost;                                                          // IP адрес локального хоста (используется если не задан IP сообщения)
 };
 
+
+
 #endif // SQLBLACKBOX_H

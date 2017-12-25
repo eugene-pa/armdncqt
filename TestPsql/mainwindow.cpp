@@ -13,6 +13,8 @@ QString dbname = "/home/dnc/projects/armdncqt/apo/03.Армавир-Белоре
 QString mainstr = "DRIVER=QPSQL;Host=192.168.0.107;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
 QString rsrvstr = "";
 
+std::vector <QString> hosts;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -34,6 +36,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // автоматически растягтваем 8-й столбец
     t->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+
+    ui->comboBoxApp->addItem("Все",0);
+    for (int i=1; i<APP_LAST; i++)
+        ui->comboBoxApp->addItem(GetAppNameById(i), i);
+
+    ui->comboBoxType->addItem("Все",0);
+    for (int i=1; i<LOG_LAST_EVENT; i++)
+        ui->comboBoxType->addItem(GetEventTypeNameById(i), i);
+
+    ui->comboBoxHost->addItem("Все",0);
+    blackbox->GetSvr(0)->GetHosts(hosts);
+    for (int i=0; i<hosts.size(); i++)
+        ui->comboBoxHost->addItem(hosts[i], i);
+
     UpdateList();
 }
 
@@ -67,19 +83,21 @@ void MainWindow::UpdateList()
         int row = 0;
         while (q.next())
         {
+            SqlMessage msg(q);
             bool ret;
-            QDateTime tmdt = q.value("dttm").toDateTime();
-            QTableWidgetItem * item;
-            t->setItem(row,0, item = new QTableWidgetItem (tmdt.toString(FORMAT_DATE)));
-            t->setItem(row,1, new QTableWidgetItem (tmdt.toString(FORMAT_TIME)));
 
-            int idst = q.value("idst").toInt(&ret);
-            StationBase * st = StationBase::GetById(q.value("idst").toInt(&ret));
+            QTableWidgetItem * item;
+            t->setItem(row,0, item = new QTableWidgetItem (msg.t.toString(FORMAT_DATE)));
+            t->setItem(row,1, new QTableWidgetItem (msg.t.toString(FORMAT_TIME)));
+
+            StationBase * st = StationBase::GetById(msg.idSt);
             t->setItem(row,2, new QTableWidgetItem (st==nullptr ? "ПУ" : st->Name()));
 
-            t->setItem(row,3, new QTableWidgetItem (q.value("message").toString()));
-            t->setItem(row,4, new QTableWidgetItem (q.value("host"   ).toString()));
-
+            t->setItem(row,3, new QTableWidgetItem (msg.msg));
+            t->setItem(row,4, new QTableWidgetItem (msg.host));
+            t->setItem(row,5, new QTableWidgetItem (GetAppNameById(msg.idApp)));
+            t->setItem(row,6, new QTableWidgetItem (GetEventTypeNameById(msg.idEvent)));
+            t->setItem(row,7, new QTableWidgetItem (msg.tsaved.toString(FORMAT_TIME)));
             //QBrush brush = getBackground(rc);
             //if (brush != item->background())
             item->setBackground(Qt::yellow);

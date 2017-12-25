@@ -93,6 +93,7 @@ enum AppTypes
     APP_ARMUTILS	= 7,        // АРМ ШН
     APP_BRIDGETCP	= 8,        // Шлюз СПД
     APP_GIDURAL     = 9,        // Шлюз ГИДУРАЛ
+    APP_LAST        = 10,
 };
 
 enum EventTypes
@@ -106,6 +107,7 @@ enum EventTypes
     LOG_FATAL_ERROR,            // 6 - Фатальная ошибка
     LOG_NOTIFY,                 // 7 - Уведомление
     LOG_TU,                     // 8 - Команда телеуправления
+    LOG_LAST_EVENT,             // 9
 //------------------------------------------------------------------------------------------------------------------------
     LOG_SUPERALARM,             // 9 - Критическая ошибка. ВАЖНО: этого типа нет в SQL, поэтому вместо него пишется LOG_ALARM
 //------------------------------------------------------------------------------------------------------------------------
@@ -130,8 +132,9 @@ enum LogSourcer
     LOG_BLANK                   // 14 -Пусто
 };
 
-
 extern const char * AppNamesStr[];
+extern const char * GetAppNameById(int id);
+extern const char * GetEventTypeNameById(int id);
 extern AppTypes modulType;     // тип приложения
 
 extern bool IsMonitor  ();
