@@ -84,6 +84,7 @@ void MainWindow::UpdateList()
         while (q.next())
         {
             SqlMessage msg(q);
+            QBrush brush = msg.GetBackground();
             bool ret;
 
             QTableWidgetItem * item;
@@ -98,9 +99,11 @@ void MainWindow::UpdateList()
             t->setItem(row,5, new QTableWidgetItem (GetAppNameById(msg.idApp)));
             t->setItem(row,6, new QTableWidgetItem (GetEventTypeNameById(msg.idEvent)));
             t->setItem(row,7, new QTableWidgetItem (msg.tsaved.toString(FORMAT_TIME)));
-            //QBrush brush = getBackground(rc);
-            //if (brush != item->background())
-            item->setBackground(Qt::yellow);
+
+            for (int i=0; i<t->columnCount(); i++)
+            {
+                t->item(row,i)->setBackground(brush);
+            }
 
             row++;
         }

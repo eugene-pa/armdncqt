@@ -10,7 +10,7 @@ public:
 
 
     QString sql();                                      // получить текст запроса на вставку
-//    static QBrush GetBackground();                      // получить
+    QBrush  GetBackground();                            // получить кисть для фона
 //private:
     int         idKrug;
     int         idSt;
