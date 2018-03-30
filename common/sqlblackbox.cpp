@@ -24,6 +24,10 @@
 // на время недоступности сервера
 //
 
+std::unordered_map <int, QString  > SqlBlackBox::appNames;          // имена приложений, индексированные по ID
+std::unordered_map <int, QString  > SqlBlackBox::msgTypes;          // имена типов сообщений, индексированные по ID
+
+
 // конструктор принимает до 2-х подключений; можно масштабировать более чем на 2
 SqlBlackBox::SqlBlackBox (QString mainstr, QString rsrvstr, Logger *logger)
 {
@@ -32,6 +36,7 @@ SqlBlackBox::SqlBlackBox (QString mainstr, QString rsrvstr, Logger *logger)
     servers.push_back(new SqlServer (this, mainstr, logger));       // добавляем основной сервер
     if (rsrvstr != nullptr && rsrvstr.length())                     // если определен резервный
         servers.push_back(new SqlServer (this, rsrvstr, logger));   // добавляем резервный сервер
+    load();                                                         // загрузить мправочники приложений и типов сообщений
 }
 
 // деструктор удаляет созданные экземпляры SqlServer
@@ -45,10 +50,53 @@ SqlBlackBox::~SqlBlackBox()
     }
 }
 
+
+
+// загрузить cправочники приложений и типов сообщений
+void SqlBlackBox::load()
+{
+    for (auto val : servers)
+    {
+        val->load();
+    }
+}
+
+
+// получить ключ приложения по имени или 0
+int SqlBlackBox::GetAppIdByName (QString s)
+{
+    for (auto val : appNames)
+    {
+        if (s == val.second)
+            return val.first;
+    }
+    return 0;
+}
+
+
+// получить ключ типа сообщения по имени или 0
+int SqlBlackBox::GetMsgTypeByName(QString s)
+{
+    for (auto val : msgTypes)
+    {
+        if (s == val.second)
+            return val.first;
+    }
+    return 0;
+}
+
+
+
 // получить сервер по индексу
 SqlServer* SqlBlackBox::GetSvr(int indx)
 {
     return (int)servers.size() >= indx ? servers[indx] : nullptr;
+}
+
+// запись сообщения с текстовыми параметрами
+void SqlBlackBox::putMsg(QString msg, QString app, QString event, QString ip, int krug, int st)
+{
+    putMsg(krug, st, msg, (int)(GetAppIdByName (app)), (int)(GetMsgTypeByName(event)), ip);
 }
 
 // запись сообщения

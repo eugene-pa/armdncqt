@@ -85,7 +85,6 @@ bool SqlServer::GetHosts(std::vector<QString>& hosts)
     if (db.isOpen())
     {
         QSqlQuery q("SELECT DISTINCT host FROM public.messages;", db);
-        int row = 0;
         while (q.next())
         {
             hosts.push_back(q.value("host").toString());
@@ -95,6 +94,23 @@ bool SqlServer::GetHosts(std::vector<QString>& hosts)
     return false;
 }
 
+// загрузить cправочники приложений и типов сообщений
+void SqlServer::load()
+{
+    QSqlDatabase db = open();
+    if (db.isOpen())
+    {
+        // загрузка имен приложений
+        QSqlQuery q("SELECT * FROM public.appnames;", db);
+        while (q.next())
+            SqlBlackBox::appNames[q.value("app").toInt()] = q.value("appName").toString();
+
+        // загрузка типов сообщений
+        q = QSqlQuery("SELECT * FROM public.msgtypes;", db);
+        while (q.next())
+            SqlBlackBox::msgTypes[q.value("msgType").toInt()] = q.value("typename").toString();
+    }
+}
 
 // время блокирования мьютекса exit_lock соответствует времени работы программы
 // мьютекс блокируется в начале работы приложения, разблокируется при завершении
@@ -125,25 +141,24 @@ void SqlServer::ThreadDoSql(long param)
         return;
     }
     SqlServer * server = (SqlServer*) param;
-    server->counter = -1;
+    server->counter = 0;
 
     server->Log("Запуск потока ThreadDoSql для сервера: " + server->connStr);
     while (!exit_lock.try_lock_for(std::chrono::milliseconds(1000)))
     {
+        std::queue <std::shared_ptr<SqlMessage>> tmp;           // временная очередь сообщений для записи в сервер
         {
-        std::queue <std::shared_ptr<SqlMessage>> tmp;            // временная очередь сообщений для записи в сервер
+            std::lock_guard <std::mutex> locker(server->queue_lock);//захватываем queue_lock
+            // выбираем все сообщения во временную очередь (чтобы освободить основную очередь для записи)
+            while (server->Messages.size())
+            {
+                std::shared_ptr<SqlMessage> p = server->Messages.front();
+                tmp.push(p);
+                server->Messages.pop();
+            }
+        }                                                       // освобождаем queue_lock
 
-        // захватываем queue_lock
-        std::lock_guard <std::mutex> locker(server->queue_lock); // блокировка todo_lock
-        while (server->Messages.size())
-        {
-            std::shared_ptr<SqlMessage> p = server->Messages.front();
-            tmp.push(p);
-            server->Messages.pop();
-        }
-        // освобождаем queue_lock
-
-        // если выбрали сообщения - пишем их в сервер
+        // если выбрали сообщения (очередь не пуста) - поочередно записываем сообщения в сервер
         if (tmp.size())
         {
             // ВАЖНО: так как возможно подключение к нексольким серверам (например, основной и резервный),
@@ -168,6 +183,11 @@ void SqlServer::ThreadDoSql(long param)
                     db.exec(sql);
                     if (db.lastError().isValid())
                     {
+                        // Нюанс: так как таблица messages имеет внешние ключи, связанные с таблицами appnames, msgtypes, sources, 
+                        // попытка вставить значения ключей, отсутствующие в этих таблицах, приводит к ошибкам
+                        // Поэтому надо отслеживать использование неиспользуемых ключей и 
+                        //  - либо добавлять их в таблицу
+                        //  - либо использовать значение по умолчанию (0) для ключей, выходящих за допустимый диапазон
                         QString txt = QString("Ошибка '%1' при выполнения запроса: %2").arg(db.lastError().text()).arg(sql);
                         server->Log(txt);
                     }
@@ -177,6 +197,7 @@ void SqlServer::ThreadDoSql(long param)
             }
             else
             {
+                // если ошибка первая после череды успешных записей - сообщение в лог
                 if (server->counter!=-1)
                 {
                     // проблемы открытия БД
@@ -185,8 +206,6 @@ void SqlServer::ThreadDoSql(long param)
                 }
                 server->counter = -1;
             }
-        }
-
         }
     }
     exit_lock.unlock();

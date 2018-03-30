@@ -10,7 +10,7 @@
 std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
 
 QString dbname = "/home/dnc/projects/armdncqt/apo/03.Армавир-Белореченская/bd/arm.db";
-QString mainstr = "DRIVER=QPSQL;Host=192.168.0.107;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
+QString mainstr = "DRIVER=QPSQL;Host=192.168.0.105;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
 QString rsrvstr = "";
 
 std::vector <QString> hosts;
@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->comboBoxHost->addItem("Все",0);
     blackbox->GetSvr(0)->GetHosts(hosts);
-    for (int i=0; i<hosts.size(); i++)
+    for (uint i=0; i<hosts.size(); i++)
         ui->comboBoxHost->addItem(hosts[i], i);
 
     UpdateList();
@@ -63,13 +63,22 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButtoWrite_clicked()
 {
     //blackbox->putMsg(1, "Тест записи 101", APP_MONITOR , LOG_TU);
-    blackbox->putMsg(3, "Тест записи 103", APP_MDMAGENT, LOG_NOTIFY);
+    // void putMsg(int krug, int st, QString msg, int app, int event, QString ip="");  // запись сообщения
+
+    blackbox->putMsg(ui->lineEdit->text(), ui->comboBoxApp->currentText(), ui->comboBoxType->currentText(), ui->comboBoxHost->currentText(), 3);
+    //blackbox->putMsg(0,3, ui->lineEdit->text(), ui->comboBoxApp->currentIndex(), ui->comboBoxType->currentIndex(), ui->comboBoxHost->currentText());
+    UpdateList();
+}
+
+void MainWindow::on_pushButtoUpdate_clicked()
+{
     UpdateList();
 }
 
 void MainWindow::UpdateList()
 {
     QTableWidget * t = ui->tableWidget;
+    t->setSortingEnabled(false);
 
     SqlServer * svr = blackbox->GetSvr(0);
     QSqlDatabase db = QSqlDatabase::database(svr->Name());
@@ -79,13 +88,13 @@ void MainWindow::UpdateList()
         int rows = n.next() ? n.value("cnt").toInt() : 0;
          t->setRowCount(rows);
 
-        QSqlQuery q("SELECT * FROM messages", db);
+        QSqlQuery q("SELECT * FROM messages order by dttm DESC", db);
         int row = 0;
         while (q.next())
         {
             SqlMessage msg(q);
             QBrush brush = msg.GetBackground();
-            bool ret;
+            //bool ret;
 
             QTableWidgetItem * item;
             t->setItem(row,0, item = new QTableWidgetItem (msg.t.toString(FORMAT_DATE)));
@@ -98,7 +107,7 @@ void MainWindow::UpdateList()
             t->setItem(row,4, new QTableWidgetItem (msg.host));
             t->setItem(row,5, new QTableWidgetItem (GetAppNameById(msg.idApp)));
             t->setItem(row,6, new QTableWidgetItem (GetEventTypeNameById(msg.idEvent)));
-            t->setItem(row,7, new QTableWidgetItem (msg.tsaved.toString(FORMAT_TIME)));
+            t->setItem(row,7, new QTableWidgetItem (msg.tsaved.toString(FORMAT_DATETIME)));
 
             for (int i=0; i<t->columnCount(); i++)
             {
@@ -110,6 +119,9 @@ void MainWindow::UpdateList()
     }
 
     t->resizeColumnsToContents();
-    t->setSortingEnabled(true);                         // разрешаем сортировку
+    t->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+
+    t->setSortingEnabled(true);
     t->sortByColumn(1, Qt::AscendingOrder);             // сортировка по умолчанию по №
 }
+

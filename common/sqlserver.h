@@ -53,8 +53,9 @@ public:
     static void ThreadDoSql(long param);
     QString Name() { return name; }
     bool  GetHosts(std::vector<QString>& hosts);
+    void load();                                                        // загрузить cправочники приложений и типов сообщений
 private:
-    int    counter;                                                     // счетчик успешных записей
+    int    counter;                                                     // счетчик подряд идущих успешных записей (без ошибок)
     QString connStr;                                                    // строка подключения
     class SqlBlackBox * parent;                                         // родительсий класс
     Logger * logger;                                                    // логгер

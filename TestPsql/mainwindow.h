@@ -18,6 +18,8 @@ public:
 private slots:
     void on_pushButtoWrite_clicked();
 
+    void on_pushButtoUpdate_clicked();
+
 private:
     Ui::MainWindow *ui;
     class Logger * logger;
