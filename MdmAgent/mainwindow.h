@@ -2,14 +2,34 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <sstream>
 #include <../common/defines.h>
 #include <../common/logger.h>
+#include <../common/blockingrs.h>
 
 void Log (std::wstring);
 
 namespace Ui {
 class MainWindow;
 }
+
+
+// класс-deleter для завершения рабочих потоков; используется в смарт-указателях std::unique_ptr
+// выполняет: ожидание завершения, вывод в лог и удаление указателя
+class ThreadTerminater
+{
+public:
+    void operator () (std::thread * p)
+    {
+        auto id = p->get_id();                                          // запоминаем id, пока поток живой
+        p->join();                                                      // ожидаем завершения потока
+        std::wstringstream s;
+        s << L"Удаление указателя на поток " << id;                     // если хотим убедиться в удалении указателя
+        Log(s.str());                                                   // выводим лог
+        delete p;                                                       // удаляем указатель
+    }
+};
+
 
 class MainWindow : public QMainWindow
 {
@@ -19,15 +39,19 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void closeEvent(QCloseEvent *event);
+    static MainWindow * mainWnd;
 
-private slots:
-    void on_action_triggered();
+signals:
+    void SendMsg(WORD, void *);
 
-    void dataready(QByteArray);                             // сигнал-уведомление о готовности данных
-    void timeout();                                         // сигнал-уведомление об отсутствии данных в канала данных
-    void error  (int);                                      // сигнал-уведомление об ошибке
-    void rsStarted();                                       // старт потока RS
-    //void rsFinished();                                      // завершение потока RS
+public slots:
+    void GetMsg (WORD, void *);
+
+    void dataready(QByteArray);                                         // сигнал-уведомление о готовности данных
+    void timeout();                                                     // сигнал-уведомление об отсутствии данных в канала данных
+    void error  (int);                                                  // сигнал-уведомление об ошибке
+    void rsStarted();                                                   // старт потока RS
+    //void rsFinished();                                                // завершение потока RS
 
     void on_pushButtonMainOff_clicked();
 
@@ -55,8 +79,13 @@ signals:
     void exit();
 
 private:
+
     Ui::MainWindow *ui;
-    class RasRs * rasRs;
+
+
+    std::wstring config;                                                // конфигурация порта
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
+    //class BlockingRS * rasRs;
 };
 
 #endif // MAINWINDOW_H

@@ -45,7 +45,7 @@ BlockingRS:: ~BlockingRS()
 // - отправляем все, что есть в исходящем буфере bufOut
 void BlockingRS::run()
 {
-    Log(L"Старт потока BlockingRS. Thread #" + (QString::number((int)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
+    Log(L"Старт потока BlockingRS. Thread #" + (QString::number((long)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
     parse(settings);
 
     while (serial->isOpen() && !rqExit)

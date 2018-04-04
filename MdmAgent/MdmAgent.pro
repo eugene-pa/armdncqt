@@ -47,7 +47,9 @@ SOURCES += main.cpp\
     ../common/blockingrs.cpp \
     kpframe.cpp \
     ../forms/qled.cpp \
-    ../spr/pereezd.cpp
+    ../spr/pereezd.cpp \
+    framebm.cpp \
+    threadpolling.cpp \
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -82,11 +84,14 @@ HEADERS  += mainwindow.h \
     ../common/blockingrs.h \
     kpframe.h \
     ../forms/qled.h \
-    ../spr/pereezd.h
+    ../spr/pereezd.h \
+    framebm.h \
+    threadpolling.h \
 
 
 FORMS    += mainwindow.ui \
-    kpframe.ui
+    kpframe.ui \
+    framebm.ui
 
 RESOURCES += \
     images.qrc
