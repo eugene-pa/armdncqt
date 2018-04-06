@@ -9,78 +9,61 @@
 #include "../common/pamessage.h"
 #include "threadpolling.h"
 
+extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
+extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
+
 BYTE dataIn [4048];                                         // входные данные
 BYTE dataOut[4048];                                         // выходные данные
 int MakeData();                                             // формирование ответного пакета
-void SendMessage (WORD, void *);                            // сатическая функция отправки сообщения
+void SendMessage (int, void *);                             // сатическая функция отправки сообщения
 
-// поток опроса
+// поток опроса основного и резервного каналов связи
 // long param - здесь - указатель на строку конфигурации config
 //              Строку config можно не передаать в поток, а определять из глоб.параметров в самом потоке
 //    ВАЖНО:    если строку передавать в поток, в вызывающем потоке то нельзя объявлять строку config
 //              как локальный параметр на стеке, так как она будет использоваться здесь в рабочем потоке позже
 void ThreadPolling(long param)
 {
-    std::wstringstream s;
-    s << L"Поток опроса линни связи запущен. threadid=" << std::this_thread::get_id();
-    SendMessage(0, &s);
+    Logger::LogStr ("Поток опроса каналов связи запущен");
 
-    QString config = QString::fromStdWString(*(std::wstring *)param);
-    BlockingRS rs(config);
-    rs.start();
+    BlockingRS * rs1 = nullptr;
+    BlockingRS * rs2 = nullptr;
 
+    // инициируем прямой канал
+    if (configMain.length())
+    {
+        Logger::LogStr ("Прямой канал: " + configMain);
+        rs1 = new BlockingRS(configMain);
+        rs1->start();
+    }
+    // инициируем обратный канал
+    if (configRsrv.length())
+    {
+        Logger::LogStr ("Обратный канал: " + configMain);
+        rs2 = new BlockingRS(configRsrv);
+        rs2->start();
+    }
+
+    //
     while (!exit_lock.try_lock_for(chronoMS(10)))
     {
+        // 1. выборка очередной станции
+        // 2. определение стороны опроса
+        // 3. подготовка пакета
+        // 4. отправка в нужную сторону, ожидание и прием ответного пакета
+        // 5. анализ
+        // 6. при необходимости отправка в противоположную сторону, ожидание и прием ответного пакета
+
         try
         {
             int indx = 0;
             int ch;
             // ждем маркер
-            // время ожидания можно передать как параметр, или использовать умолчание RsAsinc::timeWaiting = 100мс,
-            // которое можно изменить функцией SetTimeWaiting(int ms)
-            // таким образом, имеем единственный таймаут, управляющий работой приема, причем обрабатываемый внутри RsAsinc, а не ОС
-            // ВАЖНО: оглядываясь на старую реализацию Windows следует заметить, что, так как чтение было посимвольное,
-            // в структуре COMMTIMEOUTS значение имела скорее всего только одна задержка на прием байта, все остальные
-            // должны работать при блочном приеме/передаче...
-            if ((ch = rs.GetCh()) != SOH)               // используем функцию без исключений пока ждем маркер
+
+            if ((ch = rs1->GetCh()) != SOH)               // используем функцию без исключений пока ждем маркер
                 continue;
-            dataIn[indx++] = ch;
 
-            // прием длины
-            dataIn[indx++] = rs.GetChEx();              // здесь и далее более лаконичный код с использованием исключения при отсутствии данных
-            dataIn[indx++] = rs.GetChEx();
-            int l = (dataIn[LENGTH_OFFS+1] << 8) | dataIn[LENGTH_OFFS];
 
-            // прием тела пакета
-            for (int i=0; i<l; i++)
-            {
-                dataIn[indx++] = rs.GetChEx();
-            }
-
-            // прием CRC и EOT
-            dataIn[indx++] = rs.GetChEx();
-            dataIn[indx++] = rs.GetChEx();
-            dataIn[indx++] = rs.GetChEx();
-
-/*
-            // проверка CRC
-            WORD crc = (dataIn[indx-2] << 8) | dataIn[indx-3];
-             WORD crcreal = GetCRC(dataIn, l + LEN_HEADER);
-            if (crc != crcreal)
-            {
-                SendMessage(new PaMessage(PaMessage::srcActLine, L"CRC error!", PaMessage::eventError, PaMessage::stsErrCRC));
-            }
-            else
-            {
-                std::wstring msg = L"Прием:  ";
-                msg += GetHexW(dataIn, indx).c_str();
-                SendMessage (new PaMessage(PaMessage::srcActLine, msg, PaMessage::eventReceive, PaMessage::stsOK, dataIn, indx));
-
-                // формирование и передача ответного пакета
-                int l = MakeData();
-                rs.Send(dataOut, l);
-            }
-*/
         }
         catch (...)
         {
@@ -88,11 +71,18 @@ void ThreadPolling(long param)
         }
     }
     exit_lock.unlock();
-    rs.Close();
+    if (rs1 != nullptr)
+    {
+        rs1->Close();
+        delete rs1;
+    }
+    if (rs2 != nullptr)
+    {
+        rs2->Close();
+        delete rs2;
+    }
 
-    s.str(std::wstring());
-    s << L"Поток опроса линни связи завершен. threadid=" << std::this_thread::get_id();
-    Log (s.str());
+    Logger::LogStr ("Поток опроса каналов связи завершен");
 }
 
 #ifdef DBG_INCLUDE

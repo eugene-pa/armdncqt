@@ -42,10 +42,10 @@ public:
     static MainWindow * mainWnd;
 
 signals:
-    void SendMsg(WORD, void *);
+    void SendMsg(int, void *);
 
 public slots:
-    void GetMsg (WORD, void *);
+    void GetMsg (int, void *);
 
     void dataready(QByteArray);                                         // сигнал-уведомление о готовности данных
     void timeout();                                                     // сигнал-уведомление об отсутствии данных в канала данных

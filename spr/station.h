@@ -48,7 +48,7 @@ public:
     //static Station * GetById(int no);                       // получить справочник по номеру станции
     static Station * GetById(int no, class KrugInfo * krug = nullptr);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
-    static bool ReadBd (QString&, class KrugInfo*, Logger&);// чтение БД
+    static bool ReadBd (QString&, class KrugInfo*, Logger&, QString filter ="");// чтение БД
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС

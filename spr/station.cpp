@@ -242,10 +242,10 @@ Station * Station::GetByName(QString stname)
 }
 
 // чтение БД
-bool Station::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger)
+bool Station::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger, QString filter)
 {
     logger.log(QString("Чтение таблицы [Stations] из БД %1").arg(dbpath));
-    QString sql("SELECT * FROM [Stations] WHERE NoSt > 0 ORDER BY [NoSt]");
+    QString sql = QString("SELECT * FROM [Stations] WHERE NoSt > 0 %1 ORDER BY [NoSt]").arg(filter.length() ? " AND " + filter : "");
 
     try
     {

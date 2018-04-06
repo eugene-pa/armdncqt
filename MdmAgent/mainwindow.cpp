@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include "kpframe.h"
 #include "../common/inireader.h"
+#include "../spr/krug.h"
+#include "../spr/esr.h"
+#include "../spr/station.h"
 
 // Прототипы функций рабочих потоков ПО КП
 void   ThreadPolling		(long);							// функция потока опроса динии связи
@@ -12,29 +15,35 @@ MainWindow * MainWindow::mainWnd;                           // статичес�
 QString version = "1.0.1";                                  // версия приложения
 QString title = "ДЦ ЮГ на базе КП Круг. Станция связи. ";
 
+QString mainCom,                                            // порт прямого канала
+        rsrvCom;                                            // порт обводного канала
+QString configMain,                                         // строка конфигурации BlockingRS прямого канала
+        configRsrv;                                         // строка конфигурации BlockingRS обратного канала
+int     baud        = 57600;                                // скорость обмена с модемами
+int     delay       = 10;                                   // минимальная задержка между опросами, мс
+int     breakdelay  = 50;                                   // максимально допустимый интервал между байтами в пакете, мс
+int     port        = 1002;                                 // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
+
+QString path;
+
 #ifdef Q_OS_WIN
-    QString path = "C:/armdncqt/";
     QString editor = "notepad.exe";                         // блокнот
 #endif
 #ifdef Q_OS_MAC
-    QString path = "/Users/evgenyshmelev/armdncqt/";
-    QString editor = "TextEdit";                             // блокнот
+    QString editor = "TextEdit";                            // блокнот
 #endif
 #ifdef Q_OS_LINUX
-    QString path = "/home/dc/armdncqt/";
     QString editor = "gedit";                               // блокнот
 #endif
-    Logger logger(path + "/log/mdmagent.log", true, true);
+    Logger logger("log/mdmagent.log", true, true);
 
     QString images(":/status/images/");                     // путь к образам status/images
     QString imagesEx(":/images/images/");                   // путь к образам images/images
 
-    QString dbname;
-    QString esrdbbname;
-    QString extDb;
-
-    QString iniFile =       "mdmagent.ini";
-
+    QString dbname      = "bd/arm.db";
+    QString esrdbbname  = "bd/arm.db";
+    QString extDb       = "bd/armext.db";
+    QString iniFile     = "mdmagent.ini";
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -44,62 +53,69 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     mainWnd = this;
     modulType=APP_MDMAGENT;                                 // тип приложения
+    QString tmp;
+
+    // --------------------------------------------------------------------------------------------------------------------------
+    path = QDir::currentPath();
 
     // если ini-файл задан параметром командной строки, используем
     QStringList list = QCoreApplication::arguments();
     if (list.count() > 1)
         iniFile = list[1];
-    // если задан конфигурационный файл, читаем настройки и подстраиваем пути
-    // pathQDir::currentPath();                             // текущий каталог - по умолчанию
-    // iniFile = "armtoola.ini";                            // так будем брать настройки из тек.каталога, если ini-файл не задан в параметрах
+
+    Logger::SetLoger(&logger);
+    Logger::LogStr ("Запуск приложения");
+
     IniReader rdr(iniFile);
-    if (rdr.GetText("WORKINDIRECTORY", path))               // рабочая папка
-        logger.ChangeActualFile(path + "log/armtools.log");
 
-    dbname      = path + "/bd/arm.db";
-    esrdbbname  = path + "/bd/arm.db";
+    rdr.GetText("DBNAME", dbname);
+    dbname = path + "/" + dbname;
+    path = QFileInfo(dbname).absoluteDir().absolutePath();
     extDb       = path + "/bd/armext.db";
+    esrdbbname  = path + "/bd/arm.db";
 
-    QString tmp;
 
-    // добавляем фреймы для каждой станции
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,0);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,1);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,2);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,3);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,4);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,5);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,6);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,7);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,8);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,9);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,10);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,11);
-    ui->gridLayout_kp->addWidget(new kpframe(this),0,12);
+    int ras = 1;
+    rdr.GetInt("KRUG"    , ras   );                             // номер станции связи
+    rdr.GetInt("TCPPORT" , port  );                             // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
+    rdr.GetText("MAIN"   , mainCom);                            // порт прямого   канала
+    rdr.GetText("RESERVE", rsrvCom);                            // порт обратного канала
+    rdr.GetInt("DAUD"    , baud  );                             // скорость обмена с модемами
+    rdr.GetInt("DELAY"   , delay );                             // минимальная задержка между опросами станций
+    rdr.GetInt("READ_INTERVAL", breakdelay);                    // максимально допустимый интервал между байтами в пакете, мс
 
-    ui->gridLayout_kp->addWidget(new kpframe(this),1,0);
-    ui->gridLayout_kp->addWidget(new kpframe(this),1,1);
-    ui->gridLayout_kp->addWidget(new kpframe(this),1,2);
-//    ui->gridLayout_kp->addWidget(new kpframe(this),1,3);
-//    ui->gridLayout_kp->addWidget(new kpframe(this),1,4);
-//    ui->gridLayout_kp->addWidget(new kpframe(this),1,5);
-//    ui->gridLayout_kp->addWidget(new kpframe(this),1,6);
+    // --------------------------------------------------------------------------------------------------------------------------
 
+    KrugInfo * krug = nullptr;
+//    Esr::ReadBd(esrdbbname, logger);                            // ЕСР
+    Station::ReadBd(dbname, krug, logger, QString("RAS = %1").arg(ras));                      // станции
+
+    // формируем преставление станций в несколько строк
+    int row = 0, col = 0, colmax = 13;
+    for (auto rec : Station::Stations)
+    {
+        ui->gridLayout_kp->addWidget(new kpframe(this, rec.second),row,col++);
+        if (col==colmax)
+        {
+            col = 0;
+            row++;
+        }
+    }
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
 
-    //rasRs = nullptr;
-    config = L"COM1,38400,N,8,1";
-    pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling   , (long)&config));
-
     // подключаем сигнал SendMsg, посылаемый из глобальной статической функции SendMessage, к слоту MainWindow::GetMsg
-    connect(this, SIGNAL(SendMsg(WORD,void*)), this, SLOT(GetMsg(WORD,void*)));
+    connect(this, SIGNAL(SendMsg(int,void*)), this, SLOT(GetMsg(int,void*)));
 
+    exit_lock.lock();
+    configMain = QString("%1,%2,N,8,1").arg(mainCom).arg(baud);
+    pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling, (long)&configMain));
 }
 
 MainWindow::~MainWindow()
 {
+    exit_lock.unlock();
     delete ui;
 }
 
@@ -200,11 +216,15 @@ void MainWindow::on_pushButtonWatchdog_clicked()
 
 
 // обработка сообщений
-void MainWindow::GetMsg (WORD np, void * param)
+void MainWindow::GetMsg (int np, void * param)
 {
     switch (np)
     {
         case 0:
+            {
+            Logger::LogStr (*(QString *)param);                                                  // лог
+            //ui->statusBar->showMessage(QString::fromStdWString(pMsg->GetText()));   // GUI - строка состояния окна
+            }
             break;
         default:
             break;
@@ -221,7 +241,7 @@ void Log (std::wstring s)
 // вызывается из рабочих потоков и работает в рабочих потоках
 // генерирует сигнал MainWindow::SendMsg, QT обеспечивает обработку сигнала в основном потоке
 std::mutex sendMutex;
-void SendMessage (WORD no, void * ptr)
+void SendMessage (int no, void * ptr)
 {
     std::lock_guard <std::mutex> locker(sendMutex);
     emit MainWindow::mainWnd->SendMsg(no, ptr);

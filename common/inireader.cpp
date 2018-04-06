@@ -8,7 +8,7 @@ IniReader::IniReader(QString inifile)
 
 IniReader::~IniReader()
 {
-    qDebug() << "~IniReader";
+    //qDebug() << "~IniReader";
 }
 
 

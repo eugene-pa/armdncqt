@@ -1,5 +1,6 @@
 #include <mutex>                                            // std::mutex
 #include "blockingrs.h"
+#include "../common/logger.h"
 
 // Блокирующий класс работы с COM-портом на основе QSerialPort
 // Причины создания класса с такой архитектурой:
@@ -19,7 +20,6 @@
 // TODO: доработать механизм уведомлений
 //
 
-void Log(std::wstring);                                                 // функция лога объявляется в вызывающей программе
 
 BlockingRS::BlockingRS(QString config, QObject *parent)
 {
@@ -45,7 +45,7 @@ BlockingRS:: ~BlockingRS()
 // - отправляем все, что есть в исходящем буфере bufOut
 void BlockingRS::run()
 {
-    Log(L"Старт потока BlockingRS. Thread #" + (QString::number((long)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
+    Logger::LogStr ("Старт потока BlockingRS. Thread #" + QString::number((long)currentThreadId()) + ". " + settings);
     parse(settings);
 
     while (serial->isOpen() && !rqExit)
@@ -80,9 +80,9 @@ void BlockingRS::run()
             serial->waitForBytesWritten();                    // только для консольных приложений!
         }
     }
-    Log(L"Закрываем порт  " + name.toStdWString());
+    Logger::LogStr ("Закрываем порт  " + name);
     serial->close();
-    Log(L"Завершение потока BlockingRS " + name.toStdWString());
+    Logger::LogStr ("Завершение потока BlockingRS " + name);
 }
 
 // разбор строки типа "COM1,9600,N,8,1"
@@ -118,9 +118,9 @@ bool BlockingRS::parse(QString str)
     serial->setStopBits(stopBits);
     //serial.setFlowControl(QSerialPort::HardwareControl);
 
-    Log(L"Открываем порт " + name.toStdWString());
+    Logger::LogStr ("Открываем порт " + name);
     if (!serial->open(QIODevice::ReadWrite))
-        Log(L"Error open port");
+        Logger::LogStr ("Error open port");
 
     return parsed;
 }
@@ -195,7 +195,7 @@ bool BlockingRS::Send (QByteArray& data)
 // завершение работы
 void BlockingRS::Close()
 {
-    Log(L"Запрос завершения работы на порту " + name.toStdWString());
+    Logger::LogStr ("Запрос завершения работы на порту " + name);
     rqExit = true;
     QThread::msleep(500);
 }
