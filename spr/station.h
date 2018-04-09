@@ -48,7 +48,7 @@ public:
     //static Station * GetById(int no);                       // получить справочник по номеру станции
     static Station * GetById(int no, class KrugInfo * krug = nullptr);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
-    static bool ReadBd (QString&, class KrugInfo*, Logger&, QString filter ="");// чтение БД
+    static bool ReadBd (QString&, class KrugInfo*, Logger&, QString param ="");// чтение БД
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
@@ -195,6 +195,8 @@ public:
     QString& TypeEC() { return typeEC; }
 
     bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
+
+    void *  userData;                                       // привязка к объекту пользователя
 
 // вычисление переменной - через обработку сигнала в слоте
 public slots:

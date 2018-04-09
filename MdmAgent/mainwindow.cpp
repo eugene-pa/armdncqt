@@ -88,13 +88,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     KrugInfo * krug = nullptr;
 //    Esr::ReadBd(esrdbbname, logger);                            // ЕСР
-    Station::ReadBd(dbname, krug, logger, QString("RAS = %1").arg(ras));                      // станции
+    Station::ReadBd(dbname, krug, logger, QString("WHERE RAS = %1 ORDER BY Addr").arg(ras));                      // станции
 
     // формируем преставление станций в несколько строк
+    // в качестве входного массива используем вектор станций StationsOrg, отсортированный по заданному при чтении БД критерию "Addr"
     int row = 0, col = 0, colmax = 13;
-    for (auto rec : Station::Stations)
+    for (auto st : Station::StationsOrg)
     {
-        ui->gridLayout_kp->addWidget(new kpframe(this, rec.second),row,col++);
+        ui->gridLayout_kp->addWidget(new kpframe(this, st),row,col++);
         if (col==colmax)
         {
             col = 0;

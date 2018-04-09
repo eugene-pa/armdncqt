@@ -16,6 +16,8 @@ public:
     explicit kpframe(QWidget *parent, class Station * pst);
     ~kpframe();
 
+    void SetActual(bool s, bool rsrv);
+
 private:
     Ui::kpframe *ui;
     class  Station * st;

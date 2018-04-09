@@ -4,6 +4,9 @@
 #include <thread>
 
 #include "mainwindow.h"
+#include "kpframe.h"
+
+#include "../spr/station.h"
 #include "../common/common.h"
 #include "../common/blockingrs.h"
 #include "../common/pamessage.h"
@@ -24,6 +27,7 @@ void SendMessage (int, void *);                             // сатическ�
 //              как локальный параметр на стеке, так как она будет использоваться здесь в рабочем потоке позже
 void ThreadPolling(long param)
 {
+    Q_UNUSED(param)
     Logger::LogStr ("Поток опроса каналов связи запущен");
 
     BlockingRS * rs1 = nullptr;
@@ -44,9 +48,23 @@ void ThreadPolling(long param)
         rs2->start();
     }
 
-    //
-    while (!exit_lock.try_lock_for(chronoMS(10)))
+    int   indxSt = -1;                                                   // индекс актуальной станции опроса
+
+    // цикл опроса выполняется вплоть до завершения работы модуля
+    while (!exit_lock.try_lock_for(chronoMS(50)))
     {
+        // если нет коннекта ни в основном, ни в резервном - ждем!
+        bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
+             readyRsrv = rs2 && (rs2->CourierDetect() || true);         // вместо true признак простого порта без несущей
+        if (!(readyMain || readyRsrv))
+            continue;
+
+        if (actualSt)
+           ((kpframe *)actualSt->userData)->SetActual(false,false);
+        actualSt = NextSt();                                // актуальная станция
+        ((kpframe *)actualSt->userData)->SetActual(true,false);;
+
+
         // 1. выборка очередной станции
         // 2. определение стороны опроса
         // 3. подготовка пакета
@@ -56,7 +74,7 @@ void ThreadPolling(long param)
 
         try
         {
-            int indx = 0;
+            //int indx = 0;
             int ch;
             // ждем маркер
 
@@ -84,6 +102,17 @@ void ThreadPolling(long param)
 
     Logger::LogStr ("Поток опроса каналов связи завершен");
 }
+
+
+// получить след.станцию для опроса
+Station * NextSt()
+{
+    if (++indxSt >= Station::StationsOrg.size())
+        indxSt = 0;
+    return Station::StationsOrg[indxSt];
+}
+
+
 
 #ifdef DBG_INCLUDE
 // пример ответного пакета

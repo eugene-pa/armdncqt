@@ -32,7 +32,7 @@ public:
     bool CourierDetect();                                   // проверка несущей
     bool IsOpen() { return serial!=nullptr && serial->isOpen(); } // проверка 'порт открыт'?
     void Close();                                           // завершение работы
-
+    QSerialPort * GetSerial() { return serial; }
 private:
     QSerialPort * serial;                                   // экземпляр QSerialPort
 

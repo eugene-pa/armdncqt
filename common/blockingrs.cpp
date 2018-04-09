@@ -200,3 +200,9 @@ void BlockingRS::Close()
     QThread::msleep(500);
 }
 
+// проверка несущей
+bool BlockingRS::CourierDetect()
+{
+    return serial!=nullptr && serial->isOpen() && (serial->pinoutSignals() & QSerialPort::DataCarrierDetectSignal);
+}
+

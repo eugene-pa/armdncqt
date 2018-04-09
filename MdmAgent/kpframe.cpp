@@ -6,7 +6,8 @@ kpframe::kpframe(QWidget *parent, Station* pst) :
     ui(new Ui::kpframe)
 {
     ui->setupUi(this);
-    st = pst;
+    st = pst;                                               // сссылка на станцию в виджете
+    st->userData = this;                                    // перекрестная ссылка на виджет в станции
 
     ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::off);
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
@@ -22,4 +23,9 @@ kpframe::kpframe(QWidget *parent, Station* pst) :
 kpframe::~kpframe()
 {
     delete ui;
+}
+
+void kpframe::SetActual(bool s, bool rsrv)
+{
+    ui->label_mainCOM3->set (QLed::ledShape::box, s ? QLed::ledStatus::on : QLed::ledStatus::off, Qt::white);
 }
