@@ -283,8 +283,8 @@ private:
     bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
     bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
 
-    class SysInfo * mainSysInfo;                            // блок сист.информации основного  БМ
-    class SysInfo * rsrvSysInfo;                            // блок сист.информации резервного БМ
+    class SysInfo * mainSysInfo;                            // блок сист.информации основного  БМ (память выделяется в конструкторе Station)
+    class SysInfo * rsrvSysInfo;                            // блок сист.информации резервного БМ (память выделяется в конструкторе Station)
     time_t  tSpokSnd;                                       // время передачи данных в СПОК
     time_t  tSpokRcv;                                       // время приема данных от СПОК
 

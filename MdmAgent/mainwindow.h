@@ -41,10 +41,14 @@ public:
     void closeEvent(QCloseEvent *event);
     static MainWindow * mainWnd;
 
+    void setCycles(unsigned int);                                       // отобразить число циклов
+    void setPeriod(unsigned int);                                       // отобразить длит.цикла
+
 signals:
     void SendMsg(int, void *);
 
 public slots:
+    void SelectStation(class Station *);
     void GetMsg (int, void *);
 
     void dataready(QByteArray);                                         // сигнал-уведомление о готовности данных
@@ -85,6 +89,7 @@ private:
 
     std::wstring config;                                                // конфигурация порта
     std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
+
     //class BlockingRS * rasRs;
 };
 

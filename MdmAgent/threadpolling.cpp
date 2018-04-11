@@ -17,6 +17,10 @@ extern QString configRsrv;                                  // строка ко
 
 BYTE dataIn [4048];                                         // входные данные
 BYTE dataOut[4048];                                         // выходные данные
+unsigned int cycles = 0;                                    // счетчик циклов
+MainWindow * parent;                                        // родительское окно
+QTime       start;                                          // засечка начала цикла
+
 int MakeData();                                             // формирование ответного пакета
 void SendMessage (int, void *);                             // сатическая функция отправки сообщения
 
@@ -27,6 +31,7 @@ void SendMessage (int, void *);                             // сатическ�
 //              как локальный параметр на стеке, так как она будет использоваться здесь в рабочем потоке позже
 void ThreadPolling(long param)
 {
+    parent = (MainWindow*) param;
     Q_UNUSED(param)
     Logger::LogStr ("Поток опроса каналов связи запущен");
 
@@ -49,9 +54,10 @@ void ThreadPolling(long param)
     }
 
     int   indxSt = -1;                                                   // индекс актуальной станции опроса
+    start = QTime::currentTime();
 
     // цикл опроса выполняется вплоть до завершения работы модуля
-    while (!exit_lock.try_lock_for(chronoMS(50)))
+    while (!exit_lock.try_lock_for(chronoMS(100)))
     {
         // если нет коннекта ни в основном, ни в резервном - ждем!
         bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
@@ -60,9 +66,16 @@ void ThreadPolling(long param)
             continue;
 
         if (actualSt)
-           ((kpframe *)actualSt->userData)->SetActual(false,false);
+        {
+            //((kpframe *)actualSt->userData)->SetActual(false,false);
+            SendMessage (1, actualSt->userData);
+            //((kpframe *)actualSt->userData)->Show();
+        }
+
+
         actualSt = NextSt();                                // актуальная станция
-        ((kpframe *)actualSt->userData)->SetActual(true,false);;
+        //((kpframe *)actualSt->userData)->SetActual(true,false);
+        SendMessage (2, actualSt->userData);
 
 
         // 1. выборка очередной станции
@@ -77,10 +90,10 @@ void ThreadPolling(long param)
             //int indx = 0;
             int ch;
             // ждем маркер
-
+/*
             if ((ch = rs1->GetCh()) != SOH)               // используем функцию без исключений пока ждем маркер
                 continue;
-
+*/
 
         }
         catch (...)
@@ -103,12 +116,16 @@ void ThreadPolling(long param)
     Logger::LogStr ("Поток опроса каналов связи завершен");
 }
 
-
 // получить след.станцию для опроса
 Station * NextSt()
 {
     if (++indxSt >= Station::StationsOrg.size())
+    {
         indxSt = 0;
+        parent->setCycles(++cycles);
+        parent->setPeriod((int)(start.msecsTo(QTime::currentTime())));
+        start = QTime::currentTime();
+    }
     return Station::StationsOrg[indxSt];
 }
 

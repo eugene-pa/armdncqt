@@ -74,9 +74,9 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     mtsCount        = 0;
     mtuCount        = 0;
 
-    mainSysInfo = new SysInfo();
+    mainSysInfo = new SysInfo();                            // выделение памяти под SysInfo основного блока
     mainSysInfo->st = this;
-    rsrvSysInfo = new SysInfo();
+    rsrvSysInfo = new SysInfo();                            // выделение памяти под SysInfo резервного блока
     rsrvSysInfo->st = this;
 
     tSpokSnd = tSpokRcv = 0;                                // время приема/передачи данных в СПОК

@@ -95,7 +95,10 @@ MainWindow::MainWindow(QWidget *parent) :
     int row = 0, col = 0, colmax = 13;
     for (auto st : Station::StationsOrg)
     {
-        ui->gridLayout_kp->addWidget(new kpframe(this, st),row,col++);
+        kpframe * kp = new kpframe(this, st);                   // создаем класс
+        // связываем событие выбора станции и слот SelectStation
+        connect(kp, SIGNAL(SelectStation(Station*)), this, SLOT(SelectStation(Station*)));
+        ui->gridLayout_kp->addWidget(kp,row,col++);
         if (col==colmax)
         {
             col = 0;
@@ -109,9 +112,20 @@ MainWindow::MainWindow(QWidget *parent) :
     // подключаем сигнал SendMsg, посылаемый из глобальной статической функции SendMessage, к слоту MainWindow::GetMsg
     connect(this, SIGNAL(SendMsg(int,void*)), this, SLOT(GetMsg(int,void*)));
 
+    // блокируем мьютекс завершения работы
     exit_lock.lock();
+
+    // конфигурация портов основного и обратного канала задаются в строках configMain, configRsrv
     configMain = QString("%1,%2,N,8,1").arg(mainCom).arg(baud);
-    pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling, (long)&configMain));
+    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on);
+    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
+    ui->checkBox_Main->setChecked(configMain.length() > 0);
+    ui->checkBox_Main->setEnabled(configMain.length() > 0);
+    ui->checkBox_Rsrv->setChecked(configRsrv.length() > 0);
+    ui->checkBox_Rsrv->setEnabled(configRsrv.length() > 0);
+
+    // запускаем рабочий поток опроса каналов
+    pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling, (long)this));
 }
 
 MainWindow::~MainWindow()
@@ -120,6 +134,15 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::SelectStation(class Station * actualSt)
+{
+    ui->label_stName->setText(actualSt->Name());
+    for (auto st : Station::StationsOrg)
+    {
+        kpframe * kp = (kpframe *)st->userData;
+        kp->SelectSt(actualSt==st);
+    }
+}
 
 // обработка сигнала-уведомления о готовности данных
 void MainWindow::dataready(QByteArray data)
@@ -215,6 +238,17 @@ void MainWindow::on_pushButtonWatchdog_clicked()
 
 }
 
+// отобразить число циклов
+void MainWindow::setCycles(unsigned int n)
+{
+    ui->label_cycles->setText(QString::number(n));
+}
+// отобразить длит.цикла
+void MainWindow::setPeriod(unsigned int n)
+{
+    ui->label_time->setText(QString::number(n));
+}
+
 
 // обработка сообщений
 void MainWindow::GetMsg (int np, void * param)
@@ -226,6 +260,12 @@ void MainWindow::GetMsg (int np, void * param)
             Logger::LogStr (*(QString *)param);                                                  // лог
             //ui->statusBar->showMessage(QString::fromStdWString(pMsg->GetText()));   // GUI - строка состояния окна
             }
+            break;
+        case 1:
+            ((kpframe *)param)->Show();
+            break;
+        case 2:
+            ((kpframe *)param)->SetActual(true,false);
             break;
         default:
             break;

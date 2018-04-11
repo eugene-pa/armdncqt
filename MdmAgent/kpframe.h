@@ -15,12 +15,22 @@ class kpframe : public QFrame
 public:
     explicit kpframe(QWidget *parent, class Station * pst);
     ~kpframe();
+    void SelectSt(bool s);
 
+//public slots:
+    void Show();
     void SetActual(bool s, bool rsrv);
+
+signals:
+    void SelectStation(class Station *);
+
+private slots:
+    void on_pushButton_clicked();
 
 private:
     Ui::kpframe *ui;
     class  Station * st;
+    class MainWindow * mainWindow;
 };
 
 #endif // KPFRAME_H
