@@ -6,6 +6,7 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <mutex>
 
 #include <QDebug>
 #include <QFile>
@@ -52,6 +53,9 @@ typedef const char *    LPCTSTR;
 #define SIGNATUREZIP 0x55AA                                 // сигнатура сжатого пакета
 #define DUBL 2
 #define MAX_TRAINS_ON_PER 5
+#define MAX_BLOCK_LENGTH  1023                              // максимальная длина одного блока данных (SYS,ТУ/ТС, ОТУ, Диаг)
+#define MAX_LINE_DATA_LEN 4096                              // максимальная длина линейных данных
+
 #define TRACE(param) qDebug() << param
 // #define TRACE(x) qDebug() << QString::fromWCharArray(x)  - для явно определенного юникода
 

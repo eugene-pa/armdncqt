@@ -255,16 +255,16 @@ void MainWindow::GetMsg (int np, void * param)
 {
     switch (np)
     {
-        case 0:
+        case MSG_LOG:                                           // лог сообщения
             {
-            Logger::LogStr (*(QString *)param);                                                  // лог
+            Logger::LogStr (*(QString *)param);                 // лог
             //ui->statusBar->showMessage(QString::fromStdWString(pMsg->GetText()));   // GUI - строка состояния окна
             }
             break;
-        case 1:
+        case MSG_SHOW_INFO:                                     // отобразить информацию об опрошенной станции
             ((kpframe *)param)->Show();
             break;
-        case 2:
+        case MSG_SHOW_PING:                                     // отобразить информацию о точке опроса
             ((kpframe *)param)->SetActual(true,false);
             break;
         default:

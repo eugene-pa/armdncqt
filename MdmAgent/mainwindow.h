@@ -36,6 +36,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    enum Messages
+    {
+        MSG_LOG         = 1,                                            // лог сообщения
+        MSG_SHOW_INFO   = 2,                                            // отобразить информацию об опрошенной станции
+        MSG_SHOW_PING   = 3,                                            // отобразить информацию о точке опроса
+    };
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void closeEvent(QCloseEvent *event);

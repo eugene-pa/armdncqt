@@ -33,7 +33,6 @@ const int  CRC_SIZE         = 2;								//
 const BYTE SOH              = 1;
 const BYTE EOT              = 4;
 const BYTE CpuAddress       = 0;								// адрес ЦПУ на линии
-
 #endif // THREADPOLLING_H
 
 int   indxSt;                                                   // индекс актуальной станции опроса
@@ -42,6 +41,10 @@ class Station * actualSt;                                       // актуал�
 
 class RasHeader
 {
+public:
+static BYTE counter;
+    RasHeader();
+
     BYTE    marker;                                             // маркер
     WORD    length;                                             // длина пакета (все после себя, исключая CRC и EOT)
     BYTE    dst;                                                // адрес назначения
@@ -53,5 +56,6 @@ class RasHeader
     BYTE    otuLength;                                          // младшие 8 байт длины блока ОТУ
     BYTE    diagLength;                                         // младшие 8 байт длины блока квитанций и диагностики
     BYTE    reserve;                                            // резерв
-    BYTE    data[1023 + 2 + 1];                                 // блоки данных, CRC + EOT
+    BYTE    data[MAX_LINE_DATA_LEN + 2 + 1];                    // блоки данных, CRC + EOT
+
 };

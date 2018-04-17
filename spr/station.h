@@ -102,6 +102,8 @@ public:
     bool IsCom3On   () { return stsCom3On;  }
     bool IsCom4On   () { return stsCom4On;  }
     bool IsBackChannel() { return stsBackChannel; }         // последний опрос станции по обратному каналу
+    void SetBackChannel(bool s) { stsBackChannel = s; }     // запомнить сторону опроса
+
     class SysInfo * GetSysInfo(bool rsrv) { return rsrv ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации основного  БМ
     bool IsSupportKpExt (bool rsrv);                        // поддерживается ли расширенный блок диагностики
     bool IsAtuError (bool rsrv);                            // проверка срабатывания АТУ (отличается в разных версиях)
@@ -289,6 +291,17 @@ private:
     time_t  tSpokRcv;                                       // время приема данных от СПОК
 
     QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
+
+
+    //WORD	RealInputDataLen;                               // длина блока данных из линии
+    //BYTE	InputData [MAX_LINE_DATA_LEN];                  // данные из линии
+    WORD	TuDataLenth;                                    // длина данных ТУ
+    BYTE	TuData[MAX_BLOCK_LENGTH];                       // данные ТУ общим объемом не более размера блока
+    std::mutex  tu_lock;                                    // мьютекс, блокирующий доступ к очереди ТУ
+    time_t	tuGetTime;                                      // засечка времени приема ТУ
+
+    //bool	bFullPolling;                                   // флаг включения полного опроса станции
+
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока
     // это можно было бы сделать, чтобы избежать полного разбора потока при приеме, просто скопировав данные (наложив шаблон класса)

@@ -57,7 +57,7 @@ void ThreadPolling(long param)
     start = QTime::currentTime();
 
     // цикл опроса выполняется вплоть до завершения работы модуля
-    while (!exit_lock.try_lock_for(chronoMS(100)))
+    while (!exit_lock.try_lock_for(chronoMS(500)))
     {
         // если нет коннекта ни в основном, ни в резервном - ждем!
         bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
@@ -67,20 +67,25 @@ void ThreadPolling(long param)
 
         if (actualSt)
         {
-            //((kpframe *)actualSt->userData)->SetActual(false,false);
-            SendMessage (1, actualSt->userData);
-            //((kpframe *)actualSt->userData)->Show();
+            // отображением станции снимаем пинг
+            SendMessage (MainWindow::MSG_SHOW_INFO, actualSt->userData);
         }
 
-
-        actualSt = NextSt();                                // актуальная станция
-        //((kpframe *)actualSt->userData)->SetActual(true,false);
-        SendMessage (2, actualSt->userData);
-
-
         // 1. выборка очередной станции
-        // 2. определение стороны опроса
+        actualSt = NextSt();                                            // актуальная станция
+
+
+        // 2. определение стороны опроса должно быть функцией класса Station
+        //    исходные данные - готовность прямого и обратного каналов
+        bool back = actualSt->IsBackChannel();
+        //actualSt->SetBackChannel(actualSt->Addr() & 1);
+
+        // отобразить "пинг" - точку опроса станции (канал, комплект)
+        SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
+
         // 3. подготовка пакета
+
+
         // 4. отправка в нужную сторону, ожидание и прием ответного пакета
         // 5. анализ
         // 6. при необходимости отправка в противоположную сторону, ожидание и прием ответного пакета
@@ -129,6 +134,28 @@ Station * NextSt()
     return Station::StationsOrg[indxSt];
 }
 
+
+BYTE RasHeader::counter = 0;
+RasHeader::RasHeader()
+{
+    marker      = SOH;                                  // маркер
+    length      = (WORD)(long)(data-dst);               // длина пакета (все после себя, исключая CRC и EOT)
+    dst         = actualSt->Addr();                     // адрес назначения
+    src         = CpuAddress;                           // адрес источника
+    seans       =counter++;                             // сеанс
+    extLength   = 0;                                    // расширение длин (старшие 2 байта 4-х блоков)
+    sysLength   = 0;                                    // младшие 8 байт длины блока ТУ/ТС
+    tutsLength  = 0;                                    // младшие 8 байт длины блока ТУ/ТС
+    otuLength   = 0;                                    // младшие 8 байт длины блока ОТУ
+    diagLength  = 0;                                    // младшие 8 байт длины блока квитанций и диагностики
+    reserve     = 0;                                    // резерв
+    memset (data, 0, sizeof(data));
+
+//    MakeSys ();
+//    MakeTu  ();
+//    MakeOtu ();
+//    MakeDiag();
+}
 
 
 #ifdef DBG_INCLUDE
