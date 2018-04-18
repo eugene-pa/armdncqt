@@ -110,6 +110,22 @@ void addCRC (QByteArray& data)
     data.append(crc & 0x00ff);
     data.append((crc >> 8) & 0x00ff);
 }
+// перегруженная функция вычисления CRC
+void addCRC (BYTE *data, int length)
+{
+    WORD j,w,crc = 0;
+    for (int i=0; i<length; i++)
+    {
+        w = (WORD)((BYTE)data[i])<<8;
+        crc ^= w;
+        for (j=0; j<8; j++)
+            if (crc & 0x8000)
+                crc = (crc<<1) ^ CRC_POLY;
+            else
+                crc = crc << 1;
+    }
+    *((WORD *)&data[length]) = crc;
+}
 
 // загрузка типовых ресурсов
 bool loadResources(QString dir)

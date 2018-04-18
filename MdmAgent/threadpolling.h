@@ -2,6 +2,8 @@
 #define THREADPOLLING_H
 #include "../common/common.h"
 
+#pragma pack(1)
+
 // Формат пакетов вниз/вверх симметричен
 //								  FRAME_DATA_OFFS
 //								  |			   DATA_OFFS
@@ -33,29 +35,26 @@ const int  CRC_SIZE         = 2;								//
 const BYTE SOH              = 1;
 const BYTE EOT              = 4;
 const BYTE CpuAddress       = 0;								// адрес ЦПУ на линии
-#endif // THREADPOLLING_H
 
-int   indxSt;                                                   // индекс актуальной станции опроса
+
 class Station * NextSt();                                       // получить след.станцию для опроса
 class Station * actualSt;                                       // актуальная станция
 
 class RasHeader
 {
 public:
-static BYTE counter;
-    RasHeader();
+static BYTE counter;                                            // циклический счетчик сеансов
+static int   indxSt;                                            // индекс актуальной станции опроса
+    RasHeader(class Station * st);
 
     BYTE    marker;                                             // маркер
     WORD    length;                                             // длина пакета (все после себя, исключая CRC и EOT)
     BYTE    dst;                                                // адрес назначения
     BYTE    src;                                                // адрес источника
     BYTE    seans;                                              // сеанс
-    BYTE    extLength;                                          // расширение длин (старшие 2 байта 4-х блоков)
-    BYTE    sysLength;                                          // младшие 8 байт длины блока ТУ/ТС
-    BYTE    tutsLength;                                         // младшие 8 байт длины блока ТУ/ТС
-    BYTE    otuLength;                                          // младшие 8 байт длины блока ОТУ
-    BYTE    diagLength;                                         // младшие 8 байт длины блока квитанций и диагностики
-    BYTE    reserve;                                            // резерв
     BYTE    data[MAX_LINE_DATA_LEN + 2 + 1];                    // блоки данных, CRC + EOT
 
 };
+#pragma pack()
+
+#endif // THREADPOLLING_H

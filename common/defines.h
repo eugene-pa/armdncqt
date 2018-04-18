@@ -201,6 +201,8 @@ typedef struct _COMMTIMEOUTS {
 #endif // #ifndef _COMMTIMEOUTS
 
 extern void addCRC (QByteArray& data);
+extern void addCRC (BYTE *, int);
+
 extern bool makeFullPath(QString base, QString& path);
 
 #define varfromptr(x) qVariantFromValue((void *)x)

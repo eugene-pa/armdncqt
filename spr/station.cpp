@@ -81,6 +81,10 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 
     tSpokSnd = tSpokRcv = 0;                                // время приема/передачи данных в СПОК
 
+    DataToKpLenth = 0;
+    memset (DataToKp, 0, sizeof(DataToKp));
+    tuGetTime = 0;
+
     try
     {
         no      = query.value("NoSt").toInt(&ret);          // номер станции

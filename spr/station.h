@@ -30,6 +30,7 @@ class Station : public QObject
 {
     friend class DStDataFromMonitor;
     friend class Route;
+    friend class RasHeader;
 
     Q_OBJECT
 
@@ -292,12 +293,14 @@ private:
 
     QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
 
-
     //WORD	RealInputDataLen;                               // длина блока данных из линии
     //BYTE	InputData [MAX_LINE_DATA_LEN];                  // данные из линии
-    WORD	TuDataLenth;                                    // длина данных ТУ
-    BYTE	TuData[MAX_BLOCK_LENGTH];                       // данные ТУ общим объемом не более размера блока
-    std::mutex  tu_lock;                                    // мьютекс, блокирующий доступ к очереди ТУ
+
+    std::mutex  DataToKpLock;                               // мьютекс, блокирующий доступ к блоку данных в КП
+    WORD	DataToKpLenth;                                  // длина данных для передачи в КП,
+    BYTE	DataToKp[MAX_BLOCK_LENGTH];                     // отформатироанные в соответствии с форматом протокола данные для передачи в КП
+                                                            // (длины блоков, блоки директив, ТУ, ОТУ)
+                                                            // форматрование выполняется в модкле Управление при подготовке блока, либо в Станции связи при отправке директив
     time_t	tuGetTime;                                      // засечка времени приема ТУ
 
     //bool	bFullPolling;                                   // флаг включения полного опроса станции

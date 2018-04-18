@@ -12,6 +12,8 @@
 #include "../common/pamessage.h"
 #include "threadpolling.h"
 
+#pragma pack(1)
+
 extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
 extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
 
@@ -53,7 +55,7 @@ void ThreadPolling(long param)
         rs2->start();
     }
 
-    int   indxSt = -1;                                                   // индекс актуальной станции опроса
+    //int   indxSt = -1;                                                   // индекс актуальной станции опроса
     start = QTime::currentTime();
 
     // цикл опроса выполняется вплоть до завершения работы модуля
@@ -73,7 +75,7 @@ void ThreadPolling(long param)
 
         // 1. выборка очередной станции
         actualSt = NextSt();                                            // актуальная станция
-
+        RasHeader pack(actualSt);
 
         // 2. определение стороны опроса должно быть функцией класса Station
         //    исходные данные - готовность прямого и обратного каналов
@@ -93,7 +95,7 @@ void ThreadPolling(long param)
         try
         {
             //int indx = 0;
-            int ch;
+            //int ch;
             // ждем маркер
 /*
             if ((ch = rs1->GetCh()) != SOH)               // используем функцию без исключений пока ждем маркер
@@ -122,41 +124,53 @@ void ThreadPolling(long param)
 }
 
 // получить след.станцию для опроса
+// функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
 Station * NextSt()
 {
-    if (++indxSt >= Station::StationsOrg.size())
+    if (++RasHeader::indxSt >= Station::StationsOrg.size())
     {
-        indxSt = 0;
+        RasHeader::indxSt = 0;
         parent->setCycles(++cycles);
         parent->setPeriod((int)(start.msecsTo(QTime::currentTime())));
         start = QTime::currentTime();
     }
-    return Station::StationsOrg[indxSt];
+    return Station::StationsOrg[RasHeader::indxSt];
 }
 
 
-BYTE RasHeader::counter = 0;
-RasHeader::RasHeader()
+BYTE RasHeader::counter = 0;                            // циклический счетчик сеансов
+int  RasHeader::indxSt;                                 // индекс актуальной станции опроса
+RasHeader::RasHeader(class Station * st)
 {
     marker      = SOH;                                  // маркер
-    length      = (WORD)(long)(data-dst);               // длина пакета (все после себя, исключая CRC и EOT)
-    dst         = actualSt->Addr();                     // адрес назначения
+    length      = (WORD)(long)(data-&dst);               // длина пакета (все после себя, исключая CRC и EOT)
+    dst         = st ? st->Addr() : 0;                  // адрес назначения
     src         = CpuAddress;                           // адрес источника
-    seans       =counter++;                             // сеанс
-    extLength   = 0;                                    // расширение длин (старшие 2 байта 4-х блоков)
-    sysLength   = 0;                                    // младшие 8 байт длины блока ТУ/ТС
-    tutsLength  = 0;                                    // младшие 8 байт длины блока ТУ/ТС
-    otuLength   = 0;                                    // младшие 8 байт длины блока ОТУ
-    diagLength  = 0;                                    // младшие 8 байт длины блока квитанций и диагностики
-    reserve     = 0;                                    // резерв
-    memset (data, 0, sizeof(data));
 
-//    MakeSys ();
-//    MakeTu  ();
-//    MakeOtu ();
-//    MakeDiag();
+    // формирование счетчика сеансов должны быть интеллектуальным с учетом существующих алгоритмов полного опроса
+    // на старых КП полный опрос обеспечивается нулевым значением сеанса, на новых КП используется инкремент счетчика на 2
+    seans       =++counter;                             // сеанс
+
+    memset (data, 0, sizeof(data));                     // очистка поля
+
+    if (st)
+    {
+        // на время работы блокируем доступ к DataToKp; разблокировка выполняется в деструкторе при выходе из блока
+        std::lock_guard <std::mutex> locker(st->DataToKpLock);
+        int l = std::min((int)st->DataToKpLenth, (int)sizeof(data));
+        if (st->DataToKpLenth)
+        {
+            memmove(data,st->DataToKp, l);              // переносим данные
+            st->DataToKpLenth = 0;                      // обнуляем длину
+            length += l;                                // наращиваем длину пакета на длину блока данных
+        }
+        data[l+2] = EOT;                            // запись EOT
+        addCRC ((BYTE *)&dst, length);                  // подсчет CRC
+
+    }
+
 }
-
+#pragma pack()
 
 #ifdef DBG_INCLUDE
 // пример ответного пакета
