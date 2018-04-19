@@ -50,6 +50,7 @@ SOURCES += main.cpp\
     ../spr/pereezd.cpp \
     framebm.cpp \
     threadpolling.cpp \
+    ../spr/raspacker.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -87,6 +88,7 @@ HEADERS  += mainwindow.h \
     ../spr/pereezd.h \
     framebm.h \
     threadpolling.h \
+    ../spr/raspacker.h
 
 
 FORMS    += mainwindow.ui \

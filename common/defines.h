@@ -200,8 +200,9 @@ typedef struct _COMMTIMEOUTS {
 } COMMTIMEOUTS,*LPCOMMTIMEOUTS;
 #endif // #ifndef _COMMTIMEOUTS
 
+extern WORD GetCRC (void *ptr, int Len);
 extern void addCRC (QByteArray& data);
-extern void addCRC (BYTE *, int);
+extern void addCRC (void *, int);
 
 extern bool makeFullPath(QString base, QString& path);
 

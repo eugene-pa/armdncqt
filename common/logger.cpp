@@ -117,12 +117,12 @@ void Logger::LogStr (QString str, LogSourcer source, EventTypes type)
 }
 
 // получить 16-ричную строку
-QString Logger::GetHex(char * data, int length)
+QString Logger::GetHex(void * data, int length)
 {
     QString tmp;
     for (int i=0; i<length; i++)
     {
-        tmp += QString("%1 ").arg((BYTE)data[i],2,16,QChar('0')).toUpper();
+        tmp += QString("%1 ").arg(((BYTE*)data)[i],2,16,QChar('0')).toUpper();
     }
     return tmp;
 }

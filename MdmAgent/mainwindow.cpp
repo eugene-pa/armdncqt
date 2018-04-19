@@ -5,6 +5,7 @@
 #include "../spr/krug.h"
 #include "../spr/esr.h"
 #include "../spr/station.h"
+#include "../spr/raspacker.h"
 
 // Прототипы функций рабочих потоков ПО КП
 void   ThreadPolling		(long);							// функция потока опроса динии связи
@@ -258,7 +259,7 @@ void MainWindow::GetMsg (int np, void * param)
         case MSG_LOG:                                           // лог сообщения
             {
             Logger::LogStr (*(QString *)param);                 // лог
-            //ui->statusBar->showMessage(QString::fromStdWString(pMsg->GetText()));   // GUI - строка состояния окна
+            ui->statusBar->showMessage(*(QString *)param);      // GUI - строка состояния окна
             }
             break;
         case MSG_SHOW_INFO:                                     // отобразить информацию об опрошенной станции
@@ -266,6 +267,12 @@ void MainWindow::GetMsg (int np, void * param)
             break;
         case MSG_SHOW_PING:                                     // отобразить информацию о точке опроса
             ((kpframe *)param)->SetActual(true,false);
+            break;
+        case MSG_SHOW_SND:
+            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(((RasPacker*)param)->st->Name()));
+            break;
+        case MSG_SHOW_RCV:
+            ui->label_RCV->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(((RasPacker*)param)->st->Name()));
             break;
         default:
             break;

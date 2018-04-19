@@ -111,20 +111,29 @@ void addCRC (QByteArray& data)
     data.append((crc >> 8) & 0x00ff);
 }
 // перегруженная функция вычисления CRC
-void addCRC (BYTE *data, int length)
+void addCRC (void *ptr, int length)
 {
-    WORD j,w,crc = 0;
-    for (int i=0; i<length; i++)
+    *((WORD *)&((BYTE*)ptr)[length]) = GetCRC (ptr, length);
+}
+
+// ВЫНЕСТИ В ОБЩИЙ ФАЙЛ
+// 1. Побайтовый алгоритм вычисления CRC
+//    (Р.Л.Хаммел,"Послед.передача данных", Стр.49. М.,Мир, 1996)
+WORD GetCRC (void *ptr,int Len)
+{
+    BYTE * buf = (BYTE *)ptr;
+    WORD j,w,Crc = 0;
+    while (Len--)
     {
-        w = (WORD)((BYTE)data[i])<<8;
-        crc ^= w;
+        w = (WORD)(*buf++)<<8;
+        Crc ^= w;
         for (j=0; j<8; j++)
-            if (crc & 0x8000)
-                crc = (crc<<1) ^ CRC_POLY;
+            if (Crc & 0x8000)
+                Crc = (Crc<<1) ^ CRC_POLY;
             else
-                crc = crc << 1;
+                Crc = Crc << 1;
     }
-    *((WORD *)&data[length]) = crc;
+    return Crc;
 }
 
 // загрузка типовых ресурсов

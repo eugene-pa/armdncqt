@@ -6,13 +6,12 @@
 #include "mainwindow.h"
 #include "kpframe.h"
 
+#include "../spr/raspacker.h"
 #include "../spr/station.h"
 #include "../common/common.h"
 #include "../common/blockingrs.h"
 #include "../common/pamessage.h"
 #include "threadpolling.h"
-
-#pragma pack(1)
 
 extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
 extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
@@ -59,7 +58,7 @@ void ThreadPolling(long param)
     start = QTime::currentTime();
 
     // цикл опроса выполняется вплоть до завершения работы модуля
-    while (!exit_lock.try_lock_for(chronoMS(500)))
+    while (!exit_lock.try_lock_for(chronoMS(100)))
     {
         // если нет коннекта ни в основном, ни в резервном - ждем!
         bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
@@ -75,18 +74,19 @@ void ThreadPolling(long param)
 
         // 1. выборка очередной станции
         actualSt = NextSt();                                            // актуальная станция
-        RasHeader pack(actualSt);
+
+        // 2. подготовка пакета
+        RasPacker pack(actualSt);
 
         // 2. определение стороны опроса должно быть функцией класса Station
         //    исходные данные - готовность прямого и обратного каналов
-        bool back = actualSt->IsBackChannel();
+        bool back = actualSt->IsBackChannel() && rs2!=nullptr;
         //actualSt->SetBackChannel(actualSt->Addr() & 1);
 
         // отобразить "пинг" - точку опроса станции (канал, комплект)
         SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
 
-        // 3. подготовка пакета
-
+        bool ret = TryOneChannel(back ? rs2 : rs1, &pack);
 
         // 4. отправка в нужную сторону, ожидание и прием ответного пакета
         // 5. анализ
@@ -123,54 +123,85 @@ void ThreadPolling(long param)
     Logger::LogStr ("Поток опроса каналов связи завершен");
 }
 
+// опрос по заданному каналу
+bool TryOneChannel(BlockingRS * rs, RasPacker* data)
+{
+    if (rs == nullptr)
+        return false;
+    rs->Send(data, data->Length());
+    SendMessage (MainWindow::MSG_SHOW_SND, data);
+    bool ret = GetData(rs);
+}
+
+// прием данных
+bool GetData(BlockingRS * rs)
+{
+    int indx = 0;
+    int ch;
+    // ждем маркер
+    // время ожидания можно передать как параметр, или использовать умолчание RsAsinc::timeWaiting = 100мс,
+    // которое можно изменить функцией SetTimeWaiting(int ms)
+    // таким образом, имеем единственный таймаут, управляющий работой приема, причем обрабатываемый внутри RsAsinc, а не ОС
+    try
+    {
+        while ((ch = rs->GetChEx()) != SOH)             // ожидаем маркер
+            ;
+
+        dataIn[indx++] = SOH;
+        // прием длины
+        dataIn[indx++] = rs->GetChEx();                  // здесь и далее более лаконичный код с использованием исключения при отсутствии данных
+        dataIn[indx++] = rs->GetChEx();
+        int l = (dataIn[indx-1] << 8) | dataIn[indx-2];
+
+        // прием тела пакета
+        for (int i=0; i<l; i++)
+        {
+            dataIn[indx++] = rs->GetChEx();
+        }
+
+        // прием CRC и EOT
+        dataIn[indx++] = rs->GetChEx();
+        dataIn[indx++] = rs->GetChEx();
+        dataIn[indx++] = rs->GetChEx();
+
+        // проверка CRC
+        WORD crc = (dataIn[indx-2] << 8) | dataIn[indx-3];
+        WORD crcreal = GetCRC(&dataIn, l + LEN_HEADER);
+        if (crc != crcreal)
+        {
+            int a = 99;
+        }
+        ((RasPacker *)&dataIn)->st = actualSt;
+        SendMessage (MainWindow::MSG_SHOW_RCV, dataIn);
+    }
+    catch (...)
+    {
+        return -1;
+    }
+
+    return true;
+}
+
+
+
+
+
 // получить след.станцию для опроса
 // функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
 Station * NextSt()
 {
-    if (++RasHeader::indxSt >= Station::StationsOrg.size())
+    if (++RasPacker::indxSt >= Station::StationsOrg.size())
     {
-        RasHeader::indxSt = 0;
+        RasPacker::indxSt = 0;
         parent->setCycles(++cycles);
         parent->setPeriod((int)(start.msecsTo(QTime::currentTime())));
         start = QTime::currentTime();
     }
-    return Station::StationsOrg[RasHeader::indxSt];
+    return Station::StationsOrg[RasPacker::indxSt];
 }
 
 
-BYTE RasHeader::counter = 0;                            // циклический счетчик сеансов
-int  RasHeader::indxSt;                                 // индекс актуальной станции опроса
-RasHeader::RasHeader(class Station * st)
-{
-    marker      = SOH;                                  // маркер
-    length      = (WORD)(long)(data-&dst);               // длина пакета (все после себя, исключая CRC и EOT)
-    dst         = st ? st->Addr() : 0;                  // адрес назначения
-    src         = CpuAddress;                           // адрес источника
 
-    // формирование счетчика сеансов должны быть интеллектуальным с учетом существующих алгоритмов полного опроса
-    // на старых КП полный опрос обеспечивается нулевым значением сеанса, на новых КП используется инкремент счетчика на 2
-    seans       =++counter;                             // сеанс
-
-    memset (data, 0, sizeof(data));                     // очистка поля
-
-    if (st)
-    {
-        // на время работы блокируем доступ к DataToKp; разблокировка выполняется в деструкторе при выходе из блока
-        std::lock_guard <std::mutex> locker(st->DataToKpLock);
-        int l = std::min((int)st->DataToKpLenth, (int)sizeof(data));
-        if (st->DataToKpLenth)
-        {
-            memmove(data,st->DataToKp, l);              // переносим данные
-            st->DataToKpLenth = 0;                      // обнуляем длину
-            length += l;                                // наращиваем длину пакета на длину блока данных
-        }
-        data[l+2] = EOT;                            // запись EOT
-        addCRC ((BYTE *)&dst, length);                  // подсчет CRC
-
-    }
-
-}
-#pragma pack()
 
 #ifdef DBG_INCLUDE
 // пример ответного пакета

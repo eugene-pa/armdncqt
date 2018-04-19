@@ -359,7 +359,7 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QLabel" name="label_46">
+   <widget class="QLabel" name="label_Snd">
     <property name="geometry">
      <rect>
       <x>60</x>
@@ -381,7 +381,7 @@
      <string>...</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_47">
+   <widget class="QLabel" name="label_RCV">
     <property name="geometry">
      <rect>
       <x>60</x>

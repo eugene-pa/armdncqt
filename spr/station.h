@@ -30,7 +30,7 @@ class Station : public QObject
 {
     friend class DStDataFromMonitor;
     friend class Route;
-    friend class RasHeader;
+    friend class RasPacker;
 
     Q_OBJECT
 
