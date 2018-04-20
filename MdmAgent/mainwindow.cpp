@@ -269,11 +269,27 @@ void MainWindow::GetMsg (int np, void * param)
             ((kpframe *)param)->SetActual(true,false);
             break;
         case MSG_SHOW_SND:
-            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(((RasPacker*)param)->st->Name()));
+            {
+            QString name = ((RasPacker*)param)->st == nullptr ? "?" : ((RasPacker*)param)->st->Name();
+            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(name));
+            }
             break;
         case MSG_SHOW_RCV:
-            ui->label_RCV->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(((RasPacker*)param)->st->Name()));
+            {
+            QString name = ((RasPacker*)param)->st == nullptr ? "?" : ((RasPacker*)param)->st->Name();
+            RasData * data = (RasData *)(((RasPacker*)param))->data;
+            ui->label_RCV->setText(QString("[ %1 ]:    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
+            ui->statusBar->showMessage("Прием данных по ст. " + name);
+            }
             break;
+
+        case MSG_ERR_TIMEOUT:                                   // ошибка тайм-аута
+            ui->statusBar->showMessage("Тайм-аут при приеме данных");
+            break;
+        case MSG_ERR_CRC:                                       // ошибка CRC
+            Logger::LogStr ("Ошибка CRC");                      // лог
+            break;
+
         default:
             break;
     }

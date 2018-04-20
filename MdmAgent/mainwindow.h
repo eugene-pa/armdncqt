@@ -7,7 +7,12 @@
 #include <../common/logger.h>
 #include <../common/blockingrs.h>
 
-void Log (std::wstring);
+
+extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
+extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
+
+void Log (std::wstring);                                    // сатическая функция вывода лога
+void SendMessage (int, void *);                             // сатическая функция отправки сообщения
 
 namespace Ui {
 class MainWindow;
@@ -43,6 +48,9 @@ public:
         MSG_SHOW_PING   = 3,                                            // отобразить информацию о точке опроса
         MSG_SHOW_SND    = 4,                                            // отобразить переданный пакет данных
         MSG_SHOW_RCV    = 5,                                            // отобразить принятый   пакет данных
+        MSG_ERR_TIMEOUT = 6,                                            // ошибка тайм-аута
+        MSG_ERR_CRC     = 7,                                            // ошибка CRC
+
     };
 
     explicit MainWindow(QWidget *parent = 0);

@@ -2,11 +2,11 @@
 #include "station.h"
 
 BYTE RasPacker::counter = 0;                            // циклический счетчик сеансов
-int  RasPacker::indxSt;                                 // индекс актуальной станции опроса
+int  RasPacker::indxSt = -1;                            // индекс актуальной станции опроса
 RasPacker::RasPacker(class Station * st)
 {
     marker      = SOH;                                  // маркер
-    length      = (WORD)(long)(data-&dst);               // длина пакета (все после себя, исключая CRC и EOT)
+    length      = (WORD)(long)(data-&dst);              // длина пакета (все после себя, исключая CRC и EOT)
     dst         = st ? st->Addr() : 0;                  // адрес назначения
     src         = CpuAddress;                           // адрес источника
 
@@ -20,6 +20,7 @@ RasPacker::RasPacker(class Station * st)
     if (st)
     {
         // на время работы блокируем доступ к DataToKp; разблокировка выполняется в деструкторе при выходе из блока
+
         std::lock_guard <std::mutex> locker(st->DataToKpLock);
         int l = std::min((int)st->DataToKpLenth, (int)sizeof(data));
         if (st->DataToKpLenth)

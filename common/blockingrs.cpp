@@ -62,6 +62,8 @@ void BlockingRS::run()
                 bufIn.push_back((unsigned char)bt);             // запоминаем принятые данные
             }
             mtxBufIn.unlock();                                  // разблокируем очередь
+
+            water.notify_all();                                 // уведомить о прииеме ожидающий поток
         }
 
         // передача из буфера

@@ -245,6 +245,17 @@ Station * Station::GetByName(QString stname)
     return nullptr;
 }
 
+// получить справочник по адресу
+Station * Station::GetByAddr(int addr)
+{
+    for (auto rec : Stations)
+    {
+        if (rec.second->addr == addr)
+            return rec.second;
+    }
+    return nullptr;
+}
+
 // чтение БД
 bool Station::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger, QString param)
 {

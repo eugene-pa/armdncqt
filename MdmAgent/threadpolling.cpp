@@ -13,17 +13,14 @@
 #include "../common/pamessage.h"
 #include "threadpolling.h"
 
-extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
-extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
+// статически объявленные переменные, используемые в рабочем потоке
+static BYTE dataIn [4048];                                  // входные данные
+//BYTE dataOut[4048];                                       // выходные данные
+static unsigned int cycles = 0;                             // счетчик циклов
+static MainWindow * parent;                                 // родительское окно
+static QTime       start;                                   // засечка начала цикла
 
-BYTE dataIn [4048];                                         // входные данные
-BYTE dataOut[4048];                                         // выходные данные
-unsigned int cycles = 0;                                    // счетчик циклов
-MainWindow * parent;                                        // родительское окно
-QTime       start;                                          // засечка начала цикла
 
-int MakeData();                                             // формирование ответного пакета
-void SendMessage (int, void *);                             // сатическая функция отправки сообщения
 
 // поток опроса основного и резервного каналов связи
 // long param - здесь - указатель на строку конфигурации config
@@ -44,13 +41,16 @@ void ThreadPolling(long param)
     {
         Logger::LogStr ("Прямой канал: " + configMain);
         rs1 = new BlockingRS(configMain);
+        rs1->SetTimeWaiting(100);
         rs1->start();
     }
+
     // инициируем обратный канал
     if (configRsrv.length())
     {
         Logger::LogStr ("Обратный канал: " + configMain);
         rs2 = new BlockingRS(configRsrv);
+        rs1->SetTimeWaiting(100);
         rs2->start();
     }
 
@@ -58,7 +58,7 @@ void ThreadPolling(long param)
     start = QTime::currentTime();
 
     // цикл опроса выполняется вплоть до завершения работы модуля
-    while (!exit_lock.try_lock_for(chronoMS(100)))
+    while (!exit_lock.try_lock_for(chronoMS(50)))
     {
         // если нет коннекта ни в основном, ни в резервном - ждем!
         bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
@@ -67,47 +67,48 @@ void ThreadPolling(long param)
             continue;
 
         if (actualSt)
-        {
-            // отображением станции снимаем пинг
-            SendMessage (MainWindow::MSG_SHOW_INFO, actualSt->userData);
-        }
+            SendMessage (MainWindow::MSG_SHOW_INFO, actualSt->userData);// отображением станции снимаем пинг
 
-        // 1. выборка очередной станции
         actualSt = NextSt();                                            // актуальная станция
+        actualSt->SetKpResponce(false);                                 // пока отклика нет
 
-        // 2. подготовка пакета
-        RasPacker pack(actualSt);
+        RasPacker pack(actualSt);                                       // подготовка пакета
 
-        // 2. определение стороны опроса должно быть функцией класса Station
-        //    исходные данные - готовность прямого и обратного каналов
-        bool back = actualSt->IsBackChannel() && rs2!=nullptr;
-        //actualSt->SetBackChannel(actualSt->Addr() & 1);
+        bool back = actualSt->IsBackChannel();                          // back - актуальная сторона опроса
+        SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
 
-        // отобразить "пинг" - точку опроса станции (канал, комплект)
-        SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
-
-        bool ret = TryOneChannel(back ? rs2 : rs1, &pack);
-
-        // 4. отправка в нужную сторону, ожидание и прием ответного пакета
-        // 5. анализ
-        // 6. при необходимости отправка в противоположную сторону, ожидание и прием ответного пакета
-
-        try
+        Station * st = nullptr;                                         // станция отклика
+        if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)
         {
-            //int indx = 0;
-            //int ch;
-            // ждем маркер
-/*
-            if ((ch = rs1->GetCh()) != SOH)               // используем функцию без исключений пока ждем маркер
-                continue;
-*/
-
+            // если нет отклика - пробуем с другой стороны
+            actualSt->SetBackChannel(back = !back);
+            SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
+            st = TryOneChannel(back ? rs2 : rs1, &pack);
         }
-        catch (...)
+        if (st != nullptr)                                              // если был отклик - пометить!
         {
-            continue;
+            st->SetKpResponce(true);
+
+            // обработать данные
+            RasPacker * pack = (RasPacker *)dataIn;
+            if (pack->dst != 0)
+            {
+                // получатель - не станция связи
+            }
+            if (st != actualSt)
+            {
+                // данные от другой станции
+            }
+/*
+            RasData * data = (RasData *)pack->data;
+            BYTE * ptr1 = (BYTE *)st->GetSysInfo(false);
+            BYTE * ptr2 = data->PtrSys();
+            memcpy(ptr1, ptr2, 15);
+            //memcpy(st->GetSysInfo(true ), (RasData *)pack->data[15], 15);
+*/
         }
     }
+
     exit_lock.unlock();
     if (rs1 != nullptr)
     {
@@ -124,16 +125,17 @@ void ThreadPolling(long param)
 }
 
 // опрос по заданному каналу
-bool TryOneChannel(BlockingRS * rs, RasPacker* data)
+Station * TryOneChannel(BlockingRS * rs, RasPacker* data)
 {
     if (rs == nullptr)
-        return false;
+        return nullptr;
     rs->Send(data, data->Length());
+    //SleepMS(100);
     SendMessage (MainWindow::MSG_SHOW_SND, data);
-    bool ret = GetData(rs);
+    return GetData(rs) ? ((RasPacker *)&dataIn)->st : nullptr;
 }
 
-// прием данных
+// прием данных во входной массив dataIn из заданного канала
 bool GetData(BlockingRS * rs)
 {
     int indx = 0;
@@ -149,8 +151,8 @@ bool GetData(BlockingRS * rs)
 
         dataIn[indx++] = SOH;
         // прием длины
-        dataIn[indx++] = rs->GetChEx();                  // здесь и далее более лаконичный код с использованием исключения при отсутствии данных
-        dataIn[indx++] = rs->GetChEx();
+        dataIn[indx++] = rs->GetChEx();                 // младший байт длины
+        dataIn[indx++] = rs->GetChEx();                 // старший байтдлины
         int l = (dataIn[indx-1] << 8) | dataIn[indx-2];
 
         // прием тела пакета
@@ -164,19 +166,24 @@ bool GetData(BlockingRS * rs)
         dataIn[indx++] = rs->GetChEx();
         dataIn[indx++] = rs->GetChEx();
 
+        // хочу вернуть справочник станции; использование актуальной станции некорректно, так как ответ может прийти от другой станции
+        ((RasPacker *)&dataIn)->st = Station::GetByAddr(((RasPacker *)&dataIn)->src);
+
         // проверка CRC
         WORD crc = (dataIn[indx-2] << 8) | dataIn[indx-3];
         WORD crcreal = GetCRC(&dataIn, l + LEN_HEADER);
         if (crc != crcreal)
         {
-            int a = 99;
+            SendMessage (MainWindow::MSG_ERR_CRC, dataIn);
+            return false;
         }
-        ((RasPacker *)&dataIn)->st = actualSt;
-        SendMessage (MainWindow::MSG_SHOW_RCV, dataIn);
+        else
+            SendMessage (MainWindow::MSG_SHOW_RCV, dataIn); // уведомление о приеме
     }
     catch (...)
     {
-        return -1;
+        SendMessage (MainWindow::MSG_ERR_TIMEOUT, dataIn);
+        return false;
     }
 
     return true;

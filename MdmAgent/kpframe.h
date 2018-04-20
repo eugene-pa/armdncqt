@@ -31,6 +31,7 @@ private:
     Ui::kpframe *ui;
     class  Station * st;
     class MainWindow * mainWindow;
+    QColor getColor(bool rsrv, bool com4);
 };
 
 #endif // KPFRAME_H

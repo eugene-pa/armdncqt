@@ -48,6 +48,7 @@ public:
     // открытые статические функции
     //static Station * GetById(int no);                       // получить справочник по номеру станции
     static Station * GetById(int no, class KrugInfo * krug = nullptr);
+    static Station * GetByAddr(int addr);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
     static bool ReadBd (QString&, class KrugInfo*, Logger&, QString param ="");// чтение БД
     static void SortTs();                                   // сортировка списка ТС
@@ -192,13 +193,14 @@ public:
     bool IsOrientEvnOdd() { return orient.indexOf("ЧН") >= 0; }
 
     bool IsTsChanged();                                     // проверка были ли изменения ТС с прошлого цикла опроса
-    bool IsLinkOk();                                        // состояние связи в последнем циклн опроса ОК
+    bool IsLinkOk();                                        // состояние связи в последнем цикле опроса ОК
     bool IsLinkStatusChanged();                             // проверка изменения состояния связи со станцией с пред.цикла опроса
 
     QString& TypeEC() { return typeEC; }
 
     bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
-
+    bool IsKpResponce() { return kpResponce; }              // отклик КП
+    void SetKpResponce(bool s) { kpResponce = s; }          // отклик КП
     void *  userData;                                       // привязка к объекту пользователя
 
 // вычисление переменной - через обработку сигнала в слоте
@@ -296,6 +298,7 @@ private:
     //WORD	RealInputDataLen;                               // длина блока данных из линии
     //BYTE	InputData [MAX_LINE_DATA_LEN];                  // данные из линии
 
+    bool    kpResponce;                                     // отклик КП
     std::mutex  DataToKpLock;                               // мьютекс, блокирующий доступ к блоку данных в КП
     WORD	DataToKpLenth;                                  // длина данных для передачи в КП,
     BYTE	DataToKp[MAX_BLOCK_LENGTH];                     // отформатироанные в соответствии с форматом протокола данные для передачи в КП

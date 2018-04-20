@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "kpframe.h"
 #include "ui_kpframe.h"
+#include "../spr/sysinfo.h"
 
 kpframe::kpframe(QWidget *parent, Station* pst) :
     QFrame(parent),
@@ -29,18 +30,31 @@ kpframe::~kpframe()
 
 void kpframe::SetActual(bool s, bool rsrv)
 {
-    QLed * l = st->IsBackChannel() ? ui->label_mainCOM4 : ui->label_mainCOM3;
+    QLed * l = st->IsBackChannel() ? (rsrv ? ui->label_rsrvCOM4 : ui->label_mainCOM4) : (rsrv ? ui->label_rsrvCOM3 : ui->label_mainCOM3);
     l->set (QLed::ledShape::box, s ? QLed::ledStatus::on : QLed::ledStatus::off, Qt::white);
 }
 
 // отрисовка актуального динамического состояния КП
 void kpframe::Show()
 {
-    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
-    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
-    ui->label_rsrvCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::darkGreen);
-    ui->label_rsrvCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::darkGreen);
+    // пока не учитывается состояние коннекта модема; при необхоимости дать цвет; можно выделить функцию получения цвета заданного модема
+    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(false, false));
+    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(false, true ));
+    ui->label_rsrvCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(true , false));
+    ui->label_rsrvCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(true , true ));
+}
 
+// получить цвет индикатора заданного модема
+// отсутствие отклика КП - все модемы красные
+// при наличии отулика состояние коннекта и ошибки модема берется из SysInfo
+QColor kpframe::getColor(bool rsrv, bool com4)
+{
+    SysInfo * sys = st->GetSysInfo(rsrv);
+    bool connect = com4 ? sys->Com4Connected() : sys->Com3Connected();
+    bool error   = com4 ? sys->Com4Error    () : sys->Com3Error    ();
+    return !st->IsKpResponce()  ? Qt::red   :
+           connect              ? Qt::green :
+           error                ? Qt::red   : Qt::yellow;
 }
 
 // обработка щелчка по станции (смена станции)
