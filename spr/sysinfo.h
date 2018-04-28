@@ -16,6 +16,7 @@ class SysInfo
 public:
     SysInfo();
     SysInfo(class Station * pst);
+    void Parse(void *, int);                                // принять заданное число байт статуса
     ~SysInfo();
 
     // определяю макросы get/set для доступа к байтам массива по индексу

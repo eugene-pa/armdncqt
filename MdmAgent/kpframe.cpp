@@ -32,6 +32,7 @@ void kpframe::SetActual(bool s, bool rsrv)
 {
     QLed * l = st->IsBackChannel() ? (rsrv ? ui->label_rsrvCOM4 : ui->label_mainCOM4) : (rsrv ? ui->label_rsrvCOM3 : ui->label_mainCOM3);
     l->set (QLed::ledShape::box, s ? QLed::ledStatus::on : QLed::ledStatus::off, Qt::white);
+    //l->setText("+");
 }
 
 // отрисовка актуального динамического состояния КП

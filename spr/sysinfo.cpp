@@ -13,6 +13,14 @@ SysInfo::SysInfo(Station * pst)
     src.fill(0,SysInfoLength);
 }
 
+// принять заданное число байт статуса
+void SysInfo::Parse(void *p, int l)
+{
+    for (int i=0; i < std::min((int)SysInfoLength, l); i++ )
+        src[i] = ((BYTE *)p)[i];
+}
+
+
 SysInfo::~SysInfo()
 {
 

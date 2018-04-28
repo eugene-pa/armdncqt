@@ -166,7 +166,8 @@ bool GetData(BlockingRS * rs)
         dataIn[indx++] = rs->GetChEx();
         dataIn[indx++] = rs->GetChEx();
 
-        // хочу вернуть справочник станции; использование актуальной станции некорректно, так как ответ может прийти от другой станции
+        // хочу вернуть справочник станции, от которой получены данные
+        // использование актуальной станции некорректно, так как ответ может прийти от другой станции
         ((RasPacker *)&dataIn)->st = Station::GetByAddr(((RasPacker *)&dataIn)->src);
 
         // проверка CRC
@@ -178,7 +179,10 @@ bool GetData(BlockingRS * rs)
             return false;
         }
         else
+        {
+            // нормальный прием
             SendMessage (MainWindow::MSG_SHOW_RCV, dataIn); // уведомление о приеме
+        }
     }
     catch (...)
     {

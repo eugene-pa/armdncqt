@@ -275,11 +275,24 @@ void MainWindow::GetMsg (int np, void * param)
             }
             break;
         case MSG_SHOW_RCV:
+            if (param!=nullptr)
             {
-            QString name = ((RasPacker*)param)->st == nullptr ? "?" : ((RasPacker*)param)->st->Name();
-            RasData * data = (RasData *)(((RasPacker*)param))->data;
-            ui->label_RCV->setText(QString("[ %1 ]:    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
-            ui->statusBar->showMessage("Прием данных по ст. " + name);
+                RasPacker* pack = (RasPacker* )param;           // pack - весь пакет
+                Station * st = pack->st;                        //
+                QString name = st == nullptr ? "?" : st->Name();//
+                RasData * data = (RasData *)pack->data;         // data - блок данных
+                ui->label_RCV->setText(QString("[ %1 ]:    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
+                ui->statusBar->showMessage("Прием данных по ст. " + name);
+
+                // обрабатываем системную информацию
+                if (pack->Length() > 3 && data->LengthSys())
+                {
+                    // учесть переменную длину 9/15/30 и в случае 30 - записать оба блока
+                    SysInfo * sysinfo = st->GetSysInfo(pack->data[8] & 1);
+                    sysinfo->Parse(data->PtrSys(), data->LengthSys());
+
+                    ((kpframe *)st->userData)->Show();
+                }
             }
             break;
 
