@@ -8,6 +8,13 @@
 
 // класс SysInfo, инкапсулирующий данные блока системной информации
 
+enum LinkErrors
+{
+    timeout = 1,
+    format  = 2,
+    crc     = 3,
+};
+
 class SysInfo
 {
     friend class Station;

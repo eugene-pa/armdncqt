@@ -20,7 +20,7 @@ public:
     {
         st = pst;
     }
-    void Show();                                    // показать актуальную информацию по станции
+    void Show(class Station * pst);                 // показать актуальную информацию по станции
 
 private:
     Ui::FrameBM *ui;

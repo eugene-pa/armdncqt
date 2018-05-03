@@ -19,7 +19,7 @@
   <property name="frameShadow">
    <enum>QFrame::Sunken</enum>
   </property>
-  <widget class="QLabel" name="label_28">
+  <widget class="QLabel" name="label_version">
    <property name="geometry">
     <rect>
      <x>220</x>
@@ -98,7 +98,7 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QLabel" name="label_15">
+     <widget class="QLabel" name="label_Speed3">
       <property name="font">
        <font>
         <pointsize>8</pointsize>
@@ -110,7 +110,7 @@
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLabel" name="label_21">
+     <widget class="QLabel" name="label_errors">
       <property name="font">
        <font>
         <pointsize>8</pointsize>
@@ -146,7 +146,7 @@
      </widget>
     </item>
     <item row="1" column="2">
-     <widget class="QLabel" name="label_23">
+     <widget class="QLabel" name="label_break4">
       <property name="font">
        <font>
         <pointsize>8</pointsize>
@@ -170,7 +170,7 @@
      </widget>
     </item>
     <item row="0" column="2">
-     <widget class="QLabel" name="label_22">
+     <widget class="QLabel" name="label_break3">
       <property name="font">
        <font>
         <pointsize>8</pointsize>
@@ -206,7 +206,7 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLabel" name="label_17">
+     <widget class="QLabel" name="label_Speed4">
       <property name="font">
        <font>
         <pointsize>8</pointsize>

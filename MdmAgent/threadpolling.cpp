@@ -201,7 +201,7 @@ bool GetData(BlockingRS * rs)
 // функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
 Station * NextSt()
 {
-    if (++RasPacker::indxSt >= Station::StationsOrg.size())
+    if (++RasPacker::indxSt >= (int)Station::StationsOrg.size())
     {
         RasPacker::indxSt = 0;
         parent->setCycles(++cycles);

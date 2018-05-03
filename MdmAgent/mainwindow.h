@@ -68,10 +68,10 @@ public slots:
     void SelectStation(class Station *);
     void GetMsg (int, void *);
 
-    void dataready(QByteArray);                                         // сигнал-уведомление о готовности данных
-    void timeout();                                                     // сигнал-уведомление об отсутствии данных в канала данных
-    void error  (int);                                                  // сигнал-уведомление об ошибке
-    void rsStarted();                                                   // старт потока RS
+//    void dataready(QByteArray);                                         // сигнал-уведомление о готовности данных
+//    void timeout();                                                     // сигнал-уведомление об отсутствии данных в канала данных
+//    void error  (int);                                                  // сигнал-уведомление об ошибке
+//    void rsStarted();                                                   // старт потока RS
     //void rsFinished();                                                // завершение потока RS
 
     void on_pushButtonMainOff_clicked();
@@ -103,7 +103,7 @@ private:
 
     Ui::MainWindow *ui;
 
-
+    class Station * actualSt;                                           // актуальная станция (выбрана)
     std::wstring config;                                                // конфигурация порта
     std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
 

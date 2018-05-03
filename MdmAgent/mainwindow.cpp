@@ -106,6 +106,11 @@ MainWindow::MainWindow(QWidget *parent) :
             row++;
         }
     }
+
+    // признак основной/резервный
+    ui->frame_mainBM->setRsrv(false);
+    ui->frame_rsrvBM->setRsrv(true );
+
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
@@ -135,39 +140,25 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+// смена активной станции
+// - убрать выделение с пассивных
+// - установить выделение активной
+// - дать информацию по активной
 void MainWindow::SelectStation(class Station * actualSt)
 {
     ui->label_stName->setText(actualSt->Name());
     for (auto st : Station::StationsOrg)
     {
+        this->actualSt = actualSt;
         kpframe * kp = (kpframe *)st->userData;
         kp->SelectSt(actualSt==st);
+        if (actualSt==st)
+        {
+            ui->frame_mainBM->Show(st);
+            ui->frame_rsrvBM->Show(st);
+        }
     }
-}
-
-// обработка сигнала-уведомления о готовности данных
-void MainWindow::dataready(QByteArray data)
-{
-    ui->statusBar->showMessage(QString("Приняты данные: %1").arg(Logger::GetHex(data, 32)));
-}
-
-// обработка сигнала-уведомления об отсутствии данных в канала данных
-void MainWindow::timeout()
-{
-    ui->statusBar->showMessage("Нет данных");
-}
-
-// обработка сигнала-уведомления об ошибке
-void MainWindow::error  (int error)
-{
-    Q_UNUSED (error)
-//    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
-}
-
-// обработка сигнала-уведомления от старте потока RS
-void MainWindow::rsStarted()
-{
-//    qDebug() << "Старт рабочего потока " << rasRs->name();
 }
 
 
@@ -262,19 +253,23 @@ void MainWindow::GetMsg (int np, void * param)
             ui->statusBar->showMessage(*(QString *)param);      // GUI - строка состояния окна
             }
             break;
+
         case MSG_SHOW_INFO:                                     // отобразить информацию об опрошенной станции
             ((kpframe *)param)->Show();
             break;
+
         case MSG_SHOW_PING:                                     // отобразить информацию о точке опроса
             ((kpframe *)param)->SetActual(true,false);
             break;
-        case MSG_SHOW_SND:
+
+        case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
             {
             QString name = ((RasPacker*)param)->st == nullptr ? "?" : ((RasPacker*)param)->st->Name();
             ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(name));
             }
             break;
-        case MSG_SHOW_RCV:
+
+        case MSG_SHOW_RCV:                                      // отобразить информацию об успешном приеме данных от КП
             if (param!=nullptr)
             {
                 RasPacker* pack = (RasPacker* )param;           // pack - весь пакет
@@ -293,12 +288,20 @@ void MainWindow::GetMsg (int np, void * param)
 
                     ((kpframe *)st->userData)->Show();
                 }
+
+                // отобразить состояние актуальной станции
+                if (st == actualSt)
+                {
+                    ui->frame_mainBM->Show(st);
+                    ui->frame_rsrvBM->Show(st);
+                }
             }
             break;
 
         case MSG_ERR_TIMEOUT:                                   // ошибка тайм-аута
             ui->statusBar->showMessage("Тайм-аут при приеме данных");
             break;
+
         case MSG_ERR_CRC:                                       // ошибка CRC
             Logger::LogStr ("Ошибка CRC");                      // лог
             break;
@@ -323,3 +326,31 @@ void SendMessage (int no, void * ptr)
     std::lock_guard <std::mutex> locker(sendMutex);
     emit MainWindow::mainWnd->SendMsg(no, ptr);
 }
+
+
+/*
+// обработка сигнала-уведомления о готовности данных
+void MainWindow::dataready(QByteArray data)
+{
+    ui->statusBar->showMessage(QString("Приняты данные: %1").arg(Logger::GetHex(data, 32)));
+}
+
+// обработка сигнала-уведомления об отсутствии данных в канала данных
+void MainWindow::timeout()
+{
+    ui->statusBar->showMessage("Нет данных");
+}
+
+// обработка сигнала-уведомления об ошибке
+void MainWindow::error  (int error)
+{
+    Q_UNUSED (error)
+//    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
+}
+
+// обработка сигнала-уведомления от старте потока RS
+void MainWindow::rsStarted()
+{
+//    qDebug() << "Старт рабочего потока " << rasRs->name();
+}
+*/
