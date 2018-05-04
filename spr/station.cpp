@@ -14,6 +14,7 @@
 #include "dstdatafromfonitor.h"
 #include "abtcminfo.h"
 #include "rpcdialoginfo.h"
+#include "raspacker.h"
 #include "ecmpkinfo.h"
 
 //#include "tu.h"
@@ -79,6 +80,8 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     rsrvSysInfo = new SysInfo();                            // выделение памяти под SysInfo резервного блока
     rsrvSysInfo->st = this;
 
+    rasData = new RasData();                                // указатель на полученные данные от КП
+
     tSpokSnd = tSpokRcv = 0;                                // время приема/передачи данных в СПОК
 
     DataToKpLenth = 0;
@@ -137,7 +140,11 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 
 Station::~Station()
 {
-    qDebug() << "~Station()";
+    qDebug() << "~Station() " << name;
+
+    delete rasData;
+    delete mainSysInfo;
+    delete rsrvSysInfo;
 }
 
 // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]
@@ -288,6 +295,14 @@ bool Station::ReadBd (QString& dbpath, KrugInfo* krug, Logger& logger, QString p
     }
 
     return true;
+}
+
+void Station::Release()
+{
+    for (auto rec : Stations)
+    {
+        delete rec.second;
+    }
 }
 
 // добавить ТС

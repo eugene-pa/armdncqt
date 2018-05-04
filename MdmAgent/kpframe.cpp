@@ -50,11 +50,12 @@ void kpframe::Show()
 // при наличии отулика состояние коннекта и ошибки модема берется из SysInfo
 QColor kpframe::getColor(bool rsrv, bool com4)
 {
+    bool active = !(rsrv ^ st->IsRsrv());
     SysInfo * sys = st->GetSysInfo(rsrv);
     bool connect = com4 ? sys->Com4Connected() : sys->Com3Connected();
     bool error   = com4 ? sys->Com4Error    () : sys->Com3Error    ();
     return !st->IsKpResponce()  ? Qt::red   :
-           connect              ? Qt::green :
+           connect              ? (active ? Qt::green : Qt::white) :
            error                ? Qt::red   : Qt::yellow;
 }
 

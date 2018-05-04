@@ -7,14 +7,15 @@
 #include "station.h"
 
 // класс SysInfo, инкапсулирующий данные блока системной информации
-
+/*
 enum LinkErrors
 {
+    ok      = 0,
     timeout = 1,
     format  = 2,
     crc     = 3,
 };
-
+*/
 class SysInfo
 {
     friend class Station;
@@ -94,10 +95,13 @@ public:
     void SetMtuMtsLineStatus(int i, BYTE bte);              // установить статус линейки из 8 модулей БТ индексу 0-5
     bool MtuMtsStatus(int i);                               // проверка состояния модуля МТУ/МТС
 
+    void SetLineStatus(LineStatus s) { linestatus = s; }
     QDateTime&  LastTime() { return tmdt; }                 // время опроса
+    void FixTime();                                         // засечка времени опроса
     int  LinkErrors() { return errors; }                    // общее число ошибок связи с комплектом
 
     QByteArray& Src() { return src; }                       // маасив инфо-блока
+    QString ErrorType();                                    // получить текст типа ошибки
 private:
     class Station * st;
     // 0  байт - состояние КП

@@ -49,8 +49,8 @@ public:
         MSG_SHOW_SND    = 4,                                            // отобразить переданный пакет данных
         MSG_SHOW_RCV    = 5,                                            // отобразить принятый   пакет данных
         MSG_ERR_TIMEOUT = 6,                                            // ошибка тайм-аута
-        MSG_ERR_CRC     = 7,                                            // ошибка CRC
-
+        MSG_ERR_FORMAT  = 7,                                            // ошибка формата
+        MSG_ERR_CRC     = 8,                                            // ошибка CRC
     };
 
     explicit MainWindow(QWidget *parent = 0);

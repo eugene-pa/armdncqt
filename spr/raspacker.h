@@ -67,12 +67,14 @@ public:
     int LengthOtu () { return otuLength  + 256 * ((extLength >> 4) & 0x03); }
     int LengthDiag() { return diagLength + 256 * ((extLength >> 6) & 0x03); }
 
-    QString About() { return QString("%1.%2.%3.%4").arg(LengthSys()).arg(LengthTuts()).arg(LengthOtu()).arg(LengthDiag()); ; }
+    QString About() { return QString("[%1.%2.%3.%4]").arg(LengthSys()).arg(LengthTuts()).arg(LengthOtu()).arg(LengthDiag()); ; }
 
     BYTE * PtrSys  () { return data; }
     BYTE * PtrTuTs () { return &data[LengthSys ()                               ]; }
     BYTE * PtrOtu  () { return &data[LengthSys () + LengthTuts()                ]; }
     BYTE * PtrDiag () { return &data[LengthSys () + LengthTuts() + LengthOtu () ]; }
+
+    void Copy(RasData*);
 
 
     BYTE extLength;                                             // расширение длин

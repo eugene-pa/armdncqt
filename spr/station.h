@@ -51,6 +51,7 @@ public:
     static Station * GetByAddr(int addr);
     static Station * GetByName(QString stname);             // получить справочник по номеру станции
     static bool ReadBd (QString&, class KrugInfo*, Logger&, QString param ="");// чтение БД
+    static void Release();
     static void SortTs();                                   // сортировка списка ТС
     static void SortTu();                                   // сортировка списка ТУ
     static void ParsePrologEpilog(Logger& logger);          // "разрешить" ссылки ПРОЛОГ/ЭПИЛОГ/ПОЛЮС
@@ -106,7 +107,10 @@ public:
     bool IsBackChannel() { return stsBackChannel; }         // последний опрос станции по обратному каналу
     void SetBackChannel(bool s) { stsBackChannel = s; }     // запомнить сторону опроса
 
-    class SysInfo * GetSysInfo(bool rsrv) { return rsrv ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации основного  БМ
+    class SysInfo * GetSysInfo() { return IsRsrv() ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации актуального БМ
+    class SysInfo * GetSysInfo(bool rsrv) { return rsrv ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации заданного  БМ
+    class RasData * GetRasData() { return rasData; }
+
     bool IsSupportKpExt (bool rsrv);                        // поддерживается ли расширенный блок диагностики
     bool IsAtuError (bool rsrv);                            // проверка срабатывания АТУ (отличается в разных версиях)
     bool IsKeyError (bool rsrv);                            // проверка ошибки ключа     (отличается в разных версиях)
@@ -287,7 +291,7 @@ private:
     int     errorLockLogicCount;                            // число актуальных ошибок логического контроля
     bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
     bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
-
+    class RasData * rasData;                                // указатель на полученные данные от КП
     class SysInfo * mainSysInfo;                            // блок сист.информации основного  БМ (память выделяется в конструкторе Station)
     class SysInfo * rsrvSysInfo;                            // блок сист.информации резервного БМ (память выделяется в конструкторе Station)
     time_t  tSpokSnd;                                       // время передачи данных в СПОК

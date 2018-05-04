@@ -18,6 +18,8 @@ void SysInfo::Parse(void *p, int l)
 {
     for (int i=0; i < std::min((int)SysInfoLength, l); i++ )
         src[i] = ((BYTE *)p)[i];
+    FixTime();
+    linestatus = LineOK;
 }
 
 
@@ -60,4 +62,23 @@ void SysInfo::SetMtuMtsLineStatus(int i, BYTE bte)
 bool SysInfo::MtuMtsStatus(int i)
 {
     return i < 0 || i > MaxModule ? false : GetMtuMtsLineStatus(i/8) & (1 << i% 8);
+}
+
+// засечка времени опроса
+void SysInfo::FixTime()
+{
+    tmdtPrev = tmdt;
+    tmdt = QDateTime::currentDateTime();
+}
+
+// получить текст типа ошибки
+QString SysInfo::ErrorType()
+{
+    switch (linestatus)
+    {
+        case LineTimeOut: return "Таймаут";
+        case LineFormat : return "Формат";
+        case LineCRC    : return "CRC";
+        default         : return "-";
+    }
 }

@@ -37,7 +37,7 @@
     <string>ver.1.0.7.*</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_27">
+  <widget class="QLabel" name="label_title">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -86,7 +86,7 @@
      </widget>
     </item>
     <item row="2" column="2">
-     <widget class="QLabel" name="label_26">
+     <widget class="QLabel" name="label_ertype">
       <property name="font">
        <font>
         <pointsize>8</pointsize>
@@ -122,7 +122,7 @@
      </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QLabel" name="label_24">
+     <widget class="QLabel" name="label_info">
       <property name="font">
        <font>
         <pointsize>8</pointsize>
@@ -182,7 +182,7 @@
      </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QLabel" name="label_14">
+     <widget class="QLabel" name="label_Time">
       <property name="font">
        <font>
         <pointsize>8</pointsize>

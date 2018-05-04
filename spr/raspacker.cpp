@@ -35,6 +35,12 @@ RasPacker::RasPacker(class Station * st)
     }
 
 }
+
+void RasData::Copy(RasData* p)
+{
+    memmove(this, p, sizeof(RasData));
+}
+
 /*
 int RasPacker::Length()
 {

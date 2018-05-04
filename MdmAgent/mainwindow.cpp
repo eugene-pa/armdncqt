@@ -137,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     exit_lock.unlock();
+    Station::Release();
     delete ui;
 }
 
@@ -276,16 +277,25 @@ void MainWindow::GetMsg (int np, void * param)
                 Station * st = pack->st;                        //
                 QString name = st == nullptr ? "?" : st->Name();//
                 RasData * data = (RasData *)pack->data;         // data - блок данных
-                ui->label_RCV->setText(QString("[ %1 ]:    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
+                st->GetRasData()->Copy(data);
+                ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
                 ui->statusBar->showMessage("Прием данных по ст. " + name);
 
                 // обрабатываем системную информацию
                 if (pack->Length() > 3 && data->LengthSys())
                 {
                     // учесть переменную длину 9/15/30 и в случае 30 - записать оба блока
-                    SysInfo * sysinfo = st->GetSysInfo(pack->data[8] & 1);
+                    // первым всегда идет активный блок
+                    bool act = pack->data[8] & 1;               // признак резерва
+                    SysInfo * sysinfo = st->GetSysInfo(act);
                     sysinfo->Parse(data->PtrSys(), data->LengthSys());
+                    if (data->LengthSys() == 30)
+                    {
+                        sysinfo = st->GetSysInfo(!act);
+                        sysinfo->Parse(data->PtrSys()+15, 15);
+                    }
 
+                    // отрисовка актуального КП
                     ((kpframe *)st->userData)->Show();
                 }
 
@@ -300,6 +310,10 @@ void MainWindow::GetMsg (int np, void * param)
 
         case MSG_ERR_TIMEOUT:                                   // ошибка тайм-аута
             ui->statusBar->showMessage("Тайм-аут при приеме данных");
+            break;
+
+        case MSG_ERR_FORMAT:
+            ui->statusBar->showMessage("Ошибка формата");
             break;
 
         case MSG_ERR_CRC:                                       // ошибка CRC
