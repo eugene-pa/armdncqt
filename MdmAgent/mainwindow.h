@@ -98,6 +98,10 @@ public slots:
 
 signals:
     void exit();
+    void changeStation(class Station *);                                // смена станции
+
+private slots:
+    void on_action_KP_triggered();
 
 private:
 
@@ -106,6 +110,8 @@ private:
     class Station * actualSt;                                           // актуальная станция (выбрана)
     std::wstring config;                                                // конфигурация порта
     std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
+    class DlgKPinfo * dlgKp;
+    void loadResources();
 
     //class BlockingRS * rasRs;
 };

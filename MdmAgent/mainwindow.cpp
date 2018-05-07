@@ -6,6 +6,7 @@
 #include "../spr/esr.h"
 #include "../spr/station.h"
 #include "../spr/raspacker.h"
+#include "../forms/dlgkpinfo.h"
 
 // Прототипы функций рабочих потоков ПО КП
 void   ThreadPolling		(long);							// функция потока опроса динии связи
@@ -91,6 +92,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    Esr::ReadBd(esrdbbname, logger);                            // ЕСР
     Station::ReadBd(dbname, krug, logger, QString("WHERE RAS = %1 ORDER BY Addr").arg(ras));                      // станции
 
+    loadResources();
+
     // формируем преставление станций в несколько строк
     // в качестве входного массива используем вектор станций StationsOrg, отсортированный по заданному при чтении БД критерию "Addr"
     int row = 0, col = 0, colmax = 13;
@@ -132,6 +135,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // запускаем рабочий поток опроса каналов
     pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling, (long)this));
+
+    if (Station::StationsOrg.size() > 0)
+        SelectStation(Station::StationsOrg[0]);
+
+    dlgKp = nullptr;
 }
 
 MainWindow::~MainWindow()
@@ -158,6 +166,7 @@ void MainWindow::SelectStation(class Station * actualSt)
         {
             ui->frame_mainBM->Show(st);
             ui->frame_rsrvBM->Show(st);
+            emit changeStation(st);
         }
     }
 }
@@ -368,3 +377,42 @@ void MainWindow::rsStarted()
 //    qDebug() << "Старт рабочего потока " << rasRs->name();
 }
 */
+
+void MainWindow::on_action_KP_triggered()
+{
+    if (dlgKp==nullptr)
+    {
+        dlgKp = new DlgKPinfo(actualSt, this);
+        dlgKp->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgKp, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgKp->setVisible(!dlgKp->isVisible());
+}
+
+void MainWindow::loadResources()
+{
+    g_green             = new QPixmap(images + "icon_grn.ico");
+    g_red               = new QPixmap(images + "icon_red.ico");
+    g_yellow            = new QPixmap(images + "icon_yel.ico");
+    g_gray              = new QPixmap(images + "icon_gry.ico");
+    g_white             = new QPixmap(images + "icon_wht.ico");
+    g_cyan              = new QPixmap(images + "icon_cyn.ico");
+
+    g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
+    g_green_box         = new QPixmap(images + "box_grn.ico");
+    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");           // МТУ ок
+    g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
+    g_red_box           = new QPixmap(images + "box_red.ico");
+    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");           // МТУ error
+    g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
+    g_yellow_box        = new QPixmap(images + "box_yel.ico");
+    g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");
+    g_gray_box          = new QPixmap(images + "box_gry.ico");
+    g_white_box         = new QPixmap(images + "box_wht.ico");
+
+    g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
+    g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
+
+    //tooltip = true;
+}

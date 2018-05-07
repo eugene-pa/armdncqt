@@ -1102,6 +1102,7 @@ void Station::ParseTuEclusion()
 bool Station::IsTsExpire()
 {
     // TODO: реализовать функцию
+    return false;
     return stsFrmMntrTsExpired;
 }
 

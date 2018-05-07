@@ -36,7 +36,7 @@ void FrameBM::Show(class Station * pst)
     ui->label_ertype ->setText(info->ErrorType());
     ui->label_Time   ->setText(info->LastTime().toString(FORMAT_TIME));
 
-    ui->label_info   ->setText(isActual() ? st->GetRasData()->About() : "");
+    ui->label_info   ->setText(isActual() ? st->GetRasData()->About() : "-");
 
     QPalette pal = palette();
     pal.setColor(QPalette::WindowText, isActual() ? Qt::darkGreen : Qt::darkGray);

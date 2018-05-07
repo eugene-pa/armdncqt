@@ -50,7 +50,9 @@ SOURCES += main.cpp\
     ../spr/pereezd.cpp \
     framebm.cpp \
     threadpolling.cpp \
-    ../spr/raspacker.cpp
+    ../spr/raspacker.cpp \
+    ../forms/dlgkpinfo.cpp \
+    ../forms/bminfoframe.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -88,12 +90,16 @@ HEADERS  += mainwindow.h \
     ../spr/pereezd.h \
     framebm.h \
     threadpolling.h \
-    ../spr/raspacker.h
+    ../spr/raspacker.h \
+    ../forms/dlgkpinfo.h \
+    ../forms/bminfoframe.h
 
 
 FORMS    += mainwindow.ui \
     kpframe.ui \
-    framebm.ui
+    framebm.ui \
+    ../forms/dlgkpinfo.ui \
+    ../forms/bminfoframe.ui
 
 RESOURCES += \
     images.qrc
