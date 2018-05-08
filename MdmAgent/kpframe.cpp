@@ -20,7 +20,7 @@ kpframe::kpframe(QWidget *parent, Station* pst) :
     ui->label_Main->setStyleSheet("color: rgb(0, 64, 0)");
     ui->label_Rsrv->setStyleSheet("color: rgb(128, 128, 128)");
     ui->pushButton->setText(st->Name().left(8));
-
+    ui->checkBox->setChecked(st->Enable());
 }
 
 kpframe::~kpframe()
@@ -69,4 +69,10 @@ void kpframe::on_pushButton_clicked()
 void kpframe::SelectSt(bool s)
 {
     ui->pushButton->setChecked(s);
+}
+
+void kpframe::on_checkBox_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1)
+    st->SetEnable(ui->checkBox->isChecked());
 }

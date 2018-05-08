@@ -5,12 +5,14 @@ SysInfo::SysInfo()
     st = nullptr;
     src.fill(0,SysInfoLength);
     errors = 0;
+    tmdt.setTime_t(0);
 }
 
 SysInfo::SysInfo(Station * pst)
 {
     st = pst;
     src.fill(0,SysInfoLength);
+    tmdt.setTime_t(0);
 }
 
 // принять заданное число байт статуса

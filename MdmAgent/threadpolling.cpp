@@ -47,7 +47,7 @@ void ThreadPolling(long param)
     {
         Logger::LogStr ("Прямой канал: " + configMain);
         rs1 = new BlockingRS(configMain);
-        rs1->SetTimeWaiting(100);
+        rs1->SetTimeWaiting(200);
         rs1->start();
     }
 
@@ -56,15 +56,16 @@ void ThreadPolling(long param)
     {
         Logger::LogStr ("Обратный канал: " + configMain);
         rs2 = new BlockingRS(configRsrv);
-        rs1->SetTimeWaiting(100);
+        rs1->SetTimeWaiting(200);
         rs2->start();
     }
 
     //int   indxSt = -1;                                                   // индекс актуальной станции опроса
     start = QTime::currentTime();
 
+    // ------------------------------------------------------------------------------------------------------------------
     // цикл опроса выполняется вплоть до завершения работы модуля
-    while (!exit_lock.try_lock_for(chronoMS(10)))
+    while (!exit_lock.try_lock_for(chronoMS(1)))
     {
         // если нет коннекта ни в основном, ни в резервном - ждем!
         bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
@@ -75,7 +76,11 @@ void ThreadPolling(long param)
         if (actualSt)
             SendMessage (MainWindow::MSG_SHOW_INFO, actualSt->userData);// отображением станции снимаем пинг
 
+        // выключенные станциине опрашиваем
         actualSt = NextSt();                                            // актуальная станция
+        if (!actualSt->Enable())                                        // если выключена из опроса - пропускаем
+            continue;
+
         actualSt->SetKpResponce(false);                                 // пока отклика нет
 
         RasPacker pack(actualSt);                                       // подготовка пакета
@@ -100,11 +105,15 @@ void ThreadPolling(long param)
             if (pack->dst != 0)
             {
                 // получатель - не станция связи
+                continue;
             }
             if (st != actualSt)
             {
                 // данные от другой станции
+                // continue;
             }
+
+            // получили данные, передаем в АРМ ДНЦ
 /*
             RasData * data = (RasData *)pack->data;
             BYTE * ptr1 = (BYTE *)st->GetSysInfo(false);
@@ -114,6 +123,8 @@ void ThreadPolling(long param)
 */
         }
     }
+    // ------------------------------------------------------------------------------------------------------------------
+
 
     exit_lock.unlock();
     if (rs1 != nullptr)

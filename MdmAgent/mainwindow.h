@@ -6,7 +6,8 @@
 #include <../common/defines.h>
 #include <../common/logger.h>
 #include <../common/blockingrs.h>
-
+#include <../common/clienttcp.h>
+#include <../common/servertcp.h>
 
 extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
 extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
@@ -58,8 +59,8 @@ public:
     void closeEvent(QCloseEvent *event);
     static MainWindow * mainWnd;
 
-    void setCycles(unsigned int);                                       // отобразить число циклов
-    void setPeriod(unsigned int);                                       // отобразить длит.цикла
+    void setCycles(unsigned int);                               // отобразить число циклов
+    void setPeriod(unsigned int);                               // отобразить длит.цикла
 
 signals:
     void SendMsg(int, void *);
@@ -68,11 +69,11 @@ public slots:
     void SelectStation(class Station *);
     void GetMsg (int, void *);
 
-//    void dataready(QByteArray);                                         // сигнал-уведомление о готовности данных
-//    void timeout();                                                     // сигнал-уведомление об отсутствии данных в канала данных
-//    void error  (int);                                                  // сигнал-уведомление об ошибке
-//    void rsStarted();                                                   // старт потока RS
-    //void rsFinished();                                                // завершение потока RS
+//    void dataready(QByteArray);                               // сигнал-уведомление о готовности данных
+//    void timeout();                                           // сигнал-уведомление об отсутствии данных в канала данных
+//    void error  (int);                                        // сигнал-уведомление об ошибке
+//    void rsStarted();                                         // старт потока RS
+    //void rsFinished();                                        // завершение потока RS
 
     void on_pushButtonMainOff_clicked();
 
@@ -96,6 +97,12 @@ public slots:
 
     void on_pushButtonWatchdog_clicked();
 
+    // уведомления сервера
+    void slotAcceptError      (ClientTcp *);
+    void slotSvrNewConnection (ClientTcp *);
+    void slotSvrDataready     (ClientTcp *);
+    void slotSvrDisconnected  (ClientTcp *);
+
 signals:
     void exit();
     void changeStation(class Station *);                                // смена станции
@@ -107,11 +114,14 @@ private:
 
     Ui::MainWindow *ui;
 
-    class Station * actualSt;                                           // актуальная станция (выбрана)
-    std::wstring config;                                                // конфигурация порта
-    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // smart-указатель на поток опроса динии связи
+    class Station * actualSt;                                   // актуальная станция (выбрана)
+    std::wstring config;                                        // конфигурация порта
+    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;// smart-указатель на поток опроса динии связи
     class DlgKPinfo * dlgKp;
     void loadResources();
+
+    int portTcp;                                                // порт подключений модулей Управление
+    ServerTcp * server;                                         // сервер подключений модулей Управление
 
     //class BlockingRS * rasRs;
 };

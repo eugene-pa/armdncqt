@@ -52,7 +52,8 @@ SOURCES += main.cpp\
     threadpolling.cpp \
     ../spr/raspacker.cpp \
     ../forms/dlgkpinfo.cpp \
-    ../forms/bminfoframe.cpp
+    ../forms/bminfoframe.cpp \
+    ../common/servertcp.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -92,7 +93,8 @@ HEADERS  += mainwindow.h \
     threadpolling.h \
     ../spr/raspacker.h \
     ../forms/dlgkpinfo.h \
-    ../forms/bminfoframe.h
+    ../forms/bminfoframe.h \
+    ../common/servertcp.h
 
 
 FORMS    += mainwindow.ui \

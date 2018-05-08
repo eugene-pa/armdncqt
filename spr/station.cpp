@@ -1098,12 +1098,15 @@ void Station::ParseTuEclusion()
 */
 
 
+
 // устарели ли ТС
+// для АРМ ШН, табло используем флаг из потока
+// для Управления, станции связи - время опроса должно отставать от текущего не более чем на 30 сек
 bool Station::IsTsExpire()
 {
-    // TODO: реализовать функцию
-    return false;
-    return stsFrmMntrTsExpired;
+    if (IsArmTools())
+        return stsFrmMntrTsExpired;
+    return GetLastTime().secsTo(QDateTime().currentDateTime()) > 30;
 }
 
 // обработка данных

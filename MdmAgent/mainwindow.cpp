@@ -24,7 +24,6 @@ QString configMain,                                         // строка ко
 int     baud        = 57600;                                // скорость обмена с модемами
 int     delay       = 10;                                   // минимальная задержка между опросами, мс
 int     breakdelay  = 50;                                   // максимально допустимый интервал между байтами в пакете, мс
-int     port        = 1002;                                 // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
 
 QString path;
 
@@ -79,7 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     int ras = 1;
     rdr.GetInt("KRUG"    , ras   );                             // номер станции связи
-    rdr.GetInt("TCPPORT" , port  );                             // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
+    portTcp = 1002;                                             // по умолчанию порт 1002
+    rdr.GetInt("TCPPORT" , portTcp);                            // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
     rdr.GetText("MAIN"   , mainCom);                            // порт прямого   канала
     rdr.GetText("RESERVE", rsrvCom);                            // порт обратного канала
     rdr.GetInt("DAUD"    , baud  );                             // скорость обмена с модемами
@@ -140,6 +140,28 @@ MainWindow::MainWindow(QWidget *parent) :
         SelectStation(Station::StationsOrg[0]);
 
     dlgKp = nullptr;
+
+    // индикатор квитанций
+    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
+
+    QTableWidget * t = ui->tableWidget;
+    t->setColumnCount(2);
+    //t->setRowCount((int)Pereezd::Pereezds.size());
+    //t->verticalHeader()->setDefaultSectionSize(20);
+    t->setHorizontalHeaderLabels(QStringList() << "Клиент" << "Порт");
+    t->resizeColumnsToContents();
+
+    // автоматически растягтваем 1-й столбец
+    t->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+
+    // создание сервера TCP-подключений и привязка сигналов к слотам
+    server = new ServerTcp(portTcp, QHostAddress("192.168.0.105"), &logger);
+    QObject::connect(server, SIGNAL(acceptError  (ClientTcp*  )), this, SLOT(slotAcceptError      (ClientTcp*)));
+    QObject::connect(server, SIGNAL(newConnection(ClientTcp*  )), this, SLOT(slotSvrNewConnection (ClientTcp*)));
+    QObject::connect(server, SIGNAL(dataready    (ClientTcp*  )), this, SLOT(slotSvrDataready     (ClientTcp*)));
+    QObject::connect(server, SIGNAL(disconnected (ClientTcp*  )), this, SLOT(slotSvrDisconnected  (ClientTcp*)));
+    server->start();
+
 }
 
 MainWindow::~MainWindow()
@@ -415,4 +437,33 @@ void MainWindow::loadResources()
     g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
 
     //tooltip = true;
+}
+
+
+// уведомления сервера
+// ошибка на сокете
+void MainWindow::slotAcceptError(ClientTcp * conn)
+{
+    Q_UNUSED(conn);
+}
+
+// подключен новый клиент
+void MainWindow::slotSvrNewConnection (ClientTcp *conn)
+{
+    QString s("Подключен клиент " + conn->name());
+    //msg->setText(s);
+}
+
+void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
+{
+    QString s("Отключен клиент " + conn->name());
+    //msg->setText(s);
+}
+
+// получены данные
+void MainWindow::slotSvrDataready     (ClientTcp * conn)
+{
+    QString name(conn->name());
+    QString s("Приняты данные от клиента " + conn->name());
+    //msg->setText(s);
 }

@@ -90,6 +90,7 @@ public:
     bool KpPa          () { return Kp2007() || Kp2000() || Kp2000Lomikont() || Kp2000Tums(); }
     int  Version    () { return version;    }
     bool Enable     () { return enable;     }
+    void SetEnable  (bool s) { enable = s;  }
     bool Actual     () { return stsActual;  }               // станция выбрана ДНЦ для работы
     bool ByByLogic  () { return bybylogic;  }               // логика удалений (У1,У2)
 
@@ -126,6 +127,7 @@ public:
     bool IsDebugOtuMode(bool rsrv);                         // проверка включения режима отладки ОТУ
     bool IsArmDspModeOn(bool rsrv);                         // проверка режима АРМ ДСП
     QDateTime GetLastTime (bool rsrv);                      // получить время последнего опроса нужного блока
+    QDateTime GetLastTime () {return GetLastTime(IsRsrv());}// получить время последнего опроса активного блока
 
     bool IsActualErrorLockMsgPresent() { return errorLockLogicCount; }  // число актуальных ошибок логического контроля
     bool IsNewErrorLockMsgPresent   ();                                 // есть ли неквитированные сообщения подсистемы логич.контроля

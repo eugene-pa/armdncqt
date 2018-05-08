@@ -1,0 +1,55 @@
+Добавление поддержки сервера TCP-подключений в проект
+
+1.  добавить в проект существующие файлы 
+    - common/clienttcp.*
+    - common/servertcp.*
+    - common/tcpheader.*
+
+2. определить в главном окне (h-файле) слоты для обработки событий сервера
+private slots:
+    // уведомления сервера
+    void slotAcceptError(QAbstractSocket::SocketError socketError);
+    void slotSvrNewConnection (ClientTcp *);
+    void slotSvrDataready     (ClientTcp *);
+    void slotSvrDisconnected  (ClientTcp *);
+
+3. определить в главном окне (h-файле)указатель на кдасс сервера 
+    ServerTcp * server;
+
+4. привязать слоты к сигналам
+    server = new ServerTcp(portBridge, QHostAddress::Any, &logger);
+    QObject::connect(server, SIGNAL(acceptError(ClientTcp*)), this, SLOT(slotAcceptError(ClientTcp*)));
+    QObject::connect(server, SIGNAL(newConnection(ClientTcp*)), this, SLOT(slotSvrNewConnection(ClientTcp*)));
+    QObject::connect(server, SIGNAL(dataready(ClientTcp*)), this, SLOT(slotSvrDataready(ClientTcp*)));
+    QObject::connect(server, SIGNAL(disconnected(ClientTcp*)), this, SLOT(slotSvrDisconnected(ClientTcp*)));
+    server->start();
+
+5. реализовать функции-слоты
+// уведомления сервера
+// ошибка на сокете
+void MainWindow::slotAcceptError(QAbstractSocket::SocketError socketError)
+{
+    Q_UNUSED(socketError);
+}
+
+// подключен новый клиент
+void MainWindow::slotSvrNewConnection (ClientTcp *conn)
+{
+    QString s("Подключен клиент " + conn->name());
+    msg->setText(s);
+}
+
+void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
+{
+    QString s("Отключен клиент " + conn->name());
+    msg->setText(s);
+}
+
+// получены данные
+void MainWindow::slotSvrDataready     (ClientTcp * conn)
+{
+    QString name(conn->name());
+    QString s("Приняты данные от клиента " + conn->name());
+    msg->setText(s);
+}
+
