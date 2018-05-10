@@ -3,18 +3,17 @@
 
 Logger logger("Log/bridgetcp.log", true, true);             // лог
 
+QString iniFile = "bridgetcp.ini";                          // настройки
+
 #ifdef Q_OS_WIN
-QString iniFile = "c:/armdncqt/bridgetcp/bridgetcp.ini";    // настройки
 QString images(":/status/images/");                         // путь к образам
 QString editor = "notepad.exe";                             // блокнот
 #endif
 #ifdef Q_OS_MAC
-QString iniFile = "/Users/evgenyshmelev/armdncqt/bridgetcp/bridgetcp.ini";  // настройки
 QString images("/Users/evgenyshmelev/armdncqt/images/");    // путь к образам
 QString editor = "TextEdit";                                // блокнот
 #endif
 #ifdef Q_OS_LINUX
-QString iniFile = "/home/eugene/QTProjects//bridgetcp/bridgetcp.ini";       // настройки
 QString images("../images/");
 QString editor = "gedit";                                   // блокнот
 #endif

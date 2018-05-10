@@ -144,14 +144,15 @@ MainWindow::MainWindow(QWidget *parent) :
     // индикатор квитанций
     ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
 
+    ui->label_port->setText(QString("Порт: %1").arg(portTcp));
+
     QTableWidget * t = ui->tableWidget;
-    t->setColumnCount(2);
-    //t->setRowCount((int)Pereezd::Pereezds.size());
-    //t->verticalHeader()->setDefaultSectionSize(20);
-    t->setHorizontalHeaderLabels(QStringList() << "Клиент" << "Порт");
+    t->setColumnCount(1);
+    t->verticalHeader()->setDefaultSectionSize(20);
+    t->setHorizontalHeaderLabels(QStringList() << "Клиент" /*<< "Порт"*/);
     t->resizeColumnsToContents();
 
-    // автоматически растягтваем 1-й столбец
+        // автоматически растягтваем 1-й столбец
     t->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
 
     // создание сервера TCP-подключений и привязка сигналов к слотам
@@ -447,17 +448,32 @@ void MainWindow::slotAcceptError(ClientTcp * conn)
     Q_UNUSED(conn);
 }
 
-// подключен новый клиент
+// подключен новый клиент: добавляем строку в таблицу клиентов
 void MainWindow::slotSvrNewConnection (ClientTcp *conn)
 {
-    QString s("Подключен клиент " + conn->name());
-    //msg->setText(s);
+    QTableWidget * t = ui->tableWidget;
+    int row = t->rowCount();
+    t->setRowCount( row + 1);
+    t->setItem(row,0, new QTableWidgetItem (conn->name()));
+    t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));     // запомним переезд
 }
 
+// отключен подключенный ранее клиент: ищем в таблице клиентов строку по conn и удаляем
 void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
 {
-    QString s("Отключен клиент " + conn->name());
-    //msg->setText(s);
+    QTableWidget * t = ui->tableWidget;
+    int row = -1;
+    for (int i=0; i<t->rowCount(); i++)
+    {
+        QTableWidgetItem * item = t->item(i,0);
+        ClientTcp * p = (ClientTcp *) item->data(Qt::UserRole).value<void*>();
+        if (conn==p)
+        {
+            row = i;
+            break;
+        }
+    }
+    t->removeRow(row);
 }
 
 // получены данные
@@ -465,5 +481,5 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
 {
     QString name(conn->name());
     QString s("Приняты данные от клиента " + conn->name());
-    //msg->setText(s);
+    Logger::LogStr (s);
 }
