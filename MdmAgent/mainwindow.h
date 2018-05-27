@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <sstream>
+#include <thread>
 #include <../common/defines.h>
 #include <../common/logger.h>
 #include <../common/blockingrs.h>

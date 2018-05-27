@@ -1,5 +1,7 @@
 ﻿#include <mutex>                                            // std::mutex
+#include <QStringList>
 #include "blockingrs.h"
+
 
 // Блокирующий класс работы с COM-портом на основе QSerialPort
 // Причины создания класса с такой архитектурой:
@@ -45,7 +47,7 @@ BlockingRS:: ~BlockingRS()
 // - отправляем все, что есть в исходящем буфере bufOut
 void BlockingRS::run()
 {
-    Log(L"Старт потока BlockingRS. Thread #" + (QString::number((int)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
+    Log(L"Старт потока BlockingRS. Thread #" + (QString::number((long)currentThreadId())).toStdWString() + L". " + settings.toStdWString());
     parse(settings);
 
     while (serial->isOpen() && !rqExit)
@@ -78,7 +80,7 @@ void BlockingRS::run()
         {
             // нужно генерить сигнал ТАЙМАУТ ПРИ ВЫВОДЕ
             errorSend = serial->write (toSend) > 0;
-            serial->waitForBytesWritten();                    // только для консольных приложений!
+            //serial->waitForBytesWritten();                    // только для консольных приложений!
         }
     }
     Log(L"Закрываем порт  " + name.toStdWString());

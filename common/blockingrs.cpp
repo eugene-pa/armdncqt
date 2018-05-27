@@ -79,7 +79,7 @@ void BlockingRS::run()
         {
             // нужно генерить сигнал ТАЙМАУТ ПРИ ВЫВОДЕ
             errorSend = serial->write (toSend) > 0;
-            serial->waitForBytesWritten();                    // только для консольных приложений!
+            //serial->waitForBytesWritten();                    // только для консольных приложений!
         }
     }
     Logger::LogStr ("Закрываем порт  " + name);
