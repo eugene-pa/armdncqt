@@ -46,6 +46,11 @@
      <height>23</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>9</pointsize>
+    </font>
+   </property>
    <property name="text">
     <string>Станция</string>
    </property>
@@ -57,7 +62,7 @@
    <property name="geometry">
     <rect>
      <x>8</x>
-     <y>85</y>
+     <y>86</y>
      <width>22</width>
      <height>17</height>
     </rect>
@@ -106,15 +111,15 @@
    <widget class="QLabel" name="label_Rsrv">
     <property name="geometry">
      <rect>
-      <x>24</x>
-      <y>7</y>
+      <x>23</x>
+      <y>8</y>
       <width>31</width>
       <height>16</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>8</pointsize>
+      <pointsize>7</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -171,15 +176,15 @@
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>85</y>
+     <x>35</x>
+     <y>86</y>
      <width>28</width>
      <height>16</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>8</pointsize>
+     <pointsize>7</pointsize>
     </font>
    </property>
    <property name="text">
@@ -213,15 +218,15 @@
    <widget class="QLabel" name="label_Main">
     <property name="geometry">
      <rect>
-      <x>22</x>
-      <y>6</y>
+      <x>23</x>
+      <y>7</y>
       <width>31</width>
       <height>16</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>8</pointsize>
+      <pointsize>7</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>

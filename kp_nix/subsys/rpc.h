@@ -2,7 +2,7 @@
 #define RPCBM_H
 
 #include <vector>
-#include <../common/common.h>
+#include <common/common.h>
 #include "common/blockingrs.h"
 
 // класс-оболочка одной БМ РПЦ

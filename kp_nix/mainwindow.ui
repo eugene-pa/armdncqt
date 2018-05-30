@@ -50,6 +50,11 @@
           <height>90</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="title">
          <string>Состояние модулей ТУ/ТС</string>
         </property>
@@ -95,6 +100,11 @@
       </item>
       <item>
        <widget class="FrameMvvStatus" name="groupBox_MVV">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="title">
          <string>Состояние МВВ</string>
         </property>
@@ -105,6 +115,11 @@
       </item>
       <item>
        <widget class="QGroupBox" name="groupBox_DBG">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="title">
          <string>Отладка</string>
         </property>
@@ -122,6 +137,11 @@
           <height>94</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="title">
          <string>Модем COM3 (пас)</string>
         </property>
@@ -134,6 +154,11 @@
           <width>0</width>
           <height>94</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
         </property>
         <property name="title">
          <string>Модем COM4 (акт)</string>
@@ -159,6 +184,11 @@
       </item>
       <item>
        <widget class="FramePlugin" name="groupBox">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="title">
          <string>Сопряжение с системами ЖАТ</string>
         </property>
@@ -174,7 +204,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -226,7 +256,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/3.ico</normaloff>:/images/images/3.ico</iconset>
    </property>
    <property name="text">
@@ -241,7 +271,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/6.ico</normaloff>:/images/images/6.ico</iconset>
    </property>
    <property name="text">
@@ -256,7 +286,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/5.ico</normaloff>:/images/images/5.ico</iconset>
    </property>
    <property name="text">
@@ -271,7 +301,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/1.ico</normaloff>:/images/images/1.ico</iconset>
    </property>
    <property name="text">
@@ -283,7 +313,7 @@
   </action>
   <action name="action_Refresh">
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/2.ico</normaloff>:/images/images/2.ico</iconset>
    </property>
    <property name="text">
@@ -295,7 +325,7 @@
   </action>
   <action name="action_Clear">
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/4.ico</normaloff>:/images/images/4.ico</iconset>
    </property>
    <property name="text">
@@ -310,7 +340,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="images.qrc">
      <normaloff>:/images/images/7.ico</normaloff>:/images/images/7.ico</iconset>
    </property>
    <property name="text">
@@ -371,6 +401,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -10,7 +10,7 @@ extern std::timed_mutex exit_lock;							// мьютекс, разрешающи
 
 typedef unsigned char  BYTE;
 typedef unsigned short WORD;
-typedef unsigned long  DWORD;
+typedef unsigned int   DWORD;
 
 extern WORD GetCRC (BYTE *buf,WORD Len);                    // побайтовый алгоритм вычисления CRC
 extern std::wstring GetHexW (void *data, int length);       // получить HEX-представление массива байт

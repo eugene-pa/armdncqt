@@ -7,6 +7,7 @@
 #include "../spr/station.h"
 #include "../spr/raspacker.h"
 #include "../forms/dlgkpinfo.h"
+#include "../spr/stationnetts.h"
 
 // Прототипы функций рабочих потоков ПО КП
 void   ThreadPolling		(long);							// функция потока опроса динии связи
@@ -55,6 +56,21 @@ MainWindow::MainWindow(QWidget *parent) :
     mainWnd = this;
     modulType=APP_MDMAGENT;                                 // тип приложения
     QString tmp;
+
+
+StationNetTS ts;
+ts.seans = 0x55;
+ts.inputData[0]=0xff;
+ts.lastTime[0] = 0x11111111;
+ts.lastTime[1] = 0x0f0f0f0f;
+ts.linkError[0] = 0x33;
+ts.linkError[1] = 0x77;
+
+
+int l = sizeof (StationNetTS);
+int l2 = (BYTE *)&ts.inputData - (BYTE *)&ts;
+int ll = sizeof (long);
+ll = sizeof (int);
 
     // --------------------------------------------------------------------------------------------------------------------------
     path = QDir::currentPath();
@@ -298,7 +314,9 @@ void MainWindow::GetMsg (int np, void * param)
         case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
             {
             QString name = ((RasPacker*)param)->st == nullptr ? "?" : ((RasPacker*)param)->st->Name();
-            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, ((RasPacker*)param)->Length())).arg(name));
+            int length = ((RasPacker*)param)->Length();
+            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, length)).arg(name));
+            ui->label_cntsnd->setText(QString::number(length));
             }
             break;
 
@@ -312,7 +330,7 @@ void MainWindow::GetMsg (int np, void * param)
                 st->GetRasData()->Copy(data);
                 ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
                 ui->statusBar->showMessage("Прием данных по ст. " + name);
-
+                ui->label_cntrcv->setText(QString::number(pack->Length()));
                 // обрабатываем системную информацию
                 if (pack->Length() > 3 && data->LengthSys())
                 {

@@ -10,9 +10,9 @@
 #include <memory>
 #include "common.h"
 
-typedef unsigned char  BYTE;
-typedef unsigned short WORD;
-typedef unsigned long  DWORD;
+//typedef unsigned char  BYTE;
+//typedef unsigned short WORD;
+//typedef unsigned int   DWORD;
 
 
 // ВЫНЕСТИ В ОБЩИЙ ФАЙЛ

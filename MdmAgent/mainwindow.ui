@@ -247,6 +247,11 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Циклов:</string>
         </property>
@@ -254,6 +259,11 @@
       </item>
       <item row="0" column="1">
        <widget class="QLabel" name="label_cycles">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -261,6 +271,11 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Повторы</string>
         </property>
@@ -268,6 +283,11 @@
       </item>
       <item row="1" column="1">
        <widget class="QLabel" name="label_6">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -275,6 +295,11 @@
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_7">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Цикл, мс</string>
         </property>
@@ -282,6 +307,11 @@
       </item>
       <item row="2" column="1">
        <widget class="QLabel" name="label_time">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -289,6 +319,11 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_9">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Задержка,мс</string>
         </property>
@@ -296,6 +331,11 @@
       </item>
       <item row="3" column="1">
        <widget class="QLabel" name="label_10">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -303,8 +343,13 @@
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_11">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
-         <string>Показать опрос</string>
+         <string>Показ. опрос</string>
         </property>
        </widget>
       </item>
@@ -332,6 +377,11 @@
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="label_13">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Полный опрос</string>
         </property>
@@ -362,11 +412,16 @@
    <widget class="QLabel" name="label_Snd">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>70</x>
       <y>248</y>
-      <width>971</width>
+      <width>961</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="frameShape">
      <enum>QFrame::Panel</enum>
@@ -384,11 +439,16 @@
    <widget class="QLabel" name="label_RCV">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>70</x>
       <y>268</y>
-      <width>971</width>
+      <width>961</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="frameShape">
      <enum>QFrame::Panel</enum>
@@ -408,9 +468,14 @@
      <rect>
       <x>10</x>
       <y>250</y>
-      <width>24</width>
+      <width>26</width>
       <height>13</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Прд</string>
@@ -421,22 +486,32 @@
      <rect>
       <x>10</x>
       <y>270</y>
-      <width>24</width>
+      <width>26</width>
       <height>13</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Прм</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_50">
+   <widget class="QLabel" name="label_cntsnd">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>250</y>
+      <x>44</x>
+      <y>251</y>
       <width>24</width>
       <height>13</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>0</string>
@@ -445,14 +520,19 @@
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="label_51">
+   <widget class="QLabel" name="label_cntrcv">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>270</y>
+      <x>44</x>
+      <y>271</y>
       <width>24</width>
       <height>13</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>0</string>
@@ -743,7 +823,7 @@
     <property name="title">
      <string>Сервер связи</string>
     </property>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QWidget" name="layoutWidget_2">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -816,7 +896,13 @@
        </widget>
       </item>
       <item>
-       <widget class="QTableWidget" name="tableWidget"/>
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="font">
+         <font>
+          <pointsize>8</pointsize>
+         </font>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -828,7 +914,7 @@
      <x>0</x>
      <y>0</y>
      <width>1037</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

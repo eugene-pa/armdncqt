@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <QtGlobal>
 #include <stdio.h>
 #include <string>
 #include <sstream>
@@ -41,8 +42,8 @@ enum CANAL_TYPE
 extern std::timed_mutex exit_lock;							// мьютекс, разрешающий завершение приложения
 
 typedef unsigned char  BYTE;
-typedef unsigned short WORD;
-typedef unsigned long  DWORD;
+typedef quint16        WORD;
+typedef quint32        DWORD;
 
 #define LOBYTE(w)     ((BYTE)(((DWORD)(w)) & 0xff))
 #define HIBYTE(w)     ((BYTE)((((DWORD)(w)) & 0xff) >> 8))

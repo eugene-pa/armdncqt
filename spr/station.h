@@ -24,6 +24,7 @@
 #include "datafrommonitor.h"
 #include "dstdatafromfonitor.h"
 #include "sysinfo.h"
+#include "stationnetts.h"
 
 
 class Station : public QObject
@@ -31,6 +32,7 @@ class Station : public QObject
     friend class DStDataFromMonitor;
     friend class Route;
     friend class RasPacker;
+    friend class StationNetTS;
 
     Q_OBJECT
 
@@ -301,8 +303,8 @@ private:
 
     QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
 
-    //WORD	RealInputDataLen;                               // длина блока данных из линии
-    //BYTE	InputData [MAX_LINE_DATA_LEN];                  // данные из линии
+    WORD	realLinetDataLength;                               // длина блока данных из линии
+    BYTE	lineData [MAX_LINE_DATA_LEN];                   // данные из линии
 
     bool    kpResponce;                                     // отклик КП
     std::mutex  DataToKpLock;                               // мьютекс, блокирующий доступ к блоку данных в КП

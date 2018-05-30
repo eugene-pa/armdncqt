@@ -22,6 +22,11 @@
     <height>120</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>9</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>GroupBox</string>
   </property>
@@ -34,7 +39,7 @@
      <x>0</x>
      <y>10</y>
      <width>381</width>
-     <height>81</height>
+     <height>90</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">

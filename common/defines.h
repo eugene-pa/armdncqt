@@ -41,10 +41,10 @@
 //#define nullptr 0
 
 // определения, облегчающие перенос кода с MSVC&MFC в QT
-typedef unsigned char   BYTE;
-typedef unsigned short  WORD;
-//typedef unsigned int    DWORD;
-typedef unsigned int    UINT;
+typedef unsigned char  BYTE;
+typedef quint16        WORD;
+typedef quint32        DWORD;
+typedef quint32        UINT;
 #ifndef Q_OS_WIN
 typedef const char *    LPCTSTR;
 #endif

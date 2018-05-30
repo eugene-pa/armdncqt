@@ -53,7 +53,8 @@ SOURCES += main.cpp\
     ../spr/raspacker.cpp \
     ../forms/dlgkpinfo.cpp \
     ../forms/bminfoframe.cpp \
-    ../common/servertcp.cpp
+    ../common/servertcp.cpp \
+    ../spr/stationnetts.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -94,7 +95,8 @@ HEADERS  += mainwindow.h \
     ../spr/raspacker.h \
     ../forms/dlgkpinfo.h \
     ../forms/bminfoframe.h \
-    ../common/servertcp.h
+    ../common/servertcp.h \
+    ../spr/stationnetts.h
 
 
 FORMS    += mainwindow.ui \
