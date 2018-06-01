@@ -53,19 +53,21 @@ static int   indxSt;                                            // индекс 
     BYTE    src;                                                // адрес источника
     BYTE    seans;                                              // сеанс
 
-    // ВАЖНО: структра пакета в части длин блоков, байта расширения, резервного байта
+    // далее идут длины блоков, блоки (ласс RasData), CRC и EOT
     BYTE    data[MAX_LINE_DATA_LEN + 2 + 1];                    // блоки данных, CRC + EOT
     class Station * st;
 };
 
 // класс-обертка данных станции связи
+// именно эти данные передаются в модуль управление
 class RasData
 {
 public:
-    int LengthSys () { return sysLength  + 256 * ( extLength       & 0x03); }
-    int LengthTuts() { return tutsLength + 256 * ((extLength >> 2) & 0x03); }
-    int LengthOtu () { return otuLength  + 256 * ((extLength >> 4) & 0x03); }
-    int LengthDiag() { return diagLength + 256 * ((extLength >> 6) & 0x03); }
+    int Length     () { return LengthSys () + LengthTuts() + LengthOtu () + LengthDiag() + 6; } // бщая длина данных
+    int LengthSys () { return sysLength  + 256 * ( extLength       & 0x03); }                   // длина блока системной информации
+    int LengthTuts() { return tutsLength + 256 * ((extLength >> 2) & 0x03); }                   // длина блока ТС/ТУ
+    int LengthOtu () { return otuLength  + 256 * ((extLength >> 4) & 0x03); }                   // длина блока ОТУ
+    int LengthDiag() { return diagLength + 256 * ((extLength >> 6) & 0x03); }                   // длина блока квитанций и диагностики
 
     QString About() { return QString("[%1.%2.%3.%4]").arg(LengthSys()).arg(LengthTuts()).arg(LengthOtu()).arg(LengthDiag()); ; }
 
@@ -75,7 +77,6 @@ public:
     BYTE * PtrDiag () { return &data[LengthSys () + LengthTuts() + LengthOtu () ]; }
 
     void Copy(RasData*);
-
 
     BYTE extLength;                                             // расширение длин
     BYTE sysLength;                                             // длина блока систе.информации

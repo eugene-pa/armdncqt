@@ -36,6 +36,7 @@ RasPacker::RasPacker(class Station * st)
 
 }
 
+// побайтное копирование класса
 void RasData::Copy(RasData* p)
 {
     memmove(this, p, sizeof(RasData));

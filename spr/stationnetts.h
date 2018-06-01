@@ -45,7 +45,8 @@ public:
     BYTE	inputData[MAX_LINE_DATA_LEN];		// собственно данные из линии в оригинальном виде	3e
 
     StationNetTS();                             // Конструктор
-    int  PutTsToBuffer(class Station * st);     // ормирование буфера
+    StationNetTS(class Station * st ,class RasPacker* pack); // Конструктор
+    int  Pack (class Station   * st, class RasPacker* pack); // ормирование данных
 
 inline void SetLenByDataLen(WORD datalength)
     { length = sizeof (StationNetTS) - sizeof(inputData) + datalength; }

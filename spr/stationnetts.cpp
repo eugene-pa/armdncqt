@@ -1,5 +1,6 @@
 #include "stationnetts.h"
 #include "station.h"
+#include "raspacker.h"
 
 
 StationNetTS::StationNetTS()
@@ -10,19 +11,23 @@ StationNetTS::StationNetTS()
     realDataLen = 0;
 }
 
-int StationNetTS::PutTsToBuffer(Station * st)
+StationNetTS::StationNetTS(Station * st, RasPacker* pack)        // Конструктор
+{
+    Pack(st, pack);
+}
+
+int StationNetTS::Pack (Station * st, RasPacker* pack)
 {
     nost	= st->No();							// номер станции
-    // опирование ТС
-    memcpy (inputData, st->lineData, std::min(st->realLinetDataLength, (WORD)sizeof(inputData)));
+    // копирование длин и блоков C,Т,О,Д
+    memcpy (inputData, st->rasData, realDataLen = std::min(st->rasData->Length(), (int)sizeof(inputData)));
 
-    //realDataLen = RealInputDataLen;		// длина блока данных из линии
-
-    //mainLineCPU = st->;			// -1/0/1/2 (отказ/откл/WAITING/OK)
-    //ssrvLineCPU = dt->;			// -1/0/1/2 (отказ/откл/WAITING/OK)
+    // упаковка состояния прямого и обводного каналов
+    //mainLineCPU = st->;                       // -1/0/1/2 (отказ/откл/WAITING/OK)
+    //ssrvLineCPU = dt->;                       // -1/0/1/2 (отказ/откл/WAITING/OK)
 
     rsrv	= st->IsRsrv() ? 1 : 0;
-    // seans	= (BYTE)Seans;					// номер сеанса связи
+    seans	= 0;                                // номер сеанса связи - не задействован
     backChannel = st->IsBackChannel() ? 1 : 0;	//
 
     for (int i=0; i<DUBL; i++)

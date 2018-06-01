@@ -326,8 +326,9 @@ void MainWindow::GetMsg (int np, void * param)
                 RasPacker* pack = (RasPacker* )param;           // pack - весь пакет
                 Station * st = pack->st;                        //
                 QString name = st == nullptr ? "?" : st->Name();//
-                RasData * data = (RasData *)pack->data;         // data - блок данных
-                st->GetRasData()->Copy(data);
+                RasData * data = (RasData *)pack->data;         // data - блок данных, инкапсулируемый классом RasData
+                st->GetRasData()->Copy(data);                   // копируем данные во внутреннем классе RasData
+
                 ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
                 ui->statusBar->showMessage("Прием данных по ст. " + name);
                 ui->label_cntrcv->setText(QString::number(pack->Length()));
@@ -348,6 +349,9 @@ void MainWindow::GetMsg (int np, void * param)
                     // отрисовка актуального КП
                     ((kpframe *)st->userData)->Show();
                 }
+
+                // отовим данные для отправки модулю Управление
+                StationNetTS info(st, pack);
 
                 // отобразить состояние актуальной станции
                 if (st == actualSt)
