@@ -18,7 +18,7 @@ public:
     WORD	signature;							// сигнатура (55aa)									00
     WORD	length;								// полная длина сетевого блока включая сигнатуру	02
     short	mainLineCPU;						// -1/0/1/2 (отказ/откл/WAITING/OK)					04
-    short	ssrvLineCPU;						// -1/0/1/2 (отказ/откл/WAITING/OK)					06
+    short	rsrvLineCPU;						// -1/0/1/2 (отказ/откл/WAITING/OK)					06
     BYTE	nost;								// номер станции									08
     BYTE    reserv1;							// зарезервировано 24 бита
     BYTE    reserv2;							// МОЖНО И НУЖНО ПЕРЕДАТЬ НОМЕР ВЕРСИИ СТАНЦИИ СВЯЗИ, МОЖНО И НУЖНО ПЕРЕДАТЬ IP-АДРЕС СТАНЦИИ СВЯЗИ

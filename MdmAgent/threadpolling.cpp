@@ -35,9 +35,9 @@ static QTime       start;                                   // засечка н
 //              как локальный параметр на стеке, так как она будет использоваться здесь в рабочем потоке позже
 void ThreadPolling(long param)
 {
-    parent = (MainWindow*) param;
-    Q_UNUSED(param)
     Logger::LogStr ("Поток опроса каналов связи запущен");
+
+    parent = (MainWindow*) param;
 
     BlockingRS * rs1 = nullptr;
     BlockingRS * rs2 = nullptr;
@@ -60,7 +60,6 @@ void ThreadPolling(long param)
         rs2->start();
     }
 
-    //int   indxSt = -1;                                                   // индекс актуальной станции опроса
     start = QTime::currentTime();
 
     // ------------------------------------------------------------------------------------------------------------------
@@ -70,6 +69,11 @@ void ThreadPolling(long param)
         // если нет коннекта ни в основном, ни в резервном - ждем!
         bool readyMain = rs1 && (rs1->CourierDetect() || true),         // вместо true признак простого порта без несущей
              readyRsrv = rs2 && (rs2->CourierDetect() || true);         // вместо true признак простого порта без несущей
+
+        // поддерживаем актуальное состояние каналов
+        Station::MainLineCPU = rs1==nullptr ? 0 : !rs1->IsOpen() ? -1 : rs1->CourierDetect() ? 2 : 1;    // -1(3)/0/1/2 (отказ/откл/WAITING/OK)
+        Station::RsrvLineCPU = rs2==nullptr ? 0 : !rs2->IsOpen() ? -1 : rs2->CourierDetect() ? 2 : 1;
+
         if (!(readyMain || readyRsrv))
             continue;
 

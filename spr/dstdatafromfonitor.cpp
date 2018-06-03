@@ -29,7 +29,7 @@ int DStDataFromMonitor::Prepare(Station * pSt)
     memmove (TS		,pSt->tsSts     .data_ptr()->data()+1, qMin((int)sizeof(TS     ),pSt->tsSts     .size()/8+1 ));	// 0/1
     memmove (PulseTS,pSt->tsStsPulse.data_ptr()->data()+1, qMin((int)sizeof(PulseTS),pSt->tsStsPulse.size()/8+1 ));	// мигание
 
-    reserv2_1	= pSt->addr;                                // алрес ЛПУ на линии		вер.2.0.0.186 (пока при приеме не используется)
+    reserv2_1	= pSt->addr;                                // адрес ЛПУ на линии		вер.2.0.0.186 (пока при приеме не используется)
     reserv2_2	= pSt->ras;                                 // номер станции связи		вер.2.0.0.186 (пока при приеме не используется)
     IgnoreError	= 1;                                        // игнорировать некооректные ТС. УСТАРЕЛО, всегда игнор! pSt->IgnoreError ? 1 : 0;
     IgnoreError |= pSt->gidUralId << 1;                     // объединяем с кодом КП станции
