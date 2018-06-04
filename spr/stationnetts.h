@@ -10,8 +10,11 @@
 // 2012.10.26. Мы имеем достаточно много свободного места в этом пакете, в принципе, можно было бы передавать доп.диагностическую информацию
 // например: реальная частота опроса станции
 //           последние значения длин инфо-блоков
-// 2018.05.28. Типы данных изменены для совместимости C-QT по размерам
-
+//
+// ВАЖНО:
+// 2018.05.28. Введена pragma(1) и типы данных изменены для совместимости MSVC - QT по размерам
+//
+#pragma pack(1)
 class StationNetTS
 {
 public:
@@ -35,23 +38,22 @@ public:
     BYTE    reserv7;
 
 // далее переменные представлены для основного[0] и резервного[1] каркасов
-    BOOL	bypassSts	[DUBL];					// состояние байпаса:								14	- НЕ ИСПОЛЬЗУЕТСЯ !!!
+    DWORD	bypassSts	[DUBL];					// состояние байпаса:								14	- НЕ ИСПОЛЬЗУЕТСЯ !!!
     int     lastTime	[DUBL];					// Астр.время окончания последнего цикла ТС			1с      time_t
     int     oldTime		[DUBL];					// Астр.время окончания i-1 цикла ТС				24      time_t
-    DWORD	linkError	[DUBL];					// Тип ошибки: 0-OK,1-молчит,2-CRC					2с
+    WORD	linkError	[DUBL];					// Тип ошибки: 0-OK,1-молчит,2-CRC					2с
     int     cntLinkEr	[DUBL];					// Общий счетчик ошибок связи						30
     WORD	linkTime	[DUBL];					// длительность сеанса								38
     WORD	realDataLen;						// длина блока данных из линии						3c
     BYTE	inputData[MAX_LINE_DATA_LEN];		// собственно данные из линии в оригинальном виде	3e
 
     StationNetTS();                             // Конструктор
-    StationNetTS(class Station * st ,class RasPacker* pack); // Конструктор
-    int  Pack (class Station   * st, class RasPacker* pack); // ормирование данных
+    StationNetTS(class Station * st);           // Конструктор
+    int  Pack (class Station   * st);           // ормирование данных
 
-inline void SetLenByDataLen(WORD datalength)
-    { length = sizeof (StationNetTS) - sizeof(inputData) + datalength; }
+    void SetLenByDataLen(WORD datalength);
 inline static int MinSizeof()					// 2014.03.20.вер.2.0.0.277. Минимально допустимый размер пакета
     { return sizeof (StationNetTS) - MAX_LINE_DATA_LEN; }
 };
-
+#pragma pack()
 #endif // #ifndef STATIONNETTS_H

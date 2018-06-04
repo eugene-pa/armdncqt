@@ -57,8 +57,15 @@ MainWindow::MainWindow(QWidget *parent) :
     modulType=APP_MDMAGENT;                                 // тип приложения
     QString tmp;
 
-
+/*
 StationNetTS ts;
+ts.length = 0;
+ts.nost = 7;
+
+ts.rsrv = 1;
+ts.backChannel = 1;
+ts.reserv4 = 0x3fff;
+
 ts.seans = 0x55;
 ts.inputData[0]=0xff;
 ts.lastTime[0] = 0x11111111;
@@ -71,7 +78,7 @@ int l = sizeof (StationNetTS);
 int l2 = (BYTE *)&ts.inputData - (BYTE *)&ts;
 int ll = sizeof (long);
 ll = sizeof (int);
-
+*/
     // --------------------------------------------------------------------------------------------------------------------------
     path = QDir::currentPath();
 
@@ -342,6 +349,7 @@ void MainWindow::GetMsg (int np, void * param)
                     sysinfo->Parse(data->PtrSys(), data->LengthSys());
                     if (data->LengthSys() == 30)
                     {
+                        // нформация по 2-м блокам: основному и резервному
                         sysinfo = st->GetSysInfo(!act);
                         sysinfo->Parse(data->PtrSys()+15, 15);
                     }
@@ -350,8 +358,9 @@ void MainWindow::GetMsg (int np, void * param)
                     ((kpframe *)st->userData)->Show();
                 }
 
-                // отовим данные для отправки модулю Управление
-                StationNetTS info(st, pack);
+                // готовим данные для отправки модулю Управление
+                StationNetTS info(st);
+                sendToAllClients(&info);
 
                 // отобразить состояние актуальной станции
                 if (st == actualSt)
@@ -378,6 +387,12 @@ void MainWindow::GetMsg (int np, void * param)
             break;
     }
     Q_UNUSED(param)
+}
+
+// отправить данные всем подключенным клиентам, от которыъ было подтверждение
+void MainWindow::sendToAllClients(StationNetTS* info)
+{
+    server->sendToAll((char *) info, info->length);
 }
 
 void Log (std::wstring s)

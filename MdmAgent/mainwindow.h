@@ -124,6 +124,8 @@ private:
     int portTcp;                                                // порт подключений модулей Управление
     ServerTcp * server;                                         // сервер подключений модулей Управление
 
+    void sendToAllClients(class StationNetTS*);                 // отправить данные всем подключенным клиентам, от которыъ было подтверждение
+
     //class BlockingRS * rasRs;
 };
 

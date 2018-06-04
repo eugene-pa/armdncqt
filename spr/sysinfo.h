@@ -21,6 +21,8 @@ class SysInfo
     friend class Station;
     friend class DStDataFromMonitor;
     friend class kpframe;
+    friend class StationNetTS;
+
 public:
     SysInfo();
     SysInfo(class Station * pst);
