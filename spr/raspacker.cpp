@@ -42,9 +42,16 @@ void RasData::Copy(RasData* p)
     memmove(this, p, sizeof(RasData));
 }
 
-/*
-int RasPacker::Length()
+void RasData::Clear()                                   // очистка (обнуление) при отсутствии связи
 {
-    return length + LEN_CTRL_INFO;
+    memset (this, 0, sizeof(RasData));
 }
-*/
+
+
+// бщая длина данных
+// если длины всех блоков = 0, то общая длина = 0, иначе, прибавляем 6 байт заголовка
+int RasData::Length ()
+{
+    int lsum = LengthSys () + LengthTuts() + LengthOtu () + LengthDiag();
+    return  lsum ? lsum + 6 : 0;
+}

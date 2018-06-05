@@ -46,6 +46,7 @@ public:
     WORD	linkTime	[DUBL];					// длительность сеанса								38
     WORD	realDataLen;						// длина блока данных из линии						3c
     BYTE	inputData[MAX_LINE_DATA_LEN];		// собственно данные из линии в оригинальном виде	3e
+    WORD    ext;                                // выравнивание для совместимости
 
     StationNetTS();                             // Конструктор
     StationNetTS(class Station * st);           // Конструктор
@@ -53,7 +54,7 @@ public:
 
     void SetLenByDataLen(WORD datalength);
 inline static int MinSizeof()					// 2014.03.20.вер.2.0.0.277. Минимально допустимый размер пакета
-    { return sizeof (StationNetTS) - MAX_LINE_DATA_LEN; }
+    { return sizeof (StationNetTS) - sizeof (inputData); }
 };
 #pragma pack()
 #endif // #ifndef STATIONNETTS_H

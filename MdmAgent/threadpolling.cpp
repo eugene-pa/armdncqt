@@ -80,7 +80,7 @@ void ThreadPolling(long param)
         if (actualSt)
             SendMessage (MainWindow::MSG_SHOW_INFO, actualSt->userData);// отображением станции снимаем пинг
 
-        // выключенные станциине опрашиваем
+        // выключенные станции не опрашиваем
         actualSt = NextSt();                                            // актуальная станция
         if (!actualSt->Enable())                                        // если выключена из опроса - пропускаем
             continue;
@@ -100,6 +100,8 @@ void ThreadPolling(long param)
             SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
             st = TryOneChannel(back ? rs2 : rs1, &pack);
         }
+
+        // все, что могли, опросили, оцениваем результат
         if (st != nullptr)                                              // если был отклик - пометить!
         {
             st->SetKpResponce(true);
@@ -116,15 +118,11 @@ void ThreadPolling(long param)
                 // данные от другой станции
                 // continue;
             }
-
-            // получили данные, передаем в АРМ ДНЦ
-/*
-            RasData * data = (RasData *)pack->data;
-            BYTE * ptr1 = (BYTE *)st->GetSysInfo(false);
-            BYTE * ptr2 = data->PtrSys();
-            memcpy(ptr1, ptr2, 15);
-            //memcpy(st->GetSysInfo(true ), (RasData *)pack->data[15], 15);
-*/
+        }
+        else
+        {
+            // уведомить об ошибке
+            SendMessage (MainWindow::MSG_ERR, actualSt);
         }
     }
     // ------------------------------------------------------------------------------------------------------------------
@@ -151,7 +149,7 @@ Station * TryOneChannel(BlockingRS * rs, RasPacker* data)
     if (rs == nullptr)
         return nullptr;
     rs->Send(data, data->Length());
-    //SleepMS(100);
+    SleepMS(100);
     SendMessage (MainWindow::MSG_SHOW_SND, data);
     return GetData(rs) ? ((RasPacker *)&dataIn)->st : nullptr;
 }

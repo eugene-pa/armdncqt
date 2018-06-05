@@ -97,13 +97,16 @@ public:
     void SetMtuMtsLineStatus(int i, BYTE bte);              // установить статус линейки из 8 модулей БТ индексу 0-5
     bool MtuMtsStatus(int i);                               // проверка состояния модуля МТУ/МТС
 
-    void SetLineStatus(LineStatus s) { linestatus = s; }
+    // зафиксировать состояние связи
+    void SetLineStatus(LineStatus s);
     QDateTime&  LastTime() { return tmdt; }                 // время опроса
     void FixTime();                                         // засечка времени опроса
     int  LinkErrors() { return errors; }                    // общее число ошибок связи с комплектом
 
     QByteArray& Src() { return src; }                       // маасив инфо-блока
     QString ErrorType();                                    // получить текст типа ошибки
+
+    bool IsOnoff() { return onoff; }                        // переход из нормы в отказ
 private:
     class Station * st;
     // 0  байт - состояние КП
@@ -128,6 +131,7 @@ private:
     LineStatus linestatus;                                  // состояние приема из линии 0-OK, 1-таймаут,2-ош.формата
     UINT       errors;                                      // счетчик ошибок связи
     UINT       dt;                                          // продолжительность обмена, мсек
+    bool       onoff;                                       // переход из работоспособного состояния в отказ
 
     #undef get
     #undef set

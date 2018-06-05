@@ -209,6 +209,8 @@ public:
     bool parseNames (QString& srcname, Station*& st, QString& name); // разбор индексированных имен ТУ/ТС
     bool IsKpResponce() { return kpResponce; }              // отклик КП
     void SetKpResponce(bool s) { kpResponce = s; }          // отклик КП
+
+    void FixLinkError();                                    // зафиксировать ошибку связи с КП
     void *  userData;                                       // привязка к объекту пользователя
 
 // вычисление переменной - через обработку сигнала в слоте
@@ -304,7 +306,7 @@ private:
     QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
 
     WORD	realLinetDataLength;                               // длина блока данных из линии
-    BYTE	lineData [MAX_LINE_DATA_LEN];                   // данные из линии
+//    BYTE	lineData [MAX_LINE_DATA_LEN];                   // данные из линии
 
     bool    kpResponce;                                     // отклик КП
     std::mutex  DataToKpLock;                               // мьютекс, блокирующий доступ к блоку данных в КП

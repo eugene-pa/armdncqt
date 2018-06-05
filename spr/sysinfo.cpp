@@ -84,3 +84,19 @@ QString SysInfo::ErrorType()
         default         : return "-";
     }
 }
+
+// прописать состояние связи; если ошибка - инкремент ошибок
+void SysInfo::SetLineStatus(LineStatus s)
+{
+    if (s!=LineOK)
+    {
+        errors++;
+        onoff = linestatus == LineOK;                       // если первый отказ, установим флаг
+    }
+    else
+    {
+        onoff = false;                                      // сброс флага
+    }
+    linestatus = s;
+
+}

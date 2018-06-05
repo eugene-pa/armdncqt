@@ -63,7 +63,7 @@ static int   indxSt;                                            // индекс 
 class RasData
 {
 public:
-    int Length     () { return LengthSys () + LengthTuts() + LengthOtu () + LengthDiag() + 6; } // бщая длина данных
+    int Length     ();                                                                          // oбщая длина данных
     int LengthSys () { return sysLength  + 256 * ( extLength       & 0x03); }                   // длина блока системной информации
     int LengthTuts() { return tutsLength + 256 * ((extLength >> 2) & 0x03); }                   // длина блока ТС/ТУ
     int LengthOtu () { return otuLength  + 256 * ((extLength >> 4) & 0x03); }                   // длина блока ОТУ
@@ -77,6 +77,7 @@ public:
     BYTE * PtrDiag () { return &data[LengthSys () + LengthTuts() + LengthOtu () ]; }
 
     void Copy(RasData*);
+    void Clear();                                               // очистка
 
     BYTE extLength;                                             // расширение длин
     BYTE sysLength;                                             // длина блока систе.информации

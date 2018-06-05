@@ -143,9 +143,13 @@ void ClientTcp::slotReadyRead      ()
                     if (toRead==4)
                     {
                         rcvd[0]++; rcvd[1] += toRead;           // инкремент
-                        //qDebug() << "Квитанция";
+                        qDebug() << "Квитанция";
                         acked = true;
                         return;
+                    }
+                    else
+                    {
+                        int a = 99;
                     }
                 }
             }

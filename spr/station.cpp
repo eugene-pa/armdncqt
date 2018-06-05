@@ -1199,8 +1199,17 @@ void Station::CheckKp()
 // отследить состояние К7
 void Station::CheckK7     ()
 {
-
 }
+
+
+// зафиксировать ошибку связи с КП
+void Station::FixLinkError()
+{
+    SysInfo * info = GetSysInfo();
+    info->errors++;
+    info->linestatus = LineStatus::LineTimeOut;
+}
+
 
 /*
 

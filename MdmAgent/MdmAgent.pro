@@ -54,7 +54,8 @@ SOURCES += main.cpp\
     ../forms/dlgkpinfo.cpp \
     ../forms/bminfoframe.cpp \
     ../common/servertcp.cpp \
-    ../spr/stationnetts.cpp
+    ../spr/stationnetts.cpp \
+    ../spr/stationnettu.cpp
 
 HEADERS  += mainwindow.h \
     ../common/boolexpression.h \
@@ -96,7 +97,8 @@ HEADERS  += mainwindow.h \
     ../forms/dlgkpinfo.h \
     ../forms/bminfoframe.h \
     ../common/servertcp.h \
-    ../spr/stationnetts.h
+    ../spr/stationnetts.h \
+    ../spr/stationnettu.h
 
 
 FORMS    += mainwindow.ui \

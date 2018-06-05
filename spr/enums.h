@@ -252,9 +252,10 @@ enum Common
 enum LineStatus
 {
     LineOK                  = 0,                            // OK
-    LineTimeOut             = 1,                            // ош.тайм-аута
-    LineFormat              = 2,                            // ош.формата
-    LineCRC                 = 3,                            // ош.crc
+    LineTimeOut             = 0x81,                         // ош.тайм-аута
+    LineOver                = 0x82,                         // лина больше допустимой
+    LineFormat              = 0x83,                         // ош.формата
+    LineCRC                 = 0x84,                         // ош.crc
 };
 
 

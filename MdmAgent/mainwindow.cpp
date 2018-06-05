@@ -8,6 +8,7 @@
 #include "../spr/raspacker.h"
 #include "../forms/dlgkpinfo.h"
 #include "../spr/stationnetts.h"
+#include "../spr/stationnettu.h"
 
 // Прототипы функций рабочих потоков ПО КП
 void   ThreadPolling		(long);							// функция потока опроса динии связи
@@ -58,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QString tmp;
 
 /*
+ * проверка выравнивания StationNetTS
+ * /
 StationNetTS ts;
 ts.length = 0;
 ts.nost = 7;
@@ -298,7 +301,7 @@ void MainWindow::setPeriod(unsigned int n)
 }
 
 
-// обработка сообщений
+// обработка сообщений, генерируемых потоком ThreadPolling
 void MainWindow::GetMsg (int np, void * param)
 {
     switch (np)
@@ -327,19 +330,28 @@ void MainWindow::GetMsg (int np, void * param)
             }
             break;
 
-        case MSG_SHOW_RCV:                                      // отобразить информацию об успешном приеме данных от КП
+        // успешный прием данных от КП
+        // 1- скопировать данные в Station.rasData
+        // 2- отобразить инфо блок
+        // 3- обработать системную информацию с учетом особенностей разных версий КП и обновить изображение КП
+        // 4- сформировать и передать данные подключенным клиентам
+        // 5- отобразить состояние актуальной станции
+        case MSG_SHOW_RCV:
             if (param!=nullptr)
             {
+                // 1- скопировать данные в Station.rasData
                 RasPacker* pack = (RasPacker* )param;           // pack - весь пакет
                 Station * st = pack->st;                        //
                 QString name = st == nullptr ? "?" : st->Name();//
                 RasData * data = (RasData *)pack->data;         // data - блок данных, инкапсулируемый классом RasData
                 st->GetRasData()->Copy(data);                   // копируем данные во внутреннем классе RasData
 
+                // 2- отобразить инфо блок
                 ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
                 ui->statusBar->showMessage("Прием данных по ст. " + name);
                 ui->label_cntrcv->setText(QString::number(pack->Length()));
-                // обрабатываем системную информацию
+
+                // 3- обработать системную информацию с учетом особенностей разных версий КП и обновить изображение КП
                 if (pack->Length() > 3 && data->LengthSys())
                 {
                     // учесть переменную длину 9/15/30 и в случае 30 - записать оба блока
@@ -358,16 +370,32 @@ void MainWindow::GetMsg (int np, void * param)
                     ((kpframe *)st->userData)->Show();
                 }
 
-                // готовим данные для отправки модулю Управление
+                // 4- сформировать и передать данные подключенным клиентам модуля Управление
                 StationNetTS info(st);
                 sendToAllClients(&info);
 
-                // отобразить состояние актуальной станции
+                // 5- если получены данные по актуальной станции - обновить панели информации по осн/рез блокам станции
                 if (st == actualSt)
                 {
                     ui->frame_mainBM->Show(st);
                     ui->frame_rsrvBM->Show(st);
                 }
+            }
+            break;
+
+        // ошибка связи, param - актуальная станция
+        case MSG_ERR:
+            {
+            Station * st = (Station *)param;
+            RasData * data = st->GetRasData();
+            data->Clear();                                      // очищаем буфер линейных данных
+
+            if (st->GetSysInfo()->IsOnoff())
+            {
+                StationNetTS info((Station *)param);            // формируем увеомление
+                sendToAllClients(&info);                        // передаем клиентам, если переход из рабочего состояния
+            }
+            ui->statusBar->showMessage("Ошибка связи со станцией");
             }
             break;
 
@@ -410,33 +438,6 @@ void SendMessage (int no, void * ptr)
     emit MainWindow::mainWnd->SendMsg(no, ptr);
 }
 
-
-/*
-// обработка сигнала-уведомления о готовности данных
-void MainWindow::dataready(QByteArray data)
-{
-    ui->statusBar->showMessage(QString("Приняты данные: %1").arg(Logger::GetHex(data, 32)));
-}
-
-// обработка сигнала-уведомления об отсутствии данных в канала данных
-void MainWindow::timeout()
-{
-    ui->statusBar->showMessage("Нет данных");
-}
-
-// обработка сигнала-уведомления об ошибке
-void MainWindow::error  (int error)
-{
-    Q_UNUSED (error)
-//    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
-}
-
-// обработка сигнала-уведомления от старте потока RS
-void MainWindow::rsStarted()
-{
-//    qDebug() << "Старт рабочего потока " << rasRs->name();
-}
-*/
 
 void MainWindow::on_action_KP_triggered()
 {
@@ -513,10 +514,41 @@ void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
     t->removeRow(row);
 }
 
-// получены данные
+// получены данные от модуля Управление
 void MainWindow::slotSvrDataready     (ClientTcp * conn)
 {
     QString name(conn->name());
     QString s("Приняты данные от клиента " + conn->name());
     Logger::LogStr (s);
+
+    StationNetTU * ptu = (StationNetTU *) conn->data();
+    int a = 99;
 }
+
+
+/*
+// обработка сигнала-уведомления о готовности данных
+void MainWindow::dataready(QByteArray data)
+{
+    ui->statusBar->showMessage(QString("Приняты данные: %1").arg(Logger::GetHex(data, 32)));
+}
+
+// обработка сигнала-уведомления об отсутствии данных в канала данных
+void MainWindow::timeout()
+{
+    ui->statusBar->showMessage("Нет данных");
+}
+
+// обработка сигнала-уведомления об ошибке
+void MainWindow::error  (int error)
+{
+    Q_UNUSED (error)
+//    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
+}
+
+// обработка сигнала-уведомления от старте потока RS
+void MainWindow::rsStarted()
+{
+//    qDebug() << "Старт рабочего потока " << rasRs->name();
+}
+*/

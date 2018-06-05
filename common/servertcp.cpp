@@ -93,13 +93,13 @@ void ServerTcp::slotDisconnected (class ClientTcp * client)
 }
 
 // отправка данных "как есть" всем клиентам
-void ServerTcp::sendToAll(char * data, quint16 length)
+void ServerTcp::sendToAll(char * data, quint16 length, bool rqAck)
 {
     foreach (ClientTcp * client, _clients)
     {
         try
         {
-            if (client->isConnected())
+            if (client->isConnected() && (client->isAcked() || !rqAck))
                 client->send(data, length);
         }
         catch (...)
