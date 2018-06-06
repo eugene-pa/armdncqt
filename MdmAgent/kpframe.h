@@ -20,6 +20,7 @@ public:
 //public slots:
     void Show();
     void SetActual(bool s, bool rsrv);
+    void SetOtuLed(bool ok, bool blink);
 
 signals:
     void SelectStation(class Station *);

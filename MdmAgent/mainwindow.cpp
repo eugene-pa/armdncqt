@@ -323,10 +323,13 @@ void MainWindow::GetMsg (int np, void * param)
 
         case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
             {
-            QString name = ((RasPacker*)param)->st == nullptr ? "?" : ((RasPacker*)param)->st->Name();
+            Station * st = ((RasPacker*)param)->st;
+            QString name =  st == nullptr ? "?" : st->Name();
             int length = ((RasPacker*)param)->Length();
             ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, length)).arg(name));
             ui->label_cntsnd->setText(QString::number(length));
+            if (st)
+                ((kpframe *)st->userData)->SetOtuLed(true, true);
             }
             break;
 
@@ -348,7 +351,7 @@ void MainWindow::GetMsg (int np, void * param)
 
                 // 2- отобразить инфо блок
                 ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
-                ui->statusBar->showMessage("Прием данных по ст. " + name);
+                ui->statusBar->showMessage(QString("%1. Прием данных по ст. %2").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(name));
                 ui->label_cntrcv->setText(QString::number(pack->Length()));
 
                 // 3- обработать системную информацию с учетом особенностей разных версий КП и обновить изображение КП
@@ -395,12 +398,12 @@ void MainWindow::GetMsg (int np, void * param)
                 StationNetTS info((Station *)param);            // формируем увеомление
                 sendToAllClients(&info);                        // передаем клиентам, если переход из рабочего состояния
             }
-            ui->statusBar->showMessage("Ошибка связи со станцией");
+            //ui->statusBar->showMessage("Ошибка связи со станцией");
             }
             break;
 
         case MSG_ERR_TIMEOUT:                                   // ошибка тайм-аута
-            ui->statusBar->showMessage("Тайм-аут при приеме данных");
+            //ui->statusBar->showMessage("Тайм-аут при приеме данных");
             break;
 
         case MSG_ERR_FORMAT:
@@ -520,9 +523,32 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
     QString name(conn->name());
     QString s("Приняты данные от клиента " + conn->name());
     Logger::LogStr (s);
+/*
+    // проверить список допустимых ip для управления (опция ENABLETUIP)
+    if (!IsTuIpEnabled(conn->remoteIP())
+    {
+        Logger::LogStr(QString());
+        return;
+    }
+*/
+    StationNetTU * ptu = (StationNetTU *) conn->rawData();
+    RasData * data = (RasData *) ptu->data;
 
-    StationNetTU * ptu = (StationNetTU *) conn->data();
-    int a = 99;
+
+    Station * st = Station::GetById(ptu->nost);
+    if (st!=nullptr)
+    {
+        ui->statusBar->showMessage(QString("%1. АРМ ДНЦ -> %2:   %3").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(st->Name()).arg(data->About()));
+
+        // если есть данные ОТУ, моргнуть индикатором ОТУ и засечь время последней работоспособности УЦ
+
+        st->AcceptDNC(data);
+    }
+    else
+    {
+        // некорректный формат
+    }
+
 }
 
 

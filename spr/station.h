@@ -171,23 +171,6 @@ public:
     bool GetTsPulseStsByName (std::string name);            // получить состояние мигания сигнала по имени
     int  GetTsStsByNameEx    (std::string name);            // d0 - состояние, d1 - мигание
 
-    // таблицы ТС по станции (перенести в protected)
-    std::unordered_map <std::string, class Ts*> Ts;         // индексированы по текстовому имени ТС
-    std::unordered_map <int, class Ts*> TsIndexed;          // индексированы по индексу ТС
-    std::unordered_map <int, class Ts*> TsByIndxTsName;     // индексированы по индексу имени
-    std::vector <class Ts*> TsSorted;                       // отсортированы по имени
-
-    // таблицы ТУ по станции
-    std::unordered_map <std::string, class Tu*> Tu;         // индексированы по текстовому имени ТУ
-    std::unordered_map <int    , class Tu*> TuByIJ;         // индексированы по IJ
-    std::vector <class Tu*> TuSorted;                       // отсортированы по имени
-
-    std::unordered_map <std::string, class Otu*> Otu;       // ОТУ по станции, отсортированне по имени
-    std::unordered_map <int, class Otu*> OtuByNo;           // ОТУ по станции, отсортированне по номеру ОТУ
-
-    std::vector <class ShapeId*> formList;                  // список классов-идентификаторов форм
-
-
     bool IsTsPresent(int i) { return i>=0 && i<MaxModule && mts[i]; }
     bool IsTuPresent(int i) { return i>=0 && i<MaxModule && mtu[i]; }
     class Svtf * GetSvtfByName(QString& name);              // найти светофор по имени; используется при парсинге справочника маршрутов
@@ -210,7 +193,26 @@ public:
     bool IsKpResponce() { return kpResponce; }              // отклик КП
     void SetKpResponce(bool s) { kpResponce = s; }          // отклик КП
 
-    void FixLinkError();                                    // зафиксировать ошибку связи с КП
+    void AcceptDNC(class RasData *);                        // принять пачку данных АРМ ДНЦ
+
+
+
+    // таблицы ТС по станции (перенести в protected)
+    std::unordered_map <std::string, class Ts*> Ts;         // индексированы по текстовому имени ТС
+    std::unordered_map <int, class Ts*> TsIndexed;          // индексированы по индексу ТС
+    std::unordered_map <int, class Ts*> TsByIndxTsName;     // индексированы по индексу имени
+    std::vector <class Ts*> TsSorted;                       // отсортированы по имени
+
+    // таблицы ТУ по станции
+    std::unordered_map <std::string, class Tu*> Tu;         // индексированы по текстовому имени ТУ
+    std::unordered_map <int    , class Tu*> TuByIJ;         // индексированы по IJ
+    std::vector <class Tu*> TuSorted;                       // отсортированы по имени
+
+    std::unordered_map <std::string, class Otu*> Otu;       // ОТУ по станции, отсортированне по имени
+    std::unordered_map <int, class Otu*> OtuByNo;           // ОТУ по станции, отсортированне по номеру ОТУ
+
+    std::vector <class ShapeId*> formList;                  // список классов-идентификаторов форм
+
     void *  userData;                                       // привязка к объекту пользователя
 
 // вычисление переменной - через обработку сигнала в слоте

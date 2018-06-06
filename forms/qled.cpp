@@ -16,9 +16,9 @@ void QLed::set (ledShape shape, ledStatus status, QBrush fore, QBrush back)
     this->back   = back;
     this->status = status;
 
-    setVisible(status!=hidden);
+    setVisible (status!=hidden);
 
-    if (status != blink)
+    if (status != blink && status != blink_once)
     {
         if (timerId)
         {
@@ -27,8 +27,11 @@ void QLed::set (ledShape shape, ledStatus status, QBrush fore, QBrush back)
         }
     }
     else
-    if (!timerId)
-        timerId = startTimer(500);
+    {
+        if (!timerId)
+            timerId = startTimer(500);
+        pulse = true;
+    }
     update();
 }
 
@@ -36,6 +39,10 @@ void QLed::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
     pulse = !pulse;
+    if (status==blink_once)
+    {
+        set (shape, off, fore, back);
+    }
     if (isVisible())
         update();
 }

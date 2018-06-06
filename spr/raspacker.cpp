@@ -36,11 +36,111 @@ RasPacker::RasPacker(class Station * st)
 
 }
 
-// побайтное копирование класса
-void RasData::Copy(RasData* p)
+
+// длина заданного блока
+int RasData::Length (int n)
 {
-    memmove(this, p, sizeof(RasData));
+    switch (n)
+    {
+        case SYSBLCK  : return LengthSys  ();
+        case TUTSBLCK : return LengthTuts ();
+        case OTUBLCK  : return LengthOtu  ();
+        case DIAGBLCK : return LengthDiag ();
+        default       : return 0;
+    }
 }
+
+
+// лина блоков, начиная с заданного
+int RasData::LengthFrom (int n)
+{
+    int l = 0;
+    for (int i=n; i<DIAGBLCK; i++)
+    {
+        l += Length(i);
+    }
+    return l;
+}
+
+
+// указатель на заданный блок
+BYTE * RasData::PtrBlck (int n)
+{
+    switch (n)
+    {
+        case SYSBLCK  : return PtrSys  ();
+        case TUTSBLCK : return PtrTuTs ();
+        case OTUBLCK  : return PtrOtu  ();
+        case DIAGBLCK : return PtrDiag ();
+        default       : return PtrDiag () + LengthDiag();       // указатель на свободное место
+    }
+}
+
+// побайтное копирование класса
+void RasData::Copy(RasData* pSrc)
+{
+    memmove(this, pSrc, sizeof(RasData));
+}
+
+
+// суммирование инфо-блоков (если не успели отправить старую посылку)
+void RasData::Append(RasData* pSrc)
+{
+    // директивы можно суммировать
+    // ТУ можно суммировать
+    // ОТУ нельзя суммировать, игнорируем старую информацию
+    // поле диагностики не используется при передаче в КП
+    if (pSrc->LengthSys())
+    {
+        AppendBlock(pSrc, SYSBLCK);
+    }
+    if (pSrc->LengthTuts())
+    {
+        AppendBlock(pSrc, TUTSBLCK);
+    }
+    if (pSrc->LengthOtu())
+    {
+        DeleteBlock(OTUBLCK);
+        AppendBlock(pSrc, OTUBLCK);
+    }
+}
+
+// объединить заданные блоки (присоединяем к существующему новую инфу)
+void RasData::AppendBlock(RasData* pSrc, BYTE n)
+{
+    int l    = Length(n);                                       // исходная длина
+    int ladd = pSrc->Length(n);                                 // доп.длина
+    BYTE * org = PtrBlck(n+1);                                  // сдвигаем со следующего блока
+    BYTE * dst = org + ladd;                                    // смещаем на доп.длину
+    memmove (dst, org, LengthFrom(n+1));                        // сдвигаем все блоки (надо ввсети ограничение на длину)
+    memmove (org, pSrc->PtrBlck(n), ladd);                      // дописываем сист.инфу
+    SetBlockLen(n, l + ladd);                                   // новая длина
+    // Logger::LogStr();
+}
+
+
+// очистить информацию по блоку
+void RasData::DeleteBlock(BYTE n)
+{
+    if (Length(n))
+    {
+        BYTE * src = PtrBlck(n+1);                              // источник - след.блок
+        BYTE * dst = PtrBlck(n);                                // назначение - данный блок
+        memmove (dst, src, LengthFrom(n+1));                    // сдвигаем все блоки (надо ввсети ограничение на длину)
+        SetBlockLen(n, 0);                                      // бнуляем длину
+    }
+}
+
+// записать длину блока с учетом битов расширения
+// n - номер блока (0/1/2/3)
+// l - длина блока
+void RasData::SetBlockLen (WORD n,int l)
+{
+    extLength &= ~(MSK_LEN_EXT << (n*2));           // сбросить биты расширений
+    extLength |= ((l>>8) & MSK_LEN_EXT)<<(n*2);     // записать биты расширений
+    * (((BYTE *)this) + n + 1) = (BYTE) (l & 0xff); //
+}
+
 
 void RasData::Clear()                                   // очистка (обнуление) при отсутствии связи
 {

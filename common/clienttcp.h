@@ -45,6 +45,7 @@ public:
     QAbstractSocket::SocketError lasterror() { return _lasterror; }
     QTcpSocket * socket() { return sock; }
 
+    QString remoteIP() { return remoteIp; }
     QString name()                                          // имя в формате IP:порт
         { return QString("%1:%2").arg(remoteIp).arg(remotePort); }
 

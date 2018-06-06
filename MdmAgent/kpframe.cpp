@@ -16,7 +16,7 @@ kpframe::kpframe(QWidget *parent, Station* pst) :
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     ui->label_rsrvCOM3->set (QLed::ledShape::box, QLed::ledStatus::off);
     ui->label_rsrvCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
-    ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::off);
+    ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::off, Qt::green, Qt::darkGreen);
     ui->label_Main->setStyleSheet("color: rgb(0, 64, 0)");
     ui->label_Rsrv->setStyleSheet("color: rgb(128, 128, 128)");
     ui->pushButton->setText(st->Name().left(8));
@@ -75,4 +75,9 @@ void kpframe::on_checkBox_stateChanged(int arg1)
 {
     Q_UNUSED(arg1)
     st->SetEnable(ui->checkBox->isChecked());
+}
+
+void kpframe::SetOtuLed(bool ok, bool blink)
+{
+    ui->label_OTU ->set (QLed::ledShape::box, blink ? QLed::ledStatus::blink_once : QLed::ledStatus::off, (ok ? Qt::green : Qt::red), (ok ? Qt::darkGreen : Qt::darkRed));
 }

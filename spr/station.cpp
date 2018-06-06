@@ -1201,7 +1201,7 @@ void Station::CheckK7     ()
 {
 }
 
-
+/*
 // зафиксировать ошибку связи с КП
 void Station::FixLinkError()
 {
@@ -1209,7 +1209,21 @@ void Station::FixLinkError()
     info->errors++;
     info->linestatus = LineStatus::LineTimeOut;
 }
+*/
 
+// принять пачку данных АРМ ДНЦ
+void Station::AcceptDNC(class RasData *data)
+{
+    if (Enable())
+    {
+
+    }
+    else
+    {
+        Logger::LogStr (QString("Игнорируем данные для отключенной станции %1").arg(name));
+    }
+
+}
 
 /*
 

@@ -38,6 +38,11 @@ const BYTE SOH              = 1;
 const BYTE EOT              = 4;
 const BYTE CpuAddress       = 0;								// адрес ЦПУ на линии
 
+const BYTE MSK_LEN_EXT      = 3;                                // маска расширения длины
+const BYTE SYSBLCK          = 0;                                // мещения блоков
+const BYTE TUTSBLCK         = 1;
+const BYTE OTUBLCK          = 2;
+const BYTE DIAGBLCK         = 3;
 
 class RasPacker
 {
@@ -64,20 +69,28 @@ class RasData
 {
 public:
     int Length     ();                                                                          // oбщая длина данных
+    int Length     (int n);                                                                     // длина заданного блока
+    int LengthFrom (int n);                                                                     // лина блоков, начиная с заданного
     int LengthSys () { return sysLength  + 256 * ( extLength       & 0x03); }                   // длина блока системной информации
     int LengthTuts() { return tutsLength + 256 * ((extLength >> 2) & 0x03); }                   // длина блока ТС/ТУ
     int LengthOtu () { return otuLength  + 256 * ((extLength >> 4) & 0x03); }                   // длина блока ОТУ
     int LengthDiag() { return diagLength + 256 * ((extLength >> 6) & 0x03); }                   // длина блока квитанций и диагностики
 
+    void SetBlockLen (WORD Blck,int Len);
+
     QString About() { return QString("[%1.%2.%3.%4]").arg(LengthSys()).arg(LengthTuts()).arg(LengthOtu()).arg(LengthDiag()); ; }
 
+    BYTE * PtrBlck (int n);                                     // указатель на заданный блок
     BYTE * PtrSys  () { return data; }
     BYTE * PtrTuTs () { return &data[LengthSys ()                               ]; }
     BYTE * PtrOtu  () { return &data[LengthSys () + LengthTuts()                ]; }
     BYTE * PtrDiag () { return &data[LengthSys () + LengthTuts() + LengthOtu () ]; }
 
-    void Copy(RasData*);
-    void Clear();                                               // очистка
+    void Copy  (RasData* prc);                                  // обайтное копирование 
+    void Clear ();                                              // очистка
+    void Append(RasData* prc);                                  // суммирование инфо-блоков (если не успели отправить старую посылку)
+    void AppendBlock(RasData* pSrc, BYTE blck);                 // суммирование аданного инфо-блока
+    void DeleteBlock(BYTE blck);                                // очистить информацию по блоку
 
     BYTE extLength;                                             // расширение длин
     BYTE sysLength;                                             // длина блока систе.информации
