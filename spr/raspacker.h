@@ -51,6 +51,8 @@ static BYTE counter;                                            // циклич�
 static int   indxSt;                                            // индекс актуальной станции опроса
     RasPacker(class Station * st);                              // когструктор
     int Length() { return length + LEN_CTRL_INFO;  }            // общая длина пакета
+    class RasData * GetRasData() { return (class RasData *)&data; }
+    bool IsEmpty() { return length == 3; }                      //
 
     BYTE    marker;                                             // маркер
     WORD    length;                                             // длина пакета (все после себя, исключая CRC и EOT)
@@ -58,7 +60,7 @@ static int   indxSt;                                            // индекс 
     BYTE    src;                                                // адрес источника
     BYTE    seans;                                              // сеанс
 
-    // далее идут длины блоков, блоки (ласс RasData), CRC и EOT
+    // далее идут длины блоков, блоки (класс RasData), CRC и EOT
     BYTE    data[MAX_LINE_DATA_LEN + 2 + 1];                    // блоки данных, CRC + EOT
     class Station * st;
 };
@@ -68,6 +70,7 @@ static int   indxSt;                                            // индекс 
 class RasData
 {
 public:
+    RasData()  { Clear(); }
     int Length     ();                                                                          // oбщая длина данных
     int Length     (int n);                                                                     // длина заданного блока
     int LengthFrom (int n);                                                                     // лина блоков, начиная с заданного
@@ -88,10 +91,11 @@ public:
 
     void Copy  (RasData* prc);                                  // обайтное копирование 
     void Clear ();                                              // очистка
-    void Append(RasData* prc);                                  // суммирование инфо-блоков (если не успели отправить старую посылку)
+    void Append(RasData* prc, class Station*);                  // суммирование инфо-блоков (если не успели отправить старую посылку)
+
+private:
     void AppendBlock(RasData* pSrc, BYTE blck);                 // суммирование аданного инфо-блока
     void DeleteBlock(BYTE blck);                                // очистить информацию по блоку
-
     BYTE extLength;                                             // расширение длин
     BYTE sysLength;                                             // длина блока систе.информации
     BYTE tutsLength;                                            // длина блока ТУ/ТС

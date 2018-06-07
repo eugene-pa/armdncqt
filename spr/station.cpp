@@ -80,12 +80,11 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     rsrvSysInfo = new SysInfo();                            // выделение памяти под SysInfo резервного блока
     rsrvSysInfo->st = this;
 
-    rasData = new RasData();                                // указатель на полученные данные от КП
+    rasDataIn  = new RasData();                             // указатель на полученные данные от КП
+    rasDataOut = new RasData();                             // указатель на полученные данные от КП
 
     tSpokSnd = tSpokRcv = 0;                                // время приема/передачи данных в СПОК
 
-    DataToKpLenth = 0;
-    memset (DataToKp, 0, sizeof(DataToKp));
     tuGetTime = 0;
 
     try
@@ -142,7 +141,8 @@ Station::~Station()
 {
     qDebug() << "~Station() " << name;
 
-    delete rasData;
+    delete rasDataIn;
+    delete rasDataOut;
     delete mainSysInfo;
     delete rsrvSysInfo;
 }
@@ -1212,11 +1212,13 @@ void Station::FixLinkError()
 */
 
 // принять пачку данных АРМ ДНЦ
-void Station::AcceptDNC(class RasData *data)
+void Station::AcceptDNC(class RasData *p)
 {
     if (Enable())
     {
-
+        // на время работы блокируем доступ к rasDataOut; разблокировка выполняется в деструкторе при выходе из блока
+        std::lock_guard <std::mutex> locker(rasDataOutLock);
+        rasDataOut->Append(p, this);
     }
     else
     {

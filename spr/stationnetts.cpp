@@ -21,7 +21,7 @@ int StationNetTS::Pack (Station * st)
 {
     nost	= st->No();                                         // номер станции
     // копирование длин и блоков C,Т,О,Д
-    memcpy (inputData, st->rasData, realDataLen = std::min(st->rasData->Length(), (int)sizeof(inputData)));
+    memcpy (inputData, st->rasDataIn, realDataLen = std::min(st->rasDataIn->Length(), (int)sizeof(inputData)));
 
     // упаковка состояния прямого и обводного каналов
     mainLineCPU = st->MainLineCPU;                              // -1/0/1/2 (отказ/откл/WAITING/OK)

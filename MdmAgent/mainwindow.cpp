@@ -323,12 +323,16 @@ void MainWindow::GetMsg (int np, void * param)
 
         case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
             {
-            Station * st = ((RasPacker*)param)->st;
+            RasPacker * pack = (RasPacker*)param;
+            Station * st = pack->st;
             QString name =  st == nullptr ? "?" : st->Name();
-            int length = ((RasPacker*)param)->Length();
-            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, length)).arg(name));
-            ui->label_cntsnd->setText(QString::number(length));
-            if (st)
+            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, pack->Length())).arg(name));
+            ui->label_cntsnd->setText(QString::number(pack->Length()));
+
+            // если есть информация ОТУ - моржок индикатором ОТУ
+            RasData * p = pack->GetRasData();
+            int l = p->Length();
+            if (!pack->IsEmpty() && pack->GetRasData()->Length())
                 ((kpframe *)st->userData)->SetOtuLed(true, true);
             }
             break;
@@ -347,7 +351,7 @@ void MainWindow::GetMsg (int np, void * param)
                 Station * st = pack->st;                        //
                 QString name = st == nullptr ? "?" : st->Name();//
                 RasData * data = (RasData *)pack->data;         // data - блок данных, инкапсулируемый классом RasData
-                st->GetRasData()->Copy(data);                   // копируем данные во внутреннем классе RasData
+                st->GetRasDataIn()->Copy(data);                   // копируем данные во внутреннем классе RasData
 
                 // 2- отобразить инфо блок
                 ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
@@ -390,7 +394,7 @@ void MainWindow::GetMsg (int np, void * param)
         case MSG_ERR:
             {
             Station * st = (Station *)param;
-            RasData * data = st->GetRasData();
+            RasData * data = st->GetRasDataIn();
             data->Clear();                                      // очищаем буфер линейных данных
 
             if (st->GetSysInfo()->IsOnoff())

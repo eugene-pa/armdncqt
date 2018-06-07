@@ -112,7 +112,9 @@ public:
 
     class SysInfo * GetSysInfo() { return IsRsrv() ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации актуального БМ
     class SysInfo * GetSysInfo(bool rsrv) { return rsrv ?  rsrvSysInfo : mainSysInfo; } // блок сист.информации заданного  БМ
-    class RasData * GetRasData() { return rasData; }
+    class RasData * GetRasDataIn () { return rasDataIn ; }
+    class RasData * GetRasDataOut() { return rasDataOut; }
+    QDateTime tuTime;                                       // засечка времени получения ТУ от АРМ ДНЦ (старые ТУ удаляются)
 
     bool IsSupportKpExt (bool rsrv);                        // поддерживается ли расширенный блок диагностики
     bool IsAtuError (bool rsrv);                            // проверка срабатывания АТУ (отличается в разных версиях)
@@ -299,7 +301,11 @@ private:
     int     errorLockLogicCount;                            // число актуальных ошибок логического контроля
     bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
     bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
-    class RasData * rasData;                                // указатель на полученные данные от КП
+
+    class RasData * rasDataIn;                              // указатель на полученные данные от КП
+    class RasData * rasDataOut;                             // указатель на полученные данные от АРМДНЦ
+    std::mutex  rasDataOutLock;                             // мьютекс, блокирующий доступ к блоку данных в КП
+
     class SysInfo * mainSysInfo;                            // блок сист.информации основного  БМ (память выделяется в конструкторе Station)
     class SysInfo * rsrvSysInfo;                            // блок сист.информации резервного БМ (память выделяется в конструкторе Station)
     time_t  tSpokSnd;                                       // время передачи данных в СПОК
@@ -311,9 +317,8 @@ private:
 //    BYTE	lineData [MAX_LINE_DATA_LEN];                   // данные из линии
 
     bool    kpResponce;                                     // отклик КП
-    std::mutex  DataToKpLock;                               // мьютекс, блокирующий доступ к блоку данных в КП
-    WORD	DataToKpLenth;                                  // длина данных для передачи в КП,
-    BYTE	DataToKp[MAX_BLOCK_LENGTH];                     // отформатироанные в соответствии с форматом протокола данные для передачи в КП
+//    WORD	DataToKpLenth;                                  // длина данных для передачи в КП,
+//    BYTE	DataToKp[MAX_BLOCK_LENGTH];                     // отформатироанные в соответствии с форматом протокола данные для передачи в КП
                                                             // (длины блоков, блоки директив, ТУ, ОТУ)
                                                             // форматрование выполняется в модкле Управление при подготовке блока, либо в Станции связи при отправке директив
     time_t	tuGetTime;                                      // засечка времени приема ТУ

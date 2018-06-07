@@ -19,14 +19,13 @@ RasPacker::RasPacker(class Station * st)
 
     if (st)
     {
-        // на время работы блокируем доступ к DataToKp; разблокировка выполняется в деструкторе при выходе из блока
-
-        std::lock_guard <std::mutex> locker(st->DataToKpLock);
-        int l = std::min((int)st->DataToKpLenth, (int)sizeof(data));
-        if (st->DataToKpLenth)
+        // на время работы блокируем доступ к rasDataOut; разблокировка выполняется в деструкторе при выходе из блока
+        std::lock_guard <std::mutex> locker(st->rasDataOutLock);
+        int l = std::min((int)st->rasDataOut->Length(), (int)sizeof(data));
+        if (l)
         {
-            memmove(data,st->DataToKp, l);              // переносим данные
-            st->DataToKpLenth = 0;                      // обнуляем длину
+            memmove(data, st->rasDataOut, l);           // переносим данные
+            st->rasDataOut->Clear();                    // обнуляем блок
             length += l;                                // наращиваем длину пакета на длину блока данных
         }
         addCRC (this, length + LEN_HEADER);             // подсчет CRC
@@ -37,6 +36,9 @@ RasPacker::RasPacker(class Station * st)
 }
 
 
+
+// ------------------------------------------------------------------------------------------------------------------------
+// Класс RasData
 // длина заданного блока
 int RasData::Length (int n)
 {
@@ -84,8 +86,12 @@ void RasData::Copy(RasData* pSrc)
 
 
 // суммирование инфо-блоков (если не успели отправить старую посылку)
-void RasData::Append(RasData* pSrc)
+void RasData::Append(RasData* pSrc, Station* st)
 {
+    // если данные устарели, их надо удалить
+//    if (Length() && st->tuTime.secsTo(QDateTime::currentDateTime()) > 30)
+//        Clear();
+    st->tuTime = QDateTime::currentDateTime();                  // засечка
     // директивы можно суммировать
     // ТУ можно суммировать
     // ОТУ нельзя суммировать, игнорируем старую информацию
