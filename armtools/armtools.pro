@@ -73,7 +73,8 @@ SOURCES += main.cpp\
     ../forms/dlgotu.cpp \
     ../forms/dlgperegoninfo.cpp \
     ../spr/pereezd.cpp \
-    ../forms/dlgpereezd.cpp
+    ../forms/dlgpereezd.cpp \
+    ../spr/raspacker.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -136,7 +137,8 @@ HEADERS  += mainwindow.h \
     ../forms/dlgotu.h \
     ../forms/dlgperegoninfo.h \
     ../spr/pereezd.h \
-    ../forms/dlgpereezd.h
+    ../forms/dlgpereezd.h \
+    ../spr/raspacker.h
 
 
 FORMS    += mainwindow.ui \
