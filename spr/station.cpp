@@ -87,6 +87,9 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 
     tuGetTime = 0;
 
+    seans = 1;                                              // сеанс начинается с 1
+    bFullPolling = true;                                    // по умолчанию - полный опрос
+
     try
     {
         no      = query.value("NoSt").toInt(&ret);          // номер станции

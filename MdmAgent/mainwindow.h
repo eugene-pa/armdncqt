@@ -104,6 +104,7 @@ public slots:
     void slotSvrNewConnection (ClientTcp *);
     void slotSvrDataready     (ClientTcp *);
     void slotSvrDisconnected  (ClientTcp *);
+    void slotRoger            (ClientTcp *);
 
 signals:
     void exit();

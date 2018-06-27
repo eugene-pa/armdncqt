@@ -196,8 +196,10 @@ public:
     void SetKpResponce(bool s) { kpResponce = s; }          // отклик КП
 
     void AcceptDNC(class RasData *);                        // принять пачку данных АРМ ДНЦ
-
-
+    BYTE GetSeans() { return seans;   }                     // очередной номер сеанса
+    BYTE IncSeanc() { return ++seans; }                     // увеличить номер сеанса
+    bool IsFullPolling() { return bFullPolling; }           // полный опрос?
+    void SetFullPolling(bool s) { bFullPolling = s; }       // установить режим опроса полный/обновления
 
     // таблицы ТС по станции (перенести в protected)
     std::unordered_map <std::string, class Ts*> Ts;         // индексированы по текстовому имени ТС
@@ -302,6 +304,7 @@ private:
     bool    stsFrmMntrErrorLockMsgPresent;					// наличие ЗЦ.ОШБ в базовом удаленном АРМ
     bool    stsFrmMntrTsExpired;							// ТС устарели в базовом удаленном АРМ
 
+    BYTE    seans;                                          // номер сеанса связи с КП
     class RasData * rasDataIn;                              // указатель на полученные данные от КП
     class RasData * rasDataOut;                             // указатель на полученные данные от АРМДНЦ
     std::mutex  rasDataOutLock;                             // мьютекс, блокирующий доступ к блоку данных в КП
@@ -323,7 +326,7 @@ private:
                                                             // форматрование выполняется в модкле Управление при подготовке блока, либо в Станции связи при отправке директив
     time_t	tuGetTime;                                      // засечка времени приема ТУ
 
-    //bool	bFullPolling;                                   // флаг включения полного опроса станции
+    bool	bFullPolling;                                   // флаг включения полного опроса станции
 
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока

@@ -187,6 +187,7 @@ ll = sizeof (int);
     QObject::connect(server, SIGNAL(newConnection(ClientTcp*  )), this, SLOT(slotSvrNewConnection (ClientTcp*)));
     QObject::connect(server, SIGNAL(dataready    (ClientTcp*  )), this, SLOT(slotSvrDataready     (ClientTcp*)));
     QObject::connect(server, SIGNAL(disconnected (ClientTcp*  )), this, SLOT(slotSvrDisconnected  (ClientTcp*)));
+    QObject::connect(server, SIGNAL(roger        (ClientTcp*  )), this, SLOT(slotRoger            (ClientTcp*)));
     server->start();
 
 }
@@ -331,8 +332,7 @@ void MainWindow::GetMsg (int np, void * param)
 
             // если есть информация ОТУ - моржок индикатором ОТУ
             RasData * p = pack->GetRasData();
-            int l = p->Length();
-            if (!pack->IsEmpty() && pack->GetRasData()->Length())
+            if (!pack->IsEmpty() && p->Length())
                 ((kpframe *)st->userData)->SetOtuLed(true, true);
             }
             break;
@@ -387,6 +387,8 @@ void MainWindow::GetMsg (int np, void * param)
                     ui->frame_mainBM->Show(st);
                     ui->frame_rsrvBM->Show(st);
                 }
+
+                st->IncSeanc();
             }
             break;
 
@@ -428,6 +430,7 @@ void MainWindow::GetMsg (int np, void * param)
 void MainWindow::sendToAllClients(StationNetTS* info)
 {
     server->sendToAll((char *) info, info->length);
+    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
 }
 
 void Log (std::wstring s)
@@ -555,6 +558,12 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
 
 }
 
+// получена квитанция от АРМ ДНЦ
+void MainWindow::slotRoger  (ClientTcp * client)
+{
+    Q_UNUSED (client)
+    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
+}
 
 /*
 // обработка сигнала-уведомления о готовности данных

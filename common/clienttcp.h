@@ -27,6 +27,7 @@ signals:
     void error       (ClientTcp *);                         // ошибка сокета
     void dataready   (ClientTcp *);                         // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void rawdataready(ClientTcp *);                         // получены необрамленные данные - отдельный сигнал
+    void roger       (ClientTcp *);                         // получена квитанция
 
 public:
     ClientTcp(class ServerTcp *, QTcpSocket  *, Logger *);  // конструктор, используемый сервером

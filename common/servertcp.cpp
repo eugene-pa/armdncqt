@@ -42,6 +42,7 @@ void ServerTcp::slotNewConnection()
     QObject::connect(client, SIGNAL(rawdataready (ClientTcp*)), this, SLOT(slotRawdataready (ClientTcp*)));
     QObject::connect(client, SIGNAL(disconnected (ClientTcp*)), this, SLOT(slotDisconnected (ClientTcp*)));
     QObject::connect(client, SIGNAL(error        (ClientTcp*)), this, SLOT(slotAcceptError  (ClientTcp*)));
+    QObject::connect(client, SIGNAL(roger        (ClientTcp*)), this, SLOT(slotRoger        (ClientTcp*)));
 
     QString s = QString("ServerTcp [порт %1]. Подключен клиент %2").arg(port).arg(client->name());
     log(s);
@@ -90,6 +91,12 @@ void ServerTcp::slotDisconnected (class ClientTcp * client)
     _clients.removeOne(client);                             // удаляем из списка клиентов
     emit disconnected(client);                              // уведомляем сервер
     delete client;                                          // удаляем выделенный экземпляр
+}
+
+// принята квитанция
+void ServerTcp::slotRoger  (class ClientTcp *client)
+{
+    emit (roger(client));
 }
 
 // отправка данных "как есть" всем клиентам

@@ -1,7 +1,7 @@
 #include "raspacker.h"
 #include "station.h"
 
-BYTE RasPacker::counter = 0;                            // циклический счетчик сеансов
+//BYTE RasPacker::counter = 0;                            // циклический счетчик сеансов
 int  RasPacker::indxSt = -1;                            // индекс актуальной станции опроса
 RasPacker::RasPacker(class Station * st)
 {
@@ -12,7 +12,11 @@ RasPacker::RasPacker(class Station * st)
 
     // формирование счетчика сеансов должны быть интеллектуальным с учетом существующих алгоритмов полного опроса
     // на старых КП полный опрос обеспечивается нулевым значением сеанса, на новых КП используется инкремент счетчика на 2
-    seans       = ++counter;                            // сеанс
+    seans       = st->GetSeans();                       // сеанс
+    if (st->IsFullPolling())
+    {
+        seans = st->Kp2007() ? st->IncSeanc() : 0;
+    }
 
     memset (data, 0, sizeof(data));                     // очистка поля
     this->st = st;

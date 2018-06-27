@@ -22,6 +22,7 @@ signals:
     void    dataready   (class ClientTcp *);                // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void	acceptError (class ClientTcp *);                // ошибка на сокете
     void    disconnected (class ClientTcp *);               // разрыв соединения
+    void    roger        (class ClientTcp *);               // принята квитанция
 
 private slots:
     void	slotNewConnection();
@@ -29,6 +30,7 @@ private slots:
     void    slotRawdataready (class ClientTcp *);           // готовы форматные данные; необходимо их скопировать, т.к. они будут разрушены
     void    slotDisconnected (class ClientTcp *);           // разрыв соединения
     void	slotAcceptError  (class ClientTcp *);           // ошибка на сокете
+    void    slotRoger        (class ClientTcp *);           // принята квитанция
 
 private:
     QList <class ClientTcp*> _clients;
