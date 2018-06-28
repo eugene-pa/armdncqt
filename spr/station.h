@@ -200,6 +200,7 @@ public:
     BYTE IncSeanc() { return ++seans; }                     // увеличить номер сеанса
     bool IsFullPolling() { return bFullPolling; }           // полный опрос?
     void SetFullPolling(bool s) { bFullPolling = s; }       // установить режим опроса полный/обновления
+    bool IsTuEmpty();                                       // очередь передачи в КП пуста
 
     // таблицы ТС по станции (перенести в protected)
     std::unordered_map <std::string, class Ts*> Ts;         // индексированы по текстовому имени ТС

@@ -235,59 +235,80 @@ void MainWindow::closeEvent(QCloseEvent *)
 */
 }
 
+// отключить основной на заданное время
 void MainWindow::on_pushButtonMainOff_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackBypassMain);
 }
 
+// отключить резервный на заданное время
 void MainWindow::on_pushButtonRsrvOff_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackBypassRsrv);
 }
 
+// включить основной блок безусловно
 void MainWindow::on_pushButtonToMain_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackSetMain);
 }
 
+// Переход на резервный блок безусловно
 void MainWindow::on_pushButtonToRsrv_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackSetRsrv);
 }
 
+// запуск теста МТУ/МТС
 void MainWindow::on_pushButtonTest_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackTestMtuMts);
 }
 
+// Сброс АТУ
 void MainWindow::on_pushButtonATU_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackResetAtu);
 }
 
+// перезапуск КП
 void MainWindow::on_pushButtonReset_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackRestart);
 }
 
+// запрос числа перезапусков
 void MainWindow::on_pushButtonGetReconnect_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackRestartCount);
 }
 
+// кратковременно отключить питание активного (холодный рестарт)
 void MainWindow::on_pushButtonResetMain_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackResetOne);
 }
 
+// кратковременно отключить питание соседнего (холодный рестарт)
 void MainWindow::on_pushButtonResetRsrv_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackResetAnother);
 }
 
 void MainWindow::on_pushButtonWatchdog_clicked()
 {
-
+    if (actualSt != nullptr && actualSt->IsTuEmpty())
+        actualSt->AcceptDNC((RasData*)&TuPackWatchdogOn);
 }
 
 // отобразить число циклов
@@ -429,6 +450,7 @@ void MainWindow::GetMsg (int np, void * param)
 // отправить данные всем подключенным клиентам, от которыъ было подтверждение
 void MainWindow::sendToAllClients(StationNetTS* info)
 {
+    armAcked = false;
     server->sendToAll((char *) info, info->length);
     ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
 }
@@ -561,6 +583,8 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
 // получена квитанция от АРМ ДНЦ
 void MainWindow::slotRoger  (ClientTcp * client)
 {
+    armAcked = true;
+    waterAck.notify_all();
     Q_UNUSED (client)
     ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
 }

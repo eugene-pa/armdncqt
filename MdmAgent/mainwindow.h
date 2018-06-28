@@ -12,6 +12,8 @@
 
 extern QString configMain;                                  // строка конфигурации BlockingRS прямого канала
 extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
+extern bool armAcked;                                       // получена квитанция АРМ ДНЦ
+extern std::condition_variable waterAck;                    // условие ожидания квитанции
 
 void Log (std::wstring);                                    // сатическая функция вывода лога
 void SendMessage (int, void *);                             // сатическая функция отправки сообщения

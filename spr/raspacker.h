@@ -44,6 +44,34 @@ const BYTE TUTSBLCK         = 1;
 const BYTE OTUBLCK          = 2;
 const BYTE DIAGBLCK         = 3;
 
+const WORD	RQ_WATCHDOG_ON		= 0x000e;                       // включение сторожевого таймера
+const WORD	RQ_RESTART_COUNT	= 0x000f;                       // запрос количества перезапусков
+
+// подготовленные готовые пакеты для директив SYSINFO
+//									+----------------------------------------- расширение длины
+//									|     +----------------------------------- длина сисинфо
+//									|	  |	    |+---------------------------- длина ТУ
+//									|	  |		|	  +----------------------- длина О
+//									|	  |		|	  |     +----------------- длина Д
+//									|	  |		|	  |		|     +----------- резерв
+//									|	  |		|	  |		|     |     +----- команда
+//									|	  |		|	  |		|     |     |
+const BYTE TuPackRestart     [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff };
+const BYTE TuPackSetMain     [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00 };
+const BYTE TuPackSetRsrv     [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00 };
+const BYTE TuPackBypassMain  [10] = { 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00 ,0x00, 0x00};
+const BYTE TuPackBypassRsrv  [10] = { 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00 ,0x00, 0x00};
+const BYTE TuPackResetAtu    [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00 };
+const BYTE TuPackSpeedLimit  [10] = { 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00 ,0x00, 0x00};
+const BYTE TuPackResetOne    [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00 };			// перезапуск себя
+const BYTE TuPackResetAnother[8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00 };			// перезапуск соседа
+const BYTE TuPackTestMtuMts  [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x00 };			// тест ТУ/ТС
+const BYTE TuPackTimeSet     [12] = { 0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x0d, 0x00 ,0x00, 0x00, 0x00, 0x00};	// синхронизация времени
+const BYTE TuPackWatchdogOn  [8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, RQ_WATCHDOG_ON  , 0x00 };	// 2009.02.04. включение сторожевого таймера
+const BYTE TuPackRestartCount[8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, RQ_RESTART_COUNT, 0x00 };	// 2011.09.14запрос количества перезапусков
+
+
+
 class RasPacker
 {
 public:
@@ -71,6 +99,7 @@ class RasData
 {
 public:
     RasData()  { Clear(); }
+    bool Empty() { return Length() == 0; }                                                      // пустой
     int Length     ();                                                                          // oбщая длина данных
     int Length     (int n);                                                                     // длина заданного блока
     int LengthFrom (int n);                                                                     // лина блоков, начиная с заданного

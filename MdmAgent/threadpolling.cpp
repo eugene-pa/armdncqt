@@ -20,6 +20,11 @@ static unsigned int cycles = 0;                             // счетчик ц
 static MainWindow * parent;                                 // родительское окно
 static QTime       start;                                   // засечка начала цикла
 
+// реализация тайм-аутов ожидания квитанции
+bool                    armAcked;                           // получена квитанция АРМ ДНЦ
+std::condition_variable waterAck;                           // условие ожидания квитанции
+std::mutex              mtxWater;                           // мьютекс для организации ожидания поступления данных
+static int              ackTimeout = 1000;                  // максимальное время ожидания квитанции АРМ ДНЦ
 
 // Взаимодействие рабочего потока с главным окном выполняется в нестандартной для QT технологии:
 // путем вызова статической функции главного окна, которая генерит сигнал
@@ -64,6 +69,8 @@ void ThreadPolling(long param)
 
     // ------------------------------------------------------------------------------------------------------------------
     // цикл опроса выполняется вплоть до завершения работы модуля
+    // ожидание между опросом смежных станций должно быть минимальным (ожидание между ПРД и ПРМ задается задержками, см.TryOneChannel)
+    // но: надо реализовать механизм ожидания квитанции
     while (!exit_lock.try_lock_for(chronoMS(1)))
     {
         // если нет коннекта ни в основном, ни в резервном - ждем!
@@ -85,10 +92,16 @@ void ThreadPolling(long param)
         if (!actualSt->Enable())                                        // если выключена из опроса - пропускаем
             continue;
 
+        // ожидаем квитанцию от АРМ ДНЦ не более заданного времени
+        if (!armAcked)
+        {
+            std::unique_lock<std::mutex> lck(mtxWater);
+            waterAck.wait_for(lck, std::chrono::milliseconds(ackTimeout));
+        }
+
+
         actualSt->SetKpResponce(false);                                 // пока отклика нет
-
         RasPacker pack(actualSt);                                       // подготовка пакета
-
         bool back = actualSt->IsBackChannel();                          // back - актуальная сторона опроса
         SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
 
@@ -104,8 +117,6 @@ void ThreadPolling(long param)
         // все, что могли, опросили, оцениваем результат
         if (st != nullptr)                                              // если был отклик - пометить!
         {
-            st->SetKpResponce(true);
-
             // обработать данные
             RasPacker * pack = (RasPacker *)dataIn;
             if (pack->dst != 0)
@@ -113,11 +124,14 @@ void ThreadPolling(long param)
                 // получатель - не станция связи
                 continue;
             }
+
             if (st != actualSt)
             {
                 // данные от другой станции
                 // continue;
             }
+
+            st->SetKpResponce(true);
         }
         else
         {
