@@ -93,7 +93,7 @@ void ThreadPolling(long param)
             continue;
 
         // ожидаем квитанцию от АРМ ДНЦ не более заданного времени
-        if (!armAcked)
+        if (!armAcked && g_rqAck)
         {
             std::unique_lock<std::mutex> lck(mtxWater);
             waterAck.wait_for(lck, std::chrono::milliseconds(ackTimeout));

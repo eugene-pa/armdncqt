@@ -27,6 +27,7 @@ bool    Station::InputStreamRss = false;                    // тип входн
 short	Station::MainLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. основного канала связи
 short	Station::RsrvLineCPU;                               // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 bool    Station::FastScanArchive;                           // быстрый просмотр архива - данные по объектам не обрабатываются
+bool	Station::bFullPollingAll;                           // флаг включения полного опроса всех станций
 
 // конструктор принимает на входе запись из таблицы Stations
 Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
@@ -88,7 +89,9 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     tuGetTime = 0;
 
     seans = 1;                                              // сеанс начинается с 1
-    bFullPolling = true;                                    // по умолчанию - полный опрос
+    bFullPolling = false;                                   // по умолчанию - полный опрос
+
+    lastTimeSinchro = QDateTime::currentDateTime().addSecs(-60);
 
     try
     {

@@ -46,6 +46,7 @@ public:
     static short	RsrvLineCPU;                            // -1(3)/0/1/2 (отказ/откл/WAITING/OK) - сост. обводного канала связи
 
     static bool FastScanArchive;                            // быстрый просмотр архива - данные по объектам не обрабатываются
+    static bool	bFullPollingAll;                            // флаг включения полного опроса всех станций
 
     // открытые статические функции
     //static Station * GetById(int no);                       // получить справочник по номеру станции
@@ -198,7 +199,7 @@ public:
     void AcceptDNC(class RasData *);                        // принять пачку данных АРМ ДНЦ
     BYTE GetSeans() { return seans;   }                     // очередной номер сеанса
     BYTE IncSeanc() { return ++seans; }                     // увеличить номер сеанса
-    bool IsFullPolling() { return bFullPolling; }           // полный опрос?
+    bool IsFullPolling() { return bFullPolling || bFullPollingAll; } // полный опрос?
     void SetFullPolling(bool s) { bFullPolling = s; }       // установить режим опроса полный/обновления
     bool IsTuEmpty();                                       // очередь передачи в КП пуста
 
@@ -316,6 +317,7 @@ private:
     time_t  tSpokRcv;                                       // время приема данных от СПОК
 
     QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
+    QDateTime lastTimeSinchro;                              // засечка последней синхронизации времени
 
     WORD	realLinetDataLength;                               // длина блока данных из линии
 //    BYTE	lineData [MAX_LINE_DATA_LEN];                   // данные из линии
@@ -327,7 +329,7 @@ private:
                                                             // форматрование выполняется в модкле Управление при подготовке блока, либо в Станции связи при отправке директив
     time_t	tuGetTime;                                      // засечка времени приема ТУ
 
-    bool	bFullPolling;                                   // флаг включения полного опроса станции
+    bool	bFullPolling;                                   // индивидуальный флаг включения полного опроса станции
 
 
     // можно объявить экземпляр класса DStDataFromMonitor, чтобы хранить тут сформированные или полученные данные потока

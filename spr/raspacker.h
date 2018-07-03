@@ -75,7 +75,6 @@ const BYTE TuPackRestartCount[8 ] = { 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, RQ_RES
 class RasPacker
 {
 public:
-//static BYTE counter;                                            // циклический счетчик сеансов
 static int   indxSt;                                            // индекс актуальной станции опроса
     RasPacker(class Station * st);                              // когструктор
     int Length() { return length + LEN_CTRL_INFO;  }            // общая длина пакета

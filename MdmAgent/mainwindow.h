@@ -115,6 +115,10 @@ signals:
 private slots:
     void on_action_KP_triggered();
 
+    void on_checkBox_ack_stateChanged(int arg1);
+
+    void on_checkBox_Full_stateChanged(int arg1);
+
 private:
 
     Ui::MainWindow *ui;

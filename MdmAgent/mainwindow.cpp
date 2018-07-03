@@ -108,7 +108,7 @@ ll = sizeof (int);
     rdr.GetInt("TCPPORT" , portTcp);                            // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
     rdr.GetText("MAIN"   , mainCom);                            // порт прямого   канала
     rdr.GetText("RESERVE", rsrvCom);                            // порт обратного канала
-    rdr.GetInt("DAUD"    , baud  );                             // скорость обмена с модемами
+    rdr.GetInt("ВAUD"    , baud  );                             // скорость обмена с модемами
     rdr.GetInt("DELAY"   , delay );                             // минимальная задержка между опросами станций
     rdr.GetInt("READ_INTERVAL", breakdelay);                    // максимально допустимый интервал между байтами в пакете, мс
 
@@ -149,6 +149,12 @@ ll = sizeof (int);
 
     // блокируем мьютекс завершения работы
     exit_lock.lock();
+
+    // синхронизация состояния "С квитанцией"
+    g_rqAck = ui->checkBox_ack->isChecked();
+
+    // синхронизация состояния "Полный опрос"
+    Station::bFullPollingAll = ui->checkBox_Full->isChecked();
 
     // конфигурация портов основного и обратного канала задаются в строках configMain, configRsrv
     configMain = QString("%1,%2,N,8,1").arg(mainCom).arg(baud);
@@ -239,14 +245,24 @@ void MainWindow::closeEvent(QCloseEvent *)
 void MainWindow::on_pushButtonMainOff_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
-        actualSt->AcceptDNC((RasData*)&TuPackBypassMain);
+    {
+        BYTE buf[sizeof(TuPackBypassMain)];
+        memmove(buf, TuPackBypassMain, sizeof(buf));
+        * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = (WORD)ui->spinBox->value();
+        actualSt->AcceptDNC((RasData*)&buf);
+    }
 }
 
 // отключить резервный на заданное время
 void MainWindow::on_pushButtonRsrvOff_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
-        actualSt->AcceptDNC((RasData*)&TuPackBypassRsrv);
+    {
+        BYTE buf[sizeof(TuPackBypassRsrv)];
+        memmove(buf, TuPackBypassRsrv, sizeof(buf));
+        * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = (WORD)ui->spinBox->value();
+        actualSt->AcceptDNC((RasData*)&buf);
+    }
 }
 
 // включить основной блок безусловно
@@ -305,10 +321,25 @@ void MainWindow::on_pushButtonResetRsrv_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackResetAnother);
 }
 
+// вкл.сторожевой таймер
 void MainWindow::on_pushButtonWatchdog_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
         actualSt->AcceptDNC((RasData*)&TuPackWatchdogOn);
+}
+
+// изменение состояния флажка "С квитанцией"
+void MainWindow::on_checkBox_ack_stateChanged(int arg1)
+{
+    g_rqAck = arg1 > 0;
+    if (!g_rqAck)
+        waterAck.notify_all();
+}
+
+// изменение флага "Полный опрос"
+void MainWindow::on_checkBox_Full_stateChanged(int arg1)
+{
+    Station::bFullPollingAll = arg1 > 0;
 }
 
 // отобразить число циклов
@@ -350,6 +381,9 @@ void MainWindow::GetMsg (int np, void * param)
             QString name =  st == nullptr ? "?" : st->Name();
             ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, pack->Length())).arg(name));
             ui->label_cntsnd->setText(QString::number(pack->Length()));
+
+            // отладочное сообщение
+            ui->statusBar->showMessage(QString("%1. Передача данных ст. %2").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(name));
 
             // если есть информация ОТУ - моржок индикатором ОТУ
             RasData * p = pack->GetRasData();
@@ -615,3 +649,6 @@ void MainWindow::rsStarted()
 //    qDebug() << "Старт рабочего потока " << rasRs->name();
 }
 */
+
+
+

@@ -1,8 +1,8 @@
 #include "raspacker.h"
 #include "station.h"
 
-//BYTE RasPacker::counter = 0;                            // циклический счетчик сеансов
 int  RasPacker::indxSt = -1;                            // индекс актуальной станции опроса
+
 RasPacker::RasPacker(class Station * st)
 {
     marker      = SOH;                                  // маркер
@@ -10,7 +10,7 @@ RasPacker::RasPacker(class Station * st)
     dst         = st ? st->Addr() : 0;                  // адрес назначения
     src         = CpuAddress;                           // адрес источника
 
-    // формирование счетчика сеансов должны быть интеллектуальным с учетом существующих алгоритмов полного опроса
+    // формирование счетчика сеансов должно быть интеллектуальным с учетом существующих алгоритмов полного опроса
     // на старых КП полный опрос обеспечивается нулевым значением сеанса, на новых КП используется инкремент счетчика на 2
     seans       = st->GetSeans();                       // сеанс
     if (st->IsFullPolling())
@@ -23,6 +23,19 @@ RasPacker::RasPacker(class Station * st)
 
     if (st)
     {
+        // Условия для передачи метки времени:
+        // - новый КП
+        // - минута или более с момента последней синхронизации
+        // - пустой блок для КП (нет ТУ/ОТУ или директив)
+        if (st->Kp2007() && st->lastTimeSinchro.secsTo(QDateTime::currentDateTime()) >= 60 && st->rasDataOut->Length()==0)
+        {
+            BYTE buf[sizeof(TuPackTimeSet)];
+            memmove(buf, TuPackTimeSet, sizeof(buf));
+            * (qint32 *)(buf + sizeof (buf) - 4) = (qint32) QDateTime::currentDateTime().toTime_t();
+            st->AcceptDNC((RasData*)&buf);
+            st->lastTimeSinchro = QDateTime::currentDateTime();
+        }
+
         // на время работы блокируем доступ к rasDataOut; разблокировка выполняется в деструкторе при выходе из блока
         std::lock_guard <std::mutex> locker(st->rasDataOutLock);
         int l = std::min((int)st->rasDataOut->Length(), (int)sizeof(data));
