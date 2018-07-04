@@ -71,6 +71,6 @@ public:
     char data[maxSize];
 };
 
-QString GetHostIp();
+QString GetHostIp();                                        // глобальная функция: получить IP-адрес локального хоста, по возможности, реального сетевого адаптера
 
 #endif // TCPHEADER_H

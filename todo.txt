@@ -17,6 +17,7 @@
 	+ отключить резервный на заданное время
 	+ синхронизация времени
 	- TuPackSpeedLimit - устарело
+    - опрос по UDP
     - протоколирование 
     - SQL-протоколирование
     - обрабоать ситуации: 
@@ -33,6 +34,29 @@
     - приоритет активной (выбранной) в АРМДНЦ станции
     - сообщения о смене станции (пустые) сейчас не отправляются, можно логику игнорировать
 
+
+- рабоа с датаграммами.
+	Класс QUdpSocket решает проблемы передачи и приема данных с использованием сигналов/слотов в классах, 
+	производных от QObject; в большинстве случаев этого достаточно
+- работа с малтикаст:
+	Передача в общих чертах:
+		QHostAddress groupAddress = QHostAddress("239.255.43.21");
+		QUdpSocket * udpSocket = new QUdpSocket(this);
+		udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, newTtl/*=1*/);
+		udpSocket->writeDatagram(datagram.data(), datagram.size(),groupAddress, 45454);
+	Прием:
+		groupAddress = QHostAddress("239.255.43.21");
+    		QUdpSocket *udpSocket = new QUdpSocket(this);
+    		udpSocket->bind(QHostAddress::AnyIPv4, 45454, QUdpSocket::ShareAddress);
+    		udpSocket->joinMulticastGroup(groupAddress);		
+
+	    Обработчик сигнала readyRead:
+		while (udpSocket->hasPendingDatagrams()) 
+		{
+		    QByteArray datagram;
+		    datagram.resize(udpSocket->pendingDatagramSize());
+		    udpSocket->readDatagram(datagram.data(), datagram.size());
+		}
 
   +- набор классов blackbox
     - реализация перегруженных функций записи сообщений с текстовыми параметрами

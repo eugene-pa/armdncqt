@@ -133,6 +133,9 @@ bool TcpHeader::ParseIpPort(QString& ipport, QString& ip, int& port)
     return ret;
 }
 
+// глобальная функция: получить IP-адрес локального хоста, по возможности, реального сетевого адаптера
+// возвращает первый IP из списка адресов QHostAddress, удовлетворяющий рег.выражению и не равный "127.0.0.1"
+// если не нашли - возвращаем "127.0.0.1"
 QString GetHostIp()
 {
     QList< QHostAddress > addresses = QNetworkInterface::allAddresses();
