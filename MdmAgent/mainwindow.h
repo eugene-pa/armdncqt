@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QHostAddress>
+#include <QUdpSocket>
 #include <sstream>
 #include <thread>
 #include <../common/defines.h>
@@ -47,21 +49,23 @@ class MainWindow : public QMainWindow
 public:
     enum Messages
     {
-        MSG_LOG         = 1,                                            // лог сообщения
-        MSG_SHOW_INFO   = 2,                                            // отобразить информацию об опрошенной станции
-        MSG_SHOW_PING   = 3,                                            // отобразить информацию о точке опроса
-        MSG_SHOW_SND    = 4,                                            // отобразить переданный пакет данных
-        MSG_SHOW_RCV    = 5,                                            // отобразить принятый   пакет данных
-        MSG_ERR         = 6,                                            // ошибка связи без уточнения
-        MSG_ERR_TIMEOUT = 7,                                            // ошибка тайм-аута
-        MSG_ERR_FORMAT  = 8,                                            // ошибка формата
-        MSG_ERR_CRC     = 9,                                            // ошибка CRC
+        MSG_LOG         = 1,                                    // лог сообщения
+        MSG_SHOW_INFO   = 2,                                    // отобразить информацию об опрошенной станции
+        MSG_SHOW_PING   = 3,                                    // отобразить информацию о точке опроса
+        MSG_SHOW_SND    = 4,                                    // отобразить переданный пакет данных
+        MSG_SHOW_RCV    = 5,                                    // отобразить принятый   пакет данных
+        MSG_ERR         = 6,                                    // ошибка связи без уточнения
+        MSG_ERR_TIMEOUT = 7,                                    // ошибка тайм-аута
+        MSG_ERR_FORMAT  = 8,                                    // ошибка формата
+        MSG_ERR_CRC     = 9,                                    // ошибка CRC
+        MSG_SND_NET     = 10,                                   // передача пакета для КП в сеть (датаграмма)
     };
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void closeEvent(QCloseEvent *event);
     static MainWindow * mainWnd;
+    static bool IsNetSupported();                               // поддержка сети
 
     void setCycles(unsigned int);                               // отобразить число циклов
     void setPeriod(unsigned int);                               // отобразить длит.цикла
@@ -134,6 +138,9 @@ private:
 
     void sendToAllClients(class StationNetTS*);                 // отправить данные всем подключенным клиентам, от которыъ было подтверждение
 
+    QUdpSocket * udpSocket;                                     // сокет для связи с КП посредством датаграмм
+    int         portSnd;                                        // порт передачи датаграмм
+    int         portRcv;                                        // порт приема датаграмм
     //class BlockingRS * rasRs;
 };
 

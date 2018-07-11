@@ -22,9 +22,11 @@ static QTime       start;                                   // засечка н
 
 // реализация тайм-аутов ожидания квитанции
 bool                    armAcked;                           // получена квитанция АРМ ДНЦ
-std::condition_variable waterAck;                           // условие ожидания квитанции
-std::mutex              mtxWater;                           // мьютекс для организации ожидания поступления данных
+std::condition_variable waterAck;                           // условие ожидания квитанции АРМ ДНЦ
+std::condition_variable waterNet;                           // условие ожидания отклика КП по сети
+std::mutex              mtxWater;                           // мьютекс для организации ожидания поступления данных (квитанций, отклика - все на одном мьютексе)
 static int              ackTimeout = 1000;                  // максимальное время ожидания квитанции АРМ ДНЦ
+static int              netTimeout = 100;                   // максимальное время ожидания отклика по сети
 
 // Взаимодействие рабочего потока с главным окном выполняется в нестандартной для QT технологии:
 // путем вызова статической функции главного окна, которая генерит сигнал
@@ -61,7 +63,7 @@ void ThreadPolling(long param)
     {
         Logger::LogStr ("Обратный канал: " + configMain);
         rs2 = new BlockingRS(configRsrv);
-        rs1->SetTimeWaiting(200);
+        rs2->SetTimeWaiting(200);
         rs2->start();
     }
 
@@ -106,6 +108,15 @@ void ThreadPolling(long param)
         SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
 
         Station * st = nullptr;                                         // станция отклика
+        // если задан сетевой опрос - опросить по сети, иначе - по COM-портам
+        // можно оставить опрос по COM-портам при отсутствии отклика из сети
+        if (MainWindow::IsNetSupported())
+        {
+            SendMessage (MainWindow::MSG_SND_NET, &pack);
+            std::unique_lock<std::mutex> lck(mtxWater);
+            waterNet.wait_for(lck, std::chrono::milliseconds(netTimeout));
+        }
+        else
         if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)
         {
             // если нет отклика - пробуем с другой стороны
@@ -113,6 +124,7 @@ void ThreadPolling(long param)
             SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
             st = TryOneChannel(back ? rs2 : rs1, &pack);
         }
+
 
         // все, что могли, опросили, оцениваем результат
         if (st != nullptr)                                              // если был отклик - пометить!

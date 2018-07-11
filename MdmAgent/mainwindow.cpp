@@ -100,6 +100,8 @@ ll = sizeof (int);
     path = QFileInfo(dbname).absoluteDir().absolutePath();
     extDb       = path + "/bd/armext.db";
     esrdbbname  = path + "/bd/arm.db";
+    portSnd = 0;                                                // порт передачи датаграмм
+    portRcv = 0;                                                // порт приема датаграмм
 
 
     int ras = 1;
@@ -112,6 +114,8 @@ ll = sizeof (int);
     rdr.GetInt("DELAY"   , delay );                             // минимальная задержка между опросами станций
     rdr.GetInt("READ_INTERVAL", breakdelay);                    // максимально допустимый интервал между байтами в пакете, мс
 
+    rdr.GetInt("UDPSEND"   , portSnd);                          // порт передачи датаграмм
+    rdr.GetInt("UDPRECEIVE", portRcv);                          // порт приема датаграмм
     // --------------------------------------------------------------------------------------------------------------------------
 
     KrugInfo * krug = nullptr;
@@ -196,6 +200,10 @@ ll = sizeof (int);
     QObject::connect(server, SIGNAL(roger        (ClientTcp*  )), this, SLOT(slotRoger            (ClientTcp*)));
     server->start();
 
+    // если определены сетевые порты, создаем сокет для датаграмм
+    udpSocket = IsNetSupported() ? new QUdpSocket(this) : nullptr;
+
+    // udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 1);		// время жизни пакета =1, думаю, можно не делать
 }
 
 MainWindow::~MainWindow()
@@ -475,6 +483,15 @@ void MainWindow::GetMsg (int np, void * param)
             Logger::LogStr ("Ошибка CRC");                      // лог
             break;
 
+        // передать сообщение
+        case MSG_SND_NET:
+            {
+            RasPacker * pack = (RasPacker*)param;
+            if (udpSocket)
+                udpSocket->writeDatagram((char *)pack, pack->Length(), QHostAddress::Broadcast, portSnd);		// передача данных с указанием адреса(можно всем) и порта
+            }
+            break;
+
         default:
             break;
     }
@@ -622,6 +639,13 @@ void MainWindow::slotRoger  (ClientTcp * client)
     Q_UNUSED (client)
     ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
 }
+
+// поддержка сети
+bool MainWindow::IsNetSupported()
+{
+    return mainWnd->portSnd && mainWnd->portRcv;
+}
+
 
 /*
 // обработка сигнала-уведомления о готовности данных

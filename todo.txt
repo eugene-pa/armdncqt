@@ -17,7 +17,11 @@
 	+ отключить резервный на заданное время
 	+ синхронизация времени
 	- TuPackSpeedLimit - устарело
-    - опрос по UDP
+
+    - опрос по UDP - обдумать: необходима синхронизация 
+      вариант: при передаче данных отсылаем сообщение с данными окну и ждем отклика wait_for заданное время 
+	       данные передаются через выделенный буфер приема.
+
     - протоколирование 
     - SQL-протоколирование
     - обрабоать ситуации: 
@@ -38,18 +42,19 @@
 - рабоа с датаграммами.
 	Класс QUdpSocket решает проблемы передачи и приема данных с использованием сигналов/слотов в классах, 
 	производных от QObject; в большинстве случаев этого достаточно
-- работа с малтикаст:
+- работа с UDP и малтикаст:
 	Передача в общих чертах:
 		QHostAddress groupAddress = QHostAddress("239.255.43.21");
-		QUdpSocket * udpSocket = new QUdpSocket(this);
-		udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, newTtl/*=1*/);
-		udpSocket->writeDatagram(datagram.data(), datagram.size(),groupAddress, 45454);
-	Прием:
-		groupAddress = QHostAddress("239.255.43.21");
-    		QUdpSocket *udpSocket = new QUdpSocket(this);
-    		udpSocket->bind(QHostAddress::AnyIPv4, 45454, QUdpSocket::ShareAddress);
-    		udpSocket->joinMulticastGroup(groupAddress);		
+		QUdpSocket * udpSocket = new QUdpSocket(this);						// создать сокет
+		udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, newTtl/*=1*/);		// время жизни пакета =1, думаю, можно не делать
+		udpSocket->writeDatagram(datagram.data(), datagram.size(),groupAddress, 45454);		// передача данных с указанием адреса(можно всем) и порта
 
+	Прием:
+		QUdpSocket *udpSocket = new QUdpSocket(this);						// создать сокет
+		udpSocket->bind(QHostAddress::AnyIPv4, 45454, QUdpSocket::ShareAddress);		// привязать сокет, здесь - широковещательно ко всем IP и порту
+		 groupAddress = QHostAddress("239.255.43.21");
+    		 udpSocket->joinMulticastGroup(groupAddress);		
+		connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));		// приявязать обработчик приема
 	    Обработчик сигнала readyRead:
 		while (udpSocket->hasPendingDatagrams()) 
 		{
