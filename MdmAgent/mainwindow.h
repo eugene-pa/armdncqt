@@ -16,6 +16,9 @@ extern QString configMain;                                  // строка ко
 extern QString configRsrv;                                  // строка конфигурации BlockingRS обратного канала
 extern bool armAcked;                                       // получена квитанция АРМ ДНЦ
 extern std::condition_variable waterAck;                    // условие ожидания квитанции
+extern std::condition_variable waterNet;                    // условие ожидания датаграмм
+extern BYTE dataInNet[4096];                                // входные данные, полученные по сети
+extern int  dataInNetLength;                                // длина необработанных данных
 
 void Log (std::wstring);                                    // сатическая функция вывода лога
 void SendMessage (int, void *);                             // сатическая функция отправки сообщения
@@ -112,6 +115,9 @@ public slots:
     void slotSvrDisconnected  (ClientTcp *);
     void slotRoger            (ClientTcp *);
 
+    // прием датаграмм
+    void readDatagramm();
+
 signals:
     void exit();
     void changeStation(class Station *);                                // смена станции
@@ -138,7 +144,8 @@ private:
 
     void sendToAllClients(class StationNetTS*);                 // отправить данные всем подключенным клиентам, от которыъ было подтверждение
 
-    QUdpSocket * udpSocket;                                     // сокет для связи с КП посредством датаграмм
+    QUdpSocket * sndSocket;                                     // сокет для передачи в КП датаграмм
+    QUdpSocket * rcvSocket;                                     // сокет для приема датаграмм из КП
     int         portSnd;                                        // порт передачи датаграмм
     int         portRcv;                                        // порт приема датаграмм
     //class BlockingRS * rasRs;

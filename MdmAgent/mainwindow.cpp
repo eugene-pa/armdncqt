@@ -200,10 +200,18 @@ ll = sizeof (int);
     QObject::connect(server, SIGNAL(roger        (ClientTcp*  )), this, SLOT(slotRoger            (ClientTcp*)));
     server->start();
 
-    // если определены сетевые порты, создаем сокет для датаграмм
-    udpSocket = IsNetSupported() ? new QUdpSocket(this) : nullptr;
+    // если определены сетевые порты, создаем сокеты для передачи/приема датаграмм
+    if (IsNetSupported())
+    {
+        sndSocket = new QUdpSocket(this);              // сокет для передачи в КП датаграмм
+//      sndSocket->bind(QHostAddress("192.168.0.105"));// можно привязать сокет к конкретному сетевому адаптеру
 
-    // udpSocket->setSocketOption(QAbstractSocket::MulticastTtlOption, 1);		// время жизни пакета =1, думаю, можно не делать
+        rcvSocket = new QUdpSocket(this);              // сокет для приема датаграмм из КП
+        rcvSocket->bind(QHostAddress::AnyIPv4, portRcv, QUdpSocket::ShareAddress);  // привязать сокет ко всем IP и порту
+        connect(rcvSocket, SIGNAL(readyRead()), this, SLOT(readDatagramm()));
+    }
+    else
+        rcvSocket = sndSocket = nullptr;
 }
 
 MainWindow::~MainWindow()
@@ -487,8 +495,8 @@ void MainWindow::GetMsg (int np, void * param)
         case MSG_SND_NET:
             {
             RasPacker * pack = (RasPacker*)param;
-            if (udpSocket)
-                udpSocket->writeDatagram((char *)pack, pack->Length(), QHostAddress::Broadcast, portSnd);		// передача данных с указанием адреса(можно всем) и порта
+            if (sndSocket)
+                sndSocket->writeDatagram((char *)pack, pack->Length(), QHostAddress::Broadcast, portSnd);		// передача данных с указанием адреса(можно всем) и порта
             }
             break;
 
@@ -645,6 +653,37 @@ bool MainWindow::IsNetSupported()
 {
     return mainWnd->portSnd && mainWnd->portRcv;
 }
+
+// слот "прием датаграмм" от КП
+void MainWindow::readDatagramm()
+{
+    while (rcvSocket->hasPendingDatagrams())
+    {
+        QByteArray datagram;
+        datagram.resize(rcvSocket->pendingDatagramSize());
+        rcvSocket->readDatagram(datagram.data(), datagram.size());
+        // cкопировать принятые данные в буфер
+        if (dataInNetLength == 0 )
+        {
+            // копируем данные, устанавливаем длину
+            memcpy(dataInNet, datagram.data(), std::min (datagram.size(), (int)sizeof (dataInNet)));
+            dataInNetLength = datagram.size();
+        }
+        else
+        {
+            // теряем данные, так как в буфере лежат необработанные данные
+        }
+
+        // уведомляем о приеме ожидающий рабочий поток
+        waterNet.notify_all();
+
+    }
+}
+
+
+
+
+
 
 
 /*

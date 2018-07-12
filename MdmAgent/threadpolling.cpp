@@ -14,7 +14,10 @@
 #include "threadpolling.h"
 
 // статически объявленные переменные, используемые в рабочем потоке
-static BYTE dataIn [4048];                                  // входные данные
+static BYTE dataIn [4096];                                  // входные данные COM-порта
+       BYTE dataInNet[4096];                                // входные данные, полученные по сети
+       int  dataInNetLength;                                // длина необработанных данных
+
 //BYTE dataOut[4048];                                       // выходные данные
 static unsigned int cycles = 0;                             // счетчик циклов
 static MainWindow * parent;                                 // родительское окно
@@ -114,7 +117,20 @@ void ThreadPolling(long param)
         {
             SendMessage (MainWindow::MSG_SND_NET, &pack);
             std::unique_lock<std::mutex> lck(mtxWater);
-            waterNet.wait_for(lck, std::chrono::milliseconds(netTimeout));
+            std::cv_status ret = waterNet.wait_for(lck, std::chrono::milliseconds(netTimeout));
+            if (ret != std::cv_status::timeout)
+            {
+                // приняты данные, обработать
+                if (dataInNetLength)
+                {
+                    GetDataNet(dataInNet, dataInNetLength);
+                    dataInNetLength = 0;
+                }
+                else
+                {
+                    // нет данных; нонсенс
+                }
+            }
         }
         else
         if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)
@@ -223,7 +239,7 @@ bool GetData(BlockingRS * rs)
         {
             if (st)
                 st->GetSysInfo()->SetLineStatus(LineCRC);
-            SendMessage (MainWindow::MSG_ERR_CRC, dataIn);
+            SendMessage (MainWindow::MSG_ERR_CRC, dataIn);      // ошибка CRC
             return false;
         }
         else
@@ -231,7 +247,7 @@ bool GetData(BlockingRS * rs)
         {
             if (st)
                 st->GetSysInfo()->SetLineStatus(LineFormat);
-            SendMessage (MainWindow::MSG_ERR_CRC, dataIn);
+            SendMessage (MainWindow::MSG_ERR_FORMAT, dataIn);   // ошибка формата
         }
         else
         {
@@ -252,6 +268,16 @@ bool GetData(BlockingRS * rs)
     return true;
 }
 
+// обработка пакета КП, принятых по сети
+bool GetDataNet(BYTE * data, int length)
+{
+    if (length)
+    {
+        int l = * (WORD*)(data +1);
+        if (data[0] != SOH || data[l-1] != EOT || l > length)
+           SendMessage (MainWindow::MSG_ERR_FORMAT, data);      // ошибка формата
+    }
+}
 
 
 
