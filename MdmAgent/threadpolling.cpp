@@ -11,17 +11,18 @@
 #include "../common/common.h"
 #include "../common/blockingrs.h"
 #include "../common/pamessage.h"
+#include "../common/archiver.h"
 #include "threadpolling.h"
 
 // статически объявленные переменные, используемые в рабочем потоке
-static BYTE dataIn [4096];                                  // входные данные COM-порта
-       BYTE dataInNet[4096];                                // входные данные, полученные по сети
-       int  dataInNetLength;                                // длина необработанных данных
+static BYTE dataIn [MAX_LINE_DATA_LEN*2];                   // входные данные COM-порта
+       std::queue <unsigned char> dataInNet;                // входные данные, полученные по сети хранятся в очереди
+       std::mutex                 mtxDataNet;               // синхронизация доступа к очереди dataInNet из основного и рабочего потоков
 
 //BYTE dataOut[4048];                                       // выходные данные
-static unsigned int cycles = 0;                             // счетчик циклов
-static MainWindow * parent;                                 // родительское окно
-static QTime       start;                                   // засечка начала цикла
+unsigned int cycles = 0;                                    // счетчик циклов всех станций
+QTime       start;                                          // засечка начала цикла
+//static MainWindow * parent;                                 // родительское окно
 
 // реализация тайм-аутов ожидания квитанции
 bool                    armAcked;                           // получена квитанция АРМ ДНЦ
@@ -30,6 +31,7 @@ std::condition_variable waterNet;                           // условие о
 std::mutex              mtxWater;                           // мьютекс для организации ожидания поступления данных (квитанций, отклика - все на одном мьютексе)
 static int              ackTimeout = 1000;                  // максимальное время ожидания квитанции АРМ ДНЦ
 static int              netTimeout = 100;                   // максимальное время ожидания отклика по сети
+static ArhWriter arhWriter("log", "@_ras");                 // бинарный архив
 
 // Взаимодействие рабочего потока с главным окном выполняется в нестандартной для QT технологии:
 // путем вызова статической функции главного окна, которая генерит сигнал
@@ -45,9 +47,10 @@ static int              netTimeout = 100;                   // максимал�
 //              как локальный параметр на стеке, так как она будет использоваться здесь в рабочем потоке позже
 void ThreadPolling(long param)
 {
+    Q_UNUSED (param)
     Logger::LogStr ("Поток опроса каналов связи запущен");
 
-    parent = (MainWindow*) param;
+    //parent = (MainWindow*) param;
 
     BlockingRS * rs1 = nullptr;
     BlockingRS * rs2 = nullptr;
@@ -86,7 +89,7 @@ void ThreadPolling(long param)
         Station::MainLineCPU = rs1==nullptr ? 0 : !rs1->IsOpen() ? -1 : rs1->CourierDetect() ? 2 : 1;    // -1(3)/0/1/2 (отказ/откл/WAITING/OK)
         Station::RsrvLineCPU = rs2==nullptr ? 0 : !rs2->IsOpen() ? -1 : rs2->CourierDetect() ? 2 : 1;
 
-        if (!(readyMain || readyRsrv))
+        if (!(readyMain || readyRsrv) && !MainWindow::IsNetSupported()) // если нет готовности портов и не описано сетевое подключение - ожидание
             continue;
 
         if (actualSt)
@@ -97,50 +100,42 @@ void ThreadPolling(long param)
         if (!actualSt->Enable())                                        // если выключена из опроса - пропускаем
             continue;
 
-        // ожидаем квитанцию от АРМ ДНЦ не более заданного времени
+        // если была отправка в АРМ, ожидаем квитанцию от АРМ ДНЦ не более заданного времени
         if (!armAcked && g_rqAck)
         {
             std::unique_lock<std::mutex> lck(mtxWater);
             waterAck.wait_for(lck, std::chrono::milliseconds(ackTimeout));
         }
 
-
         actualSt->SetKpResponce(false);                                 // пока отклика нет
         RasPacker pack(actualSt);                                       // подготовка пакета
         bool back = actualSt->IsBackChannel();                          // back - актуальная сторона опроса
         SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
 
+        arhWriter.Save(&pack, pack.Length(), 2);
+
         Station * st = nullptr;                                         // станция отклика
+
         // если задан сетевой опрос - опросить по сети, иначе - по COM-портам
         // можно оставить опрос по COM-портам при отсутствии отклика из сети
-        if (MainWindow::IsNetSupported())
+        if (MainWindow::IsNetSupported())                               // работаем по сети
         {
             SendMessage (MainWindow::MSG_SND_NET, &pack);
             std::unique_lock<std::mutex> lck(mtxWater);
             std::cv_status ret = waterNet.wait_for(lck, std::chrono::milliseconds(netTimeout));
             if (ret != std::cv_status::timeout)
             {
-                // приняты данные, обработать
-                if (dataInNetLength)
-                {
-                    GetDataNet(dataInNet, dataInNetLength);
-                    dataInNetLength = 0;
-                }
-                else
-                {
-                    // нет данных; нонсенс
-                }
+                if (GetData(nullptr))                                  // приняты данные, обработать
+                    st = ((RasPacker *)&dataIn)->st;
             }
         }
         else
-        if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)
+        if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)  // работаем по СОМ-портам
         {
-            // если нет отклика - пробуем с другой стороны
-            actualSt->SetBackChannel(back = !back);
+            actualSt->SetBackChannel(back = !back);                     // если не было отклика - пробуем с другой стороны
             SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
             st = TryOneChannel(back ? rs2 : rs1, &pack);
         }
-
 
         // все, что могли, опросили, оцениваем результат
         if (st != nullptr)                                              // если был отклик - пометить!
@@ -165,6 +160,8 @@ void ThreadPolling(long param)
         {
             // уведомить об ошибке
             SendMessage (MainWindow::MSG_ERR, actualSt);
+            actualSt->GetSysInfo()->SetLineStatus(LineTimeOut);
+            armAcked = true;                                            // не уведомляли АРМ, значит не ждем квитанцию
         }
     }
     // ------------------------------------------------------------------------------------------------------------------
@@ -196,6 +193,33 @@ Station * TryOneChannel(BlockingRS * rs, RasPacker* data)
     return GetData(rs) ? ((RasPacker *)&dataIn)->st : nullptr;
 }
 
+// получить байт сетевых данных
+int GetChNet()
+{
+    bool nodata = false;
+    int  bt;
+    {
+        std::lock_guard <std::mutex> locker(mtxDataNet);
+        if (dataInNet.empty())
+            nodata = true;
+        else
+        {
+            bt = dataInNet.front();
+            dataInNet.pop();
+        }
+    }
+    if (nodata)
+        throw RsException();
+    return bt;
+}
+
+// получить байт данных или из СОМ-порта или сетевых
+// rs - указатель на СОМ-порт, если нулевой - берем сетевые данные
+int GetChar(BlockingRS * rs)
+{
+    return rs == nullptr ? GetChNet() : rs->GetChEx();
+}
+
 // прием данных во входной массив dataIn из заданного канала
 bool GetData(BlockingRS * rs)
 {
@@ -207,25 +231,27 @@ bool GetData(BlockingRS * rs)
     // таким образом, имеем единственный таймаут, управляющий работой приема, причем обрабатываемый внутри RsAsinc, а не ОС
     try
     {
-        while ((ch = rs->GetChEx()) != SOH)             // ожидаем маркер
+        while ((ch = GetChar(rs)) != SOH)                       // ожидаем маркер
             ;
 
         dataIn[indx++] = SOH;
         // прием длины
-        dataIn[indx++] = rs->GetChEx();                 // младший байт длины
-        dataIn[indx++] = rs->GetChEx();                 // старший байтдлины
+        dataIn[indx++] = GetChar(rs);                           // младший байт длины
+        dataIn[indx++] = GetChar(rs);                           // старший байтдлины
         int l = (dataIn[indx-1] << 8) | dataIn[indx-2];
 
         // прием тела пакета
         for (int i=0; i<l; i++)
         {
-            dataIn[indx++] = rs->GetChEx();
+            dataIn[indx++] = GetChar(rs);
         }
 
         // прием CRC и EOT
-        dataIn[indx++] = rs->GetChEx();
-        dataIn[indx++] = rs->GetChEx();
-        dataIn[indx++] = rs->GetChEx();
+        dataIn[indx++] = GetChar(rs);
+        dataIn[indx++] = GetChar(rs);
+        dataIn[indx++] = GetChar(rs);
+
+        arhWriter.Save(&dataIn, indx, 1);                        // сохранить полученный пакет
 
         // хочу вернуть справочник станции, от которой получены данные
         // использование актуальной станции некорректно, так как ответ может прийти от другой станции
@@ -268,19 +294,6 @@ bool GetData(BlockingRS * rs)
     return true;
 }
 
-// обработка пакета КП, принятых по сети
-bool GetDataNet(BYTE * data, int length)
-{
-    if (length)
-    {
-        int l = * (WORD*)(data +1);
-        if (data[0] != SOH || data[l-1] != EOT || l > length)
-           SendMessage (MainWindow::MSG_ERR_FORMAT, data);      // ошибка формата
-    }
-}
-
-
-
 
 // получить след.станцию для опроса
 // функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
@@ -289,8 +302,7 @@ Station * NextSt()
     if (++RasPacker::indxSt >= (int)Station::StationsOrg.size())
     {
         RasPacker::indxSt = 0;
-        parent->setCycles(++cycles);
-        parent->setPeriod((int)(start.msecsTo(QTime::currentTime())));
+        cycles++;
         start = QTime::currentTime();
     }
     return Station::StationsOrg[RasPacker::indxSt];

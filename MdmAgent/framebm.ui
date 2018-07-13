@@ -48,7 +48,9 @@
    </property>
    <property name="font">
     <font>
-     <pointsize>8</pointsize>
+     <pointsize>9</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
     </font>
    </property>
    <property name="text">
@@ -105,7 +107,7 @@
        </font>
       </property>
       <property name="text">
-       <string>57600</string>
+       <string>-</string>
       </property>
      </widget>
     </item>
@@ -213,7 +215,7 @@
        </font>
       </property>
       <property name="text">
-       <string>57600</string>
+       <string>-</string>
       </property>
      </widget>
     </item>

@@ -627,6 +627,12 @@
        <height>17</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="text">
       <string>Станция</string>
      </property>
@@ -646,9 +652,9 @@
      <widget class="QSpinBox" name="spinBox">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>8</x>
         <y>40</y>
-        <width>42</width>
+        <width>48</width>
         <height>22</height>
        </rect>
       </property>

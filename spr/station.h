@@ -106,6 +106,7 @@ public:
     bool IsMu       () { return stsMu;      }
     bool IsOn       () { return stsOn;      }
     bool IsRsrv     () { return stsRsrv;    }               // КП на резерве
+    void SetRsrv (bool s) { stsRsrv = s;    }               // изменить признак резерва
     bool IsCom3On   () { return stsCom3On;  }
     bool IsCom4On   () { return stsCom4On;  }
     bool IsBackChannel() { return stsBackChannel; }         // последний опрос станции по обратному каналу

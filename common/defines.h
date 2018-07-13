@@ -160,7 +160,7 @@ extern time_t g_DeltaTZ;                                    // разница в
 extern int  g_RealStreamTsLength;                           // реальная длина однобитного блока данных ТС в актуальном потоке ТС; с учетом двухбитной передачи длина удваивается
 extern bool g_QuickSearching;                               // флаг ускоренного сканирования входного потока
 
-extern bool g_rqAck;                                        // требовать явное подтверждение ввода команд нажатием кнопки
+extern bool g_rqAck;                                        // ожидание квитанции от АРМ ДНЦ
 
 extern class Station * g_actualStation;                     // актуальная станция
 extern class ShapeId * g_actualForm;                        // актуальная схема

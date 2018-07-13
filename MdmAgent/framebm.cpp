@@ -26,7 +26,7 @@ void FrameBM::setRsrv(bool s)
 void FrameBM::Show(class Station * pst)
 {
     st = pst;
-    SysInfo * info = st->GetSysInfo(st->IsRsrv());
+    SysInfo * info = st->GetSysInfo(rsrv);
     ui->label_version->setText(QString("ver.1.0.7.%1").arg(info->LoVersionNo()));
     ui->label_Speed3 ->setText(QString::number(info->SpeedCom3()));
     ui->label_Speed4 ->setText(QString::number(info->SpeedCom4()));

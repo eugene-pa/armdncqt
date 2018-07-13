@@ -406,6 +406,9 @@ void MainWindow::GetMsg (int np, void * param)
             if (!pack->IsEmpty() && p->Length())
                 ((kpframe *)st->userData)->SetOtuLed(true, true);
             }
+
+            setCycles(cycles);
+            setPeriod((int)(start.msecsTo(QTime::currentTime())));
             break;
 
         // успешный прием данных от КП
@@ -434,13 +437,14 @@ void MainWindow::GetMsg (int np, void * param)
                 {
                     // учесть переменную длину 9/15/30 и в случае 30 - записать оба блока
                     // первым всегда идет активный блок
-                    bool act = pack->data[8] & 1;               // признак резерва
-                    SysInfo * sysinfo = st->GetSysInfo(act);
+                    st->SetRsrv((data->PtrSys()[8] & 1) > 0);   // признак резерва
+                    SysInfo * sysinfo = st->GetSysInfo(st->IsRsrv());
                     sysinfo->Parse(data->PtrSys(), data->LengthSys());
+
                     if (data->LengthSys() == 30)
                     {
                         // нформация по 2-м блокам: основному и резервному
-                        sysinfo = st->GetSysInfo(!act);
+                        sysinfo = st->GetSysInfo(!st->IsRsrv());
                         sysinfo->Parse(data->PtrSys()+15, 15);
                     }
 
@@ -498,6 +502,7 @@ void MainWindow::GetMsg (int np, void * param)
             if (sndSocket)
                 sndSocket->writeDatagram((char *)pack, pack->Length(), QHostAddress::Broadcast, portSnd);		// передача данных с указанием адреса(можно всем) и порта
             }
+            GetMsg (MSG_SHOW_SND, param);                       // рекурсивный вызов для отображения
             break;
 
         default:
@@ -662,16 +667,12 @@ void MainWindow::readDatagramm()
         QByteArray datagram;
         datagram.resize(rcvSocket->pendingDatagramSize());
         rcvSocket->readDatagram(datagram.data(), datagram.size());
-        // cкопировать принятые данные в буфер
-        if (dataInNetLength == 0 )
+
+        // зписываем принятые данные в очередь
         {
-            // копируем данные, устанавливаем длину
-            memcpy(dataInNet, datagram.data(), std::min (datagram.size(), (int)sizeof (dataInNet)));
-            dataInNetLength = datagram.size();
-        }
-        else
-        {
-            // теряем данные, так как в буфере лежат необработанные данные
+        std::lock_guard <std::mutex> locker(mtxDataNet);
+        for (int i=0; i<datagram.size(); i++)
+            dataInNet.push(datagram[i]);
         }
 
         // уведомляем о приеме ожидающий рабочий поток

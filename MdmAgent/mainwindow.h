@@ -17,8 +17,10 @@ extern QString configRsrv;                                  // строка ко
 extern bool armAcked;                                       // получена квитанция АРМ ДНЦ
 extern std::condition_variable waterAck;                    // условие ожидания квитанции
 extern std::condition_variable waterNet;                    // условие ожидания датаграмм
-extern BYTE dataInNet[4096];                                // входные данные, полученные по сети
-extern int  dataInNetLength;                                // длина необработанных данных
+extern std::queue <unsigned char> dataInNet;                // входные данные, полученные по сети
+extern std::mutex                 mtxDataNet;               // синхронизация доступа к dataInNet
+extern unsigned int cycles;                                 // счетчик циклов всех станций
+extern QTime       start;                                   // засечка начала цикла
 
 void Log (std::wstring);                                    // сатическая функция вывода лога
 void SendMessage (int, void *);                             // сатическая функция отправки сообщения

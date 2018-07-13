@@ -6,6 +6,7 @@
 class ArchiveHeader                                         // заголовок архива
 {
 friend class ArhReader;
+friend class ArhWriter;
 public:
     enum
     {
@@ -14,7 +15,7 @@ public:
         headersize = 12,
     };
 
-    ArchiveHeader() { }                                     // конструктор по умолчанию
+    ArchiveHeader(int l = 0, WORD t=0, WORD r=0);           // конструктор по умолчанию
     ArchiveHeader(QFile * file);                            // конструктор на основе открытого и позиционированного файла
     int Read(QFile * file);                                 // чтение заголовка
     int Length() { return length; }
@@ -22,10 +23,10 @@ private:
     WORD	signature;                                      // сигнатура
     union
     {
-        BYTE b[2];
+        BYTE b[2];                                          // резерв - доп.инфо
         WORD w;
     } Rsrv;                                                 // резерв
-    UINT    time;                                           // время time_t
+    quint32 time;                                           // время time_t
     WORD	type;                                           // тип
     WORD	length;                                         // длина записи
 
@@ -81,9 +82,10 @@ private:
 class ArhWriter
 {
 public:
-    ArhWriter(QString& dir, QString& prefix);               // конструктор для записи
+    ArhWriter(QString dir, QString prefix);                 // конструктор для записи
+    void Save(void *data, int length, WORD type, WORD r=0); // запись в архив
 private:
-    QDir    dir;                                            // папка для записи
+    QString dir;                                            // папка для записи
     QString filename;                                       // файл для записи
     QString prefix;                                         // префикс при формировании имени файла для записи (пример @_)
 };

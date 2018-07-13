@@ -4,6 +4,16 @@
 #include "archiver.h"
 
 
+// конструктор по умолчанию
+ArchiveHeader::ArchiveHeader(int l, WORD t, WORD r)
+{
+    signature = SIGNATURE;
+    Rsrv.w = r;                                                 // резерв - доп.инфо
+    time = (quint32)QDateTime::currentDateTime().toTime_t();
+    type = t;                                                   // тип
+    length = (WORD)l;                                           // длина данных
+}
+
 // конструктор на основе открытого и позиционированного файла
 ArchiveHeader::ArchiveHeader(QFile * file)
 {
@@ -153,3 +163,35 @@ bool ArhReader::setPrevHour(QDateTime t)
     int dt = t.time().minute()*60 + t.time().second() + 1;
     return setArhName(QDateTime::fromTime_t(t.toTime_t() - dt));
 }
+
+//======================================================================================================================================
+
+// конструктор для записи
+ArhWriter::ArhWriter(QString s, QString prefix)
+{
+    dir = s;    // QFileInfo(filename).absoluteDir();
+    QFileInfo fi(dir + "/test");
+    if (fi.isRelative())
+    {
+        // создаем папку лога
+        dir = QString("%1/%2").arg(QDir::current().absolutePath()).arg(fi.path());
+        fi.dir().mkdir(dir);
+    }
+
+    this->prefix = prefix;
+}
+
+// запись данных в архив
+void ArhWriter::Save(void *data, int length, WORD type, WORD r)
+{
+    ArchiveHeader header(length, type, r);
+    QString name = QString("%1/%2%3.arh").arg(dir).arg(prefix).arg(QTime::currentTime().hour());
+    QFile file (name);
+    file.open(QIODevice::Append);
+    qint32 pos = (quint32)file.pos();
+    file.write((const char*)(&header), ArchiveHeader::headersize);
+    file.write((const char*)data, length);
+    file.write((const char*)&pos,4);
+}
+
+
