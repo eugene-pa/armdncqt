@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QHostAddress>
 #include <QUdpSocket>
+#include <QMessageBox>
 #include <sstream>
 #include <thread>
 #include <../common/defines.h>

@@ -257,26 +257,41 @@ void MainWindow::closeEvent(QCloseEvent *)
 */
 }
 
+
+// Формирование и передача директив управления КП =================================================================================================
+
 // отключить основной на заданное время
 void MainWindow::on_pushButtonMainOff_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        BYTE buf[sizeof(TuPackBypassMain)];
-        memmove(buf, TuPackBypassMain, sizeof(buf));
-        * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = (WORD)ui->spinBox->value();
-        actualSt->AcceptDNC((RasData*)&buf);
+        QString msg =   "Введена команда БЕЗУСЛОВНОГО перехода на резервный блок КП."
+                        "Если резернный блок неисправен, Вы можете ПОТЕРЯТЬ КОНТРОЛЬ СТАНЦИИ!\n"
+                        "Рекомендуется сначала убедиться в его работоспособности путем отключения основного блока"
+                        "с ограничением времени на 1-3 минуты\n\nВСЕ РАВНО ВЫПОЛНИТЬ КОМАНДУ ?";
+
+        WORD delay = (WORD)ui->spinBox->value();
+        if (delay > 0 ||QMessageBox::question(this, "Управление КП", msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        {
+            BYTE buf[sizeof(TuPackBypassMain)];
+            memmove(buf, TuPackBypassMain, sizeof(buf));
+            * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = delay;
+            actualSt->AcceptDNC((RasData*)&buf);
+            Logger::LogStr (QString("Ст.%1. Выдана команда: ").arg(actualSt->Name()) + (delay ? QString("Отключение основного блока на %1 мин.").arg(delay) : "Отключение основного блока"));
+        }
     }
 }
 
 // отключить резервный на заданное время
 void MainWindow::on_pushButtonRsrvOff_clicked()
 {
+    WORD delay = (WORD)ui->spinBox->value();
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: ").arg(actualSt->Name()) + (delay ? QString("Отключение резервного блока на %1 мин.").arg(delay) : "Отключение резервного блока"));
         BYTE buf[sizeof(TuPackBypassRsrv)];
         memmove(buf, TuPackBypassRsrv, sizeof(buf));
-        * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = (WORD)ui->spinBox->value();
+        * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = delay;
         actualSt->AcceptDNC((RasData*)&buf);
     }
 }
@@ -285,64 +300,104 @@ void MainWindow::on_pushButtonRsrvOff_clicked()
 void MainWindow::on_pushButtonToMain_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Включение основного блока").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackSetMain);
+    }
 }
 
 // Переход на резервный блок безусловно
 void MainWindow::on_pushButtonToRsrv_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
-        actualSt->AcceptDNC((RasData*)&TuPackSetRsrv);
+    {
+        QString msg = "Введена команда БЕЗУСЛОВНОГО перехода на резервный блок КП."
+                      "Если резернный блок неисправен, Вы можете ПОТЕРЯТЬ КОНТРОЛЬ СТАНЦИИ!\n"
+                      "Рекомендуется сначала убедиться в его работоспособности путем отключения основного блока"
+                      "на 1-3 минуты командой 'Отключение основного блока'\n\nВСЕ РАВНО ВЫПОЛНИТЬ КОМАНДУ ?";
+        if (QMessageBox::question(this, "Управление КП", msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        {
+            Logger::LogStr (QString("Ст.%1. Выдана команда: Переход на резервный блок").arg(actualSt->Name()));
+            actualSt->AcceptDNC((RasData*)&TuPackSetRsrv);
+        }
+    }
 }
 
 // запуск теста МТУ/МТС
 void MainWindow::on_pushButtonTest_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
         actualSt->AcceptDNC((RasData*)&TuPackTestMtuMts);
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Запуск теста МТУ/МТС").arg(actualSt->Name()));
+    }
 }
 
 // Сброс АТУ
 void MainWindow::on_pushButtonATU_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Сброс АТУ").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackResetAtu);
+    }
 }
 
 // перезапуск КП
 void MainWindow::on_pushButtonReset_clicked()
 {
-    if (actualSt != nullptr && actualSt->IsTuEmpty())
+    if (actualSt != nullptr && actualSt->IsTuEmpty()
+        && QMessageBox::question(this, "Управление КП", "Выполнить перезапуск КП", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes
+       )
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Перезапуск КП").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackRestart);
+    }
 }
 
 // запрос числа перезапусков
 void MainWindow::on_pushButtonGetReconnect_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Запрос числа перезапусков КП").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackRestartCount);
+    }
 }
 
 // кратковременно отключить питание активного (холодный рестарт)
 void MainWindow::on_pushButtonResetMain_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Отключить питание активного блока (холодный рестарит блока)").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackResetOne);
+    }
 }
 
 // кратковременно отключить питание соседнего (холодный рестарт)
 void MainWindow::on_pushButtonResetRsrv_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Отключить питание смежного неактивного блока (холодный рестарит блока)").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackResetAnother);
+    }
 }
 
 // вкл.сторожевой таймер
 void MainWindow::on_pushButtonWatchdog_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
+    {
+        Logger::LogStr (QString("Ст.%1. Выдана команда: Включить сторожевой таймер)").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackWatchdogOn);
+    }
 }
+// ===============================================================================================================================================================
+
+
+// обработка событий GUI
 
 // изменение состояния флажка "С квитанцией"
 void MainWindow::on_checkBox_ack_stateChanged(int arg1)
@@ -363,13 +418,149 @@ void MainWindow::setCycles(unsigned int n)
 {
     ui->label_cycles->setText(QString::number(n));
 }
+
 // отобразить длит.цикла
 void MainWindow::setPeriod(unsigned int n)
 {
     ui->label_time->setText(QString::number(n));
 }
 
+void MainWindow::on_action_KP_triggered()
+{
+    if (dlgKp==nullptr)
+    {
+        dlgKp = new DlgKPinfo(actualSt, this);
+        dlgKp->show();
+        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgKp, SLOT(changeStation(Station*)));
+    }
+    else
+        dlgKp->setVisible(!dlgKp->isVisible());
+}
 
+
+
+// ===============================================================================================================================================================
+// слотй уведомлений сервера
+
+// ошибка на сокете
+void MainWindow::slotAcceptError(ClientTcp * conn)
+{
+    Q_UNUSED(conn);
+}
+
+// подключен новый клиент: добавляем строку в таблицу клиентов
+void MainWindow::slotSvrNewConnection (ClientTcp *conn)
+{
+    QTableWidget * t = ui->tableWidget;
+    int row = t->rowCount();
+    t->setRowCount( row + 1);
+    t->setItem(row,0, new QTableWidgetItem (conn->name()));
+    t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));     // запомним переезд
+}
+
+// отключен подключенный ранее клиент: ищем в таблице клиентов строку по conn и удаляем
+void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
+{
+    QTableWidget * t = ui->tableWidget;
+    int row = -1;
+    for (int i=0; i<t->rowCount(); i++)
+    {
+        QTableWidgetItem * item = t->item(i,0);
+        ClientTcp * p = (ClientTcp *) item->data(Qt::UserRole).value<void*>();
+        if (conn==p)
+        {
+            row = i;
+            break;
+        }
+    }
+    t->removeRow(row);
+}
+
+// получены данные от модуля Управление
+void MainWindow::slotSvrDataready     (ClientTcp * conn)
+{
+    QString name(conn->name());
+    QString s("Приняты данные от клиента " + conn->name());
+    Logger::LogStr (s);
+/*
+    // проверить список допустимых ip для управления (опция ENABLETUIP)
+    if (!IsTuIpEnabled(conn->remoteIP())
+    {
+        Logger::LogStr(QString());
+        return;
+    }
+*/
+    StationNetTU * ptu = (StationNetTU *) conn->rawData();
+    RasData * data = (RasData *) ptu->data;
+
+
+    Station * st = Station::GetById(ptu->nost);
+    if (st!=nullptr)
+    {
+        ui->statusBar->showMessage(QString("%1. АРМ ДНЦ -> %2:   %3").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(st->Name()).arg(data->About()));
+
+        // если есть данные ОТУ, моргнуть индикатором ОТУ и засечь время последней работоспособности УЦ
+
+        st->AcceptDNC(data);
+    }
+    else
+    {
+        // некорректный формат
+    }
+
+}
+
+// получена квитанция от АРМ ДНЦ
+void MainWindow::slotRoger  (ClientTcp * client)
+{
+    armAcked = true;
+    waterAck.notify_all();
+    Q_UNUSED (client)
+    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
+}
+
+// отправить данные всем подключенным клиентам, от которыъ было подтверждение
+void MainWindow::sendToAllClients(StationNetTS* info)
+{
+    armAcked = false;
+    server->sendToAll((char *) info, info->length);
+    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
+}
+
+
+// ===============================================================================================================================================================
+// работа с датаграммами
+
+// слот "прием датаграмм" от КП
+void MainWindow::readDatagramm()
+{
+    while (rcvSocket->hasPendingDatagrams())
+    {
+        QByteArray datagram;
+        datagram.resize(rcvSocket->pendingDatagramSize());
+        rcvSocket->readDatagram(datagram.data(), datagram.size());
+
+        // зписываем принятые данные в очередь
+        {
+        std::lock_guard <std::mutex> locker(mtxDataNet);
+        for (int i=0; i<datagram.size(); i++)
+            dataInNet.push(datagram[i]);
+        }
+
+        // уведомляем о приеме ожидающий рабочий поток
+        waterNet.notify_all();
+
+    }
+}
+
+// поддержка сети
+bool MainWindow::IsNetSupported()
+{
+    return mainWnd->portSnd && mainWnd->portRcv;
+}
+
+
+// ===============================================================================================================================================================
 // обработка сообщений, генерируемых потоком ThreadPolling
 void MainWindow::GetMsg (int np, void * param)
 {
@@ -511,13 +702,7 @@ void MainWindow::GetMsg (int np, void * param)
     Q_UNUSED(param)
 }
 
-// отправить данные всем подключенным клиентам, от которыъ было подтверждение
-void MainWindow::sendToAllClients(StationNetTS* info)
-{
-    armAcked = false;
-    server->sendToAll((char *) info, info->length);
-    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
-}
+
 
 void Log (std::wstring s)
 {
@@ -532,19 +717,6 @@ void SendMessage (int no, void * ptr)
 {
     std::lock_guard <std::mutex> locker(sendMutex);
     emit MainWindow::mainWnd->SendMsg(no, ptr);
-}
-
-
-void MainWindow::on_action_KP_triggered()
-{
-    if (dlgKp==nullptr)
-    {
-        dlgKp = new DlgKPinfo(actualSt, this);
-        dlgKp->show();
-        QObject::connect(this, SIGNAL(changeStation(Station*)), dlgKp, SLOT(changeStation(Station*)));
-    }
-    else
-        dlgKp->setVisible(!dlgKp->isVisible());
 }
 
 void MainWindow::loadResources()
@@ -572,113 +744,6 @@ void MainWindow::loadResources()
     g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
 
     //tooltip = true;
-}
-
-
-// уведомления сервера
-// ошибка на сокете
-void MainWindow::slotAcceptError(ClientTcp * conn)
-{
-    Q_UNUSED(conn);
-}
-
-// подключен новый клиент: добавляем строку в таблицу клиентов
-void MainWindow::slotSvrNewConnection (ClientTcp *conn)
-{
-    QTableWidget * t = ui->tableWidget;
-    int row = t->rowCount();
-    t->setRowCount( row + 1);
-    t->setItem(row,0, new QTableWidgetItem (conn->name()));
-    t->item(row,0)->setData(Qt::UserRole,qVariantFromValue((void *)conn));     // запомним переезд
-}
-
-// отключен подключенный ранее клиент: ищем в таблице клиентов строку по conn и удаляем
-void MainWindow::slotSvrDisconnected  (ClientTcp * conn)
-{
-    QTableWidget * t = ui->tableWidget;
-    int row = -1;
-    for (int i=0; i<t->rowCount(); i++)
-    {
-        QTableWidgetItem * item = t->item(i,0);
-        ClientTcp * p = (ClientTcp *) item->data(Qt::UserRole).value<void*>();
-        if (conn==p)
-        {
-            row = i;
-            break;
-        }
-    }
-    t->removeRow(row);
-}
-
-// получены данные от модуля Управление
-void MainWindow::slotSvrDataready     (ClientTcp * conn)
-{
-    QString name(conn->name());
-    QString s("Приняты данные от клиента " + conn->name());
-    Logger::LogStr (s);
-/*
-    // проверить список допустимых ip для управления (опция ENABLETUIP)
-    if (!IsTuIpEnabled(conn->remoteIP())
-    {
-        Logger::LogStr(QString());
-        return;
-    }
-*/
-    StationNetTU * ptu = (StationNetTU *) conn->rawData();
-    RasData * data = (RasData *) ptu->data;
-
-
-    Station * st = Station::GetById(ptu->nost);
-    if (st!=nullptr)
-    {
-        ui->statusBar->showMessage(QString("%1. АРМ ДНЦ -> %2:   %3").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(st->Name()).arg(data->About()));
-
-        // если есть данные ОТУ, моргнуть индикатором ОТУ и засечь время последней работоспособности УЦ
-
-        st->AcceptDNC(data);
-    }
-    else
-    {
-        // некорректный формат
-    }
-
-}
-
-// получена квитанция от АРМ ДНЦ
-void MainWindow::slotRoger  (ClientTcp * client)
-{
-    armAcked = true;
-    waterAck.notify_all();
-    Q_UNUSED (client)
-    ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::green);
-}
-
-// поддержка сети
-bool MainWindow::IsNetSupported()
-{
-    return mainWnd->portSnd && mainWnd->portRcv;
-}
-
-// слот "прием датаграмм" от КП
-void MainWindow::readDatagramm()
-{
-    while (rcvSocket->hasPendingDatagrams())
-    {
-        QByteArray datagram;
-        datagram.resize(rcvSocket->pendingDatagramSize());
-        rcvSocket->readDatagram(datagram.data(), datagram.size());
-
-        // зписываем принятые данные в очередь
-        {
-        std::lock_guard <std::mutex> locker(mtxDataNet);
-        for (int i=0; i<datagram.size(); i++)
-            dataInNet.push(datagram[i]);
-        }
-
-        // уведомляем о приеме ожидающий рабочий поток
-        waterNet.notify_all();
-
-    }
 }
 
 
@@ -713,6 +778,7 @@ void MainWindow::rsStarted()
 //    qDebug() << "Старт рабочего потока " << rasRs->name();
 }
 */
+
 
 
 
