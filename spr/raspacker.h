@@ -80,7 +80,7 @@ static int   indxSt;                                            // индекс 
     int Length() { return length + LEN_CTRL_INFO;  }            // общая длина пакета
     class RasData * GetRasData() { return (class RasData *)&data; }
     bool IsEmpty() { return length == 3; }                      //
-
+//private:
     BYTE    marker;                                             // маркер
     WORD    length;                                             // длина пакета (все после себя, исключая CRC и EOT)
     BYTE    dst;                                                // адрес назначения

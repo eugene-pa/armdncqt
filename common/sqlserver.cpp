@@ -56,7 +56,7 @@ SqlServer::SqlServer(SqlBlackBox * parent, QString& connstr, Logger * logger)
 
     // создаем поток записи
     // pthread = new std::thread(ThreadDoSql, (long)this);
-    pThreadPolling = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadDoSql, (long)this));
+    pThreadPolling = std::unique_ptr<std::thread, ThreadTerminaterSql> (new std::thread(ThreadDoSql, (long)this));
 }
 
 SqlServer::~SqlServer()

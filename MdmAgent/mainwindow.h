@@ -152,6 +152,7 @@ private:
     int         portSnd;                                        // порт передачи датаграмм
     int         portRcv;                                        // порт приема датаграмм
     //class BlockingRS * rasRs;
+    class SqlBlackBox * blackbox;                               // sql-протоколирование
 };
 
 #endif // MAINWINDOW_H

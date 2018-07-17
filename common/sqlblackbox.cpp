@@ -29,7 +29,7 @@ std::unordered_map <int, QString  > SqlBlackBox::msgTypes;          // имен�
 
 
 // конструктор принимает до 2-х подключений; можно масштабировать более чем на 2
-SqlBlackBox::SqlBlackBox (QString mainstr, QString rsrvstr, Logger *logger)
+SqlBlackBox::SqlBlackBox (QString& mainstr, QString& rsrvstr, Logger *logger)
 {
     if (logger==nullptr)                                            // если не передали логгер, создам свой
         logger = new Logger("LOG/SqlBlackBox.log", true, true);

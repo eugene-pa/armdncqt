@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql network
+QT       += core gui widgets sql network
 CONFIG += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -16,7 +16,7 @@ TEMPLATE = app
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
+#DEFINES += QT_DEPRECATED_WARNINGS
 
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -28,22 +28,22 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     ../common/sqlblackbox.cpp \
-    ../common/defines.cpp \
     ../common/sqlmessage.cpp \
-    ../common/logger.cpp \
     ../common/sqlserver.cpp \
-    ../common/tcpheader.cpp \
-    ../spr/stationbase.cpp
+    ../spr/stationbase.cpp \
+    ../common/defines.cpp \
+    ../common/logger.cpp \
+    ../common/tcpheader.cpp
 
 HEADERS += \
         mainwindow.h \
     ../common/sqlblackbox.h \
-    ../common/defines.h \
     ../common/sqlmessage.h \
-    ../common/logger.h \
     ../common/sqlserver.h \
-    ../common/tcpheader.h \
-    ../spr/stationbase.h
+    ../spr/stationbase.h \
+    ../common/defines.h \
+    ../common/logger.h \
+    ../common/tcpheader.h
 
 FORMS += \
         mainwindow.ui

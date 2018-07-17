@@ -12,7 +12,7 @@ public:
 
     void load();                                                                // загрузить cправочники приложений и типов сообщений
 
-    SqlBlackBox (QString mainstr, QString rsrvstr="", Logger *logger=nullptr);      // конструктор
+    SqlBlackBox (QString& mainstr, QString& rsrvstr, Logger *logger=nullptr);      // конструктор
     ~SqlBlackBox();                                                                 // деструктор
     void putMsg(int krug, int st, QString msg, int app, int event, QString ip="");  // запись сообщения
     void putMsg(int st, QString msg, int app, int event);                           // запись сообщения (перегруженная)

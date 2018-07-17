@@ -55,6 +55,8 @@ void ThreadPolling(long param)
     BlockingRS * rs1 = nullptr;
     BlockingRS * rs2 = nullptr;
 
+    bool rsSupported = false;
+
     // инициируем прямой канал
     if (configMain.length())
     {
@@ -62,6 +64,7 @@ void ThreadPolling(long param)
         rs1 = new BlockingRS(configMain);
         rs1->SetTimeWaiting(200);
         rs1->start();
+        rsSupported = true;
     }
 
     // инициируем обратный канал
@@ -71,6 +74,7 @@ void ThreadPolling(long param)
         rs2 = new BlockingRS(configRsrv);
         rs2->SetTimeWaiting(200);
         rs2->start();
+        rsSupported = true;
     }
 
     start = QTime::currentTime();
@@ -109,15 +113,19 @@ void ThreadPolling(long param)
 
         actualSt->SetKpResponce(false);                                 // пока отклика нет
         RasPacker pack(actualSt);                                       // подготовка пакета
+
+        // если пакет содержит ненулевые данные для КП, вывод в лог (опционировать!)
+        if ( !pack.IsEmpty() )
+            Logger::LogStr (QString("Передача данных для ст.%1 <-- %2").arg(actualSt->Name()).arg(Logger::GetHex(&pack, (WORD)pack.Length())));
+
         bool back = actualSt->IsBackChannel();                          // back - актуальная сторона опроса
         SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
 
-        arhWriter.Save(&pack, pack.Length(), 2);
+        arhWriter.Save(&pack, pack.Length(), 2, back ? 1 : 0);          // доп.параметр = 1, если обратный канал
 
         Station * st = nullptr;                                         // станция отклика
 
-        // если задан сетевой опрос - опросить по сети, иначе - по COM-портам
-        // можно оставить опрос по COM-портам при отсутствии отклика из сети
+        // если задан сетевой опрос - он приоритетный,опросить по сети
         if (MainWindow::IsNetSupported())                               // работаем по сети
         {
             SendMessage (MainWindow::MSG_SND_NET, &pack);
@@ -129,12 +137,25 @@ void ThreadPolling(long param)
                     st = ((RasPacker *)&dataIn)->st;
             }
         }
-        else
-        if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)  // работаем по СОМ-портам
+
+        // если сети нет или станция не отвечает по сети, но в конфигурации есть COM-порты - опрос по портам
+        if (st==nullptr && rsSupported)
         {
-            actualSt->SetBackChannel(back = !back);                     // если не было отклика - пробуем с другой стороны
-            SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
-            st = TryOneChannel(back ? rs2 : rs1, &pack);
+            // работаем по СОМ-портам
+            if ( (st = TryOneChannel(back ? rs2 : rs1, &pack)) == nullptr)
+            {
+                // нет данных по активной стороне, перекидываем сторону
+                actualSt->SetBackChannel(back = !back);                     // если не было отклика - пробуем с другой стороны
+                BlockingRS * rs = back ? rs2 : rs1;
+                if (rs != nullptr)                                          // если канал для этой стороны есть в конфигурации - опрос
+                {
+                    arhWriter.Save(&pack, pack.Length(), 2, back ? 1 : 0);  // фиксируем повторную отправку в бинарном логе
+                    SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
+                    st = TryOneChannel(back ? rs2 : rs1, &pack);
+                }
+                else
+                    actualSt->SetBackChannel(back = !back);                 // если канала нет в конфигурации - перекидываем сторону обратно
+            }
         }
 
         // все, что могли, опросили, оцениваем результат

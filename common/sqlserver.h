@@ -27,7 +27,7 @@ public:
 
 // класс-deleter для завершения рабочих потоков; используется в смарт-указателях std::unique_ptr
 // выполняет: ожидание завершения, вывод в лог и удаление указателя
-class ThreadTerminater
+class ThreadTerminaterSql
 {
 public:
     void operator () (std::thread * p)
@@ -61,7 +61,7 @@ private:
     Logger * logger;                                                    // логгер
     SqlParams * params;                                                 // параметры соединения
     QString name;                                                       // имя соединения: IP:порт
-    std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;      // указатель на рабочий поток записи сообщений
+    std::unique_ptr<std::thread, ThreadTerminaterSql> pThreadPolling;     // указатель на рабочий поток записи сообщений
 
     QSqlDatabase open();                                                // открытие БД
 };

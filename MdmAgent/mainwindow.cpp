@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include "kpframe.h"
 #include "../common/inireader.h"
+#include "../common/sqlmessage.h"
+#include "../common/sqlserver.h"
+#include "../common/sqlblackbox.h"
 #include "../spr/krug.h"
 #include "../spr/esr.h"
 #include "../spr/station.h"
@@ -48,6 +51,9 @@ QString path;
     QString extDb       = "bd/armext.db";
     QString iniFile     = "mdmagent.ini";
 
+    // строки подключения к основному и резервному SQL-серверам
+    QString mainSql = "";                                   // "DRIVER=QPSQL;Host=192.168.0.105;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
+    QString rsrvSql = "";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -83,6 +89,9 @@ int ll = sizeof (long);
 ll = sizeof (int);
 */
     // --------------------------------------------------------------------------------------------------------------------------
+    // блокируем мьютекс завершения работы
+    exit_lock.lock();
+
     path = QDir::currentPath();
 
     // если ini-файл задан параметром командной строки, используем
@@ -93,6 +102,7 @@ ll = sizeof (int);
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
 
+    Logger::LogStr ("Конфигурация: " + iniFile);
     IniReader rdr(iniFile);
 
     rdr.GetText("DBNAME", dbname);
@@ -116,6 +126,9 @@ ll = sizeof (int);
 
     rdr.GetInt("UDPSEND"   , portSnd);                          // порт передачи датаграмм
     rdr.GetInt("UDPRECEIVE", portRcv);                          // порт приема датаграмм
+
+    rdr.GetText("SQLSERVERMAIN", mainSql);                      // строка подключения к основному  SQL (postgresql)
+    rdr.GetText("SQLSERVERRSRV", rsrvSql);                      // строка подключения к резервному SQL (postgresql)
     // --------------------------------------------------------------------------------------------------------------------------
 
     KrugInfo * krug = nullptr;
@@ -124,9 +137,12 @@ ll = sizeof (int);
 
     loadResources();
 
-    // формируем преставление станций в несколько строк
+    blackbox = new SqlBlackBox(mainSql, rsrvSql, &logger);
+    blackbox->SqlBlackBox::putMsg(0, "Запуск", APP_MDMAGENT, LOG_NOTIFY);
+
+    // формируем представление КП станций в основном окне в несколько строк
     // в качестве входного массива используем вектор станций StationsOrg, отсортированный по заданному при чтении БД критерию "Addr"
-    int row = 0, col = 0, colmax = 13;
+    int row = 0, col = 0, colmax = 13;                          // не более 13 станций в одной строке
     for (auto st : Station::StationsOrg)
     {
         kpframe * kp = new kpframe(this, st);                   // создаем класс
@@ -151,19 +167,18 @@ ll = sizeof (int);
     // подключаем сигнал SendMsg, посылаемый из глобальной статической функции SendMessage, к слоту MainWindow::GetMsg
     connect(this, SIGNAL(SendMsg(int,void*)), this, SLOT(GetMsg(int,void*)));
 
-    // блокируем мьютекс завершения работы
-    exit_lock.lock();
-
-    // синхронизация состояния "С квитанцией"
+    // синхронизация состояния флажка "С квитанцией" с переменной g_rqAck
     g_rqAck = ui->checkBox_ack->isChecked();
 
-    // синхронизация состояния "Полный опрос"
+    // синхронизация состояния флажка "Полный опрос" с переменной Station::bFullPollingAll
     Station::bFullPollingAll = ui->checkBox_Full->isChecked();
 
     // конфигурация портов основного и обратного канала задаются в строках configMain, configRsrv
     configMain = QString("%1,%2,N,8,1").arg(mainCom).arg(baud);
-    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on);
-    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
+
+ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on);
+ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
+
     ui->checkBox_Main->setChecked(configMain.length() > 0);
     ui->checkBox_Main->setEnabled(configMain.length() > 0);
     ui->checkBox_Rsrv->setChecked(configRsrv.length() > 0);
@@ -203,6 +218,7 @@ ll = sizeof (int);
     // если определены сетевые порты, создаем сокеты для передачи/приема датаграмм
     if (IsNetSupported())
     {
+        Logger::LogStr ("Создаем UDP-сокеты для информационного обмена");
         sndSocket = new QUdpSocket(this);              // сокет для передачи в КП датаграмм
 //      sndSocket->bind(QHostAddress("192.168.0.105"));// можно привязать сокет к конкретному сетевому адаптеру
 
@@ -216,6 +232,9 @@ ll = sizeof (int);
 
 MainWindow::~MainWindow()
 {
+    blackbox->SqlBlackBox::putMsg(0, "Завершение", APP_MDMAGENT, LOG_NOTIFY);
+    if (blackbox != nullptr)
+        delete blackbox;
     exit_lock.unlock();
     Station::Release();
     delete ui;
