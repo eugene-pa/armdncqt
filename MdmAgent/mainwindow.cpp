@@ -13,8 +13,7 @@
 #include "../spr/stationnetts.h"
 #include "../spr/stationnettu.h"
 
-// Прототипы функций рабочих потоков ПО КП
-void   ThreadPolling		(long);							// функция потока опроса динии связи
+// Блок глобальных переменных проекта ==========================================================================================================================
 std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
 
 MainWindow * MainWindow::mainWnd;                           // статический экземпляр главного окна
@@ -55,6 +54,10 @@ QString path;
     QString mainSql = "";                                   // "DRIVER=QPSQL;Host=192.168.0.105;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
     QString rsrvSql = "";
 
+// =============================================================================================================================================================
+
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -64,30 +67,6 @@ MainWindow::MainWindow(QWidget *parent) :
     modulType=APP_MDMAGENT;                                 // тип приложения
     QString tmp;
 
-/*
- * проверка выравнивания StationNetTS
- * /
-StationNetTS ts;
-ts.length = 0;
-ts.nost = 7;
-
-ts.rsrv = 1;
-ts.backChannel = 1;
-ts.reserv4 = 0x3fff;
-
-ts.seans = 0x55;
-ts.inputData[0]=0xff;
-ts.lastTime[0] = 0x11111111;
-ts.lastTime[1] = 0x0f0f0f0f;
-ts.linkError[0] = 0x33;
-ts.linkError[1] = 0x77;
-
-
-int l = sizeof (StationNetTS);
-int l2 = (BYTE *)&ts.inputData - (BYTE *)&ts;
-int ll = sizeof (long);
-ll = sizeof (int);
-*/
     // --------------------------------------------------------------------------------------------------------------------------
     // блокируем мьютекс завершения работы
     exit_lock.lock();
@@ -101,8 +80,8 @@ ll = sizeof (int);
 
     Logger::SetLoger(&logger);
     Logger::LogStr ("Запуск приложения");
-
     Logger::LogStr ("Конфигурация: " + iniFile);
+
     IniReader rdr(iniFile);
 
     rdr.GetText("DBNAME", dbname);
@@ -232,12 +211,43 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
 
 MainWindow::~MainWindow()
 {
+    Logger::LogStr ("Завершение работы");
     blackbox->SqlBlackBox::putMsg(0, "Завершение", APP_MDMAGENT, LOG_NOTIFY);
+    exit_lock.unlock();
+
     if (blackbox != nullptr)
         delete blackbox;
-    exit_lock.unlock();
     Station::Release();
     delete ui;
+}
+
+// загрузка графических ресурсов
+void MainWindow::loadResources()
+{
+    Logger::LogStr ("Загрузка графических ресурсов");
+    g_green             = new QPixmap(images + "icon_grn.ico");
+    g_red               = new QPixmap(images + "icon_red.ico");
+    g_yellow            = new QPixmap(images + "icon_yel.ico");
+    g_gray              = new QPixmap(images + "icon_gry.ico");
+    g_white             = new QPixmap(images + "icon_wht.ico");
+    g_cyan              = new QPixmap(images + "icon_cyn.ico");
+
+    g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
+    g_green_box         = new QPixmap(images + "box_grn.ico");
+    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");           // МТУ ок
+    g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
+    g_red_box           = new QPixmap(images + "box_red.ico");
+    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");           // МТУ error
+    g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
+    g_yellow_box        = new QPixmap(images + "box_yel.ico");
+    g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");
+    g_gray_box          = new QPixmap(images + "box_gry.ico");
+    g_white_box         = new QPixmap(images + "box_wht.ico");
+
+    g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
+    g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
+
+    //tooltip = true;
 }
 
 
@@ -277,7 +287,7 @@ void MainWindow::closeEvent(QCloseEvent *)
 }
 
 
-// Формирование и передача директив управления КП =================================================================================================
+// Формирование и передача директив управления КП из панели управления ============================================================================
 
 // отключить основной на заданное время
 void MainWindow::on_pushButtonMainOff_clicked()
@@ -296,7 +306,11 @@ void MainWindow::on_pushButtonMainOff_clicked()
             memmove(buf, TuPackBypassMain, sizeof(buf));
             * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = delay;
             actualSt->AcceptDNC((RasData*)&buf);
-            Logger::LogStr (QString("Ст.%1. Выдана команда: ").arg(actualSt->Name()) + (delay ? QString("Отключение основного блока на %1 мин.").arg(delay) : "Отключение основного блока"));
+
+            QString msg = QString("Ст.%1. Команда из панели РСС: ").arg(actualSt->Name()) + (delay ? QString("Отключение основного блока на %1 мин.").arg(delay) : "Отключение основного блока");
+            Logger::LogStr (msg);
+            blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+            QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
         }
     }
 }
@@ -307,11 +321,15 @@ void MainWindow::on_pushButtonRsrvOff_clicked()
     WORD delay = (WORD)ui->spinBox->value();
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: ").arg(actualSt->Name()) + (delay ? QString("Отключение резервного блока на %1 мин.").arg(delay) : "Отключение резервного блока"));
         BYTE buf[sizeof(TuPackBypassRsrv)];
         memmove(buf, TuPackBypassRsrv, sizeof(buf));
         * (WORD *)(buf + sizeof (buf) - sizeof (WORD)) = delay;
         actualSt->AcceptDNC((RasData*)&buf);
+
+        QString msg = QString("Ст.%1. Команда из панели РСС: ").arg(actualSt->Name()) + (delay ? QString("Отключение резервного блока на %1 мин.").arg(delay) : "Отключение резервного блока");
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -320,8 +338,11 @@ void MainWindow::on_pushButtonToMain_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Включение основного блока").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackSetMain);
+        QString msg = QString("Ст.%1. Команда из панели РСС: Включение основного блока").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -336,8 +357,11 @@ void MainWindow::on_pushButtonToRsrv_clicked()
                       "на 1-3 минуты командой 'Отключение основного блока'\n\nВСЕ РАВНО ВЫПОЛНИТЬ КОМАНДУ ?";
         if (QMessageBox::question(this, "Управление КП", msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
         {
-            Logger::LogStr (QString("Ст.%1. Выдана команда: Переход на резервный блок").arg(actualSt->Name()));
             actualSt->AcceptDNC((RasData*)&TuPackSetRsrv);
+            QString msg = QString("Ст.%1. Команда из панели РСС: Переход на резервный блок").arg(actualSt->Name());
+            Logger::LogStr (msg);
+            blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+            QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
         }
     }
 }
@@ -348,7 +372,10 @@ void MainWindow::on_pushButtonTest_clicked()
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
         actualSt->AcceptDNC((RasData*)&TuPackTestMtuMts);
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Запуск теста МТУ/МТС").arg(actualSt->Name()));
+        QString msg = QString("Ст.%1. Команда из панели РСС: Запуск теста МТУ/МТС").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -357,9 +384,12 @@ void MainWindow::on_pushButtonATU_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Сброс АТУ").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackResetAtu);
-    }
+        QString msg = QString("Ст.%1. Команда из панели РСС: Сброс АТУ").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+     }
 }
 
 // перезапуск КП
@@ -369,8 +399,11 @@ void MainWindow::on_pushButtonReset_clicked()
         && QMessageBox::question(this, "Управление КП", "Выполнить перезапуск КП", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes
        )
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Перезапуск КП").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackRestart);
+        QString msg = QString("Ст.%1. Команда из панели РСС: Перезапуск КП").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -379,8 +412,11 @@ void MainWindow::on_pushButtonGetReconnect_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Запрос числа перезапусков КП").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackRestartCount);
+        QString msg = QString("Ст.%1. Команда из панели РСС: Запрос числа перезапусков КП").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -389,8 +425,11 @@ void MainWindow::on_pushButtonResetMain_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Отключить питание активного блока (холодный рестарит блока)").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackResetOne);
+        QString msg = QString("Ст.%1. Команда из панели РСС: Отключить питание активного блока (холодный рестарит блока)").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -399,8 +438,11 @@ void MainWindow::on_pushButtonResetRsrv_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Отключить питание смежного неактивного блока (холодный рестарит блока)").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackResetAnother);
+        QString msg = QString("Ст.%1. Команда из панели РСС: Отключить питание смежного неактивного блока (холодный рестарит блока)").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 
@@ -409,8 +451,11 @@ void MainWindow::on_pushButtonWatchdog_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty())
     {
-        Logger::LogStr (QString("Ст.%1. Выдана команда: Включить сторожевой таймер)").arg(actualSt->Name()));
         actualSt->AcceptDNC((RasData*)&TuPackWatchdogOn);
+        QString msg = QString("Ст.%1. Команда из панели РСС: Включить сторожевой таймер)").arg(actualSt->Name());
+        Logger::LogStr (msg);
+        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
     }
 }
 // ===============================================================================================================================================================
@@ -722,12 +767,6 @@ void MainWindow::GetMsg (int np, void * param)
 }
 
 
-
-void Log (std::wstring s)
-{
-    Q_UNUSED (s)
-}
-
 // глобальная функция отправки сообщения главному окну
 // вызывается из рабочих потоков и работает в рабочих потоках
 // генерирует сигнал MainWindow::SendMsg, QT обеспечивает обработку сигнала в основном потоке
@@ -738,38 +777,15 @@ void SendMessage (int no, void * ptr)
     emit MainWindow::mainWnd->SendMsg(no, ptr);
 }
 
-void MainWindow::loadResources()
-{
-    g_green             = new QPixmap(images + "icon_grn.ico");
-    g_red               = new QPixmap(images + "icon_red.ico");
-    g_yellow            = new QPixmap(images + "icon_yel.ico");
-    g_gray              = new QPixmap(images + "icon_gry.ico");
-    g_white             = new QPixmap(images + "icon_wht.ico");
-    g_cyan              = new QPixmap(images + "icon_cyn.ico");
-
-    g_green_box_blink   = new QPixmap(images + "box_grn_blink.ico");
-    g_green_box         = new QPixmap(images + "box_grn.ico");
-    g_green_box_tu      = new QPixmap(images + "box_grn_tu.ico");           // МТУ ок
-    g_green_dark_box    = new QPixmap(images + "box_grn_dark.ico");
-    g_red_box           = new QPixmap(images + "box_red.ico");
-    g_red_box_tu        = new QPixmap(images + "box_red_tu.ico");           // МТУ error
-    g_red_dark_box      = new QPixmap(images + "box_red_dark.ico");
-    g_yellow_box        = new QPixmap(images + "box_yel.ico");
-    g_yellow_dark_box   = new QPixmap(images + "box_yel_dark.ico");
-    g_gray_box          = new QPixmap(images + "box_gry.ico");
-    g_white_box         = new QPixmap(images + "box_wht.ico");
-
-    g_strl_minus        = new QPixmap(images + "strl_minus.ico");           // -
-    g_strl_plus         = new QPixmap(images + "strl_plus.ico");            // +
-
-    //tooltip = true;
-}
 
 
 
 
 
-
+//void Log (std::wstring s)
+//{
+//    Q_UNUSED (s)
+//}
 
 /*
 // обработка сигнала-уведомления о готовности данных

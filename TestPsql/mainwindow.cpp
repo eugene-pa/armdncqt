@@ -9,7 +9,7 @@
 
 std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
 
-QString dbname = "/home/dnc/projects/armdncqt/apo/03.Армавир-Белореченская/bd/arm.db";
+QString dbname = "/home/evs/projects/armdncqt/apo/03.Армавир-Белореченская/bd/arm.db";
 QString mainstr = "DRIVER=QPSQL;Host=192.168.0.105;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
 QString rsrvstr = "";
 
@@ -98,7 +98,7 @@ void MainWindow::UpdateList()
 
             QTableWidgetItem * item;
             t->setItem(row,0, item = new QTableWidgetItem (msg.t.toString(FORMAT_DATE)));
-            t->setItem(row,1, new QTableWidgetItem (msg.t.toString(FORMAT_TIME)));
+            t->setItem(row,1, new QTableWidgetItem (msg.t.toString(FORMAT_DATETIME)));
 
             StationBase * st = StationBase::GetById(msg.idSt);
             t->setItem(row,2, new QTableWidgetItem (st==nullptr ? "ПУ" : st->Name()));

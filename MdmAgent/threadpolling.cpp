@@ -116,7 +116,7 @@ void ThreadPolling(long param)
 
         // если пакет содержит ненулевые данные для КП, вывод в лог (опционировать!)
         if ( !pack.IsEmpty() )
-            Logger::LogStr (QString("Передача данных для ст.%1 <-- %2").arg(actualSt->Name()).arg(Logger::GetHex(&pack, (WORD)pack.Length())));
+            Logger::LogStr (QString("Cт.%1 <-- %2").arg(actualSt->Name()).arg(Logger::GetHex(&pack, (WORD)pack.Length())));
 
         bool back = actualSt->IsBackChannel();                          // back - актуальная сторона опроса
         SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
@@ -320,6 +320,16 @@ bool GetData(BlockingRS * rs)
 // функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
 Station * NextSt()
 {
+    // 1. проверка наличия данных для станции
+    // TODO: доработать игнорирование широковещательных пакетов СПОК
+    for (int i=0; i<(int)Station::StationsOrg.size(); i++)
+    {
+        Station * st = Station::StationsOrg[i];
+        if (!st->GetRasDataOut()->Empty() && st->IsLinkOk())
+            return st;
+    }
+
+    // 2. очередная по списку
     if (++RasPacker::indxSt >= (int)Station::StationsOrg.size())
     {
         RasPacker::indxSt = 0;
