@@ -61,7 +61,7 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
     stsSu           = false;
     stsRu           = false;
     stsMu           = false;
-    stsOn           = false;
+//    stsOn           = false;
     stsRsrv         = false;
     stsCom3On       = false;
     stsCom4On       = false;
@@ -90,6 +90,7 @@ Station::Station(QSqlQuery& query, KrugInfo* krug, Logger& logger)
 
     seans = 1;                                              // сеанс начинается с 1
     bFullPolling = false;                                   // по умолчанию - полный опрос
+    trqPolling = 0;                                         // // заявка на время опроса станции (после отправки пакета в ОМУЛ)
 
     lastTimeSinchro = QDateTime::currentDateTime().addSecs(-60);
 
@@ -773,11 +774,25 @@ bool Station::IsConsol   (bool rsrv)
     return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->DebugOtuMode() : false;
 }
 
-// проверка готовности системы ОТУ
+// проверка готовности системы ОТУ активного блока
+bool Station::IsOtuLineOk()
+{
+    return IsOtuLineOk(IsRsrv());
+}
+
+// проверка готовности системы ОТУ заданного блока
+// если нет поддержки KpExt - сравнить время
 bool Station::IsOtuLineOk    (bool rsrv)
 {
-    return IsSupportKpExt (rsrv) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuLineOk() : false;
+    return (!Kp2000() && IsSupportKpExt (rsrv)) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuLineOk() : IsOtuSndRsvDtOk();
 }
+
+// проверка состояния тракта ОТУ сравнением времени опроса и отклика
+bool Station::IsOtuSndRsvDtOk(int dt)
+{
+    return tSpokSnd - tSpokRcv <  dt;
+}
+
 
 // проверка готовности УПОК/БРОК
 //bool Station::IsOtuBrokOn    (bool rsrv)

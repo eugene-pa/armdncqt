@@ -99,12 +99,12 @@ public:
 
     void AcceptTS   ();                                     // обработка данных
 
+    bool IsEnable   () { return enable;     }               // включена?
     bool IsDu       () { return !stsAu && !stsSu && !stsRu; } // ДУ
     bool IsAu       () { return stsAu;      }
     bool IsSu       () { return stsSu;      }
     bool IsRu       () { return stsRu;      }
     bool IsMu       () { return stsMu;      }
-    bool IsOn       () { return stsOn;      }
     bool IsRsrv     () { return stsRsrv;    }               // КП на резерве
     void SetRsrv (bool s) { stsRsrv = s;    }               // изменить признак резерва
     bool IsCom3On   () { return stsCom3On;  }
@@ -126,7 +126,9 @@ public:
     bool IsWatchdogOn(bool rsrv);                           // проверка включения сторожевого таймера
     bool IsMemError (bool rsrv);                            // проверка ошибки использования памяти
     bool IsOtuLineOk(bool rsrv);                            // проверка готовности системы ОТУ
+    bool IsOtuLineOk();                                     // проверка готовности системы ОТУ активного блока
 //  bool IsOtuBrokOn(bool rsrv);                            // проверка готовности УПОК/БРОК
+    bool IsOtuSndRsvDtOk(int dt=30);                        // проверка состояния тракта ОТУ сравнением времени опроса и отклика
     bool IsRetrans  (bool rsrv);                            // проверка режима ретрансляции
     bool IsConsol   (bool rsrv);                            // проверка подключения отладочной консоли
     bool IsOtuPending(bool rsrv);                           // проверка флага исполнения ОТУ
@@ -134,6 +136,11 @@ public:
     bool IsArmDspModeOn(bool rsrv);                         // проверка режима АРМ ДСП
     QDateTime GetLastTime (bool rsrv);                      // получить время последнего опроса нужного блока
     QDateTime GetLastTime () {return GetLastTime(IsRsrv());}// получить время последнего опроса активного блока
+    time_t GetRqPolling() { return trqPolling; }            // заявка на время опроса станции (после отправки пакета в ОМУЛ)
+    void   SetRqPolling(time_t t) { trqPolling = t; }       // установка заявки на приоритетное обслуживание
+
+    void FixOtuSnd() { tSpokSnd = QDateTime::currentDateTime().toTime_t(); }// время передачи данных в СПОК
+    void FixOtuRcv() { tSpokRcv = QDateTime::currentDateTime().toTime_t(); }// время приема данных от СПОК
 
     bool IsActualErrorLockMsgPresent() { return errorLockLogicCount; }  // число актуальных ошибок логического контроля
     bool IsNewErrorLockMsgPresent   ();                                 // есть ли неквитированные сообщения подсистемы логич.контроля
@@ -295,7 +302,7 @@ private:
     bool    stsSu;
     bool    stsRu;
     bool    stsMu;
-    bool    stsOn;
+//    bool    stsOn;
     bool    stsRsrv;                                        // КП на резерве (по состоянию активного блока)
     bool    stsCom3On;
     bool    stsCom4On;
@@ -319,6 +326,7 @@ private:
 
     QDateTime lastAcceptedTsTime;                           // засечка последнего приема данных
     QDateTime lastTimeSinchro;                              // засечка последней синхронизации времени
+    time_t    trqPolling;                                   // заявка на время опроса станции (после отправки пакета в ОМУЛ)
 
     WORD	realLinetDataLength;                               // длина блока данных из линии
 //    BYTE	lineData [MAX_LINE_DATA_LEN];                   // данные из линии

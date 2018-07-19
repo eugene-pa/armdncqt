@@ -659,8 +659,9 @@ void MainWindow::GetMsg (int np, void * param)
             // если есть информация ОТУ - моржок индикатором ОТУ
             RasData * p = pack->GetRasData();
             if (!pack->IsEmpty() && p->Length())
-                ((kpframe *)st->userData)->SetOtuLed(true, true);
+                ((kpframe *)st->userData)->BlinkOtu();          // ((kpframe *)st->userData)->SetOtuLed(st->IsOtuLineOk(), true);
             }
+
 
             setCycles(cycles);
             setPeriod((int)(start.msecsTo(QTime::currentTime())));
@@ -680,7 +681,11 @@ void MainWindow::GetMsg (int np, void * param)
                 Station * st = pack->st;                        //
                 QString name = st == nullptr ? "?" : st->Name();//
                 RasData * data = (RasData *)pack->data;         // data - блок данных, инкапсулируемый классом RasData
-                st->GetRasDataIn()->Copy(data);                   // копируем данные во внутреннем классе RasData
+                st->GetRasDataIn()->Copy(data);                 // копируем данные во внутреннем классе RasData
+
+                // если отклик от ОМУЛ-а - засечка приема
+                if (data->LengthOtu())
+                    st->FixOtuRcv();
 
                 // 2- отобразить инфо блок
                 ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
@@ -703,7 +708,7 @@ void MainWindow::GetMsg (int np, void * param)
                         sysinfo->Parse(data->PtrSys()+15, 15);
                     }
 
-                    // отрисовка актуального КП
+                    // отрисовка актуального КП, включая индикатор ОТУ
                     ((kpframe *)st->userData)->Show();
                 }
 

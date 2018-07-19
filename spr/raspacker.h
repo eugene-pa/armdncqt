@@ -120,6 +120,8 @@ public:
     void Copy  (RasData* prc);                                  // обайтное копирование 
     void Clear ();                                              // очистка
     void Append(RasData* prc, class Station*);                  // суммирование инфо-блоков (если не успели отправить старую посылку)
+    bool IsBroadcast();                                         // пакет содержит ТОЛЬКО широковещательную рассылку УПОК
+//    bool IsTuOmul();                                            // пакет содержит данные для ОМУЛ, требует приоритетного ответа
 
 private:
     void AppendBlock(RasData* pSrc, BYTE blck);                 // суммирование аданного инфо-блока
@@ -133,6 +135,22 @@ private:
     BYTE data[1023*4];                                          // блоки данных
 };
 
+
+// обертка данных УПОК, используемая для оценки широковещательных пакетов в блоке ОТУ
+class UpokFromData
+{
+public:
+//#pragma pack(1)
+    BYTE seans;                                                 // счетчик
+    BYTE sts;                                                   // состояние УПОК
+    BYTE regionid;                                              // ID участка (m_nUpokRegion)
+    BYTE stationid;                                             // ID станции
+    BYTE otuid;                                                 // id ОТУ
+    long t;                                                     // время
+
+    bool IsBroadcast() { return stationid == 0; }               // широковещательные пакеты от УПОК не содержат адреса
+//#pragma pack()
+};
 
 #pragma pack()
 

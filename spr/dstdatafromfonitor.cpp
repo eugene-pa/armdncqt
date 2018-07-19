@@ -14,7 +14,7 @@ int DStDataFromMonitor::Prepare(Station * pSt)
     Signature	= SIGNATURE;                                // обрамление
     NoSt		= pSt->no;                                  // номер станции
     reserv1		= (BYTE)pSt->version;                       // номер версии КП
-    TurnOn		= pSt->stsOn    ? 1 : 0;        			// Вкл / Откл
+    TurnOn		= pSt->enable   ? 1 : 0;                    // Вкл / Откл
     Active		= pSt->stsActual? 1 : 0;                    // актуальная станция (управляемая) А НЕ опрашивается в данный момент
     StsRu		= pSt->stsRu    ? 1 : 0;                    //
     StsSu		= pSt->stsSu    ? 1 : 0;                    //
@@ -141,7 +141,7 @@ Station* DStDataFromMonitor::Extract(Station *st, int realTsLength, DRas *pRas)
     if (IsArmTools ())
         st->no          = NoSt;                             // номер станции из потока - сомнительная целесообразность
 
-    st->stsOn       = TurnOn > 0;                           // Вкл / Откл
+    st->enable      = TurnOn > 0;                           // Вкл / Откл
     st->stsActual   = Active > 0;                           // актуальная станция (управляемая)
     st->stsRu       = StsRu > 0;
     st->stsSu       = StsSu > 0;

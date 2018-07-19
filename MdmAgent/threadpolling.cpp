@@ -318,25 +318,48 @@ bool GetData(BlockingRS * rs)
 
 // получить след.станцию для опроса
 // функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
+// TODO: для станций СПОК после отправки пакета сделат ьзаявку на опрос этой же станции на заданное время (через 1-2 сек), чтобы быстро получить отклик
+//       вариант: поле с заявочным временем опроса в классе Station, его же можно использовать для приоритета активной станции
 Station * NextSt()
 {
-    // 1. проверка наличия данных для станции
-    // TODO: доработать игнорирование широковещательных пакетов СПОК
+    // 1. проверка заявки на внеочередной опрос GetRqPolling
+    // 2. проверка наличия данных для станции, отсеивая широковещательные блоки ОТУ
+    // 3. если ничего такокго - очередная в порядке общей очереди
     for (int i=0; i<(int)Station::StationsOrg.size(); i++)
     {
         Station * st = Station::StationsOrg[i];
-        if (!st->GetRasDataOut()->Empty() && st->IsLinkOk())
-            return st;
+        RasData * data = st->GetRasDataOut();
+
+        // если есть заявка станции с ОТУ и подошло время, опрашиваем и сбрасываем заявку
+        if (st->GetRqPolling() && QDateTime::currentDateTime().secsTo(QDateTime::fromTime_t(st->GetRqPolling())) < 0 )
+        {
+            st->SetRqPolling(0);
+            return st;                                          // ожидаем отклик ОМУЛ
+        }
+
+        if (    !data->Empty()                                  // есть данные для КП
+            &&  st->IsEnable()                                  // станция включена
+            &&  st->IsLinkOk()                                  // станция "жива"
+            && !data->IsBroadcast()                             // данные - не широковещательная рассылка УПОК
+           )
+        {
+            if (data->LengthOtu())                              // если данные для ОМУЛ - засечка заявки на повторный опрос через 2 сек
+            {
+                st->SetRqPolling(QDateTime::currentDateTime().toTime_t() + 2);
+                st->FixOtuSnd();
+            }
+            return st;                                          // есть данные для станции
+        }
     }
 
-    // 2. очередная по списку
+    // 3. очередная по списку
     if (++RasPacker::indxSt >= (int)Station::StationsOrg.size())
     {
         RasPacker::indxSt = 0;
         cycles++;
         start = QTime::currentTime();
     }
-    return Station::StationsOrg[RasPacker::indxSt];
+    return Station::StationsOrg[RasPacker::indxSt];             // очередная по списку
 }
 
 

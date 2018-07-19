@@ -43,6 +43,8 @@ void kpframe::Show()
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(false, true ));
     ui->label_rsrvCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(true , false));
     ui->label_rsrvCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(true , true ));
+    SetOtuLed(st->IsOtuLineOk(), false);
+
 }
 
 // получить цвет индикатора заданного модема
@@ -80,4 +82,10 @@ void kpframe::on_checkBox_stateChanged(int arg1)
 void kpframe::SetOtuLed(bool ok, bool blink)
 {
     ui->label_OTU ->set (QLed::ledShape::box, blink ? QLed::ledStatus::blink_once : QLed::ledStatus::off, (ok ? Qt::green : Qt::red), (ok ? Qt::darkGreen : Qt::darkRed));
+}
+
+// мигнуть актуальным цветом
+void kpframe::BlinkOtu()
+{
+    ui->label_OTU ->set (QLed::ledShape::box, QLed::ledStatus::blink_once, ui->label_OTU->Fore(), ui->label_OTU->Back());
 }

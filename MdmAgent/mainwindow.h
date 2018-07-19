@@ -40,7 +40,7 @@ class ThreadTerminater
 public:
     void operator () (std::thread * p)
     {
-        auto id = p->get_id();                                          // запоминаем id, пока поток живой
+        //auto id = p->get_id();                                          // запоминаем id, пока поток живой
         p->join();                                                      // ожидаем завершения потока
         //std::wstringstream s;
         //s << L"Удаление указателя на поток " << id;                     // если хотим убедиться в удалении указателя

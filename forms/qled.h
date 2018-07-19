@@ -38,7 +38,8 @@ public:
     void setTextColor (QColor value) { textColor = value; } // цвет текста
     void setBorderColor (QColor value) { borderColor = value; }// цвет окантовки
     void setToolTipMode (bool s) { setMouseTracking(s); }   // показ/отмена тултипов
-
+    QBrush Fore () { return fore; }                         // актуальный цвет переднего плана
+    QBrush Back () { return back; }                         // актуальный цвет заднего плана
 signals:
     void ledClicked (QLed *);                               // сигнал щелчок мышью на индикаторе отправляется подписавшимся виджетам
 

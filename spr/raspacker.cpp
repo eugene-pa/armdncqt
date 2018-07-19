@@ -159,13 +159,13 @@ void RasData::DeleteBlock(BYTE n)
 // l - длина блока
 void RasData::SetBlockLen (WORD n,int l)
 {
-    extLength &= ~(MSK_LEN_EXT << (n*2));           // сбросить биты расширений
-    extLength |= ((l>>8) & MSK_LEN_EXT)<<(n*2);     // записать биты расширений
-    * (((BYTE *)this) + n + 1) = (BYTE) (l & 0xff); //
+    extLength &= ~(MSK_LEN_EXT << (n*2));                       // сбросить биты расширений
+    extLength |= ((l>>8) & MSK_LEN_EXT)<<(n*2);                 // записать биты расширений
+    * (((BYTE *)this) + n + 1) = (BYTE) (l & 0xff);             //
 }
 
 
-void RasData::Clear()                                   // очистка (обнуление) при отсутствии связи
+void RasData::Clear()                                           // очистка (обнуление) при отсутствии связи
 {
     memset (this, 0, sizeof(RasData));
 }
@@ -178,3 +178,20 @@ int RasData::Length ()
     int lsum = LengthSys () + LengthTuts() + LengthOtu () + LengthDiag();
     return  lsum ? lsum + 6 : 0;
 }
+
+
+// пакет содержит ТОЛЬКО широковещательную рассылку УПОК
+bool RasData::IsBroadcast()
+{
+    return      LengthSys ()==0                                 // нет системной информации
+            &&  LengthTuts()==0                                 // нет ТУ
+            &&  LengthOtu ()!=0                                 // есть ОТУ
+            &&  LengthOtu() > 7                                 // ОТУ не СПОК
+            &&  ((UpokFromData*)PtrOtu())->IsBroadcast();       // блок ОТУ широковещательный
+}
+
+// пакет содержит данные для ОМУЛ, требует приоритетного ответа
+//bool RasData::IsTuOmul()
+//{
+//    return LengthOtu () && LengthOtu () <= 7;
+//}

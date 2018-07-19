@@ -20,7 +20,8 @@ public:
 //public slots:
     void Show();
     void SetActual(bool s, bool rsrv);
-    void SetOtuLed(bool ok, bool blink);
+    void SetOtuLed(bool ok, bool blink);                        // установить статус индикатора ОТУ и мигание
+    void BlinkOtu();                                            // мигнуть индикатором ОТУ (актуальным цветом)
 
 signals:
     void SelectStation(class Station *);
