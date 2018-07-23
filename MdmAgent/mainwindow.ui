@@ -200,14 +200,14 @@
     <widget class="QLabel" name="label_12">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>200</y>
-       <width>31</width>
-       <height>16</height>
+       <x>20</x>
+       <y>197</y>
+       <width>51</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>ОТУ:</string>
+      <string>УЦ ОТУ :</string>
      </property>
     </widget>
     <widget class="QLed" name="label_OTU">

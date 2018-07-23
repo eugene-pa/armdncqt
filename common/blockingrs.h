@@ -33,6 +33,7 @@ public:
     bool IsOpen() { return serial!=nullptr && serial->isOpen(); } // проверка 'порт открыт'?
     void Close();                                           // завершение работы
     QSerialPort * GetSerial() { return serial; }
+    void Clear() { bufIn.clear(); }                         // очистить входную очередь
 private:
     QSerialPort * serial;                                   // экземпляр QSerialPort
 

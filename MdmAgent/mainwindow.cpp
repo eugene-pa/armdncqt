@@ -141,7 +141,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
-    ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
+
+    // индикатор БПДК/УПОК: изначально серый
+    // если принят пакет с данными ОТУ - моргнуть ярко-зеленым, обновить засечку времени
+    // периодически (по таймеру) проверять на молчание более 1 мин: если засечки были, но молчит долго - желтый, иначе темно зеленый.
+    ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::gray, Qt::darkGray);
 
     // подключаем сигнал SendMsg, посылаемый из глобальной статической функции SendMessage, к слоту MainWindow::GetMsg
     connect(this, SIGNAL(SendMsg(int,void*)), this, SLOT(GetMsg(int,void*)));
@@ -207,17 +211,22 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     }
     else
         rcvSocket = sndSocket = nullptr;
+
+    tUcSnd = 0;                                                 // засечка передачи из УЦ
+    startTimer (1000);
+
 }
 
 MainWindow::~MainWindow()
 {
-    Logger::LogStr ("Завершение работы");
-    blackbox->SqlBlackBox::putMsg(0, "Завершение", APP_MDMAGENT, LOG_NOTIFY);
+    Logger::LogStr ("Деструктор MainWindow. Освобождаем ресурсы");
+    blackbox->SqlBlackBox::putMsg(0, "Завершение работы", APP_MDMAGENT, LOG_NOTIFY);
     exit_lock.unlock();
 
     if (blackbox != nullptr)
         delete blackbox;
     Station::Release();
+
     delete ui;
 }
 
@@ -463,6 +472,14 @@ void MainWindow::on_pushButtonWatchdog_clicked()
 
 // обработка событий GUI
 
+// обработка тика таймера
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    Q_UNUSED(event)
+    if (tUcSnd && (QDateTime::currentDateTime().toTime_t() - tUcSnd  > 60))
+        ui->label_OTU->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow, Qt::darkGreen);
+}
+
 // изменение состояния флажка "С квитанцией"
 void MainWindow::on_checkBox_ack_stateChanged(int arg1)
 {
@@ -566,6 +583,13 @@ void MainWindow::slotSvrDataready     (ClientTcp * conn)
         // если есть данные ОТУ, моргнуть индикатором ОТУ и засечь время последней работоспособности УЦ
 
         st->AcceptDNC(data);
+
+        // если были данные БПДК/УПОК, моргнуть индикатором УЦ
+        if (data->LengthOtu())
+        {
+            ui->label_OTU->set (QLed::ledShape::box, QLed::ledStatus::blink_once, Qt::green, Qt::darkGreen);
+            tUcSnd = QDateTime::currentDateTime().toTime_t();
+        }
     }
     else
     {

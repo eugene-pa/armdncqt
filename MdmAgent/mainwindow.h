@@ -136,6 +136,7 @@ private slots:
     void on_checkBox_Full_stateChanged(int arg1);
 
 private:
+    virtual void timerEvent(QTimerEvent *event);                // обраьотка таймера
 
     Ui::MainWindow *ui;
 
@@ -156,6 +157,8 @@ private:
     int         portRcv;                                        // порт приема датаграмм
     //class BlockingRS * rasRs;
     class SqlBlackBox * blackbox;                               // sql-протоколирование
+
+    time_t      tUcSnd;                                         // засечка передачи из УЦ
 };
 
 #endif // MAINWINDOW_H

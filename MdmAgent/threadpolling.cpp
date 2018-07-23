@@ -208,6 +208,7 @@ Station * TryOneChannel(BlockingRS * rs, RasPacker* data)
 {
     if (rs == nullptr)
         return nullptr;
+    rs->Clear();
     rs->Send(data, data->Length());
     SleepMS(100);
     SendMessage (MainWindow::MSG_SHOW_SND, data);

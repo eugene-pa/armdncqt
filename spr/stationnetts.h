@@ -53,6 +53,7 @@ public:
     int  Pack (class Station   * st);           // ормирование данных
 
     void SetLenByDataLen(WORD datalength);
+
 inline static int MinSizeof()					// 2014.03.20.вер.2.0.0.277. Минимально допустимый размер пакета
     { return sizeof (StationNetTS) - sizeof (inputData); }
 };

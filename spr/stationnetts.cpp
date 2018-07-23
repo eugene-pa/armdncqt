@@ -20,6 +20,20 @@ StationNetTS::StationNetTS(Station * st)                        // Констр�
 int StationNetTS::Pack (Station * st)
 {
     nost	= st->No();                                         // номер станции
+
+    // обработка бага старых КП, когда данные СПОК попадали в массив ТС начиная с адреса 256; условия:
+    // - КП2000
+    // - полный опрос и длина блока ТС == 384
+    // - длина блока ОТУ > 0
+    // правим по месту
+    if (st->Kp2000() && st->rasDataIn->LengthTuts()==384 && st->rasDataIn->LengthOtu())
+    {
+        BYTE * src = st->rasDataIn->PtrTuTs() + 256;
+        BYTE * dst = st->rasDataIn->PtrOtu();
+        memmove (dst, src, st->rasDataIn->LengthOtu());
+        memset(src, 0, st->rasDataIn->LengthOtu());
+    }
+
     // копирование длин и блоков C,Т,О,Д
     memcpy (inputData, st->rasDataIn, realDataLen = std::min(st->rasDataIn->Length(), (int)sizeof(inputData)));
 
@@ -48,6 +62,8 @@ int StationNetTS::Pack (Station * st)
     SetLenByDataLen(realDataLen);
     return length;
 }
+
+
 
 void StationNetTS::SetLenByDataLen(WORD datalength)
 {
