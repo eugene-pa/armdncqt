@@ -25,7 +25,7 @@ int StationNetTS::Pack (Station * st)
     // - КП2000
     // - полный опрос и длина блока ТС == 384
     // - длина блока ОТУ > 0
-    // правим по месту
+    // правки в данные вносим по месту храненения в Station перед копированием в StationNetTS (отлажено!)
     if (st->Kp2000() && st->rasDataIn->LengthTuts()==384 && st->rasDataIn->LengthOtu())
     {
         BYTE * src = st->rasDataIn->PtrTuTs() + 256;

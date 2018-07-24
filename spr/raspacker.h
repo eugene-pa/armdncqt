@@ -76,6 +76,7 @@ class RasPacker
 {
 public:
 static int   indxSt;                                            // индекс актуальной станции опроса
+static const char * NameBlk(int n);                             // имя блока по номеру
     RasPacker(class Station * st);                              // когструктор
     int Length() { return length + LEN_CTRL_INFO;  }            // общая длина пакета
     class RasData * GetRasData() { return (class RasData *)&data; }
@@ -133,6 +134,7 @@ private:
     BYTE diagLength;                                            // длина блока квитанций и диагностики
     BYTE reserve;                                               // резерв
     BYTE data[1023*4];                                          // блоки данных
+    //class Station * st;
 };
 
 

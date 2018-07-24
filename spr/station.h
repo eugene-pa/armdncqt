@@ -32,6 +32,7 @@ class Station : public QObject
     friend class DStDataFromMonitor;
     friend class Route;
     friend class RasPacker;
+    friend class RasData;
     friend class StationNetTS;
 
     Q_OBJECT
@@ -228,7 +229,7 @@ public:
     std::vector <class ShapeId*> formList;                  // список классов-идентификаторов форм
 
     void *  userData;                                       // привязка к объекту пользователя
-
+    std::mutex& GetOutDataMtx() { return rasDataOutLock; }  // мьютекс, блокирующий доступ к блоку данных в КП
 // вычисление переменной - через обработку сигнала в слоте
 public slots:
    void GetValue(QString& name, int& ret);                    // вычисление переменной в выражении формата ИМЯ_ТС[ИМЯ_ИЛИ_#НОМЕР_СТАНЦИИ]

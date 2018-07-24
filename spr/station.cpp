@@ -1245,7 +1245,6 @@ void Station::AcceptDNC(class RasData *p)
     {
         Logger::LogStr (QString("Игнорируем данные для отключенной станции %1").arg(name));
     }
-
 }
 
 // проверка: пуста ли очередь ТУ

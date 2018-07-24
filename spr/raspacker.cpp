@@ -3,6 +3,12 @@
 
 int  RasPacker::indxSt = -1;                            // индекс актуальной станции опроса
 
+
+// конструктор по справочнику станции
+// фактически готовит исходящий пакет в КП исходя из данных для КП, накопленных в rasDataOut
+// метка времени формируется здесь же не реже 1 раза в 60 сек для каждой станции
+// ВАЖНО: при формировании пакета данные для КП удаляются из очереди, поэтому, если связь не прошла - данные теряются
+//        это, судя по всему, не верно, надо смотреть в старой версии
 RasPacker::RasPacker(class Station * st)
 {
     marker      = SOH;                                  // маркер
@@ -39,12 +45,15 @@ RasPacker::RasPacker(class Station * st)
         // на время работы блокируем доступ к rasDataOut; разблокировка выполняется в деструкторе при выходе из блока
         std::lock_guard <std::mutex> locker(st->rasDataOutLock);
         int l = std::min((int)st->rasDataOut->Length(), (int)sizeof(data));
+
+        // если есть данные для КП - записываем в пакет
         if (l)
         {
             memmove(data, st->rasDataOut, l);           // переносим данные
             st->rasDataOut->Clear();                    // обнуляем блок
             length += l;                                // наращиваем длину пакета на длину блока данных
         }
+
         addCRC (this, length + LEN_HEADER);             // подсчет CRC
         data[l+2] = EOT;                                // запись EOT
 
@@ -52,7 +61,17 @@ RasPacker::RasPacker(class Station * st)
 
 }
 
-
+const char * NameBlk (int n)
+{
+    switch (n)
+    {
+    case SYSBLCK:   return "СИСТ";   break;
+    case TUTSBLCK:  return "TYTC";   break;
+    case OTUBLCK:   return "ОТУ" ;   break;
+    case DIAGBLCK:  return "ДИАГ";   break;
+    default:        return "-";      break;
+    }
+}
 
 // ------------------------------------------------------------------------------------------------------------------------
 // Класс RasData
@@ -103,12 +122,14 @@ void RasData::Copy(RasData* pSrc)
 
 
 // суммирование инфо-блоков (если не успели отправить старую посылку)
+// вызывается из Station::AcceptDNC(class RasData *p)
+// блокировка доступа к очереди уже выполнена в Station::AcceptDNC(class RasData *p)
 void RasData::Append(RasData* pSrc, Station* st)
 {
-    // если данные устарели, их надо удалить
-//    if (Length() && st->tuTime.secsTo(QDateTime::currentDateTime()) > 30)
-//        Clear();
-    st->tuTime = QDateTime::currentDateTime();                  // засечка
+    // важно: контроль устаревания данных в очередях выполняется в основном потоке на таймере
+    //        неучтенный момент: запись в очередь с интервалом чуть менее 30 сек приведет к накоплению старых данных
+
+    st->tuTime = QDateTime::currentDateTime();                  // засечка времени записи данных
     // директивы можно суммировать
     // ТУ можно суммировать
     // ОТУ нельзя суммировать, игнорируем старую информацию
@@ -138,7 +159,12 @@ void RasData::AppendBlock(RasData* pSrc, BYTE n)
     memmove (dst, org, LengthFrom(n+1));                        // сдвигаем все блоки (надо ввсети ограничение на длину)
     memmove (org, pSrc->PtrBlck(n), ladd);                      // дописываем сист.инфу
     SetBlockLen(n, l + ladd);                                   // новая длина
+
+    // записываем в лог факт накопления
+    if (l > 0 && ladd > 0)
+    {
     // Logger::LogStr();
+    }
 }
 
 

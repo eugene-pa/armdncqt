@@ -281,18 +281,11 @@ void MainWindow::SelectStation(class Station * actualSt)
     }
 }
 
-
-void MainWindow::closeEvent(QCloseEvent *)
+// запрос на закрытие приложения
+void MainWindow::closeEvent(QCloseEvent * e)
 {
-/*
-    if (rasRs)
-    {
-        emit (exit());
-        if (rasRs != nullptr)
-            delete rasRs;
-        rasRs = nullptr;
-    }
-*/
+    if (QMessageBox::question(this, "Станция связи", "Завершить работу станции связи?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
+        e->ignore();
 }
 
 
@@ -476,8 +469,24 @@ void MainWindow::on_pushButtonWatchdog_clicked()
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
+
+    // управление индикатором УЦ СПОК/УПОК: если молчит более 60 сек - желтый
     if (tUcSnd && (QDateTime::currentDateTime().toTime_t() - tUcSnd  > 60))
         ui->label_OTU->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow, Qt::darkGreen);
+
+    // проверяем "зависшие" данные в выходных очередях, и если такие есть - удаляем
+    // ситуация крайне маловероятная, тем не менее
+    // можно выдать блок данных в HEX
+    for (auto st : Station::StationsOrg)
+    {
+        RasData * data = st->GetRasDataOut();
+        if (data->Length() && st->tuTime.secsTo(QDateTime::currentDateTime()) > 30 )
+        {
+            std::lock_guard <std::mutex> locker(st->GetOutDataMtx());
+            data->Clear();                                // очищаем буфер линейных данных, если они старые
+            Logger::LogStr(QString("Ст.%1. Удаляем устаревшие данные для КП из очереди").arg(st->Name()));
+        }
+    }
 }
 
 // изменение состояния флажка "С квитанцией"
@@ -755,12 +764,10 @@ void MainWindow::GetMsg (int np, void * param)
         case MSG_ERR:
             {
             Station * st = (Station *)param;
-            RasData * data = st->GetRasDataIn();
-            data->Clear();                                      // очищаем буфер линейных данных
 
             if (st->GetSysInfo()->IsOnoff())
             {
-                StationNetTS info((Station *)param);            // формируем увеомление
+                StationNetTS info((Station *)param);            // формируем уведомление
                 sendToAllClients(&info);                        // передаем клиентам, если переход из рабочего состояния
             }
             //ui->statusBar->showMessage("Ошибка связи со станцией");
