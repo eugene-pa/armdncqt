@@ -77,10 +77,12 @@ class RasPacker
 public:
 static int   indxSt;                                            // индекс актуальной станции опроса
 static const char * NameBlk(int n);                             // имя блока по номеру
+    RasPacker() {};
     RasPacker(class Station * st);                              // когструктор
     int Length() { return length + LEN_CTRL_INFO;  }            // общая длина пакета
     class RasData * GetRasData() { return (class RasData *)&data; }
     bool IsEmpty() { return length == 3; }                      //
+    void Copy  (RasPacker* pSrc);                               // побайтное копирование
 //private:
     BYTE    marker;                                             // маркер
     WORD    length;                                             // длина пакета (все после себя, исключая CRC и EOT)
@@ -118,7 +120,7 @@ public:
     BYTE * PtrOtu  () { return &data[LengthSys () + LengthTuts()                ]; }
     BYTE * PtrDiag () { return &data[LengthSys () + LengthTuts() + LengthOtu () ]; }
 
-    void Copy  (RasData* prc);                                  // обайтное копирование 
+    void Copy  (RasData* pSrc);                                 // побайтное копирование
     void Clear ();                                              // очистка
     void Append(RasData* prc, class Station*);                  // суммирование инфо-блоков (если не успели отправить старую посылку)
     bool IsBroadcast();                                         // пакет содержит ТОЛЬКО широковещательную рассылку УПОК

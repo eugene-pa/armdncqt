@@ -33,6 +33,7 @@ RasPacker::RasPacker(class Station * st)
         // - новый КП
         // - минута или более с момента последней синхронизации
         // - пустой блок для КП (нет ТУ/ОТУ или директив)
+
         if (st->Kp2007() && st->lastTimeSinchro.secsTo(QDateTime::currentDateTime()) >= 60 && st->rasDataOut->Length()==0)
         {
             BYTE buf[sizeof(TuPackTimeSet)];
@@ -72,6 +73,13 @@ const char * NameBlk (int n)
     default:        return "-";      break;
     }
 }
+
+// побайтное копирование
+void RasPacker::Copy  (RasPacker* pSrc)
+{
+    memmove(this, pSrc, sizeof(RasPacker));
+}
+
 
 // ------------------------------------------------------------------------------------------------------------------------
 // Класс RasData

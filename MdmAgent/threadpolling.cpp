@@ -112,15 +112,15 @@ void ThreadPolling(long param)
         }
 
         actualSt->SetKpResponce(false);                                 // пока отклика нет
-        RasPacker pack(actualSt);                                       // подготовка пакета
+        RasPacker pack(actualSt);                                       // подготовка пакета на стеке
 
         // если пакет содержит ненулевые данные для КП, вывод в лог (опционировать!)
         if ( !pack.IsEmpty() )
-            Logger::LogStr (QString("Cт.%1 <-- %2").arg(actualSt->Name()).arg(Logger::GetHex(&pack, (WORD)pack.Length())));
+            Logger::LogStr (QString("Cт.%1 <-- %2    %3").arg(actualSt->Name()).arg(pack.GetRasData()->About()).arg(Logger::GetHex(pack.GetRasData(), (WORD)pack.GetRasData()->Length())));
+        //Logger::LogStr (QString("Cт.%1 <-- %2    %3").arg(actualSt->Name()).arg(pack.GetRasData()->About()).arg(Logger::GetHex(&pack, (WORD)pack.Length())));
 
+        SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData, !pack.IsEmpty() ?  actualSt : nullptr);    // отобразить "пинг" - точку опроса станции (канал, комплект)
         bool back = actualSt->IsBackChannel();                          // back - актуальная сторона опроса
-        SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);    // отобразить "пинг" - точку опроса станции (канал, комплект)
-
         arhWriter.Save(&pack, pack.Length(), 2, back ? 1 : 0);          // доп.параметр = 1, если обратный канал
 
         Station * st = nullptr;                                         // станция отклика
@@ -150,7 +150,7 @@ void ThreadPolling(long param)
                 if (rs != nullptr)                                          // если канал для этой стороны есть в конфигурации - опрос
                 {
                     arhWriter.Save(&pack, pack.Length(), 2, back ? 1 : 0);  // фиксируем повторную отправку в бинарном логе
-                    SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData);
+                    SendMessage (MainWindow::MSG_SHOW_PING, actualSt->userData, !pack.IsEmpty() ? actualSt : nullptr);
                     st = TryOneChannel(back ? rs2 : rs1, &pack);
                 }
                 else
@@ -215,8 +215,9 @@ Station * TryOneChannel(BlockingRS * rs, RasPacker* data)
         return nullptr;
     rs->Clear();
     rs->Send(data, data->Length());
-    SleepMS(100);
     SendMessage (MainWindow::MSG_SHOW_SND, data);
+
+    SleepMS(100);
     return GetData(rs) ? ((RasPacker *)&dataIn)->st : nullptr;
 }
 
@@ -307,7 +308,8 @@ bool GetData(BlockingRS * rs)
             // нормальный прием
             if (st)
                 st->GetSysInfo()->SetLineStatus(LineOK);
-            SendMessage (MainWindow::MSG_SHOW_RCV, dataIn); // уведомление о приеме
+            st->GetRasDataIn()->Copy(((RasPacker*)&dataIn)->GetRasData()); // копируем данные во внутреннем классе RasData
+            SendMessage (MainWindow::MSG_SHOW_RCV, st, dataIn); // уведомление о приеме
         }
     }
     catch (...)

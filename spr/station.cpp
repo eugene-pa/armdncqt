@@ -784,11 +784,11 @@ bool Station::IsOtuLineOk()
 // если нет поддержки KpExt - сравнить время
 bool Station::IsOtuLineOk    (bool rsrv)
 {
-    return (!Kp2000() && IsSupportKpExt (rsrv)) ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuLineOk() : IsOtuSndRsvDtOk();
+    return Kp2007() ? (rsrv ? rsrvSysInfo : mainSysInfo)->OtuLineOk() : IsOtuSndRcvDtOk();
 }
 
-// проверка состояния тракта ОТУ сравнением времени опроса и отклика
-bool Station::IsOtuSndRsvDtOk(int dt)
+// проверка состояния тракта ОТУ сравнением времени опроса и отклика (по умолчанию dt=30 сек)
+bool Station::IsOtuSndRcvDtOk(int dt)
 {
     return tSpokSnd - tSpokRcv <  dt;
 }

@@ -148,7 +148,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::gray, Qt::darkGray);
 
     // подключаем сигнал SendMsg, посылаемый из глобальной статической функции SendMessage, к слоту MainWindow::GetMsg
-    connect(this, SIGNAL(SendMsg(int,void*)), this, SLOT(GetMsg(int,void*)));
+    connect(this, SIGNAL(SendMsg(int,void*,void*)), this, SLOT(GetMsg(int,void*,void*)));
 
     // синхронизация состояния флажка "С квитанцией" с переменной g_rqAck
     g_rqAck = ui->checkBox_ack->isChecked();
@@ -659,7 +659,10 @@ bool MainWindow::IsNetSupported()
 
 // ===============================================================================================================================================================
 // обработка сообщений, генерируемых потоком ThreadPolling
-void MainWindow::GetMsg (int np, void * param)
+std::mutex sendMutex;
+std::condition_variable waterMsg;                           // Ожидаем обработки сообщения
+
+void MainWindow::GetMsg (int np, void * param, void * param2)
 {
     switch (np)
     {
@@ -675,7 +678,7 @@ void MainWindow::GetMsg (int np, void * param)
             break;
 
         case MSG_SHOW_PING:                                     // отобразить информацию о точке опроса
-            ((kpframe *)param)->SetActual(true,false);
+            ((kpframe *)param)->SetActual(true,false, param2 != nullptr);
             break;
 
         case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
@@ -691,17 +694,21 @@ void MainWindow::GetMsg (int np, void * param)
 
             // если есть информация ОТУ - моржок индикатором ОТУ
             RasData * p = pack->GetRasData();
-            if (!pack->IsEmpty() && p->Length())
-                ((kpframe *)st->userData)->BlinkOtu();          // ((kpframe *)st->userData)->SetOtuLed(st->IsOtuLineOk(), true);
+            if (!pack->IsEmpty() && p->LengthOtu())
+            {
+                int n = p->LengthOtu();
+                ((kpframe *)st->userData)->BlinkOtu();          // моргаем тем цветом, который есть
+                ((kpframe *)st->userData)->SetOtuLed(st->IsOtuLineOk(), true);   // Моргнуть ОТУ если есть
             }
-
 
             setCycles(cycles);
             setPeriod((int)(start.msecsTo(QTime::currentTime())));
+            }
             break;
 
-        // успешный прием данных от КП
-        // 1- скопировать данные в Station.rasData
+
+        // успешный прием данных от КП; данные уже скопированы в rasDataIn
+        // 1- моргнуть ОТУ если есть
         // 2- отобразить инфо блок
         // 3- обработать системную информацию с учетом особенностей разных версий КП и обновить изображение КП
         // 4- сформировать и передать данные подключенным клиентам
@@ -709,24 +716,25 @@ void MainWindow::GetMsg (int np, void * param)
         case MSG_SHOW_RCV:
             if (param!=nullptr)
             {
-                // 1- скопировать данные в Station.rasData
-                RasPacker* pack = (RasPacker* )param;           // pack - весь пакет
-                Station * st = pack->st;                        //
-                QString name = st == nullptr ? "?" : st->Name();//
-                RasData * data = (RasData *)pack->data;         // data - блок данных, инкапсулируемый классом RasData
-                st->GetRasDataIn()->Copy(data);                 // копируем данные во внутреннем классе RasData
+                // 1- моргнуть ОТУ если есть
+                Station * st = (Station *)param;                // гарантированно не nullptr
+                RasPacker* pack = (RasPacker* )param2;          // pack - весь пакет
+                RasData * data = st->GetRasDataIn();            // используем копию полученных данных в самом классе
 
                 // если отклик от ОМУЛ-а - засечка приема
                 if (data->LengthOtu())
-                    st->FixOtuRcv();
+                {
+                    st->FixOtuRcv();                            // засечка времени приема
+                    ((kpframe *)st->userData)->SetOtuLed(true, true);   // Моргнуть ОТУ если есть
+                }
 
                 // 2- отобразить инфо блок
-                ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param, std::min(48,((RasPacker*)param)->Length()))).arg(name));
-                ui->statusBar->showMessage(QString("%1. Прием данных по ст. %2").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(name));
+                ui->label_RCV->setText(QString(" %1 :    %2...<- %3").arg(data->About()).arg(Logger::GetHex(param2, std::min(48,(pack->Length())))).arg(st->Name()));
+                ui->statusBar->showMessage(QString("%1. Прием данных по ст. %2").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(st->Name()));
                 ui->label_cntrcv->setText(QString::number(pack->Length()));
 
                 // 3- обработать системную информацию с учетом особенностей разных версий КП и обновить изображение КП
-                if (pack->Length() > 3 && data->LengthSys())
+                if (data->LengthSys())
                 {
                     // учесть переменную длину 9/15/30 и в случае 30 - записать оба блока
                     // первым всегда идет активный блок
@@ -745,11 +753,11 @@ void MainWindow::GetMsg (int np, void * param)
                     ((kpframe *)st->userData)->Show();
                 }
 
-                // 4- сформировать и передать данные подключенным клиентам модуля Управление
+                // 5- сформировать и передать данные подключенным клиентам модуля Управление
                 StationNetTS info(st);
                 sendToAllClients(&info);
 
-                // 5- если получены данные по актуальной станции - обновить панели информации по осн/рез блокам станции
+                // 6- если получены данные по актуальной станции - обновить панели информации по осн/рез блокам станции
                 if (st == actualSt)
                 {
                     ui->frame_mainBM->Show(st);
@@ -793,24 +801,30 @@ void MainWindow::GetMsg (int np, void * param)
             if (sndSocket)
                 sndSocket->writeDatagram((char *)pack, pack->Length(), QHostAddress::Broadcast, portSnd);		// передача данных с указанием адреса(можно всем) и порта
             }
-            GetMsg (MSG_SHOW_SND, param);                       // рекурсивный вызов для отображения
+            GetMsg (MSG_SHOW_SND, param, param2);               // рекурсивный вызов для отображения
             break;
 
         default:
             break;
     }
-    Q_UNUSED(param)
+    waterMsg.notify_all();
 }
 
 
 // глобальная функция отправки сообщения главному окну
 // вызывается из рабочих потоков и работает в рабочих потоках
 // генерирует сигнал MainWindow::SendMsg, QT обеспечивает обработку сигнала в основном потоке
-std::mutex sendMutex;
-void SendMessage (int no, void * ptr)
+void SendMessage (int no, void * ptr, void * ptr2)
 {
-    std::lock_guard <std::mutex> locker(sendMutex);
-    emit MainWindow::mainWnd->SendMsg(no, ptr);
+    emit MainWindow::mainWnd->SendMsg(no, ptr, ptr2);
+    if (ptr2 != nullptr)
+    {
+        int a = 99;
+    }
+    // ожидание обработки сообщения здесь гарантирует синхронизацию потоков с точки зрения целостности входного и выходного буферов
+    // максимальное время ожидания здесь жестко - 1 сек, можно опционировать, хотя нет резона
+    std::unique_lock<std::mutex> lck(sendMutex);
+    waterMsg.wait_for(lck, std::chrono::milliseconds(1000));
 }
 
 

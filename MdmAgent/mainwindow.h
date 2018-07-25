@@ -23,7 +23,7 @@ extern std::mutex                 mtxDataNet;               // синхрони�
 extern unsigned int cycles;                                 // счетчик циклов всех станций
 extern QTime       start;                                   // засечка начала цикла
 
-void SendMessage (int, void *);                             // прототип глобальной функции отправки сообщения
+void SendMessage (int, void *, void * p2 = nullptr);        // прототип глобальной функции отправки сообщения
 void   ThreadPolling (long);                                // прототип глобальной функции потока опроса линии связи
 //void Log (std::wstring);                                    // прототип глобальной функции вывода лога широкой строки
 
@@ -80,11 +80,11 @@ public:
     void setPeriod(unsigned int);                               // отобразить длит.цикла
 
 signals:
-    void SendMsg(int, void *);
+    void SendMsg(int, void *, void *);
 
 public slots:
     void SelectStation(class Station *);
-    void GetMsg (int, void *);
+    void GetMsg (int, void *, void *);
 
 //    void dataready(QByteArray);                               // сигнал-уведомление о готовности данных
 //    void timeout();                                           // сигнал-уведомление об отсутствии данных в канала данных

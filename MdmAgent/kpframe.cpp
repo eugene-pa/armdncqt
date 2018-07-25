@@ -16,7 +16,7 @@ kpframe::kpframe(QWidget *parent, Station* pst) :
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     ui->label_rsrvCOM3->set (QLed::ledShape::box, QLed::ledStatus::off);
     ui->label_rsrvCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
-    ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::off, Qt::green, Qt::darkGreen);
+    ui->label_OTU     ->set (QLed::ledShape::box, QLed::ledStatus::off, Qt::gray, Qt::darkGray);
     ui->label_Main->setStyleSheet("color: rgb(0, 64, 0)");
     ui->label_Rsrv->setStyleSheet("color: rgb(128, 128, 128)");
     ui->pushButton->setText(st->Name().left(8));
@@ -28,10 +28,10 @@ kpframe::~kpframe()
     delete ui;
 }
 
-void kpframe::SetActual(bool s, bool rsrv)
+void kpframe::SetActual(bool s, bool rsrv, bool NotEmpty)
 {
     QLed * l = st->IsBackChannel() ? (rsrv ? ui->label_rsrvCOM4 : ui->label_mainCOM4) : (rsrv ? ui->label_rsrvCOM3 : ui->label_mainCOM3);
-    l->set (QLed::ledShape::box, s ? QLed::ledStatus::on : QLed::ledStatus::off, Qt::white);
+    l->set (QLed::ledShape::box, s ? QLed::ledStatus::on : QLed::ledStatus::off, NotEmpty ? Qt::black : Qt::white);
     //l->setText("+");
 }
 
@@ -43,7 +43,9 @@ void kpframe::Show()
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(false, true ));
     ui->label_rsrvCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(true , false));
     ui->label_rsrvCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, getColor(true , true ));
-    SetOtuLed(st->IsOtuLineOk(), false);
+
+    if (!st->IsOtuLineOk())
+        SetOtuLed(false, false);
 
 }
 

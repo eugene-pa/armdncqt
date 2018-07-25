@@ -129,7 +129,7 @@ public:
     bool IsOtuLineOk(bool rsrv);                            // проверка готовности системы ОТУ
     bool IsOtuLineOk();                                     // проверка готовности системы ОТУ активного блока
 //  bool IsOtuBrokOn(bool rsrv);                            // проверка готовности УПОК/БРОК
-    bool IsOtuSndRsvDtOk(int dt=30);                        // проверка состояния тракта ОТУ сравнением времени опроса и отклика
+    bool IsOtuSndRcvDtOk(int dt=30);                        // проверка состояния тракта ОТУ сравнением времени опроса и отклика
     bool IsRetrans  (bool rsrv);                            // проверка режима ретрансляции
     bool IsConsol   (bool rsrv);                            // проверка подключения отладочной консоли
     bool IsOtuPending(bool rsrv);                           // проверка флага исполнения ОТУ
