@@ -15,11 +15,13 @@
 
 // Блок глобальных переменных проекта ==========================================================================================================================
 std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
+std::mutex sendMutex;                                       // мьютекс для доступа к waterMsg
+std::condition_variable waterMsg;                           // Ожидаем обработки сообщения
 
 MainWindow * MainWindow::mainWnd;                           // статический экземпляр главного окна
 
 QString version = "1.0.1";                                  // версия приложения
-QString title = "ДЦ ЮГ на базе КП Круг. Станция связи. ";
+QString title = "ДЦ ЮГ на базе КП Круг. Станция связи";
 
 QString mainCom,                                            // порт прямого канала
         rsrvCom;                                            // порт обводного канала
@@ -28,6 +30,7 @@ QString configMain,                                         // строка ко
 int     baud        = 57600;                                // скорость обмена с модемами
 int     delay       = 10;                                   // минимальная задержка между опросами, мс
 int     breakdelay  = 50;                                   // максимально допустимый интервал между байтами в пакете, мс
+quint64 driftCount  = 0;                                    // число корректных пакетов, принятых с чужого адреса
 
 QString path;
 
@@ -142,6 +145,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
 
+    QPalette pal = palette();
+    pal.setColor(QPalette::WindowText, Qt::darkGreen);
+    ui->label_or->setPalette(pal);
+
+
     // индикатор БПДК/УПОК: изначально серый
     // если принят пакет с данными ОТУ - моргнуть ярко-зеленым, обновить засечку времени
     // периодически (по таймеру) проверять на молчание более 1 мин: если засечки были, но молчит долго - желтый, иначе темно зеленый.
@@ -183,7 +191,7 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     QTableWidget * t = ui->tableWidget;
     t->setColumnCount(1);
     t->verticalHeader()->setDefaultSectionSize(20);
-    t->setHorizontalHeaderLabels(QStringList() << "Клиент" /*<< "Порт"*/);
+    t->setHorizontalHeaderLabels(QStringList() << "Клиенты" /*<< "Порт"*/);
     t->resizeColumnsToContents();
 
         // автоматически растягтваем 1-й столбец
@@ -284,8 +292,9 @@ void MainWindow::SelectStation(class Station * actualSt)
 // запрос на закрытие приложения
 void MainWindow::closeEvent(QCloseEvent * e)
 {
-    if (QMessageBox::question(this, "Станция связи", "Завершить работу станции связи?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
+    if (QMessageBox::question(this, title, "Завершить работу станции связи?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
         e->ignore();
+    waterMsg.notify_all();
 }
 
 
@@ -302,7 +311,7 @@ void MainWindow::on_pushButtonMainOff_clicked()
                         "с ограничением времени на 1-3 минуты\n\nВСЕ РАВНО ВЫПОЛНИТЬ КОМАНДУ ?";
 
         WORD delay = (WORD)ui->spinBox->value();
-        if (delay > 0 ||QMessageBox::question(this, "Управление КП", msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        if (delay > 0 ||QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
         {
             BYTE buf[sizeof(TuPackBypassMain)];
             memmove(buf, TuPackBypassMain, sizeof(buf));
@@ -312,7 +321,7 @@ void MainWindow::on_pushButtonMainOff_clicked()
             QString msg = QString("Ст.%1. Команда из панели РСС: ").arg(actualSt->Name()) + (delay ? QString("Отключение основного блока на %1 мин.").arg(delay) : "Отключение основного блока");
             Logger::LogStr (msg);
             blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-            QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+            QMessageBox::information(this, title, msg, QMessageBox::Ok);
         }
     }
 }
@@ -331,7 +340,7 @@ void MainWindow::on_pushButtonRsrvOff_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: ").arg(actualSt->Name()) + (delay ? QString("Отключение резервного блока на %1 мин.").arg(delay) : "Отключение резервного блока");
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -344,7 +353,7 @@ void MainWindow::on_pushButtonToMain_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Включение основного блока").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -357,13 +366,13 @@ void MainWindow::on_pushButtonToRsrv_clicked()
                       "Если резернный блок неисправен, Вы можете ПОТЕРЯТЬ КОНТРОЛЬ СТАНЦИИ!\n"
                       "Рекомендуется сначала убедиться в его работоспособности путем отключения основного блока"
                       "на 1-3 минуты командой 'Отключение основного блока'\n\nВСЕ РАВНО ВЫПОЛНИТЬ КОМАНДУ ?";
-        if (QMessageBox::question(this, "Управление КП", msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        if (QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
         {
             actualSt->AcceptDNC((RasData*)&TuPackSetRsrv);
             QString msg = QString("Ст.%1. Команда из панели РСС: Переход на резервный блок").arg(actualSt->Name());
             Logger::LogStr (msg);
             blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-            QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+            QMessageBox::information(this, title, msg, QMessageBox::Ok);
         }
     }
 }
@@ -377,7 +386,7 @@ void MainWindow::on_pushButtonTest_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Запуск теста МТУ/МТС").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -390,7 +399,7 @@ void MainWindow::on_pushButtonATU_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Сброс АТУ").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
      }
 }
 
@@ -398,14 +407,14 @@ void MainWindow::on_pushButtonATU_clicked()
 void MainWindow::on_pushButtonReset_clicked()
 {
     if (actualSt != nullptr && actualSt->IsTuEmpty()
-        && QMessageBox::question(this, "Управление КП", "Выполнить перезапуск КП", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes
+        && QMessageBox::question(this, title, "Выполнить перезапуск КП", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes
        )
     {
         actualSt->AcceptDNC((RasData*)&TuPackRestart);
         QString msg = QString("Ст.%1. Команда из панели РСС: Перезапуск КП").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -418,7 +427,7 @@ void MainWindow::on_pushButtonGetReconnect_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Запрос числа перезапусков КП").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -431,7 +440,7 @@ void MainWindow::on_pushButtonResetMain_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Отключить питание активного блока (холодный рестарит блока)").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -444,7 +453,7 @@ void MainWindow::on_pushButtonResetRsrv_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Отключить питание смежного неактивного блока (холодный рестарит блока)").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 
@@ -457,7 +466,7 @@ void MainWindow::on_pushButtonWatchdog_clicked()
         QString msg = QString("Ст.%1. Команда из панели РСС: Включить сторожевой таймер)").arg(actualSt->Name());
         Logger::LogStr (msg);
         blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
-        QMessageBox::information(this, "Управление КП", msg, QMessageBox::Ok);
+        QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
 // ===============================================================================================================================================================
@@ -659,9 +668,6 @@ bool MainWindow::IsNetSupported()
 
 // ===============================================================================================================================================================
 // обработка сообщений, генерируемых потоком ThreadPolling
-std::mutex sendMutex;
-std::condition_variable waterMsg;                           // Ожидаем обработки сообщения
-
 void MainWindow::GetMsg (int np, void * param, void * param2)
 {
     switch (np)
@@ -682,21 +688,19 @@ void MainWindow::GetMsg (int np, void * param, void * param2)
             break;
 
         case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
-            {
+            {                                                   // сообщение отправляется из TryOneChannel(...)
             RasPacker * pack = (RasPacker*)param;
-            Station * st = pack->st;
-            QString name =  st == nullptr ? "?" : st->Name();
-            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, pack->Length())).arg(name));
+            Station * st = pack->st;                            // указатель ДОЛЖЕН быть определен
+            ui->label_Snd->setText(QString("%1  -> %2").arg(Logger::GetHex(param, pack->Length())).arg(st->Name()));
             ui->label_cntsnd->setText(QString::number(pack->Length()));
 
-            // отладочное сообщение
-            ui->statusBar->showMessage(QString("%1. Передача данных ст. %2").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(name));
+            // отладочное сообщение в строке сообщений
+            ui->statusBar->showMessage(QString("%1. Передача данных ст. %2").arg(QDateTime::currentDateTime().toString(FORMAT_TIME)).arg(st->Name()));
 
             // если есть информация ОТУ - моржок индикатором ОТУ
             RasData * p = pack->GetRasData();
             if (!pack->IsEmpty() && p->LengthOtu())
             {
-                int n = p->LengthOtu();
                 ((kpframe *)st->userData)->BlinkOtu();          // моргаем тем цветом, который есть
                 ((kpframe *)st->userData)->SetOtuLed(st->IsOtuLineOk(), true);   // Моргнуть ОТУ если есть
             }
@@ -717,9 +721,22 @@ void MainWindow::GetMsg (int np, void * param, void * param2)
             if (param!=nullptr)
             {
                 // 1- моргнуть ОТУ если есть
-                Station * st = (Station *)param;                // гарантированно не nullptr
                 RasPacker* pack = (RasPacker* )param2;          // pack - весь пакет
+                Station * actualst = (Station *)param;          // гарантированно не nullptr
+                Station * st = pack->st;                        // станция с полученными данными
                 RasData * data = st->GetRasDataIn();            // используем копию полученных данных в самом классе
+
+                // если пакет заблудился (адрес источника = 0 или адрес назначения не 0, или станция не найдена - лог и выход)
+                if (pack->src == 0 || pack->dst != 0 || st==nullptr )
+                {
+                    Logger::LogStr(QString("Пакет данных не предназначен РСС, данные игнорируются: %1").arg(Logger::GetHex(pack, pack->Length())));
+                    break;
+                }
+                if (st != actualst)
+                {
+                    Logger::LogStr(QString("Прием данных от другой станции: %1 вместо %2").arg(st->Name()).arg(actualst->Name()));
+                    ui->label_Drift->setText(QString::number(++driftCount));
+                }
 
                 // если отклик от ОМУЛ-а - засечка приема
                 if (data->LengthOtu())
@@ -771,9 +788,9 @@ void MainWindow::GetMsg (int np, void * param, void * param2)
         // ошибка связи, param - актуальная станция
         case MSG_ERR:
             {
-            Station * st = (Station *)param;
+            Station * actualSt = (Station *)param;
 
-            if (st->GetSysInfo()->IsOnoff())
+            if (actualSt->GetSysInfo()->IsOnoff())
             {
                 StationNetTS info((Station *)param);            // формируем уведомление
                 sendToAllClients(&info);                        // передаем клиентам, если переход из рабочего состояния
@@ -787,11 +804,21 @@ void MainWindow::GetMsg (int np, void * param, void * param2)
             break;
 
         case MSG_ERR_FORMAT:
-            ui->statusBar->showMessage("Ошибка формата");
+            {
+            Station * actualst = (Station *)param;              // гарантированно не nullptr
+            //RasPacker* pack = (RasPacker* )param2;            // pack - весь пакет
+            QString msg = QString("Ошибка формата при опросе ст.%1").arg(actualst->Name());
+            Logger::LogStr(msg);
+            ui->statusBar->showMessage(msg);
+            }
             break;
 
         case MSG_ERR_CRC:                                       // ошибка CRC
-            Logger::LogStr ("Ошибка CRC");                      // лог
+            {
+            //RasPacker* pack = (RasPacker* )param2;            // pack - весь пакет
+            Station * actualst = (Station *)param;              // гарантированно не nullptr
+            Logger::LogStr(QString("Ошибка CRC при опросе ст.%1").arg(actualst->Name()));
+            }
             break;
 
         // передать сообщение
@@ -814,13 +841,12 @@ void MainWindow::GetMsg (int np, void * param, void * param2)
 // глобальная функция отправки сообщения главному окну
 // вызывается из рабочих потоков и работает в рабочих потоках
 // генерирует сигнал MainWindow::SendMsg, QT обеспечивает обработку сигнала в основном потоке
+// для гарантии целостности общих данных, после отправки сообщения ожидаем уведомления об обработке
+// ожидание уведомления ограничено 1 сек, более чем достаточно для обработки и исключает зависание в случае ошибки в функции обработки
 void SendMessage (int no, void * ptr, void * ptr2)
 {
     emit MainWindow::mainWnd->SendMsg(no, ptr, ptr2);
-    if (ptr2 != nullptr)
-    {
-        int a = 99;
-    }
+
     // ожидание обработки сообщения здесь гарантирует синхронизацию потоков с точки зрения целостности входного и выходного буферов
     // максимальное время ожидания здесь жестко - 1 сек, можно опционировать, хотя нет резона
     std::unique_lock<std::mutex> lck(sendMutex);

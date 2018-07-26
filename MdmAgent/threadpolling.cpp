@@ -154,40 +154,22 @@ void ThreadPolling(long param)
                     st = TryOneChannel(back ? rs2 : rs1, &pack);
                 }
                 else
-                    actualSt->SetBackChannel(back = !back);                 // если канала нет в конфигурации - перекидываем сторону обратно
+                    actualSt->SetBackChannel(back = !back);     // если канала нет в конфигурации - перекидываем сторону обратно
             }
         }
 
-
         // Собственно, данные уже обработаны: GetData отправляет сообщение MSG_SHOW_RCV и данные обрабатываются в основном потоке
-        // анализ адресата надо делать там же!
-        // где делать анализ совпадения адреса источника с ожидаемым - посмотреть
         // все, что могли, опросили, оцениваем результат
-        if (st != nullptr)                                              // если был отклик - пометить!
+        if (st != nullptr)
         {
-            /*
-            // обработать данные
-            RasPacker * pack = (RasPacker *)dataIn;
-            if (pack->dst != 0)
-            {
-                // получатель - не станция связи
-                continue;
-            }
-
-            if (st != actualSt)
-            {
-                // данные от другой станции
-                // continue;
-            }
-            */
-            st->SetKpResponce(true);
+            st->SetKpResponce(true);                            // если был отклик - пометить!
         }
         else
         {
-            // уведомить об ошибке
+            // нет отклика, или бардак в данных - уведомить об ошибке
             SendMessage (MainWindow::MSG_ERR, actualSt);
             actualSt->GetSysInfo()->SetLineStatus(LineTimeOut);
-            armAcked = true;                                            // не уведомляли АРМ, значит не ждем квитанцию
+            armAcked = true;                                    // не уведомляли АРМ, значит не ждем квитанцию
         }
     }
     // ------------------------------------------------------------------------------------------------------------------
@@ -283,8 +265,15 @@ bool GetData(BlockingRS * rs)
 
         // хочу вернуть справочник станции, от которой получены данные
         // использование актуальной станции некорректно, так как ответ может прийти от другой станции
-        Station * st = Station::GetByAddr(((RasPacker *)&dataIn)->src);
-        ((RasPacker *)&dataIn)->st = st;
+        Station * st = Station::GetByAddr(dataIn[SRC_OFFS]);
+        if (st==nullptr)
+        {
+            Logger::LogStr(QString("Не найдена станция по линейному адресу %1. Данные игноррируются").arg(dataIn[SRC_OFFS]));
+            SendMessage (MainWindow::MSG_ERR_FORMAT, dataIn);   // ошибка формата
+            return false;
+        }
+
+        ((RasPacker *)&dataIn)->st = st;                        // указатель на станцию-источник записываем в класс RasPacker
 
         // проверка CRC
         WORD crc = (dataIn[indx-2] << 8) | dataIn[indx-3];
@@ -293,7 +282,7 @@ bool GetData(BlockingRS * rs)
         {
             if (st)
                 st->GetSysInfo()->SetLineStatus(LineCRC);
-            SendMessage (MainWindow::MSG_ERR_CRC, dataIn);      // ошибка CRC
+            SendMessage (MainWindow::MSG_ERR_CRC, actualSt, dataIn);// ошибка CRC
             return false;
         }
         else
@@ -301,15 +290,15 @@ bool GetData(BlockingRS * rs)
         {
             if (st)
                 st->GetSysInfo()->SetLineStatus(LineFormat);
-            SendMessage (MainWindow::MSG_ERR_FORMAT, dataIn);   // ошибка формата
+            SendMessage (MainWindow::MSG_ERR_FORMAT, actualSt, dataIn);// ошибка формата
+            return false;
         }
         else
         {
             // нормальный прием
-            if (st)
-                st->GetSysInfo()->SetLineStatus(LineOK);
+            st->GetSysInfo()->SetLineStatus(LineOK);
             st->GetRasDataIn()->Copy(((RasPacker*)&dataIn)->GetRasData()); // копируем данные во внутреннем классе RasData
-            SendMessage (MainWindow::MSG_SHOW_RCV, st, dataIn); // уведомление о приеме
+            SendMessage (MainWindow::MSG_SHOW_RCV, actualSt, dataIn); // уведомление о приеме, передаем АКТУАЛЬНУЮ СТАНЦИЮ и полученные данные
         }
     }
     catch (...)
@@ -326,25 +315,30 @@ bool GetData(BlockingRS * rs)
 
 // получить след.станцию для опроса
 // функция должна обеспечивать приоритет станциям, для которых есть директивы/ТУ/ОТУ
-// TODO: для станций СПОК после отправки пакета сделат ьзаявку на опрос этой же станции на заданное время (через 1-2 сек), чтобы быстро получить отклик
-//       вариант: поле с заявочным временем опроса в классе Station, его же можно использовать для приоритета активной станции
+// доп.механизм приоритета: использование заявки на обработку в виде засечки врмени требуемой обработки: time_t Station::trqPolling
+// при определении след.станции в первую очередь выбирается станция, имеющая заявку, время которой подошло
+// так реализуем механизм повторного опроса станций с ОТУ СПОК после передачи блока ОТУ в ОМУЛ
 Station * NextSt()
 {
     // 1. проверка заявки на внеочередной опрос GetRqPolling
+    for (int i=0; i<(int)Station::StationsOrg.size(); i++)
+    {
+        Station * st = Station::StationsOrg[i];
+        // если есть заявка станции с ОТУ и подошло время, опрашиваем и сбрасываем заявку
+        if (st->GetRqPolling() && (QDateTime::currentDateTime().toTime_t() - st->GetRqPolling()) > 0 )
+        {
+            Logger::LogStr(QString("Опрос ст. %1 по заявке вне очереди").arg(st->Name()));
+            st->SetRqPolling(0);
+            return st;                                          // ожидаем отклик ОМУЛ
+        }
+    }
+
     // 2. проверка наличия данных для станции, отсеивая широковещательные блоки ОТУ
     // 3. если ничего такокго - очередная в порядке общей очереди
     for (int i=0; i<(int)Station::StationsOrg.size(); i++)
     {
         Station * st = Station::StationsOrg[i];
         RasData * data = st->GetRasDataOut();
-
-        // если есть заявка станции с ОТУ и подошло время, опрашиваем и сбрасываем заявку
-        if (st->GetRqPolling() && QDateTime::currentDateTime().secsTo(QDateTime::fromTime_t(st->GetRqPolling())) < 0 )
-        {
-            st->SetRqPolling(0);
-            return st;                                          // ожидаем отклик ОМУЛ
-        }
-
         if (    !data->Empty()                                  // есть данные для КП
             &&  st->IsEnable()                                  // станция включена
             &&  st->IsLinkOk()                                  // станция "жива"
@@ -353,7 +347,7 @@ Station * NextSt()
         {
             if (data->LengthOtu())                              // если данные для ОМУЛ - засечка заявки на повторный опрос через 2 сек
             {
-                st->SetRqPolling(QDateTime::currentDateTime().toTime_t() + 2);
+                st->SetRqPolling(QDateTime::currentDateTime().toTime_t() + 1);
                 st->FixOtuSnd();
             }
             return st;                                          // есть данные для станции
