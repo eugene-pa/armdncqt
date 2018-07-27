@@ -5,6 +5,7 @@
 #include <QHostAddress>
 #include <QUdpSocket>
 #include <QMessageBox>
+#include <QTimer>
 #include <sstream>
 #include <thread>
 #include <../common/defines.h>
@@ -157,6 +158,10 @@ private:
     int         portRcv;                                        // порт приема датаграмм
     //class BlockingRS * rasRs;
     class SqlBlackBox * blackbox;                               // sql-протоколирование
+
+    QTimer      timerAck;                                       // таймер отпраки квитанций работоспособноси клиентам Управление (опция ETPULSE)
+    QTimer      timerOR;                                        // таймер отправки сообщений о работоспособности основно РСС
+    QTimer      timerAutoswitch;                                // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
 
     time_t      tUcSnd;                                         // засечка передачи из УЦ
 };

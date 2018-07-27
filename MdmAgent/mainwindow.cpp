@@ -34,6 +34,18 @@ quint64 driftCount  = 0;                                    // число кор
 
 QString path;
 
+// коммутация каналов связи (используется в конфигурациях, когда основная и резервная РСС имеют разные IP и включены одновременно
+// отображение:
+// - индикатор О/Р - основная/резервная; активная РСС - зеленый цвет, пассивная - белый
+// - флажок ОТКЛ включен на активной РСС
+//   при наличии аппаратного коммутатора название соответствует типу РСС: ОСНОВ/РЕЗЕРВ
+//   при вкл/откл флажка выдаетсязапрос подтверждения соответствующег действия
+bool    mainRss = true;                                     // основная станция связи (опция MAINRSS)
+QString nextRssIP;                                          // ip-адрес смежной станции связи (резервной или основной)
+int     nextRssPort;                                        // номер порта смежной станции связи (резервной или основной)
+bool    hardSwith = false;                                  // наличие аппаратного пкоммутатора
+bool    hardSwitchAuto = true;                              // автопереключение
+
 #ifdef Q_OS_WIN
     QString editor = "notepad.exe";                         // блокнот
 #endif
@@ -111,6 +123,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     rdr.GetText("SQLSERVERMAIN", mainSql);                      // строка подключения к основному  SQL (postgresql)
     rdr.GetText("SQLSERVERRSRV", rsrvSql);                      // строка подключения к резервному SQL (postgresql)
+
+    rdr.GetBool("MAINRSS", mainRss);                            // MAINRSS - ОN/OFF - основная/резервная
+    if (rdr.GetText("LINKRSS", tmp))                            // LINKRSS=192.168.0.101:7005
+        TcpHeader::ParseIpPort(tmp, nextRssIP, nextRssPort);
+    rdr.GetBool("HARDWARESWITCH", hardSwith);                   // HARDWARESWITCH=OFF
+    rdr.GetBool("AUTOSWITCH", hardSwitchAuto);                  // AUTOSWITCH
+
     // --------------------------------------------------------------------------------------------------------------------------
 
     KrugInfo * krug = nullptr;
