@@ -96,6 +96,9 @@ void ThreadPolling(long param)
         if (!(readyMain || readyRsrv) && !MainWindow::IsNetSupported()) // если нет готовности портов и не описано сетевое подключение - ожидание
             continue;
 
+        if (!activeRss)                                                 // если РСС не активна - не опрашиваем
+            continue;
+
         if (actualSt)
             SendMessage (MainWindow::MSG_SHOW_INFO, actualSt->userData);// отображением станции снимаем пинг
 

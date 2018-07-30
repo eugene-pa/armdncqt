@@ -23,6 +23,9 @@ extern std::queue <unsigned char> dataInNet;                // входные д
 extern std::mutex                 mtxDataNet;               // синхронизация доступа к dataInNet
 extern unsigned int cycles;                                 // счетчик циклов всех станций
 extern QTime       start;                                   // засечка начала цикла
+extern bool activeRss;                                      // глобальный логический флаг активности РСС
+extern bool activeRssPrv;                                   // глобальный логический флаг активности РСС в предыдущем такте
+
 
 void SendMessage (int, void *, void * p2 = nullptr);        // прототип глобальной функции отправки сообщения
 void   ThreadPolling (long);                                // прототип глобальной функции потока опроса линии связи
@@ -122,7 +125,7 @@ public slots:
     void slotSvrDisconnected  (ClientTcp *);
     void slotRoger            (ClientTcp *);
 
-    // прием датаграмм
+    // прием датаграмм от КП
     void readDatagramm();
 
 signals:
@@ -135,6 +138,13 @@ private slots:
     void on_checkBox_ack_stateChanged(int arg1);
 
     void on_checkBox_Full_stateChanged(int arg1);
+
+    void on_TimerAck();
+    void on_TimerOR();
+    void on_TimerAutoswitch();
+    void readFromMainRss();
+
+    void on_checkBox_off_stateChanged(int arg1);
 
 private:
     virtual void timerEvent(QTimerEvent *event);                // обраьотка таймера
@@ -151,6 +161,10 @@ private:
     ServerTcp * server;                                         // сервер подключений модулей Управление
 
     void sendToAllClients(class StationNetTS*);                 // отправить данные всем подключенным клиентам, от которыъ было подтверждение
+    void ShowStatusOP();                                        // отобразить актуальное состояние элементов GUI О/Р
+    bool IsActive();                                            // станция активна?
+    bool IsMainRssExpired();                                    // активная РСС молчит более n сек
+    int     netPulse;                                           // частота в сек отправки квитанций для поддержки соединения
 
     QUdpSocket * sndSocket;                                     // сокет для передачи в КП датаграмм
     QUdpSocket * rcvSocket;                                     // сокет для приема датаграмм из КП
@@ -159,9 +173,19 @@ private:
     //class BlockingRS * rasRs;
     class SqlBlackBox * blackbox;                               // sql-протоколирование
 
-    QTimer      timerAck;                                       // таймер отпраки квитанций работоспособноси клиентам Управление (опция ETPULSE)
-    QTimer      timerOR;                                        // таймер отправки сообщений о работоспособности основно РСС
-    QTimer      timerAutoswitch;                                // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
+    bool    mainRss;                                            // основная станция связи (опция MAINRSS)
+    QString nextRssIP;                                          // ip-адрес смежной станции связи (резервной или основной)
+    int     nextRssPort;                                        // номер порта смежной станции связи (резервной или основной)
+    bool    forcePassive;                                       // принудительное программное отключение основной РСС (используется как в основной так и в резервной РСС)
+    bool    hardSwith;                                          // наличие аппаратного пкоммутатора
+    bool    hardSwitchAuto;                                     // автопереключение
+
+    QUdpSocket * sndFromMain;                                   // сокет для передачи датаграмм в резервную РСС
+    QUdpSocket * rcvFromMain;                                   // сокет для приема датаграмм из основной РСС
+    QDateTime lastFromMain;                                     // время приема последнй датаграммы от основной
+    QTimer      *timerAck;                                      // таймер отпраки квитанций работоспособноси клиентам Управление (опция NETPULSE)
+    QTimer      *timerOR;                                       // таймер отправки сообщений о работоспособности основно РСС
+    QTimer      *timerAutoswitch;                               // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
 
     time_t      tUcSnd;                                         // засечка передачи из УЦ
 };

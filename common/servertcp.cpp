@@ -121,3 +121,12 @@ void ServerTcp::packsendToAll(char * data, quint16 length, bool compress)
     SignaturedPack pack((char*)data, length, compress);
     sendToAll((char*)&pack, pack.length);
 }
+
+void ServerTcp::sentoAllAck()
+{
+    foreach (ClientTcp * client, _clients)
+    {
+        client->sendAck();
+    }
+}
+

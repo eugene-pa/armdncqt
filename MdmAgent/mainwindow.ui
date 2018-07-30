@@ -851,6 +851,9 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="rightMargin">
+         <number>5</number>
+        </property>
         <item>
          <widget class="QCheckBox" name="checkBox_ack">
           <property name="text">
@@ -901,8 +904,11 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1">
         <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
          <number>6</number>
         </property>
         <property name="bottomMargin">
@@ -936,6 +942,28 @@
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLed" name="label_mainStatus">
+          <property name="minimumSize">
+           <size>
+            <width>14</width>
+            <height>14</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>14</width>
+            <height>14</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="text">
+           <string/>
           </property>
          </widget>
         </item>

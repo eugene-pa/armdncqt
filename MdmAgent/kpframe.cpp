@@ -21,6 +21,18 @@ kpframe::kpframe(QWidget *parent, Station* pst) :
     ui->label_Rsrv->setStyleSheet("color: rgb(128, 128, 128)");
     ui->pushButton->setText(st->Name().left(8));
     ui->checkBox->setChecked(st->Enable());
+
+    QPalette o(ui->frame_4->palette());
+    o.setColor(QPalette::Window, QColor(128,196,128,64));
+    o.setColor(QPalette::Foreground, Qt::darkGray);
+    ui->frame_4->setAutoFillBackground(true);
+    ui->frame_4->setPalette(o);
+
+    QPalette r(ui->frame_3->palette());
+    r.setColor(QPalette::Window, QColor(128,196,128,64));
+    r.setColor(QPalette::Foreground, Qt::darkGray);
+    ui->frame_3->setAutoFillBackground(true);
+    ui->frame_3->setPalette(r);
 }
 
 kpframe::~kpframe()
@@ -47,6 +59,14 @@ void kpframe::Show()
     if (!st->IsOtuLineOk())
         SetOtuLed(false, false);
 
+
+/*
+    QPalette pal = palette();
+    //QBrush brush(Qt::darkGreen);
+    pal.setBrush(QPalette::Background, QBrush(Qt::darkGreen));
+    pal.setBrush(QPalette::Foreground, QBrush(Qt::darkGreen));
+    ui->frame_4->setPalette(pal);
+*/
 }
 
 // получить цвет индикатора заданного модема

@@ -73,9 +73,9 @@ typedef const char *    LPCTSTR;
 #define CDC  QPainter
 #define CFont QFont
 #define CBitmap QBitmap
-#define strstr(str,text) (str.indexOf(text)>=0)
-#define strcmp(str1,str2) (str1==str2)
-#define strlen(str) str.length()
+//#define strstr(str,text) (str.indexOf(text)>=0)
+//#define strcmp(str1,str2) (str1==str2)
+//#define strlen(str) str.length()
 
 #define FORMAT_DATETIME "dd.MM.yy hh:mm:ss"
 #define FORMAT_TIME     "hh:mm:ss"

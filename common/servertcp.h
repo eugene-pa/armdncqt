@@ -16,6 +16,7 @@ public:
     QList <class ClientTcp*> clients() { return _clients; }
     void sendToAll(char * data, quint16 length, bool rqAck=false);
     void packsendToAll(char * data, quint16 length, bool compress=false);
+    void sentoAllAck();                                     // отправить всем квитанциию
     void start();
 signals:
     void	newConnection(class ClientTcp *);               // подключение нового клиента

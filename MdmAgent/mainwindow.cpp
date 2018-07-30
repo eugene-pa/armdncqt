@@ -33,6 +33,8 @@ int     breakdelay  = 50;                                   // максимал�
 quint64 driftCount  = 0;                                    // число корректных пакетов, принятых с чужого адреса
 
 QString path;
+bool activeRss = true;                                      // глобальный логический флаг активности РСС
+bool activeRssPrv = true;                                   // глобальный логический флаг активности РСС в предыдущем такте
 
 // коммутация каналов связи (используется в конфигурациях, когда основная и резервная РСС имеют разные IP и включены одновременно
 // отображение:
@@ -40,11 +42,9 @@ QString path;
 // - флажок ОТКЛ включен на активной РСС
 //   при наличии аппаратного коммутатора название соответствует типу РСС: ОСНОВ/РЕЗЕРВ
 //   при вкл/откл флажка выдаетсязапрос подтверждения соответствующег действия
-bool    mainRss = true;                                     // основная станция связи (опция MAINRSS)
-QString nextRssIP;                                          // ip-адрес смежной станции связи (резервной или основной)
-int     nextRssPort;                                        // номер порта смежной станции связи (резервной или основной)
-bool    hardSwith = false;                                  // наличие аппаратного пкоммутатора
-bool    hardSwitchAuto = true;                              // автопереключение
+QString msgMain = "ОСНОВН";                                 // сообщение от основной в резервную об активности основной
+QString msgRsrv = "РЕЗЕРВ";                                 // сообщение от основной в резервную об отключении основной (принудительное программное)
+
 
 #ifdef Q_OS_WIN
     QString editor = "notepad.exe";                         // блокнот
@@ -104,8 +104,14 @@ MainWindow::MainWindow(QWidget *parent) :
     path = QFileInfo(dbname).absoluteDir().absolutePath();
     extDb       = path + "/bd/armext.db";
     esrdbbname  = path + "/bd/arm.db";
-    portSnd = 0;                                                // порт передачи датаграмм
-    portRcv = 0;                                                // порт приема датаграмм
+    portSnd  = 0;                                               // порт передачи датаграмм
+    portRcv  = 0;                                               // порт приема датаграмм
+    netPulse = 0;                                               // частота в сек отправки квитанций для поддержки соединения
+    mainRss = true;                                             // по умолчанию - основная РСС
+    forcePassive = false;
+    hardSwith = false;                                          // наличие аппаратного пкоммутатора
+    hardSwitchAuto = true;                                      // автопереключение
+    sndSocket = rcvSocket = sndFromMain = rcvFromMain = nullptr;
 
 
     int ras = 1;
@@ -129,8 +135,11 @@ MainWindow::MainWindow(QWidget *parent) :
         TcpHeader::ParseIpPort(tmp, nextRssIP, nextRssPort);
     rdr.GetBool("HARDWARESWITCH", hardSwith);                   // HARDWARESWITCH=OFF
     rdr.GetBool("AUTOSWITCH", hardSwitchAuto);                  // AUTOSWITCH
+    rdr.GetInt ("NETPULSE"  , netPulse  );                      // частота в сек отправки квитанций для поддержки соединения
 
     // --------------------------------------------------------------------------------------------------------------------------
+
+    activeRss = activeRssPrv = mainRss;                         // по умолчанию активной является основная РСС
 
     KrugInfo * krug = nullptr;
 //    Esr::ReadBd(esrdbbname, logger);                            // ЕСР
@@ -167,6 +176,19 @@ MainWindow::MainWindow(QWidget *parent) :
     QPalette pal = palette();
     pal.setColor(QPalette::WindowText, Qt::darkGreen);
     ui->label_or->setPalette(pal);
+
+    // в резервной станции связи флажок ОТКЛ используется с текстом Оснв и показывает наличие связи с ОСН
+    if (mainRss)
+    {
+        ui->label_mainStatus->setVisible(false);
+    }
+    else
+    {
+        ui->checkBox_off->setText("Оснв");
+        ui->checkBox_off->setEnabled(false);
+        ui->label_mainStatus->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::red);
+        ui->label_or->setText("Р");
+    }
 
 
     // индикатор БПДК/УПОК: изначально серый
@@ -240,8 +262,41 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
         rcvSocket = sndSocket = nullptr;
 
     tUcSnd = 0;                                                 // засечка передачи из УЦ
-    startTimer (1000);
 
+    // запуск таймеров
+    timerAck = timerOR = timerAutoswitch = nullptr;
+
+    startTimer (1000);                                          // основной таймер MainWindow
+
+    if (netPulse)                                               // если задана опция NETPULSE - запустить таймер
+    {
+        timerAck        = new QTimer(this);                     // таймер отпраки квитанций работоспособноси клиентам Управление (опция NETPULSE)
+        connect(timerAck, SIGNAL(timeout()), this, SLOT(on_TimerAck()));
+        timerAck ->start(netPulse * 1000);                      // время задано в сек
+    }
+
+    if (nextRssPort > 0)                                        // если задан порт связи основной и резервной РСС, стартуем таймер передачи
+    {
+        timerOR         = new QTimer(this);                 // таймер отправки сообщений о работоспособности основной РСС
+        connect(timerOR, SIGNAL(timeout()) , this, SLOT(on_TimerOR()));
+        timerOR->start(1000);
+
+        if (mainRss)
+        {
+            sndFromMain = new QUdpSocket();                     // сокет для передачи датаграмм в резервную РСС
+        }
+        else
+        {
+            rcvFromMain = new QUdpSocket();                     // сокет для приема датаграмм в резервную РСС
+            rcvFromMain->bind(QHostAddress::AnyIPv4, nextRssPort, QUdpSocket::ShareAddress);  // привязать сокет ко всем IP и порту
+            connect(rcvFromMain, SIGNAL(readyRead()), this, SLOT(readFromMainRss()));
+        }
+    }
+    timerAutoswitch = new QTimer(this);                         // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
+    connect(timerAutoswitch, SIGNAL(timeout()), this, SLOT(on_TimerAutoswitch()));
+    timerAutoswitch->start();
+
+    lastFromMain = QDateTime::currentDateTime();
 }
 
 MainWindow::~MainWindow()
@@ -252,6 +307,14 @@ MainWindow::~MainWindow()
 
     if (blackbox != nullptr)
         delete blackbox;
+
+    if (timerAck != nullptr)
+        delete timerAck;
+    if (timerOR != nullptr)
+        delete timerOR;
+    if (timerAutoswitch != nullptr)
+        delete timerAutoswitch;
+
     Station::Release();
 
     delete ui;
@@ -490,6 +553,14 @@ void MainWindow::on_pushButtonWatchdog_clicked()
 }
 // ===============================================================================================================================================================
 
+// обработка таймеров
+
+// таймер отпраки квитанций работоспособноси клиентам Управление (опция NETPULSE)
+void MainWindow::on_TimerAck()
+{
+    server->sentoAllAck();
+}
+
 
 // обработка событий GUI
 
@@ -558,7 +629,7 @@ void MainWindow::on_action_KP_triggered()
 
 
 // ===============================================================================================================================================================
-// слотй уведомлений сервера
+// слоты уведомлений сервера
 
 // ошибка на сокете
 void MainWindow::slotAcceptError(ClientTcp * conn)
@@ -874,6 +945,103 @@ void SendMessage (int no, void * ptr, void * ptr2)
 
 
 
+
+// =========================================================================================================================================================================
+// переключение основная/резервная РСС и коммутация
+
+
+// станция активна?
+bool MainWindow::IsActive()
+{
+    if (hardSwith)
+    {
+        return false;
+    }
+    else
+    {
+        return mainRss ? !forcePassive : forcePassive || IsMainRssExpired();
+    }
+}
+
+
+// активная РСС молчит более n сек
+bool MainWindow::IsMainRssExpired()
+{
+    return !mainRss && lastFromMain.secsTo(QDateTime::currentDateTime()) > 3;
+}
+
+
+// изменение состояни флажка ОТКЛ
+void MainWindow::on_checkBox_off_stateChanged(int arg1)
+{
+    Q_UNUSED(arg1)
+    if (mainRss && (forcePassive || QMessageBox::question(this, title, "Отключить опрос основной станции связи?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes))
+    {
+        forcePassive = !ui->checkBox_off->isChecked();
+        QString msg = QString("Принудительное %1 основной станции связи пользователем").arg(forcePassive ? "включение" : "отключение");
+        blackbox->SqlBlackBox::putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+    }
+}
+
+
+
+// слот "прием датаграмм" от основной РСС
+void MainWindow::readFromMainRss()
+{
+    while (rcvFromMain->hasPendingDatagrams())
+    {
+        QByteArray datagram;
+        datagram.resize(rcvFromMain->pendingDatagramSize());
+        rcvFromMain->readDatagram(datagram.data(), datagram.size());
+        QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+        QString s = codec->toUnicode(datagram);
+        forcePassive = s.compare(msgMain) != 0;
+        lastFromMain = QDateTime::currentDateTime();
+    }
+}
+
+// таймер отправки сообщений о работоспособности основно РСС
+void MainWindow::on_TimerOR()
+{
+    if (sndFromMain)
+    {
+        QByteArray msg = QTextCodec::codecForName("Windows-1251")->fromUnicode(forcePassive ? msgRsrv : msgMain);
+        sndFromMain->writeDatagram(msg, QHostAddress(nextRssIP), nextRssPort);		// передача данных с указанием адреса(можно всем) и порта
+    }
+    ShowStatusOP();
+}
+
+// таймер отслеживания работоспособности аппаратуры и автопереключения РСС
+void MainWindow::on_TimerAutoswitch()
+{
+
+}
+
+// отобразить актуальное состояние элементов GUI О/Р
+// большой индикатор О/Р нужным цветом
+// флажок Оснв для резервной
+// индикатор Оснв для резервной
+void MainWindow::ShowStatusOP()
+{
+    QPalette pal = palette();
+    pal.setColor(QPalette::WindowText, (activeRss = IsActive()) ? Qt::darkGreen : Qt::gray);
+    ui->label_or->setPalette(pal);
+
+    if (!mainRss)
+    {
+        ui->checkBox_off->setChecked(!IsActive());
+    }
+
+    ui->label_mainStatus->set (QLed::ledShape::box, QLed::ledStatus::on, IsMainRssExpired() ? Qt::red : IsActive() ? Qt::white : Qt::green);
+
+    // отслеживаем переходы состояния
+    if (activeRss != activeRssPrv)
+    {
+        activeRssPrv = activeRss;
+        QString msg = QString("%1 %2 станции связи").arg(activeRss ? "Включение" : "Отключение").arg(mainRss ? "основной" : "резервной");
+        blackbox->SqlBlackBox::putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+    }
+}
 
 
 
