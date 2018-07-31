@@ -834,7 +834,7 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>151</width>
+       <width>159</width>
        <height>204</height>
       </rect>
      </property>
@@ -904,7 +904,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
         <property name="topMargin">
          <number>6</number>
         </property>
@@ -946,24 +946,23 @@
          </widget>
         </item>
         <item>
-         <widget class="QLed" name="label_mainStatus">
-          <property name="minimumSize">
-           <size>
-            <width>14</width>
-            <height>14</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>14</width>
-            <height>14</height>
-           </size>
+         <widget class="QLabel" name="label_main">
+          <property name="font">
+           <font>
+            <family>DejaVu Sans</family>
+            <pointsize>24</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
           </property>
           <property name="frameShape">
-           <enum>QFrame::Box</enum>
+           <enum>QFrame::Panel</enum>
           </property>
           <property name="text">
-           <string/>
+           <string>О</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
          </widget>
         </item>

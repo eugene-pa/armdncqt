@@ -33,6 +33,7 @@ SqlBlackBox::SqlBlackBox (QString& mainstr, QString& rsrvstr, Logger *logger)
 {
     if (logger==nullptr)                                            // если не передали логгер, создам свой
         logger = new Logger("LOG/SqlBlackBox.log", true, true);
+    this->logger = logger;
     servers.push_back(new SqlServer (this, mainstr, logger));       // добавляем основной сервер
     if (rsrvstr != nullptr && rsrvstr.length())                     // если определен резервный
         servers.push_back(new SqlServer (this, rsrvstr, logger));   // добавляем резервный сервер
@@ -93,12 +94,6 @@ SqlServer* SqlBlackBox::GetSvr(int indx)
     return (int)servers.size() >= indx ? servers[indx] : nullptr;
 }
 
-// запись сообщения с текстовыми параметрами
-void SqlBlackBox::putMsg(QString msg, QString app, QString event, QString ip, int krug, int st)
-{
-    putMsg(krug, st, msg, (int)(GetAppIdByName (app)), (int)(GetMsgTypeByName(event)), ip);
-}
-
 // запись сообщения
 void SqlBlackBox::putMsg(int krug, int st, QString msg, int app, int event, QString ip)
 {
@@ -117,7 +112,17 @@ void SqlBlackBox::putMsg(int krug, int st, QString msg, int app, int event, QStr
     {
         val->Add(mes);
     }
+
+    //logger->LogStr(QString("Ст.%1. %2").arg(st).arg(msg));
 }
+
+
+// запись сообщения с текстовыми параметрами
+void SqlBlackBox::putMsg(QString msg, QString app, QString event, QString ip, int krug, int st)
+{
+    putMsg(krug, st, msg, (int)(GetAppIdByName (app)), (int)(GetMsgTypeByName(event)), ip);
+}
+
 
 // запись сообщения (перегруженная без круга и IP)
 void SqlBlackBox::putMsg(int st, QString msg, int app, int event)
@@ -127,5 +132,6 @@ void SqlBlackBox::putMsg(int st, QString msg, int app, int event)
         localhost = GetHostIp();
     putMsg(0, st, msg, app, event, localhost);
 }
+
 
 

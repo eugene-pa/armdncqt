@@ -37,6 +37,7 @@ QString SqlParams::GetOption(const char * option, QString src)
 }
 
 void ThreadDoSql(long param);
+bool SqlServer::logSql = false;                                 // флаг опционирования записи в лог текста запросов SQL
 // =========================================================================================
 // конструктор подключения к серверу
 // строка подключения:
@@ -179,7 +180,10 @@ void SqlServer::ThreadDoSql(long param)
                     std::shared_ptr<SqlMessage> p = tmp.front();
                     tmp.pop();
                     QString sql = p->sql();
-                    //server->Log(sql);
+
+                    if (logSql)
+                        server->Log(sql);                       // опционированный вывод в лог текста запроса
+
                     db.exec(sql);
                     if (db.lastError().isValid())
                     {

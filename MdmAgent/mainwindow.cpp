@@ -14,14 +14,15 @@
 #include "../spr/stationnettu.h"
 
 // Блок глобальных переменных проекта ==========================================================================================================================
-std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
-std::mutex sendMutex;                                       // мьютекс для доступа к waterMsg
-std::condition_variable waterMsg;                           // Ожидаем обработки сообщения
-
-MainWindow * MainWindow::mainWnd;                           // статический экземпляр главного окна
 
 QString version = "1.0.1";                                  // версия приложения
-QString title = "ДЦ ЮГ на базе КП Круг. Станция связи";
+QString title = "ДЦ ЮГ на базе КП Круг. Станция связи";     // наименование приложения
+
+std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
+std::condition_variable waterMsg;                           // условная переменная для организации ожидания обработки сообщений
+std::mutex sendMutex;                                       // мьютекс для доступа к waterMsg
+
+MainWindow * MainWindow::mainWnd;                           // статический экземпляр главного окна
 
 QString mainCom,                                            // порт прямого канала
         rsrvCom;                                            // порт обводного канала
@@ -32,19 +33,10 @@ int     delay       = 10;                                   // минималь�
 int     breakdelay  = 50;                                   // максимально допустимый интервал между байтами в пакете, мс
 quint64 driftCount  = 0;                                    // число корректных пакетов, принятых с чужого адреса
 
-QString path;
+QString path;                                               // путь к рабочему каталогу
+
 bool activeRss = true;                                      // глобальный логический флаг активности РСС
 bool activeRssPrv = true;                                   // глобальный логический флаг активности РСС в предыдущем такте
-
-// коммутация каналов связи (используется в конфигурациях, когда основная и резервная РСС имеют разные IP и включены одновременно
-// отображение:
-// - индикатор О/Р - основная/резервная; активная РСС - зеленый цвет, пассивная - белый
-// - флажок ОТКЛ включен на активной РСС
-//   при наличии аппаратного коммутатора название соответствует типу РСС: ОСНОВ/РЕЗЕРВ
-//   при вкл/откл флажка выдаетсязапрос подтверждения соответствующег действия
-QString msgMain = "ОСНОВН";                                 // сообщение от основной в резервную об активности основной
-QString msgRsrv = "РЕЗЕРВ";                                 // сообщение от основной в резервную об отключении основной (принудительное программное)
-
 
 #ifdef Q_OS_WIN
     QString editor = "notepad.exe";                         // блокнот
@@ -53,21 +45,17 @@ QString msgRsrv = "РЕЗЕРВ";                                 // сообщ�
     QString editor = "TextEdit";                            // блокнот
 #endif
 #ifdef Q_OS_LINUX
-    QString editor = "gedit";                               // блокнот
+    QString editor = "gedit";                               // блокнот, gedit, mousepad
 #endif
-    Logger logger("log/mdmagent.log", true, true);
-
     QString images(":/status/images/");                     // путь к образам status/images
     QString imagesEx(":/images/images/");                   // путь к образам images/images
+
+    Logger logger("log/mdmagent.log", true, true);          // глобальный класс логгера
 
     QString dbname      = "bd/arm.db";
     QString esrdbbname  = "bd/arm.db";
     QString extDb       = "bd/armext.db";
     QString iniFile     = "mdmagent.ini";
-
-    // строки подключения к основному и резервному SQL-серверам
-    QString mainSql = "";                                   // "DRIVER=QPSQL;Host=192.168.0.105;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
-    QString rsrvSql = "";
 
 // =============================================================================================================================================================
 
@@ -78,32 +66,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    loadResources();                                            // загрузка графических ресурсов
+
     mainWnd = this;
-    modulType=APP_MDMAGENT;                                 // тип приложения
+    modulType=APP_MDMAGENT;                                     // тип приложения
     QString tmp;
+
 
     // --------------------------------------------------------------------------------------------------------------------------
     // блокируем мьютекс завершения работы
     exit_lock.lock();
 
-    path = QDir::currentPath();
-
-    // если ini-файл задан параметром командной строки, используем
-    QStringList list = QCoreApplication::arguments();
-    if (list.count() > 1)
-        iniFile = list[1];
-
-    Logger::SetLoger(&logger);
-    Logger::LogStr ("Запуск приложения");
-    Logger::LogStr ("Конфигурация: " + iniFile);
-
-    IniReader rdr(iniFile);
-
-    rdr.GetText("DBNAME", dbname);
-    dbname = path + "/" + dbname;
-    path = QFileInfo(dbname).absoluteDir().absolutePath();
-    extDb       = path + "/bd/armext.db";
-    esrdbbname  = path + "/bd/arm.db";
+    // инициализация переменныъ
+    mainSql = rsrvSql = "";                                     // "DRIVER=QPSQL;Host=192.168.0.105;PORT=5432;DATABASE=blackbox;USER=postgres;PWD=358956";
     portSnd  = 0;                                               // порт передачи датаграмм
     portRcv  = 0;                                               // порт приема датаграмм
     netPulse = 0;                                               // частота в сек отправки квитанций для поддержки соединения
@@ -112,43 +87,71 @@ MainWindow::MainWindow(QWidget *parent) :
     hardSwith = false;                                          // наличие аппаратного пкоммутатора
     hardSwitchAuto = true;                                      // автопереключение
     sndSocket = rcvSocket = sndFromMain = rcvFromMain = nullptr;
-
-
-    int ras = 1;
-    rdr.GetInt("KRUG"    , ras   );                             // номер станции связи
-    portTcp = 1002;                                             // по умолчанию порт 1002
-    rdr.GetInt("TCPPORT" , portTcp);                            // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
-    rdr.GetText("MAIN"   , mainCom);                            // порт прямого   канала
-    rdr.GetText("RESERVE", rsrvCom);                            // порт обратного канала
-    rdr.GetInt("ВAUD"    , baud  );                             // скорость обмена с модемами
-    rdr.GetInt("DELAY"   , delay );                             // минимальная задержка между опросами станций
-    rdr.GetInt("READ_INTERVAL", breakdelay);                    // максимально допустимый интервал между байтами в пакете, мс
-
-    rdr.GetInt("UDPSEND"   , portSnd);                          // порт передачи датаграмм
-    rdr.GetInt("UDPRECEIVE", portRcv);                          // порт приема датаграмм
-
-    rdr.GetText("SQLSERVERMAIN", mainSql);                      // строка подключения к основному  SQL (postgresql)
-    rdr.GetText("SQLSERVERRSRV", rsrvSql);                      // строка подключения к резервному SQL (postgresql)
-
-    rdr.GetBool("MAINRSS", mainRss);                            // MAINRSS - ОN/OFF - основная/резервная
-    if (rdr.GetText("LINKRSS", tmp))                            // LINKRSS=192.168.0.101:7005
-        TcpHeader::ParseIpPort(tmp, nextRssIP, nextRssPort);
-    rdr.GetBool("HARDWARESWITCH", hardSwith);                   // HARDWARESWITCH=OFF
-    rdr.GetBool("AUTOSWITCH", hardSwitchAuto);                  // AUTOSWITCH
-    rdr.GetInt ("NETPULSE"  , netPulse  );                      // частота в сек отправки квитанций для поддержки соединения
-
-    // --------------------------------------------------------------------------------------------------------------------------
-
+    msgMain = "ОСНОВН";                                         // сообщение от основной в резервную об активности основной
+    msgRsrv = "РЕЗЕРВ";                                         // сообщение от основной в резервную об отключении основной (принудительное программное)
     activeRss = activeRssPrv = mainRss;                         // по умолчанию активной является основная РСС
+    int ras = 1;                                                // по умолчанию RAS=1
+    portTcp = 1002;                                             // по умолчанию порт 1002 - НЕ РАБОТАЕТ В DEBIAN
+    tUcSnd = 0;                                                 // засечка передачи из УЦ
+    timerAck = timerOR = timerAutoswitch = nullptr;
+    dlgKp = nullptr;
+    lastFromMain = QDateTime::currentDateTime();                // засечка времени
+
+
+    // определяемся с файлом коныигурации: приоритет ini-файлу, заданному параметром командной строки (1-й параметр считается файлом конфигурации)
+    QStringList list = QCoreApplication::arguments();
+    if (list.count() > 1)
+        iniFile = list[1];
+
+    Logger::SetLoger(&logger);
+    Logger::LogStr ("Запуск приложения");
+    Logger::LogStr ("Конфигурация: " + iniFile);
+
+    path = QDir::currentPath();                                 // путь к текущему каталогу, преобразуем в путь к папке БД
+
+    IniReader rdr(iniFile);
+    rdr.GetText("DBNAME", dbname);                              // читаем опцию DBNAME, из имени БД получаем путь к папке БД
+    QFileInfo fi(dbname);
+    if (fi.isRelative())                                        // если задан относительный путь, получаем полный, добавляя к текущему каталогу
+    {
+        dbname = path + "/" + dbname;
+        path += "/bd";
+    }
+    else
+        path = QFileInfo(dbname).absoluteDir().absolutePath();  // если задан абсолютный путь, вычисляем корневой путь обратным ходом
+    extDb       = path + "/armext.db";                          // путь к БД armext.db
+    esrdbbname  = path + "/arm.db";                             // путь к БД ЕСР - по умолчанию берем изи arm.db
+
+    rdr.GetText("ESRDBNAME"     , esrdbbname);                  // если опция ESRDBNAME задана явно, используем ее
+    rdr.GetInt ("KRUG"          , ras   );                      // номер станции связи
+    rdr.GetText("EDITOR"        , editor);                      // имя редактора
+    rdr.GetInt ("TCPPORT"       , portTcp);                     // TCP-порт сервера входящих подключений модулей УПРАВЛЕНИЕ
+    rdr.GetText("MAIN"          , mainCom);                     // порт прямого   канала
+    rdr.GetText("RESERVE"       , rsrvCom);                     // порт обратного канала
+    rdr.GetInt ("ВAUD"          , baud  );                      // скорость обмена с модемами
+    rdr.GetInt ("DELAY"         , delay );                      // минимальная задержка между опросами станций
+    rdr.GetInt ("READ_INTERVAL" , breakdelay);                  // максимально допустимый интервал между байтами в пакете, мс
+    rdr.GetBool("WAITFORACK"    , g_rqAck);                     // ожидание квитанции
+    rdr.GetText("SQLSERVERMAIN" , mainSql);                     // строка подключения к основному  SQL (postgresql)
+    rdr.GetText("SQLSERVERRSRV" , rsrvSql);                     // строка подключения к резервному SQL (postgresql)
+    rdr.GetBool("TRACESQL"      , SqlServer::logSql);           // лог SQL-запросов
+    rdr.GetInt ("UDPSEND"       , portSnd);                     // порт передачи датаграмм
+    rdr.GetInt ("UDPRECEIVE"    , portRcv);                     // порт приема датаграмм
+    rdr.GetInt ("NETPULSE"      , netPulse  );                  // частота в сек отправки квитанций для поддержки соединения
+    rdr.GetBool("MAINRSS"       , mainRss);                     // MAINRSS - ОN/OFF - основная/резервная
+    rdr.GetBool("HARDWARESWITCH", hardSwith);                   // HARDWARESWITCH=OFF
+    rdr.GetBool("AUTOSWITCH"    , hardSwitchAuto);              // AUTOSWITCH
+    if (rdr.GetText("LINKRSS"   , tmp))                         // LINKRSS=192.168.0.101:7005
+        TcpHeader::ParseIpPort(tmp, nextRssIP, nextRssPort);
+    // --------------------------------------------------------------------------------------------------------------------------
 
     KrugInfo * krug = nullptr;
 //    Esr::ReadBd(esrdbbname, logger);                            // ЕСР
     Station::ReadBd(dbname, krug, logger, QString("WHERE RAS = %1 ORDER BY Addr").arg(ras));                      // станции
 
-    loadResources();
-
     blackbox = new SqlBlackBox(mainSql, rsrvSql, &logger);
     blackbox->SqlBlackBox::putMsg(0, "Запуск", APP_MDMAGENT, LOG_NOTIFY);
+
 
     // формируем представление КП станций в основном окне в несколько строк
     // в качестве входного массива используем вектор станций StationsOrg, отсортированный по заданному при чтении БД критерию "Addr"
@@ -166,30 +169,58 @@ MainWindow::MainWindow(QWidget *parent) :
         }
     }
 
-    // признак основной/резервный
+    // "выбираем" первую станцию
+    if (Station::StationsOrg.size() > 0)
+        SelectStation(Station::StationsOrg[0]);
+
+    // создаем меню ПОМОЩЬ справа (используем setCornerWidget для отдельного QMenuBar)
+    // и вложенные меню: О Программе, Протокол, О QT
+    QMenuBar *bar = new QMenuBar(ui->menuBar);
+    QMenu *menu = new QMenu("Помощь", bar);
+    bar->addMenu(menu);
+
+    QAction *action1 = new QAction("О программе", bar);
+    menu->addAction(action1);
+    connect(action1, SIGNAL(triggered()), this, SLOT(on_action_About_triggered()));
+
+    QAction *action2 = new QAction("Протокол", bar);
+    menu->addAction(action2);
+    connect(action2, SIGNAL(triggered()), this, SLOT(action_load_log()));
+
+    QAction *action3 = new QAction("О версии QT", bar);
+    menu->addAction(action3);
+    connect(action3, SIGNAL(triggered()), this, SLOT(on_action_QtAbout_triggered()));
+
+    ui->menuBar->setCornerWidget(bar);
+
+    // признаки основной/резервный для блоков отображения БМ
     ui->frame_mainBM->setRsrv(false);
     ui->frame_rsrvBM->setRsrv(true );
 
+    // индикаторы прямого и обратного каналов
     ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
     ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
 
+    // начальное состояние индикатора РСС О/Р - норма
     QPalette pal = palette();
     pal.setColor(QPalette::WindowText, Qt::darkGreen);
     ui->label_or->setPalette(pal);
 
-    // в резервной станции связи флажок ОТКЛ используется с текстом Оснв и показывает наличие связи с ОСН
     if (mainRss)
     {
-        ui->label_mainStatus->setVisible(false);
+        ui->label_main->setVisible(false);                      // в основной РСС скрываем индикатор О справа
+        if (nextRssIP==0)                                       // если не определена связь между РСС, скрываем флажок отключения основной
+            ui->checkBox_off->setVisible(false);
     }
     else
     {
-        ui->checkBox_off->setText("Оснв");
-        ui->checkBox_off->setEnabled(false);
-        ui->label_mainStatus->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::red);
-        ui->label_or->setText("Р");
-    }
+        ui->checkBox_off->setVisible(false);                    // в резервной РСС скрываем флажок отключения
+        ui->label_or->setText("Р");                             // левую надпись О/Р устанавливаем в Р
 
+        QPalette pal = palette();                               // цвет основной РСС изначально красный
+        pal.setColor(QPalette::WindowText, Qt::red);
+        ui->label_main->setPalette(pal);
+    }
 
     // индикатор БПДК/УПОК: изначально серый
     // если принят пакет с данными ОТУ - моргнуть ярко-зеленым, обновить засечку времени
@@ -200,7 +231,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(SendMsg(int,void*,void*)), this, SLOT(GetMsg(int,void*,void*)));
 
     // синхронизация состояния флажка "С квитанцией" с переменной g_rqAck
-    g_rqAck = ui->checkBox_ack->isChecked();
+    ui->checkBox_ack->setChecked(g_rqAck);
 
     // синхронизация состояния флажка "Полный опрос" с переменной Station::bFullPollingAll
     Station::bFullPollingAll = ui->checkBox_Full->isChecked();
@@ -211,18 +242,14 @@ MainWindow::MainWindow(QWidget *parent) :
 ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on);
 ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
 
+    // состояние флажков отключения основного и обратного каналов
     ui->checkBox_Main->setChecked(configMain.length() > 0);
-    ui->checkBox_Main->setEnabled(configMain.length() > 0);
+    ui->checkBox_Main->setEnabled(/*configMain.length() > 0*/false);
     ui->checkBox_Rsrv->setChecked(configRsrv.length() > 0);
-    ui->checkBox_Rsrv->setEnabled(configRsrv.length() > 0);
+    ui->checkBox_Rsrv->setEnabled(/*configRsrv.length() > 0*/false);
 
     // запускаем рабочий поток опроса каналов
     pThreadPolling    = std::unique_ptr<std::thread, ThreadTerminater> (new std::thread(ThreadPolling, (long)this));
-
-    if (Station::StationsOrg.size() > 0)
-        SelectStation(Station::StationsOrg[0]);
-
-    dlgKp = nullptr;
 
     // индикатор квитанций
     ui->label_ack->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
@@ -261,21 +288,17 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     else
         rcvSocket = sndSocket = nullptr;
 
-    tUcSnd = 0;                                                 // засечка передачи из УЦ
-
     // запуск таймеров
-    timerAck = timerOR = timerAutoswitch = nullptr;
-
     startTimer (1000);                                          // основной таймер MainWindow
 
-    if (netPulse)                                               // если задана опция NETPULSE - запустить таймер
+    if (netPulse)                                               // если задана опция NETPULSE - запустить таймер timerAck
     {
         timerAck        = new QTimer(this);                     // таймер отпраки квитанций работоспособноси клиентам Управление (опция NETPULSE)
         connect(timerAck, SIGNAL(timeout()), this, SLOT(on_TimerAck()));
         timerAck ->start(netPulse * 1000);                      // время задано в сек
     }
 
-    if (nextRssPort > 0)                                        // если задан порт связи основной и резервной РСС, стартуем таймер передачи
+    if (nextRssPort > 0)                                        // если задан порт связи основной и резервной РСС, стартуем таймер передачи timerOR
     {
         timerOR         = new QTimer(this);                 // таймер отправки сообщений о работоспособности основной РСС
         connect(timerOR, SIGNAL(timeout()) , this, SLOT(on_TimerOR()));
@@ -295,9 +318,8 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     timerAutoswitch = new QTimer(this);                         // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
     connect(timerAutoswitch, SIGNAL(timeout()), this, SLOT(on_TimerAutoswitch()));
     timerAutoswitch->start();
-
-    lastFromMain = QDateTime::currentDateTime();
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -314,6 +336,14 @@ MainWindow::~MainWindow()
         delete timerOR;
     if (timerAutoswitch != nullptr)
         delete timerAutoswitch;
+    if (sndFromMain)
+        delete sndFromMain;
+    if (rcvFromMain)
+        delete rcvFromMain;
+    if (sndSocket)
+        delete sndSocket;
+    if (rcvSocket)
+        delete rcvSocket;
 
     Station::Release();
 
@@ -625,6 +655,30 @@ void MainWindow::on_action_KP_triggered()
     else
         dlgKp->setVisible(!dlgKp->isVisible());
 }
+
+
+// О программе
+void MainWindow::on_action_About_triggered()
+{
+    QFileInfo info( QCoreApplication::applicationFilePath() );
+    QMessageBox::about(this, "О программе", QString("%1\n%2\n\nФайл: %3.\nДата сборки: %4\n© ООО НПЦ Промавтоматика, 1992-2018").arg(title).arg(version).arg(info.filePath()).arg(info.lastModified().toString(FORMAT_DATETIME)));
+}
+
+void MainWindow::on_action_QtAbout_triggered()
+{
+    QMessageBox::aboutQt(this, "Версия QT");
+}
+
+QProcess process;
+// протокол работы модуля
+void MainWindow::action_load_log()
+{
+    QStringList params;
+    params << logger.GetActualFile();
+    process.start(editor, params);
+    //process.waitForFinished(-1);
+}
+
 
 
 
@@ -975,17 +1029,19 @@ bool MainWindow::IsMainRssExpired()
 void MainWindow::on_checkBox_off_stateChanged(int arg1)
 {
     Q_UNUSED(arg1)
-    if (mainRss && (forcePassive || QMessageBox::question(this, title, "Отключить опрос основной станции связи?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes))
+    QString msg = QString ("%1 опрос основной станции связи?").arg(forcePassive ? "Включить" : "Отключить");
+    if (QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
     {
+        msg = QString("Команда принудительного %1 основной станции связи пользователем").arg(forcePassive ? "включения" : "отключения");
         forcePassive = !ui->checkBox_off->isChecked();
-        QString msg = QString("Принудительное %1 основной станции связи пользователем").arg(forcePassive ? "включение" : "отключение");
         blackbox->SqlBlackBox::putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+        Logger::LogStr(msg);
     }
+
+    ui->checkBox_off->setText(ui->checkBox_off->isChecked() ? "Откл" : "ВКЛ");
 }
 
-
-
-// слот "прием датаграмм" от основной РСС
+// слот "прием датаграмм" ("ОСНОВН"/"РЕЗЕРВ") от основной РСС
 void MainWindow::readFromMainRss()
 {
     while (rcvFromMain->hasPendingDatagrams())
@@ -995,14 +1051,17 @@ void MainWindow::readFromMainRss()
         rcvFromMain->readDatagram(datagram.data(), datagram.size());
         QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
         QString s = codec->toUnicode(datagram);
+
+        // состояние forcePassive определяется содержимым датаграммы: если не "ОСНОВН", то forcePassive = true
         forcePassive = s.compare(msgMain) != 0;
-        lastFromMain = QDateTime::currentDateTime();
+        lastFromMain = QDateTime::currentDateTime();            // фиксируем время приема (наличие основной РСС )
     }
 }
 
 // таймер отправки сообщений о работоспособности основно РСС
 void MainWindow::on_TimerOR()
 {
+    // если основная РСС, отправляем статусное сообщение-датаграмму в резервную
     if (sndFromMain)
     {
         QByteArray msg = QTextCodec::codecForName("Windows-1251")->fromUnicode(forcePassive ? msgRsrv : msgMain);
@@ -1017,29 +1076,33 @@ void MainWindow::on_TimerAutoswitch()
 
 }
 
-// отобразить актуальное состояние элементов GUI О/Р
-// большой индикатор О/Р нужным цветом
-// флажок Оснв для резервной
-// индикатор Оснв для резервной
+// отобразить актуальное состояние элементов GUI и переходы О-Р
+// вызывается из MainWindow::on_TimerOR() 1 раз в сек
+// - большой индикатор О/Р нужным цветом в соответствии с состоянием
+// - если резервная, цает основной РСС (справа) - в соответствии с состоянием
+// - отслдить переходы состояния активная/пассивная
 void MainWindow::ShowStatusOP()
 {
+    // цвет РСС в соответствии с состоянием
     QPalette pal = palette();
     pal.setColor(QPalette::WindowText, (activeRss = IsActive()) ? Qt::darkGreen : Qt::gray);
     ui->label_or->setPalette(pal);
 
+    // если резервная, цает основной РСС (справа) - в соответствии с состоянием
     if (!mainRss)
     {
-        ui->checkBox_off->setChecked(!IsActive());
+        QPalette pal = palette();
+        pal.setColor(QPalette::WindowText, IsMainRssExpired() ? Qt::red : IsActive() ? Qt::white : Qt::darkGreen);
+        ui->label_main->setPalette(pal);
     }
 
-    ui->label_mainStatus->set (QLed::ledShape::box, QLed::ledStatus::on, IsMainRssExpired() ? Qt::red : IsActive() ? Qt::white : Qt::green);
-
-    // отслеживаем переходы состояния
+    // отслеживаем переходы состояния активная/пассивная
     if (activeRss != activeRssPrv)
     {
         activeRssPrv = activeRss;
         QString msg = QString("%1 %2 станции связи").arg(activeRss ? "Включение" : "Отключение").arg(mainRss ? "основной" : "резервной");
         blackbox->SqlBlackBox::putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+        Logger::LogStr(msg);
     }
 }
 

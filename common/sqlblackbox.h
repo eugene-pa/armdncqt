@@ -23,6 +23,7 @@ public:
 private:
     std::vector<class SqlServer*> servers;                                      // список серверов
     QString localhost;                                                          // IP адрес локального хоста (используется если не задан IP сообщения)
+    Logger *logger;
 };
 
 

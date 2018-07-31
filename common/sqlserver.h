@@ -43,6 +43,8 @@ public:
 class SqlServer
 {
 public:
+    static bool logSql;                                                 // флаг опционирования записи в лог текста запросов SQL
+
     SqlServer(class SqlBlackBox *, QString&, Logger * );                // конструктор подключения к серверу
     ~SqlServer();
     void Add (std::shared_ptr<SqlMessage> msg);                         // добавить сообщение
