@@ -44,7 +44,7 @@ QString SqlMessage::sql()
 // получить кисть для фона
 QBrush SqlMessage::GetBackground()
 {
-    int c0 = 200;
+    int c0 = 180;
     QBrush brush(QColor(c0,c0,c0));
     switch (idEvent)
     {
@@ -55,7 +55,7 @@ QBrush SqlMessage::GetBackground()
             brush = QBrush(QColor(c0/2,255,c0/2));
             break;
         case LOG_SYS:                       // 3 - Системное
-            brush = QBrush(QColor(255,255,255));
+            brush = QBrush(QColor(128,128,255));
             break;
         case LOG_DIAG:                      // 4 - Диагностическое
             brush = QBrush(QColor(c0,255,255));
@@ -67,7 +67,7 @@ QBrush SqlMessage::GetBackground()
             brush = QBrush(QColor(255,c0/2,c0/2));
             break;
         case LOG_NOTIFY:                    // 7 - Уведомление
-            brush = QBrush(QColor(128,128,255));
+            brush = QBrush(QColor(255,255,255));
             break;
         case LOG_TU:                        // 8 - Команда телеуправления
             brush = QBrush(QColor(c0,255,c0));

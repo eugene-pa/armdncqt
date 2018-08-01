@@ -66,6 +66,7 @@ private:
     std::unique_ptr<std::thread, ThreadTerminaterSql> pThreadPolling;     // указатель на рабочий поток записи сообщений
 
     QSqlDatabase open();                                                // открытие БД
+    void write();                                                       // запись всех сообщений
 };
 
 

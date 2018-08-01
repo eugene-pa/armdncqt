@@ -62,7 +62,7 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="label_nameRsrv">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -75,7 +75,7 @@
        <string>канал 2</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_3">
+     <widget class="QLabel" name="label_nameMain">
       <property name="geometry">
        <rect>
         <x>10</x>

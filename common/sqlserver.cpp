@@ -147,6 +147,8 @@ void SqlServer::ThreadDoSql(long param)
     server->Log("Запуск потока ThreadDoSql для сервера: " + server->connStr);
     while (!exit_lock.try_lock_for(std::chrono::milliseconds(1000)))
     {
+        server->write();
+/*
         std::queue <std::shared_ptr<SqlMessage>> tmp;           // временная очередь сообщений для записи в сервер
         {
             std::lock_guard <std::mutex> locker(server->queue_lock);//захватываем queue_lock
@@ -211,9 +213,79 @@ void SqlServer::ThreadDoSql(long param)
                 server->counter = -1;
             }
         }
+*/
     }
+    server->write();
     exit_lock.unlock();
     server->Log("Завершение потока ThreadSql для сервера: " + server->connStr);
 }
 
 
+// запись всех сообщений
+void SqlServer::write()
+{
+    std::queue <std::shared_ptr<SqlMessage>> tmp;           // временная очередь сообщений для записи в сервер
+    {
+        std::lock_guard <std::mutex> locker(queue_lock);    //захватываем queue_lock
+        // выбираем все сообщения во временную очередь (чтобы освободить основную очередь для записи)
+        while (Messages.size())
+        {
+            std::shared_ptr<SqlMessage> p = Messages.front();
+            tmp.push(p);
+            Messages.pop();
+        }
+    }                                                       // освобождаем queue_lock
+
+    // если выбрали сообщения (очередь не пуста) - поочередно записываем сообщения в сервер
+    if (tmp.size())
+    {
+        // ВАЖНО: так как возможно подключение к нексольким серверам (например, основной и резервный),
+        //        нельзя работать с соединением по умолчанию: надо именовать соединения, например blackbox1,blackbox2 и т.д.
+        // 1. Запрашиваем соединение по умолчанию
+        QSqlDatabase db = open();
+        if (db.isOpen())
+        {
+            if (counter==-1)
+            {
+                QString s = QString("Успешное подключение к серверу: '%1'").arg(connStr);
+                Log(s);
+                counter = 0;
+            }
+            // Записываем в БД все сообщения из временной очереди
+            while (tmp.size())
+            {
+                std::shared_ptr<SqlMessage> p = tmp.front();
+                tmp.pop();
+                QString sql = p->sql();
+
+                if (logSql)
+                    Log(sql);                                   // опционированный вывод в лог текста запроса
+
+                db.exec(sql);
+                if (db.lastError().isValid())
+                {
+                    // Нюанс: так как таблица messages имеет внешние ключи, связанные с таблицами appnames, msgtypes, sources,
+                    // попытка вставить значения ключей, отсутствующие в этих таблицах, приводит к ошибкам
+                    // Поэтому надо отслеживать использование неиспользуемых ключей и
+                    //  - либо добавлять их в таблицу
+                    //  - либо использовать значение по умолчанию (0) для ключей, выходящих за допустимый диапазон
+                    QString txt = QString("Ошибка '%1' при выполнения запроса: %2").arg(db.lastError().text()).arg(sql);
+                    Log(txt);
+                }
+                else
+                    counter++;
+            }
+        }
+        else
+        {
+            // если ошибка первая после череды успешных записей - сообщение в лог
+            if (counter!=-1)
+            {
+                // проблемы открытия БД
+                QString s = QString("Проблемы подключения к серверу: '%1'").arg(connStr);
+                Log(s);
+            }
+            counter = -1;
+        }
+    }
+}

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "kpframe.h"
+#include "hwswitch.h"
 #include "../common/inireader.h"
 #include "../common/sqlmessage.h"
 #include "../common/sqlserver.h"
@@ -15,47 +16,49 @@
 
 // Блок глобальных переменных проекта ==========================================================================================================================
 
-QString version = "1.0.1";                                  // версия приложения
-QString title = "ДЦ ЮГ на базе КП Круг. Станция связи";     // наименование приложения
+const QString version = "1.0.1";                                // версия приложения
+const QString title = "ДЦ ЮГ на базе КП Круг. Станция связи";   // наименование приложения
+const QString noperm = "Нет разрешений на ввод/вывод для управления переключением каналов";
 
-std::timed_mutex exit_lock;									// мьютекс, разрешающий завершение приложения
-std::condition_variable waterMsg;                           // условная переменная для организации ожидания обработки сообщений
-std::mutex sendMutex;                                       // мьютекс для доступа к waterMsg
+std::timed_mutex exit_lock;                                     // мьютекс, разрешающий завершение приложения
+std::condition_variable waterMsg;                               // условная переменная для организации ожидания обработки сообщений
+std::mutex sendMutex;                                           // мьютекс для доступа к waterMsg
 
-MainWindow * MainWindow::mainWnd;                           // статический экземпляр главного окна
+MainWindow * MainWindow::mainWnd;                               // статический экземпляр главного окна
 
-QString mainCom,                                            // порт прямого канала
-        rsrvCom;                                            // порт обводного канала
-QString configMain,                                         // строка конфигурации BlockingRS прямого канала
-        configRsrv;                                         // строка конфигурации BlockingRS обратного канала
-int     baud        = 57600;                                // скорость обмена с модемами
-int     delay       = 10;                                   // минимальная задержка между опросами, мс
-int     breakdelay  = 50;                                   // максимально допустимый интервал между байтами в пакете, мс
-quint64 driftCount  = 0;                                    // число корректных пакетов, принятых с чужого адреса
+QString mainCom,                                                // порт прямого канала
+        rsrvCom;                                                // порт обводного канала
+QString configMain,                                             // строка конфигурации BlockingRS прямого канала
+        configRsrv;                                             // строка конфигурации BlockingRS обратного канала
+int     baud        = 57600;                                    // скорость обмена с модемами
+int     delay       = 10;                                       // минимальная задержка между опросами, мс
+int     breakdelay  = 50;                                       // максимально допустимый интервал между байтами в пакете, мс
+quint64 driftCount  = 0;                                        // число корректных пакетов, принятых с чужого адреса
 
-QString path;                                               // путь к рабочему каталогу
+QString path;                                                   // путь к рабочему каталогу
 
-bool activeRss = true;                                      // глобальный логический флаг активности РСС
-bool activeRssPrv = true;                                   // глобальный логический флаг активности РСС в предыдущем такте
+bool activeRss = true;                                          // глобальный логический флаг активности РСС
+bool activeRssPrv = true;                                       // глобальный логический флаг активности РСС в предыдущем такте
 
 #ifdef Q_OS_WIN
-    QString editor = "notepad.exe";                         // блокнот
+QString editor = "notepad.exe";                                 // блокнот
 #endif
 #ifdef Q_OS_MAC
-    QString editor = "TextEdit";                            // блокнот
+QString editor = "TextEdit";                                    // блокнот
 #endif
 #ifdef Q_OS_LINUX
-    QString editor = "gedit";                               // блокнот, gedit, mousepad
+QString editor = "gedit";                                       // блокнот, gedit, mousepad
 #endif
-    QString images(":/status/images/");                     // путь к образам status/images
-    QString imagesEx(":/images/images/");                   // путь к образам images/images
 
-    Logger logger("log/mdmagent.log", true, true);          // глобальный класс логгера
+QString images(":/status/images/");                             // путь к образам status/images
+QString imagesEx(":/images/images/");                           // путь к образам images/images
 
-    QString dbname      = "bd/arm.db";
-    QString esrdbbname  = "bd/arm.db";
-    QString extDb       = "bd/armext.db";
-    QString iniFile     = "mdmagent.ini";
+Logger logger("log/mdmagent.log", true, true);                  // глобальный класс логгера
+
+QString dbname      = "bd/arm.db";
+QString esrdbbname  = "bd/arm.db";
+QString extDb       = "bd/armext.db";
+QString iniFile     = "mdmagent.ini";
 
 // =============================================================================================================================================================
 
@@ -96,7 +99,8 @@ MainWindow::MainWindow(QWidget *parent) :
     timerAck = timerOR = timerAutoswitch = nullptr;
     dlgKp = nullptr;
     lastFromMain = QDateTime::currentDateTime();                // засечка времени
-
+    nameMain = "Прямой";
+    nameRsrv = "Обратный";
 
     // определяемся с файлом коныигурации: приоритет ini-файлу, заданному параметром командной строки (1-й параметр считается файлом конфигурации)
     QStringList list = QCoreApplication::arguments();
@@ -141,9 +145,14 @@ MainWindow::MainWindow(QWidget *parent) :
     rdr.GetBool("MAINRSS"       , mainRss);                     // MAINRSS - ОN/OFF - основная/резервная
     rdr.GetBool("HARDWARESWITCH", hardSwith);                   // HARDWARESWITCH=OFF
     rdr.GetBool("AUTOSWITCH"    , hardSwitchAuto);              // AUTOSWITCH
+    rdr.GetText("KANALMAIN"     , nameMain);                    // наименование прямого канала
+    rdr.GetText("KANALRSRV"     , nameRsrv);                    // наименование обратного канала
     if (rdr.GetText("LINKRSS"   , tmp))                         // LINKRSS=192.168.0.101:7005
         TcpHeader::ParseIpPort(tmp, nextRssIP, nextRssPort);
     // --------------------------------------------------------------------------------------------------------------------------
+
+    ui->label_nameMain->setText(nameMain);                      // наименование прямого канала
+    ui->label_nameRsrv->setText(nameRsrv);                      // наименование обратного канала
 
     KrugInfo * krug = nullptr;
 //    Esr::ReadBd(esrdbbname, logger);                            // ЕСР
@@ -318,13 +327,20 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     timerAutoswitch = new QTimer(this);                         // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
     connect(timerAutoswitch, SIGNAL(timeout()), this, SLOT(on_TimerAutoswitch()));
     timerAutoswitch->start();
+
+    if (hardSwith && !GetIoPermissin())
+    {
+        blackbox->putMsg(0, noperm,APP_MDMAGENT, LOG_ALARM);
+        Logger::LogStr(noperm);
+    }
 }
 
 
 MainWindow::~MainWindow()
 {
-    Logger::LogStr ("Деструктор MainWindow. Освобождаем ресурсы");
     blackbox->SqlBlackBox::putMsg(0, "Завершение работы", APP_MDMAGENT, LOG_NOTIFY);
+    Logger::LogStr ("Деструктор MainWindow. Освобождаем ресурсы");
+
     exit_lock.unlock();
 
     if (blackbox != nullptr)
@@ -406,7 +422,10 @@ void MainWindow::closeEvent(QCloseEvent * e)
 {
     if (QMessageBox::question(this, title, "Завершить работу станции связи?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
         e->ignore();
-    waterMsg.notify_all();
+    else
+    {
+        waterMsg.notify_all();
+    }
 }
 
 
@@ -1009,7 +1028,7 @@ bool MainWindow::IsActive()
 {
     if (hardSwith)
     {
-        return false;
+        return true;
     }
     else
     {

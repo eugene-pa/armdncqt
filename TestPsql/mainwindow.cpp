@@ -121,7 +121,7 @@ void MainWindow::UpdateList()
     t->resizeColumnsToContents();
     t->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
 
-    t->setSortingEnabled(true);
-    t->sortByColumn(1, Qt::AscendingOrder);             // сортировка по умолчанию по №
+    //t->setSortingEnabled(true);
+    //t->sortByColumn(1, Qt::AscendingOrder);             // сортировка по умолчанию по №
 }
 

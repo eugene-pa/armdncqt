@@ -9,6 +9,7 @@
 #include <QProcess>
 #include <sstream>
 #include <thread>
+#include <../common/common.h>
 #include <../common/defines.h>
 #include <../common/logger.h>
 #include <../common/blockingrs.h>
@@ -26,7 +27,7 @@ extern unsigned int cycles;                                 // счетчик ц
 extern QTime       start;                                   // засечка начала цикла
 extern bool activeRss;                                      // глобальный логический флаг активности РСС
 extern bool activeRssPrv;                                   // глобальный логический флаг активности РСС в предыдущем такте
-
+//extern Logger logger;                                       // глобальный логгер
 
 void SendMessage (int, void *, void * p2 = nullptr);        // прототип глобальной функции отправки сообщения
 void   ThreadPolling (long);                                // прототип глобальной функции потока опроса линии связи
@@ -161,6 +162,7 @@ private:
     class DlgKPinfo * dlgKp;
     void loadResources();
 
+    QString nameMain, nameRsrv;                                 // имена каналов прямого и обратного (опции KANALMAIN, KANALRSRV)
     int portTcp;                                                // порт подключений модулей Управление
     ServerTcp * server;                                         // сервер подключений модулей Управление
 

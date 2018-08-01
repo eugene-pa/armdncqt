@@ -69,7 +69,9 @@ SOURCES += main.cpp\
     ../spr/stationnettu.cpp \
     ../common/sqlblackbox.cpp \
     ../common/sqlmessage.cpp \
-    ../common/sqlserver.cpp
+    ../common/sqlserver.cpp \
+    ../common/common.cpp \
+    hwswitch.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -116,7 +118,9 @@ HEADERS  += mainwindow.h \
     ../spr/stationnettu.h \
     ../common/sqlblackbox.h \
     ../common/sqlmessage.h \
-    ../common/sqlserver.h
+    ../common/sqlserver.h \
+    ../common/common.h \
+    hwswitch.h
 
 
 
