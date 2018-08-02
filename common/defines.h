@@ -35,6 +35,9 @@
 #include <fcntl.h>
 #endif // #ifdef Q_OS_WIN
 
+// ОТКЛЮЧИТЬ В РАБОЧЕЙ ВЕРСИИ:
+//#define DEBUG_RSS                                               // макрос отладочной версии работы с коммутатором каналов связи.
+
 //#include <QWidget>
 //#include <QGraphicsView>
 

@@ -16,9 +16,12 @@
 
 // Блок глобальных переменных проекта ==========================================================================================================================
 
-const QString version = "1.0.1";                                // версия приложения
-const QString title = "ДЦ ЮГ на базе КП Круг. Станция связи";   // наименование приложения
-const QString noperm = "Нет разрешений на ввод/вывод для управления переключением каналов";
+const char * version = "1.0.1";                                 // версия приложения
+const char * title = "ДЦ ЮГ на базе КП Круг. Станция связи";    // наименование приложения
+const char * noperm = "Нет разрешений на ввод/вывод для управления переключением каналов";
+const char * okperm = "Разрешения на ввод/вывод для коммутации каналов предоставлены";
+const char * mainLineOn = "Попытка автопереключения коммутатора каналов на основную станцию связи";
+const char * rsrvLineOn = "Попытка автопереключения коммутатора каналов на резервную станцию связи";
 
 std::timed_mutex exit_lock;                                     // мьютекс, разрешающий завершение приложения
 std::condition_variable waterMsg;                               // условная переменная для организации ожидания обработки сообщений
@@ -159,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Station::ReadBd(dbname, krug, logger, QString("WHERE RAS = %1 ORDER BY Addr").arg(ras));                      // станции
 
     blackbox = new SqlBlackBox(mainSql, rsrvSql, &logger);
-    blackbox->SqlBlackBox::putMsg(0, "Запуск", APP_MDMAGENT, LOG_NOTIFY);
+    blackbox->putMsg(0, "Запуск", APP_MDMAGENT, LOG_NOTIFY);
 
 
     // формируем представление КП станций в основном окне в несколько строк
@@ -223,7 +226,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     else
     {
-        ui->checkBox_off->setVisible(false);                    // в резервной РСС скрываем флажок отключения
+        ui->checkBox_off->setVisible(hardSwith);                // в резервной РСС скрываем флажок отключения
         ui->label_or->setText("Р");                             // левую надпись О/Р устанавливаем в Р
 
         QPalette pal = palette();                               // цвет основной РСС изначально красный
@@ -309,7 +312,7 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
 
     if (nextRssPort > 0)                                        // если задан порт связи основной и резервной РСС, стартуем таймер передачи timerOR
     {
-        timerOR         = new QTimer(this);                 // таймер отправки сообщений о работоспособности основной РСС
+        timerOR         = new QTimer(this);                     // таймер отправки сообщений о работоспособности основной РСС
         connect(timerOR, SIGNAL(timeout()) , this, SLOT(on_TimerOR()));
         timerOR->start(1000);
 
@@ -324,21 +327,43 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
             connect(rcvFromMain, SIGNAL(readyRead()), this, SLOT(readFromMainRss()));
         }
     }
-    timerAutoswitch = new QTimer(this);                         // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
-    connect(timerAutoswitch, SIGNAL(timeout()), this, SLOT(on_TimerAutoswitch()));
-    timerAutoswitch->start();
 
-    if (hardSwith && !GetIoPermissin())
+    // если есть коммутатор, запрашиваем права доступа, проверяем управляемость, и если все ОК - стартуем таймер автопереключения каналов
+    if (hardSwith)
     {
-        blackbox->putMsg(0, noperm,APP_MDMAGENT, LOG_ALARM);
-        Logger::LogStr(noperm);
+        ui->checkBox_off->setText(mainRss ? "Основ":"Резрв");
+        if (!GetIoPermissin())
+        {
+            blackbox->putMsg(0, noperm, APP_MDMAGENT, LOG_NOTIFY);
+            Logger::LogStr(noperm);
+        }
+        else
+        {
+            blackbox->putMsg(0, okperm,APP_MDMAGENT, LOG_NOTIFY);
+            Logger::LogStr(QString("Проверка управления коммутатором: %1").arg(IsHwSwitchControlEnable() ? "ОК" : "ОШИБКА"));
+            if (!hwSwitchControlEnable)
+                blackbox->putMsg(0, "Ошибка проверки управления коммутатором",APP_MDMAGENT, LOG_ALARM);
+        }
+
+        // если все ОК, и опция AUTOSWITCH=ON, стартуем таймер автопереключения каналов
+        if (hardSwitchAuto && IsHwSwitchControlEnable())
+        {
+            timerAutoswitch = new QTimer(this);                         // таймер отслеживания работоспособности аппаратуры и автопереключения РСС
+            connect(timerAutoswitch, SIGNAL(timeout()), this, SLOT(on_TimerAutoswitch()));
+            timerAutoswitch->start(5000);                               // каждые 5 сек
+        }
+
+        // если коммутатор не работает - флажок ОТКЛ блокируем
+        if (!mainRss && !hwSwitchControlEnable/*(IsHwSwitchControlEnable())*/)
+            ui->checkBox_off->setEnabled(false);
     }
+
 }
 
 
 MainWindow::~MainWindow()
 {
-    blackbox->SqlBlackBox::putMsg(0, "Завершение работы", APP_MDMAGENT, LOG_NOTIFY);
+    blackbox->putMsg(0, "Завершение работы", APP_MDMAGENT, LOG_NOTIFY);
     Logger::LogStr ("Деструктор MainWindow. Освобождаем ресурсы");
 
     exit_lock.unlock();
@@ -451,7 +476,7 @@ void MainWindow::on_pushButtonMainOff_clicked()
 
             QString msg = QString("Ст.%1. Команда из панели РСС: ").arg(actualSt->Name()) + (delay ? QString("Отключение основного блока на %1 мин.").arg(delay) : "Отключение основного блока");
             Logger::LogStr (msg);
-            blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+            blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
             QMessageBox::information(this, title, msg, QMessageBox::Ok);
         }
     }
@@ -470,7 +495,7 @@ void MainWindow::on_pushButtonRsrvOff_clicked()
 
         QString msg = QString("Ст.%1. Команда из панели РСС: ").arg(actualSt->Name()) + (delay ? QString("Отключение резервного блока на %1 мин.").arg(delay) : "Отключение резервного блока");
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -483,7 +508,7 @@ void MainWindow::on_pushButtonToMain_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackSetMain);
         QString msg = QString("Ст.%1. Команда из панели РСС: Включение основного блока").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -502,7 +527,7 @@ void MainWindow::on_pushButtonToRsrv_clicked()
             actualSt->AcceptDNC((RasData*)&TuPackSetRsrv);
             QString msg = QString("Ст.%1. Команда из панели РСС: Переход на резервный блок").arg(actualSt->Name());
             Logger::LogStr (msg);
-            blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+            blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
             QMessageBox::information(this, title, msg, QMessageBox::Ok);
         }
     }
@@ -516,7 +541,7 @@ void MainWindow::on_pushButtonTest_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackTestMtuMts);
         QString msg = QString("Ст.%1. Команда из панели РСС: Запуск теста МТУ/МТС").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -529,7 +554,7 @@ void MainWindow::on_pushButtonATU_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackResetAtu);
         QString msg = QString("Ст.%1. Команда из панели РСС: Сброс АТУ").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
      }
 }
@@ -544,7 +569,7 @@ void MainWindow::on_pushButtonReset_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackRestart);
         QString msg = QString("Ст.%1. Команда из панели РСС: Перезапуск КП").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -557,7 +582,7 @@ void MainWindow::on_pushButtonGetReconnect_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackRestartCount);
         QString msg = QString("Ст.%1. Команда из панели РСС: Запрос числа перезапусков КП").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -570,7 +595,7 @@ void MainWindow::on_pushButtonResetMain_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackResetOne);
         QString msg = QString("Ст.%1. Команда из панели РСС: Отключить питание активного блока (холодный рестарит блока)").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -583,7 +608,7 @@ void MainWindow::on_pushButtonResetRsrv_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackResetAnother);
         QString msg = QString("Ст.%1. Команда из панели РСС: Отключить питание смежного неактивного блока (холодный рестарит блока)").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -596,7 +621,7 @@ void MainWindow::on_pushButtonWatchdog_clicked()
         actualSt->AcceptDNC((RasData*)&TuPackWatchdogOn);
         QString msg = QString("Ст.%1. Команда из панели РСС: Включить сторожевой таймер)").arg(actualSt->Name());
         Logger::LogStr (msg);
-        blackbox->SqlBlackBox::putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
+        blackbox->putMsg(actualSt->No(), msg, APP_MDMAGENT, LOG_TECH);
         QMessageBox::information(this, title, msg, QMessageBox::Ok);
     }
 }
@@ -1028,7 +1053,8 @@ bool MainWindow::IsActive()
 {
     if (hardSwith)
     {
-        return true;
+        // если коммутатор не работает, каждая станция считаеся активной и должна пытаться работать с каналами
+        return /*IsHwSwitchControlEnable()*/ hwSwitchControlEnable ? IsRssOnline() : true;
     }
     else
     {
@@ -1043,22 +1069,39 @@ bool MainWindow::IsMainRssExpired()
     return !mainRss && lastFromMain.secsTo(QDateTime::currentDateTime()) > 3;
 }
 
-
-// изменение состояни флажка ОТКЛ
-void MainWindow::on_checkBox_off_stateChanged(int arg1)
+// клик по флажку отключения
+void MainWindow::on_checkBox_off_clicked()
 {
-    Q_UNUSED(arg1)
-    QString msg = QString ("%1 опрос основной станции связи?").arg(forcePassive ? "Включить" : "Отключить");
+    QString msg;
+    // при аппаратном управление переключать можно как с основной так и срезервной РСС
+    // если есть коммутатор и он работает - работаем по коммутатору
+    if (hardSwith && hwSwitchControlEnable /*IsHwSwitchControlEnable()*/)
+    {
+        msg = QString ("Принудительное переключение каналов на %1 станцию связи").arg(IsMainRssSwitchOn() ? "резервную" : "основную");
+        if (QMessageBox::question(this, title, "Выполнить: " + msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+        {
+            blackbox->putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+            Logger::LogStr(msg);
+            if (mainRss)
+                forcePassive = IsRssOnline();
+            TurnSwitch();
+            ShowStatusOP();
+        }
+        return;
+    }
+
+    // при программном управлении управление производится только с основной РСС
+    msg = QString ("%1 опрос основной станции связи?").arg(forcePassive ? "Включить" : "Отключить");
     if (QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
     {
         msg = QString("Команда принудительного %1 основной станции связи пользователем").arg(forcePassive ? "включения" : "отключения");
         forcePassive = !ui->checkBox_off->isChecked();
-        blackbox->SqlBlackBox::putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+        blackbox->putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
         Logger::LogStr(msg);
     }
-
     ui->checkBox_off->setText(ui->checkBox_off->isChecked() ? "Откл" : "ВКЛ");
 }
+
 
 // слот "прием датаграмм" ("ОСНОВН"/"РЕЗЕРВ") от основной РСС
 void MainWindow::readFromMainRss()
@@ -1089,10 +1132,25 @@ void MainWindow::on_TimerOR()
     ShowStatusOP();
 }
 
-// таймер отслеживания работоспособности аппаратуры и автопереключения РСС
+
+// таймер отслеживания работоспособности аппаратуры и автопереключения РСС (1 раз в 5 сек)
+// переключает каналы коммутатора в соответствии с логическим состоянием основной и резервной РСС
 void MainWindow::on_TimerAutoswitch()
 {
+    // если основная, нет флага принудительного отключения и каналы не у нас
+    if (mainRss && !forcePassive && !IsRssOnline())
+    {
+        Logger::LogStr(mainLineOn);
+        blackbox->putMsg(0, mainLineOn, APP_MDMAGENT, LOG_NOTIFY);
+        TurnSwitch();
+    }
 
+    if (!mainRss && (IsMainRssExpired() || forcePassive) && !IsRssOnline())
+    {
+        Logger::LogStr(rsrvLineOn);
+        blackbox->putMsg(0,rsrvLineOn, APP_MDMAGENT, LOG_NOTIFY);
+        TurnSwitch();
+    }
 }
 
 // отобразить актуальное состояние элементов GUI и переходы О-Р
@@ -1115,50 +1173,23 @@ void MainWindow::ShowStatusOP()
         ui->label_main->setPalette(pal);
     }
 
-    // отслеживаем переходы состояния активная/пассивная
+    // отслеживаем переходы состояния активная/пассивная для
     if (activeRss != activeRssPrv)
     {
         activeRssPrv = activeRss;
-        QString msg = QString("%1 %2 станции связи").arg(activeRss ? "Включение" : "Отключение").arg(mainRss ? "основной" : "резервной");
-        blackbox->SqlBlackBox::putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
+        QString msg = QString("%1 активности %2 станции связи").arg(activeRss ? "Включение" : "Отключение").arg(mainRss ? "основной" : "резервной");
+        blackbox->putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
         Logger::LogStr(msg);
     }
+
+    ui->checkBox_off->setChecked(IsActive());
 }
 
 
-
-//void Log (std::wstring s)
-//{
-//    Q_UNUSED (s)
-//}
-
-/*
-// обработка сигнала-уведомления о готовности данных
-void MainWindow::dataready(QByteArray data)
+// проверка подключения каналов коммутатора к станции связи
+bool MainWindow::IsRssOnline()
 {
-    ui->statusBar->showMessage(QString("Приняты данные: %1").arg(Logger::GetHex(data, 32)));
+    return mainRss ? IsMainRssSwitchOn() : !IsMainRssSwitchOn();
 }
-
-// обработка сигнала-уведомления об отсутствии данных в канала данных
-void MainWindow::timeout()
-{
-    ui->statusBar->showMessage("Нет данных");
-}
-
-// обработка сигнала-уведомления об ошибке
-void MainWindow::error  (int error)
-{
-    Q_UNUSED (error)
-//    qDebug() << "Ошибка: " << BlockingRs::errorText(error);
-}
-
-// обработка сигнала-уведомления от старте потока RS
-void MainWindow::rsStarted()
-{
-//    qDebug() << "Старт рабочего потока " << rasRs->name();
-}
-*/
-
-
 
 

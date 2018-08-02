@@ -136,20 +136,16 @@ signals:
 
 private slots:
     void on_action_KP_triggered();
-
     void on_checkBox_ack_stateChanged(int arg1);
-
     void on_checkBox_Full_stateChanged(int arg1);
-
     void on_TimerAck();
     void on_TimerOR();
     void on_TimerAutoswitch();
     void readFromMainRss();
-
-    void on_checkBox_off_stateChanged(int arg1);
     void on_action_About_triggered  ();
     void action_load_log            ();
     void on_action_QtAbout_triggered();
+    void on_checkBox_off_clicked();
 
 private:
     virtual void timerEvent(QTimerEvent *event);                // обработка таймера
@@ -170,6 +166,8 @@ private:
     void ShowStatusOP();                                        // отобразить актуальное состояние элементов GUI О/Р
     bool IsActive();                                            // станция активна?
     bool IsMainRssExpired();                                    // активная РСС молчит более n сек
+    bool IsRssOnline();                                         // подключение каналов коммутатора
+
     int     netPulse;                                           // частота в сек отправки квитанций для поддержки соединения
 
     QUdpSocket * sndSocket;                                     // сокет для передачи в КП датаграмм
