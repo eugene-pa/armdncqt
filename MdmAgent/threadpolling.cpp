@@ -14,6 +14,10 @@
 #include "../common/archiver.h"
 #include "threadpolling.h"
 
+qint8   statusMain = 0,                                     // прямой   канал: -1/0/1/2 - не готов/нет в конфиге/нет CD/ CD
+        statusRsrv = 0;                                     // обратный канал: -1/0/1/2 - не готов/нет в конфиге/нет CD/ CD
+Station * actualSt;                                         // актуальная станция
+
 // статически объявленные переменные, используемые в рабочем потоке
 static BYTE dataIn [MAX_LINE_DATA_LEN*2];                   // входные данные COM-порта
        std::queue <unsigned char> dataInNet;                // входные данные, полученные по сети хранятся в очереди
@@ -65,16 +69,18 @@ void ThreadPolling(long param)
         rs1->SetTimeWaiting(200);
         rs1->start();
         rsSupported = true;
+        statusMain = rs1->IsOpen() ? 1 : -1;
     }
 
     // инициируем обратный канал
     if (configRsrv.length())
     {
-        Logger::LogStr ("Обратный канал: " + configMain);
+        Logger::LogStr ("Обратный канал: " + configRsrv);
         rs2 = new BlockingRS(configRsrv);
         rs2->SetTimeWaiting(200);
         rs2->start();
         rsSupported = true;
+        statusRsrv = rs2->IsOpen() ? 1 : -1;
     }
 
     start = QTime::currentTime();
@@ -92,6 +98,10 @@ void ThreadPolling(long param)
         // поддерживаем актуальное состояние каналов
         Station::MainLineCPU = rs1==nullptr ? 0 : !rs1->IsOpen() ? -1 : rs1->CourierDetect() ? 2 : 1;    // -1(3)/0/1/2 (отказ/откл/WAITING/OK)
         Station::RsrvLineCPU = rs2==nullptr ? 0 : !rs2->IsOpen() ? -1 : rs2->CourierDetect() ? 2 : 1;
+        if (rs1)
+            statusMain = readyMain ? 2 : 1;
+        if (rs2)
+            statusRsrv = readyRsrv ? 2 : 1;
 
         if (!(readyMain || readyRsrv) && !MainWindow::IsNetSupported()) // если нет готовности портов и не описано сетевое подключение - ожидание
             continue;

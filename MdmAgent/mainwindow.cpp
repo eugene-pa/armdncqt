@@ -13,6 +13,7 @@
 #include "../forms/dlgkpinfo.h"
 #include "../spr/stationnetts.h"
 #include "../spr/stationnettu.h"
+#include "threadpolling.h"
 
 // Блок глобальных переменных проекта ==========================================================================================================================
 
@@ -111,8 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
         iniFile = list[1];
 
     Logger::SetLoger(&logger);
-    Logger::LogStr ("Запуск приложения");
-    Logger::LogStr ("Конфигурация: " + iniFile);
+    Logger::LogStr ("Конфигурация приложения: " + iniFile);
 
     path = QDir::currentPath();                                 // путь к текущему каталогу, преобразуем в путь к папке БД
 
@@ -151,9 +151,17 @@ MainWindow::MainWindow(QWidget *parent) :
     rdr.GetText("KANALMAIN"     , nameMain);                    // наименование прямого канала
     rdr.GetText("KANALRSRV"     , nameRsrv);                    // наименование обратного канала
     if (rdr.GetText("LINKRSS"   , tmp))                         // LINKRSS=192.168.0.101:7005
+    {
         TcpHeader::ParseIpPort(tmp, nextRssIP, nextRssPort);
+        Logger::LogStr(name());
+    }
     // --------------------------------------------------------------------------------------------------------------------------
 
+    // в имени окна - наименование модуля и тип РСС
+    setWindowTitle(QString ("%1 %2").arg(title).arg(nextRssPort==0 ? "" : mainRss ? "(основная)" : "(резервная)"));
+
+    if (!nameMain.length())        nameMain = mainCom;          // если не заданы имена каналов, использовать имена портов
+    if (!nameRsrv.length())        nameRsrv = rsrvCom;
     ui->label_nameMain->setText(nameMain);                      // наименование прямого канала
     ui->label_nameRsrv->setText(nameRsrv);                      // наименование обратного канала
 
@@ -162,7 +170,12 @@ MainWindow::MainWindow(QWidget *parent) :
     Station::ReadBd(dbname, krug, logger, QString("WHERE RAS = %1 ORDER BY Addr").arg(ras));                      // станции
 
     blackbox = new SqlBlackBox(mainSql, rsrvSql, &logger);
-    blackbox->putMsg(0, "Запуск", APP_MDMAGENT, LOG_NOTIFY);
+    tmp = "Запуск";
+    if (nextRssPort)
+        tmp = QString("Запуск. %1. Смежная станция связи: %2:%3. Коммутатор: %4").arg(name()).arg(nextRssIP).arg(nextRssPort).arg(hardSwith ? "ДА" : "НЕТ");
+    blackbox->putMsg(0, tmp, APP_MDMAGENT, LOG_NOTIFY);
+    Logger::LogStr(tmp);
+
 
 
     // формируем представление КП станций в основном окне в несколько строк
@@ -185,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (Station::StationsOrg.size() > 0)
         SelectStation(Station::StationsOrg[0]);
 
+
     // создаем меню ПОМОЩЬ справа (используем setCornerWidget для отдельного QMenuBar)
     // и вложенные меню: О Программе, Протокол, О QT
     QMenuBar *bar = new QMenuBar(ui->menuBar);
@@ -205,13 +219,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->menuBar->setCornerWidget(bar);
 
+
     // признаки основной/резервный для блоков отображения БМ
     ui->frame_mainBM->setRsrv(false);
     ui->frame_rsrvBM->setRsrv(true );
 
     // индикаторы прямого и обратного каналов
-    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
-    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::yellow);
+    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::gray);
+    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, Qt::gray);
 
     // начальное состояние индикатора РСС О/Р - норма
     QPalette pal = palette();
@@ -249,10 +264,10 @@ MainWindow::MainWindow(QWidget *parent) :
     Station::bFullPollingAll = ui->checkBox_Full->isChecked();
 
     // конфигурация портов основного и обратного канала задаются в строках configMain, configRsrv
-    configMain = QString("%1,%2,N,8,1").arg(mainCom).arg(baud);
-
-ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on);
-ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
+    if (mainCom.indexOf("OFF") < 0)
+        configMain = QString("%1,%2,N,8,1").arg(mainCom).arg(baud);
+    if (rsrvCom.indexOf("OFF") < 0)
+        configRsrv = QString("%1,%2,N,8,1").arg(rsrvCom).arg(baud);
 
     // состояние флажков отключения основного и обратного каналов
     ui->checkBox_Main->setChecked(configMain.length() > 0);
@@ -331,10 +346,11 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
     // если есть коммутатор, запрашиваем права доступа, проверяем управляемость, и если все ОК - стартуем таймер автопереключения каналов
     if (hardSwith)
     {
+        ui->label_switchStatus->set(QLed::ledShape::box, QLed::ledStatus::on, Qt::gray);
         ui->checkBox_off->setText(mainRss ? "Основ":"Резрв");
         if (!GetIoPermissin())
         {
-            blackbox->putMsg(0, noperm, APP_MDMAGENT, LOG_NOTIFY);
+            blackbox->putMsg(0, noperm, APP_MDMAGENT, LOG_ALARM);
             Logger::LogStr(noperm);
         }
         else
@@ -357,9 +373,18 @@ ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::off);
         if (!mainRss && !hwSwitchControlEnable/*(IsHwSwitchControlEnable())*/)
             ui->checkBox_off->setEnabled(false);
     }
-
+    else
+    {
+        ui->label_switch->setVisible(false);
+        ui->label_switchStatus->setVisible(false);
+    }
 }
 
+// наименование: Основная/Резервная станция связи
+QString MainWindow::name()
+{
+    return QString("%1 станция связи").arg(mainRss ? "Основная" : "Резервная");
+}
 
 MainWindow::~MainWindow()
 {
@@ -427,7 +452,7 @@ void MainWindow::loadResources()
 // - дать информацию по активной
 void MainWindow::SelectStation(class Station * actualSt)
 {
-    ui->label_stName->setText(actualSt->Name());
+    ui->label_stName->setText(QString ("%1    Адрес: %2").arg(actualSt->Name(),-20).arg(actualSt->Addr()));
     for (auto st : Station::StationsOrg)
     {
         this->actualSt = actualSt;
@@ -626,16 +651,6 @@ void MainWindow::on_pushButtonWatchdog_clicked()
     }
 }
 // ===============================================================================================================================================================
-
-// обработка таймеров
-
-// таймер отпраки квитанций работоспособноси клиентам Управление (опция NETPULSE)
-void MainWindow::on_TimerAck()
-{
-    server->sentoAllAck();
-}
-
-
 // обработка событий GUI
 
 // обработка тика таймера
@@ -660,6 +675,11 @@ void MainWindow::timerEvent(QTimerEvent *event)
             Logger::LogStr(QString("Ст.%1. Удаляем устаревшие данные для КП из очереди").arg(st->Name()));
         }
     }
+
+    ui->label_mainCOM3->set (QLed::ledShape::box, QLed::ledStatus::on, statusMain < 0 ? Qt::red : statusMain == 0 ? Qt::gray : statusMain==1 ? Qt::yellow : Qt::green);
+    ui->label_mainCOM4->set (QLed::ledShape::box, QLed::ledStatus::on, statusRsrv < 0 ? Qt::red : statusRsrv == 0 ? Qt::gray : statusRsrv==1 ? Qt::yellow : Qt::green);
+    if (hardSwith)
+        ui->label_switchStatus->set(QLed::ledShape::box, QLed::ledStatus::on, !ioPermission ? Qt::red : hwSwitchControlEnable ? Qt::green : Qt::darkRed);
 }
 
 // изменение состояния флажка "С квитанцией"
@@ -872,7 +892,7 @@ void MainWindow::GetMsg (int np, void * param, void * param2)
             break;
 
         case MSG_SHOW_PING:                                     // отобразить информацию о точке опроса
-            ((kpframe *)param)->SetActual(true,false, param2 != nullptr);
+            ((kpframe *)param)->SetActual(true, param2 != nullptr);
             break;
 
         case MSG_SHOW_SND:                                      // отобразить информацию о передаче запроса в КП
@@ -1047,14 +1067,20 @@ void SendMessage (int no, void * ptr, void * ptr2)
 // =========================================================================================================================================================================
 // переключение основная/резервная РСС и коммутация
 
+// проверка подключения каналов коммутатора к станции связи
+bool MainWindow::IsRssOnline()
+{
+    return mainRss ? IsMainRssSwitchOn() : !IsMainRssSwitchOn();
+}
+
 
 // станция активна?
 bool MainWindow::IsActive()
 {
     if (hardSwith)
     {
-        // если коммутатор не работает, каждая станция считаеся активной и должна пытаться работать с каналами
-        return /*IsHwSwitchControlEnable()*/ hwSwitchControlEnable ? IsRssOnline() : true;
+        // если коммутатор работает, анализ подключения, иначе - каждая станция считаеся активной и должна пытаться работать с каналами
+        return hwSwitchControlEnable ? IsRssOnline() : true;
     }
     else
     {
@@ -1069,7 +1095,10 @@ bool MainWindow::IsMainRssExpired()
     return !mainRss && lastFromMain.secsTo(QDateTime::currentDateTime()) > 3;
 }
 
-// клик по флажку отключения
+
+// клик по флажку отключения (переключения)
+// при наличии коммутатора флажок доступен на обеих РСС, так как с обеих допустимо управление коммутатором
+// при отсутствии коммутатора, флажок доступен ТОЛЬКО на основной (она в приоритете и ее можно логически отключить forcePassive = true)
 void MainWindow::on_checkBox_off_clicked()
 {
     QString msg;
@@ -1090,34 +1119,25 @@ void MainWindow::on_checkBox_off_clicked()
         return;
     }
 
+    ui->checkBox_off->setChecked(!forcePassive);
+
     // при программном управлении управление производится только с основной РСС
     msg = QString ("%1 опрос основной станции связи?").arg(forcePassive ? "Включить" : "Отключить");
     if (QMessageBox::question(this, title, msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
     {
         msg = QString("Команда принудительного %1 основной станции связи пользователем").arg(forcePassive ? "включения" : "отключения");
-        forcePassive = !ui->checkBox_off->isChecked();
+        forcePassive = !forcePassive;
         blackbox->putMsg(0, msg, APP_MDMAGENT, LOG_NOTIFY);
         Logger::LogStr(msg);
+        ui->checkBox_off->setChecked(!forcePassive);
     }
-    ui->checkBox_off->setText(ui->checkBox_off->isChecked() ? "Откл" : "ВКЛ");
 }
 
 
-// слот "прием датаграмм" ("ОСНОВН"/"РЕЗЕРВ") от основной РСС
-void MainWindow::readFromMainRss()
+// таймер отпраки квитанций работоспособноси клиентам Управление (опция NETPULSE)
+void MainWindow::on_TimerAck()
 {
-    while (rcvFromMain->hasPendingDatagrams())
-    {
-        QByteArray datagram;
-        datagram.resize(rcvFromMain->pendingDatagramSize());
-        rcvFromMain->readDatagram(datagram.data(), datagram.size());
-        QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
-        QString s = codec->toUnicode(datagram);
-
-        // состояние forcePassive определяется содержимым датаграммы: если не "ОСНОВН", то forcePassive = true
-        forcePassive = s.compare(msgMain) != 0;
-        lastFromMain = QDateTime::currentDateTime();            // фиксируем время приема (наличие основной РСС )
-    }
+    server->sentoAllAck();
 }
 
 // таймер отправки сообщений о работоспособности основно РСС
@@ -1153,6 +1173,8 @@ void MainWindow::on_TimerAutoswitch()
     }
 }
 
+
+
 // отобразить актуальное состояние элементов GUI и переходы О-Р
 // вызывается из MainWindow::on_TimerOR() 1 раз в сек
 // - большой индикатор О/Р нужным цветом в соответствии с состоянием
@@ -1186,10 +1208,23 @@ void MainWindow::ShowStatusOP()
 }
 
 
-// проверка подключения каналов коммутатора к станции связи
-bool MainWindow::IsRssOnline()
+// слот "прием датаграмм" ("ОСНОВН"/"РЕЗЕРВ") от основной РСС
+void MainWindow::readFromMainRss()
 {
-    return mainRss ? IsMainRssSwitchOn() : !IsMainRssSwitchOn();
+    while (rcvFromMain->hasPendingDatagrams())
+    {
+        QByteArray datagram;
+        datagram.resize(rcvFromMain->pendingDatagramSize());
+        rcvFromMain->readDatagram(datagram.data(), datagram.size());
+        QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+        QString s = codec->toUnicode(datagram);
+
+        // состояние forcePassive определяется содержимым датаграммы: если не "ОСНОВН", то forcePassive = true
+        forcePassive = s.compare(msgMain) != 0;
+        lastFromMain = QDateTime::currentDateTime();            // фиксируем время приема (наличие основной РСС )
+    }
 }
+
+
 
 

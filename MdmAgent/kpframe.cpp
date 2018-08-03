@@ -40,8 +40,12 @@ kpframe::~kpframe()
     delete ui;
 }
 
-void kpframe::SetActual(bool s, bool rsrv, bool NotEmpty)
+// выделить опрашиваемsq модем КП
+// s - 1/0 - on/off индикатора
+// NotEmpty - признак наличия данных хотя бы в одном блоке, в этом случае цвет выделения не белый, а черный
+void kpframe::SetActual(bool s, bool NotEmpty)
 {
+    bool rsrv = st->IsRsrv();
     QLed * l = st->IsBackChannel() ? (rsrv ? ui->label_rsrvCOM4 : ui->label_mainCOM4) : (rsrv ? ui->label_rsrvCOM3 : ui->label_mainCOM3);
     l->set (QLed::ledShape::box, s ? QLed::ledStatus::on : QLed::ledStatus::off, NotEmpty ? Qt::black : Qt::white);
     //l->setText("+");
@@ -71,16 +75,17 @@ void kpframe::Show()
 
 // получить цвет индикатора заданного модема
 // отсутствие отклика КП - все модемы красные
-// при наличии отулика состояние коннекта и ошибки модема берется из SysInfo
+// при наличии отклика состояние коннекта и ошибки модема берется из SysInfo
 QColor kpframe::getColor(bool rsrv, bool com4)
 {
     bool active = !(rsrv ^ st->IsRsrv());
     SysInfo * sys = st->GetSysInfo(rsrv);
     bool connect = com4 ? sys->Com4Connected() : sys->Com3Connected();
     bool error   = com4 ? sys->Com4Error    () : sys->Com3Error    ();
-    return !st->IsKpResponce()  ? Qt::red   :
-           connect              ? (active ? Qt::green : Qt::white) :
-           error                ? Qt::red   : Qt::yellow;
+    return !st->IsKpResponce()  ? Qt::red                           :
+           sys->IsExpired()     ? Qt::yellow                        :
+           connect              ? (active ? Qt::green : Qt::white)  :
+           error                ? Qt::red   : Qt::yellow            ;
 }
 
 // обработка щелчка по станции (смена станции)

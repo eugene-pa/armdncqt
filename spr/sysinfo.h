@@ -107,6 +107,7 @@ public:
     QString ErrorType();                                    // получить текст типа ошибки
 
     bool IsOnoff() { return onoff; }                        // переход из нормы в отказ
+    bool IsExpired() { return tmdt.secsTo(QDateTime::currentDateTime()) > 5; }  // информация устарела
 private:
     class Station * st;
     // 0  байт - состояние КП

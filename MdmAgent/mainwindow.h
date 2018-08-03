@@ -92,32 +92,16 @@ public slots:
     void SelectStation(class Station *);
     void GetMsg (int, void *, void *);
 
-//    void dataready(QByteArray);                               // сигнал-уведомление о готовности данных
-//    void timeout();                                           // сигнал-уведомление об отсутствии данных в канала данных
-//    void error  (int);                                        // сигнал-уведомление об ошибке
-//    void rsStarted();                                         // старт потока RS
-    //void rsFinished();                                        // завершение потока RS
-
     void on_pushButtonMainOff_clicked();
-
     void on_pushButtonRsrvOff_clicked();
-
     void on_pushButtonToMain_clicked();
-
     void on_pushButtonToRsrv_clicked();
-
     void on_pushButtonTest_clicked();
-
     void on_pushButtonATU_clicked();
-
     void on_pushButtonReset_clicked();
-
     void on_pushButtonGetReconnect_clicked();
-
     void on_pushButtonResetMain_clicked();
-
     void on_pushButtonResetRsrv_clicked();
-
     void on_pushButtonWatchdog_clicked();
 
     // уведомления сервера
@@ -157,7 +141,6 @@ private:
     std::unique_ptr<std::thread, ThreadTerminater> pThreadPolling;// smart-указатель на поток опроса динии связи
     class DlgKPinfo * dlgKp;
     void loadResources();
-
     QString nameMain, nameRsrv;                                 // имена каналов прямого и обратного (опции KANALMAIN, KANALRSRV)
     int portTcp;                                                // порт подключений модулей Управление
     ServerTcp * server;                                         // сервер подключений модулей Управление
@@ -167,6 +150,7 @@ private:
     bool IsActive();                                            // станция активна?
     bool IsMainRssExpired();                                    // активная РСС молчит более n сек
     bool IsRssOnline();                                         // подключение каналов коммутатора
+    QString name();                                             // наименование: Основная/Резервная станция связи
 
     int     netPulse;                                           // частота в сек отправки квитанций для поддержки соединения
 
